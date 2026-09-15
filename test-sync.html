@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 اختبار مزامنة Firebase — برنامج المهرة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #f39c12);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 6px; }
+        .header .subtitle { font-size: 14px; opacity: 0.95; font-weight: 400; }
+
+        .status-bar {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .status-connected .status-dot { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .status-disconnected .status-dot { background: #ef4444; }
+        .status-connecting .status-dot { background: #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.3; } }
+
+        .device-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .input-section {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .input-section input {
+            flex: 1;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .input-section input:focus { border-color: #667eea; }
+        .input-section button {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
+        }
+        .input-section button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,197,94,0.4); }
+        .input-section button:active { transform: translateY(0); }
+        .input-section button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .students-header {
+            padding: 12px 20px;
+            background: #f0f4ff;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .students-list {
+            padding: 8px;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            margin: 6px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .student-item.mine { border-color: #667eea; background: #f0f4ff; }
+        .student-name { font-weight: 700; font-size: 16px; }
+        .student-meta { font-size: 12px; color: #666; margin-top: 2px; }
+        .delete-btn {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        .delete-btn:hover { background: #ef4444; color: white; }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 15px;
+        }
+
+        .footer {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .log {
+            padding: 8px 20px;
+            background: #1a1a2e;
+            color: #22c55e;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+            direction: ltr;
+            text-align: left;
+        }
+        .log-error { color: #ef4444; }
+        .log-info { color: #60a5fa; }
+
+        @media (max-width: 480px) {
+            .input-section { flex-direction: column; }
+            .header h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 اختبار مزامنة Firebase</h1>
+            <div class="subtitle">نموذج أولي لبرنامج المهرة — ليس البرنامج الفعلي</div>
+        </div>
+
+        <div id="statusBar" class="status-bar status-connecting">
+            <div>
+                <span class="status-dot"></span>
+                <span id="statusText">جاري الاتصال بالسحابة...</span>
+            </div>
+            <div class="device-id" id="deviceId">جهاز: —</div>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="studentInput" placeholder="اكتب اسم طالب تجريبي..." maxlength="50">
+            <button id="addBtn" onclick="addStudent()" disabled>+ إضافة</button>
+        </div>
+
+        <div class="students-header">
+            <span>📋 قائمة الطلاب (مباشرة من السحابة)</span>
+            <span id="countDisplay">0</span>
+        </div>
+
+        <div class="students-list" id="studentsList">
+            <div class="empty-message">لا يوجد طلاب بعد — أضف واحداً ليظهر هنا وعلى كل الأجهزة الأخرى</div>
+        </div>
+
+        <div class="footer">
+            📡 آخر مزامنة: <span id="lastSyncTime">—</span> | إجمالي التحديثات: <span id="updateCount">0</span>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            onSnapshot,
+            deleteDoc,
+            doc,
+            query,
+            orderBy,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8dl3sMzdqSCk6GltG1scp2ZRuofpDS_4",
+            authDomain: "almahra-cloud.firebaseapp.com",
+            projectId: "almahra-cloud",
+            storageBucket: "almahra-cloud.firebasestorage.app",
+            messagingSenderId: "529225216040",
+            appId: "1:529225216040:web:8447624a31fe1dd443c51d"
+        };
+
+        // معرف عشوائي لهذا الجهاز/التبويب — لتمييز من أضاف ماذا
+        const DEVICE_ID = 'D-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        document.getElementById('deviceId').textContent = 'جهاز: ' + DEVICE_ID;
+
+        let updateCount = 0;
+
+        function log(msg, type = '') {
+            const el = document.getElementById('log');
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const className = type ? 'log-' + type : '';
+            el.innerHTML = `<div class="${className}">[${time}] ${msg}</div>` + el.innerHTML;
+            // احتفظ بآخر 20 سطر فقط
+            const lines = el.querySelectorAll('div');
+            if (lines.length > 20) lines[lines.length - 1].remove();
+        }
+
+        function setStatus(state, text) {
+            const bar = document.getElementById('statusBar');
+            bar.className = 'status-bar status-' + state;
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function timeAgo(date) {
+            if (!date) return 'الآن';
+            const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+            if (seconds < 5) return 'الآن';
+            if (seconds < 60) return `منذ ${seconds} ثانية`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `منذ ${minutes} دقيقة`;
+            const hours = Math.floor(minutes / 60);
+            return `منذ ${hours} ساعة`;
+        }
+
+        let db, studentsCollection;
+
+        try {
+            log('🚀 تهيئة Firebase...', 'info');
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            studentsCollection = collection(db, 'test_students');
+            log('✅ تم الاتصال بمشروع: ' + firebaseConfig.projectId, 'info');
+            setStatus('connected', 'متصل بالسحابة');
+            document.getElementById('addBtn').disabled = false;
+        } catch (err) {
+            log('❌ فشل التهيئة: ' + err.message, 'error');
+            setStatus('disconnected', 'فشل الاتصال — راجع السجل');
+        }
+
+        // مراقبة لحظية للتغييرات — هذا هو السحر
+        if (studentsCollection) {
+            const q = query(studentsCollection, orderBy('createdAt', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                updateCount++;
+                document.getElementById('updateCount').textContent = updateCount;
+                document.getElementById('lastSyncTime').textContent =
+                    new Date().toLocaleTimeString('ar-SA', { hour12: false });
+
+                const list = document.getElementById('studentsList');
+                const countDisplay = document.getElementById('countDisplay');
+
+                if (snapshot.empty) {
+                    list.innerHTML = '<div class="empty-message">لا يوجد طلاب بعد — أضف واحداً ليظهر هنا وعلى كل الأجهزة الأخرى</div>';
+                    countDisplay.textContent = '0';
+                    return;
+                }
+
+                countDisplay.textContent = snapshot.size;
+
+                let html = '';
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const isMine = data.deviceId === DEVICE_ID;
+                    const createdDate = data.createdAt ? data.createdAt.toDate() : null;
+                    const timeText = timeAgo(createdDate);
+                    const deviceText = isMine ? '(من هذا الجهاز)' : '(من ' + (data.deviceId || 'جهاز آخر') + ')';
+
+                    html += `
+                        <div class="student-item ${isMine ? 'mine' : ''}">
+                            <div>
+                                <div class="student-name">${escapeHTML(data.name)}</div>
+                                <div class="student-meta">${timeText} ${deviceText}</div>
+                            </div>
+                            <button class="delete-btn" data-id="${docSnap.id}">🗑️ حذف</button>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+
+                // ربط أزرار الحذف
+                list.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => deleteStudent(btn.dataset.id));
+                });
+
+                log(`🔄 تحديث لحظي: ${snapshot.size} طالب`, 'info');
+            }, (err) => {
+                log('❌ خطأ في المراقبة: ' + err.message, 'error');
+                setStatus('disconnected', 'انقطع الاتصال');
+            });
+        }
+
+        window.addStudent = async function() {
+            const input = document.getElementById('studentInput');
+            const name = input.value.trim();
+            if (!name) {
+                input.focus();
+                return;
+            }
+
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+            btn.textContent = '...جاري الإضافة';
+
+            try {
+                await addDoc(studentsCollection, {
+                    name: name,
+                    deviceId: DEVICE_ID,
+                    createdAt: serverTimestamp()
+                });
+                log(`✅ أُضيف: "${name}"`, 'info');
+                input.value = '';
+                input.focus();
+            } catch (err) {
+                log('❌ فشل الإضافة: ' + err.message, 'error');
+                alert('فشل الإضافة: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '+ إضافة';
+            }
+        };
+
+        window.deleteStudent = async function(id) {
+            if (!confirm('حذف هذا الطالب من السحابة؟ سيختفي عند الجميع.')) return;
+            try {
+                await deleteDoc(doc(db, 'test_students', id));
+                log(`🗑️ حُذف طالب (id: ${id.substring(0, 6)}...)`, 'info');
+            } catch (err) {
+                log('❌ فشل الحذف: ' + err.message, 'error');
+            }
+        };
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Enter key للإضافة السريعة
+        document.getElementById('studentInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addStudent();
+        });
+
+        // كشف انقطاع/عودة الاتصال بالإنترنت
+        window.addEventListener('online', () => log('🌐 عاد الاتصال بالإنترنت', 'info'));
+        window.addEventListener('offline', () => {
+            log('⚠️ انقطع الاتصال بالإنترنت', 'error');
+            setStatus('disconnected', 'لا يوجد إنترنت');
+        });
+    </script>
+</body>
+</html>
