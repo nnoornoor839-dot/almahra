@@ -1,0 +1,90 @@
+# ======================================
+# ملفات النظام (Operating System)
+# ======================================
+# ملفات ماك
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ملفات ويندوز
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ملفات لينكس
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ======================================
+# محررات النصوص (Editors)
+# ======================================
+# VS Code (نستثني الإعدادات الشخصية فقط)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ======================================
+# ملفات مؤقتة واحتياطية
+# ======================================
+*.bak
+*.backup
+*.tmp
+*.temp
+*.old
+*.log
+*_backup_*
+almahara_backup_*.json
+
+# ======================================
+# ملفات المستخدم الحساسة
+# ======================================
+# نسخ بيانات الطلاب (لا نرفعها لـ GitHub)
+students_data_*.json
+*.private.json
+
+# متغيرات البيئة والأسرار
+.env
+.env.local
+.env.*.local
+secrets/
+credentials.json
+
+# ======================================
+# Node.js (احتياطاً للمستقبل)
+# ======================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# ======================================
+# ملفات البناء والتوزيع
+# ======================================
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
