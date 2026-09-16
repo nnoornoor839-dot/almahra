@@ -22,7 +22,123 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@400;700&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; padding-bottom: 100px; overflow-x: hidden; scroll-behavior: smooth; }
-        
+
+        /* حماية: إخفاء البرنامج قبل التحقق من تسجيل الدخول */
+        body.auth-not-ready > *:not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
+
+        /* شاشة تسجيل الدخول */
+        #loginOverlay {
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #loginOverlay.flex { display: flex; }
+        #loginOverlay .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: loginCardEnter 0.5s ease-out;
+        }
+        @keyframes loginCardEnter {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        #loginOverlay input[type="email"],
+        #loginOverlay input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+            outline: none;
+            direction: rtl;
+            box-sizing: border-box;
+        }
+        #loginOverlay input:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
+        #loginOverlay .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-top: 0.5rem;
+        }
+        #loginOverlay .login-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16,185,129,0.4); }
+        #loginOverlay .login-btn:active { transform: translateY(0); }
+        #loginOverlay .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #loginOverlay .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6b7280;
+            font-weight: 700;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: 'Cairo', sans-serif;
+            font-size: 15px;
+            width: 100%;
+        }
+        #loginOverlay .forgot-link:hover { color: #10b981; text-decoration: underline; }
+        #loginOverlay .login-error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #fecaca;
+            font-weight: 700;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* شريط المستخدم وزر الخروج في رأس البرنامج */
+        #authUserBar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        #authUserInfo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid #a7f3d0;
+        }
+        #authLogoutBtn {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+            font-size: 14px;
+        }
+        #authLogoutBtn:hover { background: #b91c1c; color: white; }
+
         .tab-content { display: none; }
         .tab-content.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease-in-out; }
         .nav-btn.active { color: #10b981; border-top: 4px solid #10b981; background-color: #f8fafc; }
@@ -147,8 +263,53 @@
         .card-rank-top20 { border: 2px solid #34d399; }
         
     </style>
+
+    <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
+    <script type="module" src="./auth.js"></script>
 </head>
-<body class="min-h-screen flex flex-col custom-scroll">
+<body class="min-h-screen flex flex-col custom-scroll auth-not-ready">
+
+    <!-- شاشة تسجيل الدخول - تظهر قبل البرنامج -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-3">🕌</div>
+                <h1 class="text-3xl font-black text-slate-800">برنامج المهرة</h1>
+                <p class="text-slate-500 font-bold mt-2">نظام إدارة الحلقات القرآنية</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-envelope text-emerald-600 ml-1"></i> البريد الإلكتروني
+                    </label>
+                    <input type="email" id="loginEmail" placeholder="example@gmail.com" required autocomplete="email">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-lock text-emerald-600 ml-1"></i> كلمة المرور
+                    </label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <div id="loginError" class="login-error hidden"></div>
+
+                <button type="submit" id="loginBtn" class="login-btn">
+                    🔓 تسجيل الدخول
+                </button>
+
+                <button type="button" id="forgotBtn" class="forgot-link">
+                    نسيت كلمة المرور؟
+                </button>
+            </form>
+
+            <div class="text-center text-xs text-slate-400 mt-6 pt-4 border-t border-slate-100">
+                للحصول على حساب، تواصل مع المشرف
+            </div>
+        </div>
+    </div>
+
     <div id="loadingOverlay" class="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
         <i class="fas fa-quran text-9xl text-emerald-500 animate-bounce mb-6"></i>
         <h1 class="text-6xl font-black text-slate-700 mb-4">برنامج المهرة</h1>
@@ -168,10 +329,25 @@
             <div class="hidden md:block text-slate-300 font-bold">|</div>
             <div id="headerGregorian" class="text-xs md:text-base font-bold text-slate-500">جاري التحميل...</div>
         </div>
-        <div class="flex items-center justify-end w-1/4">
+        <div class="flex items-center justify-end w-1/4 gap-3">
+            <div id="authUserBar" class="hidden md:flex">
+                <span id="authUserInfo" class="hidden"></span>
+                <button id="authLogoutBtn" class="hidden" onclick="almahraLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>خروج</span>
+                </button>
+            </div>
             <img src="https://i.postimg.cc/zB3VsFkq/lqtt-shasht-2026-06-28-194304.png" alt="شعار برنامج المهرة" class="h-16 md:h-24 w-auto rounded-xl shadow-sm object-contain">
         </div>
     </header>
+
+    <!-- شريط المستخدم للجوال (يظهر تحت الرأس) -->
+    <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between no-print">
+        <span id="authUserInfoMobile" class="text-sm font-bold text-emerald-700 hidden"></span>
+        <button id="authLogoutBtnMobile" class="hidden text-red-600 font-bold text-sm flex items-center gap-1" onclick="almahraLogout()">
+            <i class="fas fa-sign-out-alt"></i> خروج
+        </button>
+    </div>
 
     <div id="page-home" class="tab-content active p-4 md:p-8 flex-grow">
         <div class="max-w-[1800px] mx-auto flex flex-col gap-6 w-full h-full">
