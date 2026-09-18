@@ -2,7 +2,7 @@
 // طبقة الوصول للبيانات - Data Store Layer
 // ================================================================
 // تُبدّل تخزين البيانات من localStorage إلى Firestore السحابي
-// بقية الكود يستخدم window.almahraData بدل التعامل المباشر مع localStorage
+// الطلاب الآن داخل حدث محدد: events/{eventId}/students/{studentId}
 // ================================================================
 
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -13,39 +13,59 @@ import {
     setDoc,
     deleteDoc,
     onSnapshot,
-    writeBatch
+    writeBatch,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-// إعادة استخدام تطبيق Firebase إن كان مُهيّأً (auth.js يهيّئه)
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const STUDENTS_COLLECTION = 'students';
+const EVENTS_COLLECTION = 'events';
+const STUDENTS_SUBCOLLECTION = 'students';
 
 // ================================================================
 // الحالة الداخلية
 // ================================================================
-let studentsCache = [];         // ذاكرة مؤقتة للطلاب - قراءة فورية
-let studentsSubscribers = [];   // من يريد إشعاراً بأي تغيير
-let studentsUnsubscribe = null; // دالة لإيقاف المستمع
-let isReady = false;            // هل استقبلنا أول snapshot؟
-let lastError = null;           // آخر خطأ حصل
+let studentsCache = [];
+let studentsSubscribers = [];
+let studentsUnsubscribe = null;
+let isReady = false;
+let lastError = null;
+let activeEventId = null;
+
+// مرجع مجموعة طلاب الحدث الحالي
+function studentsCollectionRef() {
+    if (!activeEventId) return null;
+    return collection(db, EVENTS_COLLECTION, activeEventId, STUDENTS_SUBCOLLECTION);
+}
+
+function studentDocRef(studentId) {
+    if (!activeEventId) return null;
+    return doc(db, EVENTS_COLLECTION, activeEventId, STUDENTS_SUBCOLLECTION, String(studentId));
+}
 
 // ================================================================
-// المستمع اللحظي
-// يبقى مفتوحاً طوال الجلسة، يستقبل أي تغيير من أي جهاز خلال ثوانٍ
+// المستمع اللحظي لطلاب الحدث الحالي
 // ================================================================
 function startStudentsListener() {
-    if (studentsUnsubscribe) return; // مُشغّل فعلاً - لا تكرر
+    stopStudentsListener();
+
+    const ref = studentsCollectionRef();
+    if (!ref) {
+        console.warn('⚠️ data-store: لا يوجد حدث محدد — لن يبدأ المستمع');
+        studentsCache = [];
+        isReady = false;
+        notifySubscribers();
+        return;
+    }
 
     studentsUnsubscribe = onSnapshot(
-        collection(db, STUDENTS_COLLECTION),
+        ref,
         (snapshot) => {
             const students = [];
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                // Firestore يخزّن الـ ID كنص - نعيده رقماً لتوافق البرنامج القديم
                 const idAsNum = parseInt(docSnap.id, 10);
                 students.push({
                     ...data,
@@ -55,13 +75,8 @@ function startStudentsListener() {
             studentsCache = students;
             isReady = true;
             lastError = null;
-
-            // إبلاغ كل المشتركين
-            studentsSubscribers.forEach(cb => {
-                try { cb(students); } catch (e) { console.error('subscriber error:', e); }
-            });
-
-            console.log(`🔄 data-store: تحديث لحظي — ${students.length} طالب`);
+            notifySubscribers();
+            console.log(`🔄 data-store: ${students.length} طالب في الحدث ${activeEventId}`);
         },
         (err) => {
             console.error('❌ Firestore listener error:', err.code, err.message);
@@ -70,27 +85,42 @@ function startStudentsListener() {
     );
 }
 
+function stopStudentsListener() {
+    if (studentsUnsubscribe) {
+        studentsUnsubscribe();
+        studentsUnsubscribe = null;
+    }
+}
+
+function notifySubscribers() {
+    studentsSubscribers.forEach(cb => {
+        try { cb([...studentsCache]); } catch (e) { console.error('subscriber error:', e); }
+    });
+}
+
 // ================================================================
-// الواجهة العامة (Public API)
+// الواجهة العامة
 // ================================================================
 window.almahraData = {
 
-    // قراءة الطلاب الحاليين من الذاكرة (سريعة، متزامنة)
     getStudents: () => [...studentsCache],
-
-    // هل بيانات الطلاب جاهزة؟ (استقبلنا أول snapshot)
     isReady: () => isReady,
-
-    // آخر خطأ حصل (إن وُجد)
     lastError: () => lastError,
+    getActiveEventId: () => activeEventId,
 
-    // الاشتراك في التحديثات اللحظية
-    // يُستدعى callback في كل مرة تتغير البيانات
-    // يرجع دالة لإلغاء الاشتراك
+    // تبديل الحدث النشط - يُعيد تشغيل المستمع على طلاب الحدث الجديد
+    setActiveEvent: (eventId) => {
+        if (activeEventId === eventId) return;
+        activeEventId = eventId;
+        studentsCache = [];
+        isReady = false;
+        console.log('📂 data-store: تبديل إلى الحدث', eventId);
+        startStudentsListener();
+    },
+
     subscribeStudents: (callback) => {
         studentsSubscribers.push(callback);
-        startStudentsListener();
-        // إن كانت البيانات جاهزة، استدعِ callback فوراً بالحالة الحالية
+        if (activeEventId && !studentsUnsubscribe) startStudentsListener();
         if (isReady) {
             try { callback([...studentsCache]); } catch (e) { console.error(e); }
         }
@@ -99,15 +129,14 @@ window.almahraData = {
         };
     },
 
-    // إضافة/تحديث طالب واحد
     upsertStudent: async (student) => {
+        if (!activeEventId) return { success: false, error: 'لا يوجد حدث محدد' };
         if (!student || student.id === undefined || student.id === null) {
             return { success: false, error: 'الطالب يحتاج id' };
         }
-        const id = String(student.id);
-        const { id: _, ...data } = student; // نستثني الـ id (هو معرّف الوثيقة)
+        const { id: _, ...data } = student;
         try {
-            await setDoc(doc(db, STUDENTS_COLLECTION, id), data);
+            await setDoc(studentDocRef(student.id), data);
             return { success: true };
         } catch (err) {
             console.error('❌ upsertStudent:', err);
@@ -115,10 +144,10 @@ window.almahraData = {
         }
     },
 
-    // حذف طالب
     removeStudent: async (id) => {
+        if (!activeEventId) return { success: false, error: 'لا يوجد حدث محدد' };
         try {
-            await deleteDoc(doc(db, STUDENTS_COLLECTION, String(id)));
+            await deleteDoc(studentDocRef(id));
             return { success: true };
         } catch (err) {
             console.error('❌ removeStudent:', err);
@@ -126,30 +155,26 @@ window.almahraData = {
         }
     },
 
-    // حفظ كل الطلاب دفعة واحدة (Batch)
-    // - يُستخدم عند تعديلات كثيرة معاً أو نقل البيانات القديمة
-    // - يُزامن Firestore ليطابق المصفوفة المُعطاة (يضيف/يعدّل/يحذف)
     saveAllStudents: async (students) => {
+        if (!activeEventId) return { success: false, error: 'لا يوجد حدث محدد' };
         if (!Array.isArray(students)) {
             return { success: false, error: 'students يجب أن تكون مصفوفة' };
         }
+
         const currentIds = new Set(studentsCache.map(s => String(s.id)));
         const newIds = new Set(students.map(s => String(s.id)));
 
         const batch = writeBatch(db);
 
-        // إضافة/تحديث كل طالب في المصفوفة
         students.forEach(student => {
-            const id = String(student.id);
             const { id: _, ...data } = student;
-            batch.set(doc(db, STUDENTS_COLLECTION, id), data);
+            batch.set(studentDocRef(student.id), data);
         });
 
-        // حذف من كان موجوداً في Firestore ولم يعد في المصفوفة
         let deletedCount = 0;
         currentIds.forEach(id => {
             if (!newIds.has(id)) {
-                batch.delete(doc(db, STUDENTS_COLLECTION, id));
+                batch.delete(studentDocRef(id));
                 deletedCount++;
             }
         });
@@ -163,29 +188,51 @@ window.almahraData = {
         }
     },
 
-    // إيقاف المستمع (للاختبار أو التنظيف)
-    stopListening: () => {
-        if (studentsUnsubscribe) {
-            studentsUnsubscribe();
-            studentsUnsubscribe = null;
+    // نسخ طلاب من حدث آخر (للمتابعة من حدث سابق)
+    // keepProgress=false يعني نأخذ الأسماء فقط بلا سجلات
+    importStudentsFromEvent: async (sourceEventId, keepProgress = true) => {
+        if (!activeEventId) return { success: false, error: 'لا يوجد حدث محدد' };
+        try {
+            const srcRef = collection(db, EVENTS_COLLECTION, sourceEventId, STUDENTS_SUBCOLLECTION);
+            const snapshot = await getDocs(srcRef);
+            const batch = writeBatch(db);
+            let count = 0;
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const newData = keepProgress
+                    ? data
+                    : { name: data.name, history: {} };
+                batch.set(studentDocRef(docSnap.id), newData);
+                count++;
+            });
+
+            await batch.commit();
+            return { success: true, imported: count };
+        } catch (err) {
+            console.error('❌ importStudentsFromEvent:', err);
+            return { success: false, error: err.message };
         }
-    }
+    },
+
+    stopListening: stopStudentsListener
 };
 
 // ================================================================
-// بدء تلقائي عند اكتمال المصادقة
+// الاستجابة لتغيير الحدث من events-store
 // ================================================================
-window.addEventListener('almahra-auth-ready', (e) => {
-    const user = e.detail?.currentUser;
-    if (user) {
-        console.log('🔥 data-store: بدء المستمع للمستخدم', user.email);
-        startStudentsListener();
+window.addEventListener('almahra-event-changed', (e) => {
+    const event = e.detail;
+    if (event?.id) {
+        window.almahraData.setActiveEvent(event.id);
+    } else {
+        // لا يوجد حدث (حُذف أو أُلغي الاختيار) - أوقف المستمع وفرّغ البيانات
+        stopStudentsListener();
+        activeEventId = null;
+        studentsCache = [];
+        isReady = false;
+        notifySubscribers();
     }
 });
-
-// إن كانت المصادقة اكتملت قبل تحميل هذا الملف
-if (window.almahraAuth?.currentUser) {
-    startStudentsListener();
-}
 
 console.log('✅ data-store.js loaded — window.almahraData is ready');

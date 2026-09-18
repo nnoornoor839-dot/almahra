@@ -25,6 +25,78 @@
 
         /* حماية: إخفاء البرنامج قبل التحقق من تسجيل الدخول */
         body.auth-not-ready > *:not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
+        /* إخفاء البرنامج قبل اختيار الحدث */
+        body.event-not-selected > *:not(#eventPickerOverlay):not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
+
+        /* شاشة اختيار الحدث */
+        #eventPickerOverlay {
+            position: fixed; inset: 0; z-index: 3500;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%);
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 20px; overflow-y: auto;
+        }
+        #eventPickerOverlay.flex { display: flex; }
+        .ep-card {
+            background: white; border-radius: 26px;
+            width: 100%; max-width: 760px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+            overflow: hidden; animation: loginCardEnter 0.45s ease-out; margin: auto;
+        }
+        .ep-head {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: white; padding: 24px 28px;
+            display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+        }
+        .ep-head h2 { font-size: 24px; font-weight: 900; }
+        .ep-head p { font-size: 14px; opacity: .92; margin-top: 4px; }
+        .ep-body { padding: 24px 28px; background: #f8fafc; max-height: 60vh; overflow-y: auto; }
+        .ep-section-title { font-weight: 900; color: #334155; margin-bottom: 12px; font-size: 16px; }
+        .ep-event {
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+            padding: 16px 18px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center; gap: 14px;
+            transition: all .18s; cursor: pointer; flex-wrap: wrap;
+        }
+        .ep-event:hover { border-color: #10b981; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(16,185,129,.18); }
+        .ep-event.completed { opacity: .72; }
+        .ep-event.completed:hover { border-color: #94a3b8; box-shadow: 0 8px 22px rgba(0,0,0,.08); }
+        .ep-ev-icon { font-size: 34px; }
+        .ep-ev-name { font-weight: 900; font-size: 18px; color: #0f172a; }
+        .ep-ev-meta { font-size: 13px; color: #64748b; margin-top: 3px; font-weight: 700; }
+        .ep-badge { font-size: 11px; font-weight: 900; padding: 3px 10px; border-radius: 999px; }
+        .ep-badge.active { background: #dcfce7; color: #166534; }
+        .ep-badge.completed { background: #e2e8f0; color: #475569; }
+        .ep-open-btn {
+            background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
+            padding: 10px 20px; border-radius: 11px; font-family: 'Cairo', sans-serif;
+            font-weight: 900; cursor: pointer; font-size: 14px; white-space: nowrap;
+        }
+        .ep-empty { text-align: center; padding: 26px; color: #94a3b8; font-weight: 700; }
+        .ep-foot { padding: 20px 28px; background: #f1f5f9; border-top: 2px solid #e2e8f0; }
+        .ep-new-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 560px) { .ep-new-grid { grid-template-columns: 1fr; } }
+        .ep-new-btn {
+            padding: 20px 16px; border-radius: 16px; border: 3px solid transparent;
+            font-family: 'Cairo', sans-serif; font-weight: 900; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            transition: all .18s; font-size: 16px;
+        }
+        .ep-new-btn .ico { font-size: 34px; }
+        .ep-new-btn .sub { font-size: 12px; font-weight: 700; opacity: .85; }
+        .ep-new-summer { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; border-color: #fbbf24; }
+        .ep-new-summer:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(251,191,36,.4); }
+        .ep-new-review { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; border-color: #3b82f6; }
+        .ep-new-review:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(59,130,246,.4); }
+
+        /* شارة الحدث الحالي في رأس البرنامج */
+        #currentEventBadge {
+            display: none; align-items: center; gap: 8px;
+            background: #fffbeb; color: #92400e; border: 1px solid #fcd34d;
+            padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 13px;
+            cursor: pointer; transition: all .15s; font-family: 'Cairo', sans-serif;
+        }
+        #currentEventBadge:hover { background: #fef3c7; }
 
         /* شاشة تسجيل الدخول */
         #loginOverlay {
@@ -267,6 +339,9 @@
     <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
     <script type="module" src="./auth.js"></script>
 
+    <!-- طبقة الأحداث (البرامج والمواسم) -->
+    <script type="module" src="./events-store.js"></script>
+
     <!-- طبقة البيانات السحابية (تُبدّل localStorage بـ Firestore) -->
     <script type="module" src="./data-store.js"></script>
 </head>
@@ -313,6 +388,49 @@
         </div>
     </div>
 
+    <!-- شاشة اختيار الحدث -->
+    <div id="eventPickerOverlay">
+        <div class="ep-card">
+            <div class="ep-head">
+                <div>
+                    <h2>📅 اختر البرنامج</h2>
+                    <p id="epWelcome">أهلاً بك — اختر حدثاً للمتابعة أو أنشئ جديداً</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button id="epCancelBtn" onclick="closeEventPicker()" style="display:none; background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button onclick="almahraLogout()" style="background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+
+            <div class="ep-body">
+                <div class="ep-section-title">📂 أحداثك</div>
+                <div id="epEventsList">
+                    <div class="ep-empty">⏳ جاري التحميل...</div>
+                </div>
+            </div>
+
+            <div class="ep-foot">
+                <div class="ep-section-title">➕ إنشاء حدث جديد</div>
+                <div class="ep-new-grid">
+                    <button class="ep-new-btn ep-new-summer" onclick="createNewEvent('summer')">
+                        <span class="ico">🌞</span>
+                        <span>البرنامج الصيفي</span>
+                        <span class="sub">حفظ + مراجعة · أسابيع</span>
+                    </button>
+                    <button class="ep-new-btn ep-new-review" onclick="createNewEvent('review-day')">
+                        <span class="ico">⚡</span>
+                        <span>يوم المراجعة المكثّف</span>
+                        <span class="sub">مراجعة فقط · يوم واحد</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="loadingOverlay" class="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
         <i class="fas fa-quran text-9xl text-emerald-500 animate-bounce mb-6"></i>
         <h1 class="text-6xl font-black text-slate-700 mb-4">برنامج المهرة</h1>
@@ -334,6 +452,7 @@
         </div>
         <div class="flex items-center justify-end w-1/4 gap-3">
             <div id="authUserBar" class="hidden md:flex">
+                <button id="currentEventBadge" onclick="openEventPicker()" title="تبديل البرنامج"></button>
                 <span id="authUserInfo" class="hidden"></span>
                 <button id="authLogoutBtn" class="hidden" onclick="almahraLogout()">
                     <i class="fas fa-sign-out-alt"></i>
@@ -345,9 +464,9 @@
     </header>
 
     <!-- شريط المستخدم للجوال (يظهر تحت الرأس) -->
-    <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between no-print">
-        <span id="authUserInfoMobile" class="text-sm font-bold text-emerald-700 hidden"></span>
-        <button id="authLogoutBtnMobile" class="hidden text-red-600 font-bold text-sm flex items-center gap-1" onclick="almahraLogout()">
+    <div class="md:hidden bg-white border-b border-slate-200 px-3 py-2 flex items-center justify-between gap-2 no-print">
+        <button id="currentEventBadgeMobile" onclick="openEventPicker()" style="display:none; align-items:center; gap:6px; background:#fffbeb; color:#92400e; border:1px solid #fcd34d; padding:5px 10px; border-radius:999px; font-weight:800; font-size:12px; font-family:'Cairo',sans-serif; cursor:pointer; max-width:60%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"></button>
+        <button id="authLogoutBtnMobile" class="hidden text-red-600 font-bold text-sm items-center gap-1 shrink-0" onclick="almahraLogout()">
             <i class="fas fa-sign-out-alt"></i> خروج
         </button>
     </div>
@@ -3627,6 +3746,164 @@
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "سجل المهرة الشامل"); XLSX.writeFile(wb, "التقرير_النهائي_لبرنامج_المهرة.xlsx");
         }
         
+        // ================================================================
+        // شاشة اختيار الحدث (البرنامج الصيفي / يوم المراجعة)
+        // ================================================================
+
+        function openEventPicker() {
+            const overlay = document.getElementById('eventPickerOverlay');
+            if (overlay) { overlay.classList.add('flex'); document.body.classList.add('event-not-selected'); }
+            // زر الإلغاء يظهر فقط إن كان هناك حدث مفتوح بالفعل (حتى لا يُحتجز المستخدم)
+            const cancelBtn = document.getElementById('epCancelBtn');
+            if (cancelBtn) {
+                const hasCurrent = !!(window.almahraEvents && window.almahraEvents.getCurrentEvent());
+                cancelBtn.style.display = hasCurrent ? 'block' : 'none';
+            }
+            renderEventsList();
+        }
+
+        function closeEventPicker() {
+            const overlay = document.getElementById('eventPickerOverlay');
+            if (overlay) { overlay.classList.remove('flex'); document.body.classList.remove('event-not-selected'); }
+        }
+
+        function renderEventsList() {
+            const list = document.getElementById('epEventsList');
+            if (!list || !window.almahraEvents) return;
+
+            const events = window.almahraEvents.getEvents();
+            if (!window.almahraEvents.isReady()) { list.innerHTML = '<div class="ep-empty">⏳ جاري التحميل...</div>'; return; }
+            if (events.length === 0) {
+                list.innerHTML = '<div class="ep-empty">لا توجد أحداث بعد — أنشئ أول برنامج من الأسفل 👇</div>';
+                return;
+            }
+
+            list.innerHTML = events.map(ev => {
+                const label = window.almahraEvents.getTypeLabel(ev.type);
+                const isDone = ev.status === 'completed';
+                const dateTxt = ev.startDate || '';
+                return `
+                    <div class="ep-event ${isDone ? 'completed' : ''}" onclick="selectEvent('${ev.id}')">
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <span class="ep-ev-icon">${label.icon}</span>
+                            <div>
+                                <div class="ep-ev-name">${escapeHTML(ev.name)}</div>
+                                <div class="ep-ev-meta">
+                                    ${label.name} · ${dateTxt}
+                                    <span class="ep-badge ${isDone ? 'completed' : 'active'}">${isDone ? 'مكتمل' : 'نشط'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ep-open-btn" onclick="event.stopPropagation(); selectEvent('${ev.id}')">فتح ←</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectEvent(eventId) {
+            if (!window.almahraEvents) return;
+            window.almahraEvents.setCurrentEvent(eventId);
+            closeEventPicker();
+            updateCurrentEventBadge();
+            showToast('تم فتح: ' + (window.almahraEvents.getCurrentEvent()?.name || ''));
+        }
+
+        async function createNewEvent(type) {
+            if (!window.almahraEvents) return;
+            const label = window.almahraEvents.getTypeLabel(type);
+            const today = new Date();
+            const defaultName = type === 'summer'
+                ? `البرنامج الصيفي ${today.getFullYear()}`
+                : `يوم المراجعة — ${today.toLocaleDateString('ar-SA', { day: 'numeric', month: 'long' })}`;
+
+            const name = prompt(`اسم ${label.name}:`, defaultName);
+            if (!name || !name.trim()) return;
+
+            const result = await window.almahraEvents.createEvent({ name: name.trim(), type });
+            if (result.success) {
+                showToast('✅ أُنشئ الحدث بنجاح');
+                setTimeout(() => selectEvent(result.id), 400);
+            } else {
+                showToast('فشل الإنشاء: ' + result.error, 'error');
+            }
+        }
+
+        function updateCurrentEventBadge() {
+            if (!window.almahraEvents) return;
+            const ev = window.almahraEvents.getCurrentEvent();
+            const badges = [document.getElementById('currentEventBadge'), document.getElementById('currentEventBadgeMobile')];
+            badges.forEach(badge => {
+                if (!badge) return;
+                if (ev) {
+                    const label = window.almahraEvents.getTypeLabel(ev.type);
+                    badge.innerHTML = `${label.icon} <span>${escapeHTML(ev.name)}</span> <i class="fas fa-exchange-alt" style="opacity:.6"></i>`;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
+        // بعد اكتمال المصادقة: افتح شاشة اختيار الحدث
+        window.addEventListener('almahra-auth-ready', () => {
+            document.body.classList.add('event-not-selected');
+
+            // انتظر جاهزية قائمة الأحداث - بمهلة قصوى حتى لا ندور للأبد
+            let waitTicks = 0;
+            const MAX_WAIT_TICKS = 80; // ~12 ثانية
+            const waitForEvents = setInterval(() => {
+                waitTicks++;
+
+                if (waitTicks > MAX_WAIT_TICKS) {
+                    clearInterval(waitForEvents);
+                    const list = document.getElementById('epEventsList');
+                    if (list) {
+                        list.innerHTML = `
+                            <div class="ep-empty" style="color:#b91c1c;">
+                                ⚠️ تعذّر تحميل الأحداث<br>
+                                <span style="font-size:13px; font-weight:700;">تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة</span><br>
+                                <button onclick="location.reload()" style="margin-top:12px; background:#10b981; color:white; border:none; padding:8px 18px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:800; cursor:pointer;">
+                                    🔄 إعادة المحاولة
+                                </button>
+                            </div>`;
+                    }
+                    openEventPicker();
+                    return;
+                }
+
+                if (!window.almahraEvents || !window.almahraEvents.isReady()) return;
+                clearInterval(waitForEvents);
+
+                const events = window.almahraEvents.getEvents();
+                const savedId = window.almahraEvents.getSavedEventId();
+                const saved = savedId ? events.find(e => e.id === savedId) : null;
+
+                if (saved) {
+                    selectEvent(saved.id); // استئناف آخر حدث مفتوح
+                } else {
+                    openEventPicker();
+                }
+            }, 150);
+
+            // تحديث القائمة كلما تغيّرت + معالجة حذف الحدث الحالي
+            window.almahraEvents.subscribeEvents((events) => {
+                const overlay = document.getElementById('eventPickerOverlay');
+                if (overlay && overlay.classList.contains('flex')) renderEventsList();
+
+                // هل حُذف الحدث الذي نعمل عليه (من جهاز آخر مثلاً)؟
+                const currentId = window.almahraEvents.getCurrentEventId();
+                if (currentId && !events.find(e => e.id === currentId)) {
+                    showToast('⚠️ الحدث الحالي حُذف — اختر حدثاً آخر', 'error');
+                    window.almahraEvents.setCurrentEvent(null);
+                    students = [];
+                    if (typeof updateAllUIs === 'function') updateAllUIs();
+                    openEventPicker();
+                }
+
+                updateCurrentEventBadge();
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             setupDatesAndTimezone(); loadData(); initQuranEngine();
             loadPomoConfig(); loadPomoRuntime();
