@@ -266,6 +266,9 @@
 
     <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
     <script type="module" src="./auth.js"></script>
+
+    <!-- طبقة البيانات السحابية (تُبدّل localStorage بـ Firestore) -->
+    <script type="module" src="./data-store.js"></script>
 </head>
 <body class="min-h-screen flex flex-col custom-scroll auth-not-ready">
 
@@ -2217,24 +2220,56 @@
             modal.classList.add('hidden');
         }
 
+        // ================================================================
+        // loadData / saveData - النسخة السحابية (Firestore بدل localStorage)
+        // ================================================================
+        // - loadData يشترك في المزامنة اللحظية: كل تغيير من أي جهاز يصل خلال ثوانٍ
+        // - saveData يرفع كل الطلاب دفعة واحدة إلى السحابة
+        // - يبقى localStorage القديم على الجهاز كأثر تاريخي (لا يُقرأ ولا يُكتب)
+        // ================================================================
+
+        let _cloudSaveTimeout = null;
+        let _lastCloudSyncFromMe = 0;
+
         function loadData() {
-            let data = null;
-            try {
-                data = localStorage.getItem(STORAGE_KEY);
-                if (!data) {
-                    let oldData = localStorage.getItem('almahara_stable_db_v24');
-                    if (oldData) { data = oldData; localStorage.setItem(STORAGE_KEY, oldData); console.log("تمت الترقية إلى V25 بنجاح ونقل البيانات!"); }
+            students = []; // بداية فارغة حتى يصل أول snapshot من السحابة
+
+            function attachToCloud() {
+                if (!window.almahraData) {
+                    // data-store.js لم يُحمَّل بعد - انتظر قليلاً
+                    setTimeout(attachToCloud, 100);
+                    return;
                 }
-                if (data) { students = JSON.parse(data); } else { students = []; }
-            } catch (error) {
-                if (data) { try { localStorage.setItem(STORAGE_KEY + '_corrupt_' + Date.now(), data); } catch(e2) {} }
-                students = [];
-                setTimeout(() => showToast("⚠️ تعذّر قراءة البيانات المحفوظة، قد تكون تالفة. لا تُدخل بيانات جديدة وراجع استرجاع النسخ الاحتياطية فورًا من الإعدادات.", "error"), 1000);
+                // نشترك في المزامنة اللحظية - كل تحديث يصل هنا
+                window.almahraData.subscribeStudents((newStudents) => {
+                    students = newStudents;
+                    if (typeof updateAllUIs === 'function') {
+                        try { updateAllUIs(); } catch (e) { console.error('updateAllUIs error:', e); }
+                    }
+                });
             }
+            attachToCloud();
         }
 
-        function saveData() { 
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(students)); } catch (error) { showToast("تنبيه: مساحة التخزين غير متاحة.", "error"); }
+        function saveData() {
+            if (!window.almahraData) {
+                console.warn('⚠️ almahraData not ready, save skipped');
+                return;
+            }
+            // تجميع الحفظات المتتالية في طلب واحد (لتقليل ضغط الشبكة)
+            // مثلاً: إدخال ٥ طلاب متتالية = طلب واحد بدل ٥
+            if (_cloudSaveTimeout) clearTimeout(_cloudSaveTimeout);
+            _cloudSaveTimeout = setTimeout(() => {
+                _lastCloudSyncFromMe = Date.now();
+                window.almahraData.saveAllStudents(students).then(result => {
+                    if (!result.success) {
+                        showToast('فشل الحفظ السحابي: ' + (result.error || 'خطأ غير معروف'), 'error');
+                    }
+                }).catch(err => {
+                    console.error('Cloud save failed:', err);
+                    showToast('فشل الحفظ السحابي: ' + err.message, 'error');
+                });
+            }, 300);
         }
         
         function exportNuclearBackup() {
