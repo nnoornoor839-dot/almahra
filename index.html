@@ -2375,6 +2375,12 @@
                 console.warn('⚠️ almahraData not ready, save skipped');
                 return;
             }
+            // حماية: لا حفظ بدون حدث مفتوح (يمنع ضياع البيانات في الفراغ)
+            if (!window.almahraData.getActiveEventId()) {
+                showToast('⚠️ لم تختر برنامجاً بعد — افتح برنامجاً أولاً', 'error');
+                if (typeof openEventPicker === 'function') openEventPicker();
+                return;
+            }
             // تجميع الحفظات المتتالية في طلب واحد (لتقليل ضغط الشبكة)
             // مثلاً: إدخال ٥ طلاب متتالية = طلب واحد بدل ٥
             if (_cloudSaveTimeout) clearTimeout(_cloudSaveTimeout);
@@ -3820,12 +3826,24 @@
             if (!name || !name.trim()) return;
 
             const result = await window.almahraEvents.createEvent({ name: name.trim(), type });
-            if (result.success) {
-                showToast('✅ أُنشئ الحدث بنجاح');
-                setTimeout(() => selectEvent(result.id), 400);
-            } else {
+            if (!result.success) {
                 showToast('فشل الإنشاء: ' + result.error, 'error');
+                return;
             }
+
+            showToast('✅ أُنشئ الحدث بنجاح');
+
+            // ننتظر وصول الحدث الجديد للذاكرة المؤقتة قبل فتحه
+            // (بدل مهلة عمياء قد تسبق وصول البيانات)
+            let tries = 0;
+            const waitForNewEvent = setInterval(() => {
+                tries++;
+                const exists = window.almahraEvents.getEvents().some(e => e.id === result.id);
+                if (exists || tries > 40) { // مهلة قصوى ٤ ثوانٍ
+                    clearInterval(waitForNewEvent);
+                    selectEvent(result.id);
+                }
+            }, 100);
         }
 
         function updateCurrentEventBadge() {

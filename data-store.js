@@ -222,9 +222,10 @@ window.almahraData = {
 // الاستجابة لتغيير الحدث من events-store
 // ================================================================
 window.addEventListener('almahra-event-changed', (e) => {
-    const event = e.detail;
-    if (event?.id) {
-        window.almahraData.setActiveEvent(event.id);
+    // detail يحمل { id, event } - نعتمد على id فقط (قد يصل قبل الكائن الكامل)
+    const eventId = e.detail?.id || null;
+    if (eventId) {
+        window.almahraData.setActiveEvent(eventId);
     } else {
         // لا يوجد حدث (حُذف أو أُلغي الاختيار) - أوقف المستمع وفرّغ البيانات
         stopStudentsListener();

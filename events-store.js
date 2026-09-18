@@ -141,6 +141,8 @@ window.almahraEvents = {
     },
 
     // اختيار الحدث الحالي للعمل عليه (null = لا حدث)
+    // مهم: نُرسل المعرّف دائماً حتى لو لم يصل كائن الحدث للذاكرة المؤقتة بعد
+    // (يحدث عند إنشاء حدث جديد قبل أن يستقبله المستمع اللحظي)
     setCurrentEvent: (eventId) => {
         currentEventId = eventId || null;
         currentEvent = eventId ? (eventsCache.find(e => e.id === eventId) || null) : null;
@@ -148,8 +150,10 @@ window.almahraEvents = {
             if (eventId) localStorage.setItem(CURRENT_EVENT_KEY, eventId);
             else localStorage.removeItem(CURRENT_EVENT_KEY);
         } catch (e) {}
-        console.log('📅 الحدث الحالي:', currentEvent?.name || '(لا شيء)');
-        window.dispatchEvent(new CustomEvent('almahra-event-changed', { detail: currentEvent }));
+        console.log('📅 الحدث الحالي:', currentEvent?.name || currentEventId || '(لا شيء)');
+        window.dispatchEvent(new CustomEvent('almahra-event-changed', {
+            detail: { id: currentEventId, event: currentEvent }
+        }));
     },
 
     // استرجاع آخر حدث مفتوح (من التخزين المحلي)
