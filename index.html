@@ -339,8 +339,8 @@
     <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
     <script type="module" src="./auth.js"></script>
 
-    <!-- طبقة الأحداث (البرامج والمواسم) -->
-    <script type="module" src="./events-store.js"></script>
+    <!-- طبقة البرامج والمواسم -->
+    <script type="module" src="./programs-store.js"></script>
 
     <!-- طبقة البيانات السحابية (تُبدّل localStorage بـ Firestore) -->
     <script type="module" src="./data-store.js"></script>
@@ -388,13 +388,13 @@
         </div>
     </div>
 
-    <!-- شاشة اختيار الحدث -->
+    <!-- شاشة اختيار البرنامج -->
     <div id="eventPickerOverlay">
         <div class="ep-card">
             <div class="ep-head">
                 <div>
-                    <h2>📅 اختر البرنامج</h2>
-                    <p id="epWelcome">أهلاً بك — اختر حدثاً للمتابعة أو أنشئ جديداً</p>
+                    <h2>📚 اختر البرنامج</h2>
+                    <p id="epWelcome">أهلاً بك — أي برنامج تعمل عليه الآن؟</p>
                 </div>
                 <div style="display:flex; gap:8px;">
                     <button id="epCancelBtn" onclick="closeEventPicker()" style="display:none; background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
@@ -406,27 +406,8 @@
                 </div>
             </div>
 
-            <div class="ep-body">
-                <div class="ep-section-title">📂 أحداثك</div>
-                <div id="epEventsList">
-                    <div class="ep-empty">⏳ جاري التحميل...</div>
-                </div>
-            </div>
-
-            <div class="ep-foot">
-                <div class="ep-section-title">➕ إنشاء حدث جديد</div>
-                <div class="ep-new-grid">
-                    <button class="ep-new-btn ep-new-summer" onclick="createNewEvent('summer')">
-                        <span class="ico">🌞</span>
-                        <span>البرنامج الصيفي</span>
-                        <span class="sub">حفظ + مراجعة · أسابيع</span>
-                    </button>
-                    <button class="ep-new-btn ep-new-review" onclick="createNewEvent('review-day')">
-                        <span class="ico">⚡</span>
-                        <span>يوم المراجعة المكثّف</span>
-                        <span class="sub">مراجعة فقط · يوم واحد</span>
-                    </button>
-                </div>
+            <div class="ep-body" id="epProgramsList">
+                <div class="ep-empty">⏳ جاري تحضير البرامج...</div>
             </div>
         </div>
     </div>
@@ -549,6 +530,22 @@
     <!-- Reports Tab -->
     <div id="page-settings" class="tab-content p-6 md:p-10">
         <div class="max-w-[1800px] mx-auto flex flex-col gap-8 items-start w-full">
+
+            <!-- إعدادات البرنامج والمواسم -->
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-500 flex flex-col overflow-hidden w-full shrink-0">
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <h2 class="text-2xl md:text-3xl font-black flex items-center gap-3">
+                        <i class="fas fa-sliders"></i> إعدادات البرنامج والمواسم
+                    </h2>
+                    <button onclick="openEventPicker()" class="bg-white text-emerald-700 hover:bg-emerald-50 py-2.5 px-5 rounded-xl font-bold text-base flex items-center gap-2 shadow-md">
+                        <i class="fas fa-exchange-alt"></i> تبديل البرنامج
+                    </button>
+                </div>
+                <div class="p-6 bg-slate-50" id="programSettingsContainer">
+                    <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
+                </div>
+            </div>
+
             <div class="bg-white rounded-3xl shadow-xl border-4 border-slate-300 flex flex-col overflow-hidden no-print w-full shrink-0">
                 <div class="bg-slate-700 text-white p-6 flex flex-col xl:flex-row justify-between items-center gap-4 text-center xl:text-right">
                     <h2 class="text-3xl font-black">
@@ -2375,10 +2372,15 @@
                 console.warn('⚠️ almahraData not ready, save skipped');
                 return;
             }
-            // حماية: لا حفظ بدون حدث مفتوح (يمنع ضياع البيانات في الفراغ)
-            if (!window.almahraData.getActiveEventId()) {
+            // حماية: لا حفظ بدون برنامج مفتوح
+            if (!window.almahraData.getActiveSeasonId()) {
                 showToast('⚠️ لم تختر برنامجاً بعد — افتح برنامجاً أولاً', 'error');
                 if (typeof openEventPicker === 'function') openEventPicker();
+                return;
+            }
+            // حماية: الموسم المؤرشف للقراءة فقط
+            if (window.almahraData.isReadOnly()) {
+                showToast('📦 هذا موسم مؤرشف — للعرض فقط، لا يمكن التعديل', 'error');
                 return;
             }
             // تجميع الحفظات المتتالية في طلب واحد (لتقليل ضغط الشبكة)
@@ -3762,7 +3764,7 @@
             // زر الإلغاء يظهر فقط إن كان هناك حدث مفتوح بالفعل (حتى لا يُحتجز المستخدم)
             const cancelBtn = document.getElementById('epCancelBtn');
             if (cancelBtn) {
-                const hasCurrent = !!(window.almahraEvents && window.almahraEvents.getCurrentEvent());
+                const hasCurrent = !!(window.almahraPrograms && window.almahraPrograms.getCurrentProgram());
                 cancelBtn.style.display = hasCurrent ? 'block' : 'none';
             }
             renderEventsList();
@@ -3773,113 +3775,401 @@
             if (overlay) { overlay.classList.remove('flex'); document.body.classList.remove('event-not-selected'); }
         }
 
-        function renderEventsList() {
-            const list = document.getElementById('epEventsList');
-            if (!list || !window.almahraEvents) return;
+        async function renderEventsList() {
+            const list = document.getElementById('epProgramsList');
+            if (!list || !window.almahraPrograms) return;
 
-            const events = window.almahraEvents.getEvents();
-            if (!window.almahraEvents.isReady()) { list.innerHTML = '<div class="ep-empty">⏳ جاري التحميل...</div>'; return; }
-            if (events.length === 0) {
-                list.innerHTML = '<div class="ep-empty">لا توجد أحداث بعد — أنشئ أول برنامج من الأسفل 👇</div>';
+            if (!window.almahraPrograms.isReady()) {
+                list.innerHTML = '<div class="ep-empty">⏳ جاري تحضير البرامج...</div>';
                 return;
             }
 
-            list.innerHTML = events.map(ev => {
-                const label = window.almahraEvents.getTypeLabel(ev.type);
-                const isDone = ev.status === 'completed';
-                const dateTxt = ev.startDate || '';
-                return `
-                    <div class="ep-event ${isDone ? 'completed' : ''}" onclick="selectEvent('${ev.id}')">
-                        <div style="display:flex; align-items:center; gap:14px;">
-                            <span class="ep-ev-icon">${label.icon}</span>
-                            <div>
-                                <div class="ep-ev-name">${escapeHTML(ev.name)}</div>
-                                <div class="ep-ev-meta">
-                                    ${label.name} · ${dateTxt}
-                                    <span class="ep-badge ${isDone ? 'completed' : 'active'}">${isDone ? 'مكتمل' : 'نشط'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="ep-open-btn" onclick="event.stopPropagation(); selectEvent('${ev.id}')">فتح ←</button>
-                    </div>
+            const defs = window.almahraPrograms.PROGRAM_DEFS;
+            const programs = window.almahraPrograms.getPrograms();
+
+            let html = '<div class="ep-new-grid">';
+            for (const key of Object.keys(defs)) {
+                const def = defs[key];
+                const prog = programs[key];
+                if (!prog) continue;
+
+                const seasons = window.almahraPrograms.getSeasons(key);
+                const activeSeason = seasons.find(s => s.id === prog.activeSeasonId);
+                const archivedCount = seasons.filter(s => s.status === 'archived').length;
+
+                const cls = key === 'summer' ? 'ep-new-summer' : 'ep-new-review';
+                html += `
+                    <button class="ep-new-btn ${cls}" onclick="openProgram('${key}')">
+                        <span class="ico">${def.icon}</span>
+                        <span>${escapeHTML(prog.name)}</span>
+                        <span class="sub">${escapeHTML(activeSeason?.name || 'موسم جديد')}</span>
+                        <span class="sub" id="epCount_${key}">⏳ ...</span>
+                        ${archivedCount > 0 ? `<span class="sub" style="opacity:.7">📦 ${archivedCount} موسم مؤرشف</span>` : ''}
+                    </button>
                 `;
-            }).join('');
+            }
+            html += '</div>';
+            list.innerHTML = html;
+
+            // عدّ الطلاب بشكل غير متزامن
+            for (const key of Object.keys(defs)) {
+                const prog = programs[key];
+                if (!prog?.activeSeasonId) continue;
+                window.almahraPrograms.countStudents(key, prog.activeSeasonId).then(count => {
+                    const el = document.getElementById('epCount_' + key);
+                    if (el) el.textContent = `👥 ${count} طالب`;
+                });
+            }
         }
 
-        function selectEvent(eventId) {
-            if (!window.almahraEvents) return;
-            window.almahraEvents.setCurrentEvent(eventId);
+        function openProgram(programId) {
+            if (!window.almahraPrograms) return;
+            const ok = window.almahraPrograms.openProgram(programId);
+            if (!ok) { showToast('تعذّر فتح البرنامج', 'error'); return; }
             closeEventPicker();
             updateCurrentEventBadge();
-            showToast('تم فتح: ' + (window.almahraEvents.getCurrentEvent()?.name || ''));
-        }
-
-        async function createNewEvent(type) {
-            if (!window.almahraEvents) return;
-            const label = window.almahraEvents.getTypeLabel(type);
-            const today = new Date();
-            const defaultName = type === 'summer'
-                ? `البرنامج الصيفي ${today.getFullYear()}`
-                : `يوم المراجعة — ${today.toLocaleDateString('ar-SA', { day: 'numeric', month: 'long' })}`;
-
-            const name = prompt(`اسم ${label.name}:`, defaultName);
-            if (!name || !name.trim()) return;
-
-            const result = await window.almahraEvents.createEvent({ name: name.trim(), type });
-            if (!result.success) {
-                showToast('فشل الإنشاء: ' + result.error, 'error');
-                return;
-            }
-
-            showToast('✅ أُنشئ الحدث بنجاح');
-
-            // ننتظر وصول الحدث الجديد للذاكرة المؤقتة قبل فتحه
-            // (بدل مهلة عمياء قد تسبق وصول البيانات)
-            let tries = 0;
-            const waitForNewEvent = setInterval(() => {
-                tries++;
-                const exists = window.almahraEvents.getEvents().some(e => e.id === result.id);
-                if (exists || tries > 40) { // مهلة قصوى ٤ ثوانٍ
-                    clearInterval(waitForNewEvent);
-                    selectEvent(result.id);
-                }
-            }, 100);
+            applyProgramFeatures();
+            const p = window.almahraPrograms.getCurrentProgram();
+            showToast('📚 ' + (p?.name || ''));
         }
 
         function updateCurrentEventBadge() {
-            if (!window.almahraEvents) return;
-            const ev = window.almahraEvents.getCurrentEvent();
+            if (!window.almahraPrograms) return;
+            const prog = window.almahraPrograms.getCurrentProgram();
+            const season = window.almahraPrograms.getCurrentSeason();
+            const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
             const badges = [document.getElementById('currentEventBadge'), document.getElementById('currentEventBadgeMobile')];
+
             badges.forEach(badge => {
                 if (!badge) return;
-                if (ev) {
-                    const label = window.almahraEvents.getTypeLabel(ev.type);
-                    badge.innerHTML = `${label.icon} <span>${escapeHTML(ev.name)}</span> <i class="fas fa-exchange-alt" style="opacity:.6"></i>`;
+                if (prog) {
+                    const def = window.almahraPrograms.PROGRAM_DEFS[prog.id];
+                    const archiveTag = isArchived ? ' <span style="background:#e2e8f0;color:#475569;padding:1px 6px;border-radius:6px;font-size:10px;">📦 أرشيف</span>' : '';
+                    badge.innerHTML = `${def?.icon || '📚'} <span>${escapeHTML(prog.name)}</span>${archiveTag} <i class="fas fa-exchange-alt" style="opacity:.6"></i>`;
                     badge.style.display = 'flex';
+                    if (isArchived) { badge.style.background = '#f1f5f9'; badge.style.borderColor = '#cbd5e1'; badge.style.color = '#475569'; }
+                    else { badge.style.background = '#fffbeb'; badge.style.borderColor = '#fcd34d'; badge.style.color = '#92400e'; }
                 } else {
                     badge.style.display = 'none';
                 }
             });
         }
 
-        // بعد اكتمال المصادقة: افتح شاشة اختيار الحدث
+        // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
+        function applyProgramFeatures() {
+            if (!window.almahraPrograms) return;
+            const settings = window.almahraPrograms.getSettings();
+            if (!settings || !settings.features) return;
+            const f = settings.features;
+
+            // زر الحفظ الجديد في النافذة الذكية
+            const btnNew = document.getElementById('btnTypeNew');
+            if (btnNew) {
+                btnNew.style.display = f.newMemorization === false ? 'none' : '';
+                const btnReview = document.getElementById('btnTypeReview');
+                if (f.newMemorization === false && btnReview) {
+                    btnReview.parentElement.classList.remove('grid-cols-2');
+                    btnReview.parentElement.classList.add('grid-cols-1');
+                    setSardType('review');
+                }
+            }
+
+            // تبويب الاستعداد للاختبار
+            const tabExamPrep = document.getElementById('tabExamPrepBtn');
+            if (tabExamPrep) tabExamPrep.style.display = f.examPrep === false ? 'none' : '';
+
+            // تبويب البومودورو في الشريط السفلي
+            const navBtns = document.querySelectorAll('nav .nav-btn');
+            if (navBtns[1]) navBtns[1].style.display = f.pomodoro === false ? 'none' : '';
+
+            // اسم السباق وعنوانه الفرعي
+            const raceTitle = document.querySelector('#taifTripContainer h2');
+            if (raceTitle && settings.raceName) raceTitle.textContent = settings.raceName;
+            const raceSub = document.querySelector('#taifTripContainer h2 + p');
+            if (raceSub && settings.raceSubtitle) raceSub.textContent = settings.raceSubtitle;
+        }
+
+        // ================================================================
+        // قسم إعدادات البرنامج والمواسم (داخل تبويب الإعدادات)
+        // ================================================================
+        const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const FEATURE_LABELS = {
+            newMemorization: 'الحفظ الجديد',
+            review: 'المراجعة',
+            goldenBoard: 'اللوحة الذهبية (اعتماد الأجزاء)',
+            attendance: 'الحضور والغياب',
+            knights: 'فرسان اليوم',
+            honorBoard: 'لوحة الشرف',
+            finalExam: 'نتائج الاختبار النهائي',
+            examPrep: 'الاستعداد للاختبار',
+            groups: 'المجموعات التنافسية',
+            pomodoro: 'شاشة البومودورو'
+        };
+
+        function renderProgramSettings() {
+            const box = document.getElementById('programSettingsContainer');
+            if (!box || !window.almahraPrograms) return;
+
+            const prog = window.almahraPrograms.getCurrentProgram();
+            if (!prog) {
+                box.innerHTML = '<div class="text-center text-slate-400 font-bold py-8">لم تفتح برنامجاً بعد — اضغط «تبديل البرنامج»</div>';
+                return;
+            }
+
+            const def = window.almahraPrograms.PROGRAM_DEFS[prog.id];
+            const s = prog.settings || {};
+            const season = window.almahraPrograms.getCurrentSeason();
+            const seasons = window.almahraPrograms.getSeasons(prog.id);
+            const archived = seasons.filter(x => x.status === 'archived');
+            const isArchivedView = window.almahraPrograms.isCurrentSeasonArchived();
+
+            const wd = s.workingDays || [0, 1, 2, 3];
+            const feats = s.features || {};
+
+            box.innerHTML = `
+                ${isArchivedView ? `
+                <div class="bg-slate-200 border-2 border-slate-400 rounded-2xl p-4 mb-5 text-center">
+                    <div class="font-black text-slate-700 text-lg">📦 أنت تعرض موسماً مؤرشفاً</div>
+                    <div class="text-slate-600 font-bold text-sm mt-1">${escapeHTML(season?.name || '')} — للقراءة فقط، لا يمكن التعديل</div>
+                    <button onclick="backToActiveSeason()" class="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl">
+                        <i class="fas fa-arrow-right-to-bracket"></i> العودة للموسم النشط
+                    </button>
+                </div>` : ''}
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- معلومات أساسية -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                        <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                            <span class="text-2xl">${def?.icon || '📚'}</span> البرنامج والموسم
+                        </h3>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">اسم البرنامج</label>
+                        <input type="text" id="psProgName" value="${escapeHTML(prog.name)}"
+                               class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold mb-4 focus:border-emerald-500 outline-none">
+
+                        <label class="block text-sm font-bold text-slate-600 mb-1">اسم الموسم الحالي</label>
+                        <input type="text" id="psSeasonName" value="${escapeHTML(season?.name || '')}" ${isArchivedView ? 'disabled' : ''}
+                               class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold mb-2 focus:border-emerald-500 outline-none disabled:bg-slate-100">
+                        <div class="text-xs text-slate-500 font-bold">بدأ في: ${season?.startDate || '—'}</div>
+                    </div>
+
+                    <!-- السباق -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                        <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                            <i class="fas fa-flag-checkered text-amber-500"></i> السباق التحفيزي
+                        </h3>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">اسم السباق</label>
+                        <input type="text" id="psRaceName" value="${escapeHTML(s.raceName || '')}"
+                               class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold mb-4 focus:border-amber-500 outline-none"
+                               placeholder="مثال: سباق رحلة الطائف">
+
+                        <label class="block text-sm font-bold text-slate-600 mb-1">الوصف تحت الاسم</label>
+                        <input type="text" id="psRaceSub" value="${escapeHTML(s.raceSubtitle || '')}"
+                               class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-sm focus:border-amber-500 outline-none">
+                    </div>
+
+                    <!-- أوزان النقاط -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                        <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                            <i class="fas fa-star text-yellow-500"></i> أوزان النقاط
+                        </h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">الحضور</label>
+                                <input type="number" id="psPtAtt" value="${(s.points?.attendance ?? 10)}" min="0"
+                                       class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">حفظ جديد</label>
+                                <input type="number" id="psPtNew" value="${(s.points?.newMemorization ?? 3)}" min="0"
+                                       class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">مراجعة</label>
+                                <input type="number" id="psPtRev" value="${(s.points?.review ?? 1)}" min="0"
+                                       class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أيام العمل -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                        <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                            <i class="fas fa-calendar-week text-blue-500"></i> أيام العمل
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${DAY_NAMES.map((d, i) => `
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" class="ps-day sr-only peer" value="${i}" ${wd.includes(i) ? 'checked' : ''}>
+                                    <span class="inline-block px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-sm
+                                                 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-600 transition">
+                                        ${d}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- الميزات -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 lg:col-span-2">
+                        <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                            <i class="fas fa-toggle-on text-emerald-500"></i> الميزات المفعّلة
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            ${Object.keys(FEATURE_LABELS).map(k => `
+                                <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition">
+                                    <input type="checkbox" class="ps-feat w-5 h-5 rounded accent-emerald-600" data-feat="${k}" ${feats[k] !== false ? 'checked' : ''}>
+                                    <span class="font-bold text-slate-700 text-sm">${FEATURE_LABELS[k]}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                ${!isArchivedView ? `
+                <button onclick="saveProgramSettings()" class="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xl py-4 rounded-2xl shadow-lg transition-all">
+                    <i class="fas fa-save ml-2"></i> حفظ الإعدادات
+                </button>` : ''}
+
+                <!-- إدارة المواسم -->
+                <div class="mt-8 pt-6 border-t-2 border-slate-200">
+                    <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
+                        <i class="fas fa-box-archive text-purple-500"></i> إدارة المواسم
+                    </h3>
+
+                    ${!isArchivedView ? `
+                    <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-5">
+                        <div class="font-black text-amber-800 mb-2">🔄 بدء موسم جديد</div>
+                        <p class="text-sm text-amber-700 font-bold mb-3">
+                            يُؤرشف الموسم الحالي بكل بياناته (يبقى متاحاً للعرض والمقارنة)، ثم يبدأ موسماً نظيفاً.
+                        </p>
+                        <button onclick="startNewSeasonFlow()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-6 rounded-xl">
+                            بدء موسم جديد
+                        </button>
+                    </div>` : ''}
+
+                    <div class="font-bold text-slate-600 mb-3">📦 المواسم المؤرشفة (${archived.length})</div>
+                    ${archived.length === 0
+                        ? '<div class="text-slate-400 font-bold text-sm py-4 text-center bg-slate-100 rounded-xl">لا توجد مواسم مؤرشفة بعد</div>'
+                        : archived.map(sn => `
+                            <div class="bg-white border-2 border-slate-200 rounded-xl p-4 mb-2 flex flex-wrap justify-between items-center gap-3">
+                                <div>
+                                    <div class="font-black text-slate-700">${escapeHTML(sn.name)}</div>
+                                    <div class="text-xs text-slate-500 font-bold">${sn.startDate || ''} ← ${sn.endDate || ''}</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="viewArchivedSeason('${prog.id}','${sn.id}')" class="bg-blue-50 text-blue-700 border border-blue-300 hover:bg-blue-100 font-bold py-2 px-4 rounded-lg text-sm">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </button>
+                                    <button onclick="deleteArchivedSeason('${prog.id}','${sn.id}','${escapeHTML(sn.name)}')" class="bg-red-50 text-red-700 border border-red-300 hover:bg-red-100 font-bold py-2 px-4 rounded-lg text-sm">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            `;
+        }
+
+        async function saveProgramSettings() {
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            if (!prog) return;
+
+            const newName = document.getElementById('psProgName').value.trim();
+            const seasonName = document.getElementById('psSeasonName').value.trim();
+
+            const workingDays = Array.from(document.querySelectorAll('.ps-day:checked')).map(c => parseInt(c.value));
+            const features = {};
+            document.querySelectorAll('.ps-feat').forEach(c => { features[c.dataset.feat] = c.checked; });
+
+            const settings = {
+                raceName: document.getElementById('psRaceName').value.trim(),
+                raceSubtitle: document.getElementById('psRaceSub').value.trim(),
+                points: {
+                    attendance: parseInt(document.getElementById('psPtAtt').value) || 0,
+                    newMemorization: parseInt(document.getElementById('psPtNew').value) || 0,
+                    review: parseInt(document.getElementById('psPtRev').value) || 0
+                },
+                workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
+                features
+            };
+
+            const r1 = await window.almahraPrograms.updateSettings(prog.id, settings);
+            if (!r1.success) { showToast('فشل حفظ الإعدادات: ' + r1.error, 'error'); return; }
+
+            if (newName && newName !== prog.name) {
+                await window.almahraPrograms.updateProgramName(prog.id, newName);
+            }
+            const season = window.almahraPrograms.getCurrentSeason();
+            if (seasonName && season && seasonName !== season.name) {
+                await window.almahraPrograms.updateSeasonName(prog.id, season.id, seasonName);
+            }
+
+            showToast('✅ حُفظت الإعدادات');
+            applyProgramFeatures();
+            updateCurrentEventBadge();
+        }
+
+        async function startNewSeasonFlow() {
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            if (!prog) return;
+
+            const studentCount = students.length;
+            const msg = `سيُؤرشف الموسم الحالي (${studentCount} طالب) ويبدأ موسم جديد فارغ.\n\nالبيانات القديمة تبقى محفوظة للعرض والمقارنة.\n\nهل أنت متأكد؟`;
+            if (!confirm(msg)) return;
+
+            const name = prompt('اسم الموسم الجديد:', prog.id === 'summer' ? `موسم ${new Date().getFullYear()}` : `مراجعة ${new Date().toLocaleDateString('ar-SA', { month: 'long' })}`);
+            if (!name || !name.trim()) return;
+
+            const result = await window.almahraPrograms.startNewSeason(prog.id, name.trim());
+            if (result.success) {
+                showToast('✅ بدأ الموسم الجديد');
+                setTimeout(() => { renderProgramSettings(); }, 600);
+            } else {
+                showToast('فشل: ' + result.error, 'error');
+            }
+        }
+
+        function viewArchivedSeason(programId, seasonId) {
+            window.almahraPrograms.openArchivedSeason(programId, seasonId);
+            updateCurrentEventBadge();
+            renderProgramSettings();
+            showToast('📦 تعرض الآن موسماً مؤرشفاً (قراءة فقط)');
+        }
+
+        function backToActiveSeason() {
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            if (!prog) return;
+            window.almahraPrograms.openProgram(prog.id);
+            updateCurrentEventBadge();
+            renderProgramSettings();
+            showToast('↩️ عدت للموسم النشط');
+        }
+
+        async function deleteArchivedSeason(programId, seasonId, name) {
+            if (!confirm(`حذف الموسم «${name}» نهائياً مع كل طلابه؟\n\n⚠️ لا يمكن التراجع عن هذا.`)) return;
+            const result = await window.almahraPrograms.deleteSeason(programId, seasonId);
+            if (result.success) { showToast('🗑️ حُذف الموسم'); renderProgramSettings(); }
+            else showToast('فشل الحذف: ' + result.error, 'error');
+        }
+
+        // بعد اكتمال المصادقة: جهّز البرامج
         window.addEventListener('almahra-auth-ready', () => {
             document.body.classList.add('event-not-selected');
 
-            // انتظر جاهزية قائمة الأحداث - بمهلة قصوى حتى لا ندور للأبد
             let waitTicks = 0;
-            const MAX_WAIT_TICKS = 80; // ~12 ثانية
-            const waitForEvents = setInterval(() => {
+            const MAX_WAIT_TICKS = 100; // ~15 ثانية
+            const waitForPrograms = setInterval(() => {
                 waitTicks++;
 
                 if (waitTicks > MAX_WAIT_TICKS) {
-                    clearInterval(waitForEvents);
-                    const list = document.getElementById('epEventsList');
+                    clearInterval(waitForPrograms);
+                    const list = document.getElementById('epProgramsList');
                     if (list) {
                         list.innerHTML = `
                             <div class="ep-empty" style="color:#b91c1c;">
-                                ⚠️ تعذّر تحميل الأحداث<br>
-                                <span style="font-size:13px; font-weight:700;">تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة</span><br>
+                                ⚠️ تعذّر تحميل البرامج<br>
+                                <span style="font-size:13px; font-weight:700;">تحقق من الاتصال ثم أعد التحميل</span><br>
                                 <button onclick="location.reload()" style="margin-top:12px; background:#10b981; color:white; border:none; padding:8px 18px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:800; cursor:pointer;">
                                     🔄 إعادة المحاولة
                                 </button>
@@ -3889,36 +4179,26 @@
                     return;
                 }
 
-                if (!window.almahraEvents || !window.almahraEvents.isReady()) return;
-                clearInterval(waitForEvents);
+                if (!window.almahraPrograms || !window.almahraPrograms.isReady()) return;
+                clearInterval(waitForPrograms);
 
-                const events = window.almahraEvents.getEvents();
-                const savedId = window.almahraEvents.getSavedEventId();
-                const saved = savedId ? events.find(e => e.id === savedId) : null;
+                const savedId = window.almahraPrograms.getSavedProgramId();
+                const programs = window.almahraPrograms.getPrograms();
 
-                if (saved) {
-                    selectEvent(saved.id); // استئناف آخر حدث مفتوح
+                if (savedId && programs[savedId]) {
+                    openProgram(savedId); // استئناف آخر برنامج
                 } else {
                     openEventPicker();
                 }
             }, 150);
 
-            // تحديث القائمة كلما تغيّرت + معالجة حذف الحدث الحالي
-            window.almahraEvents.subscribeEvents((events) => {
+            // تحديث الواجهة كلما تغيّرت البرامج أو المواسم
+            window.almahraPrograms.subscribe(() => {
                 const overlay = document.getElementById('eventPickerOverlay');
                 if (overlay && overlay.classList.contains('flex')) renderEventsList();
-
-                // هل حُذف الحدث الذي نعمل عليه (من جهاز آخر مثلاً)؟
-                const currentId = window.almahraEvents.getCurrentEventId();
-                if (currentId && !events.find(e => e.id === currentId)) {
-                    showToast('⚠️ الحدث الحالي حُذف — اختر حدثاً آخر', 'error');
-                    window.almahraEvents.setCurrentEvent(null);
-                    students = [];
-                    if (typeof updateAllUIs === 'function') updateAllUIs();
-                    openEventPicker();
-                }
-
                 updateCurrentEventBadge();
+                applyProgramFeatures();
+                if (typeof renderProgramSettings === 'function') renderProgramSettings();
             });
         });
 
