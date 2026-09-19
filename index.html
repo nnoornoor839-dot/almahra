@@ -601,8 +601,8 @@
                 </div>
             </div>
 
-            <!-- إدارة المجموعات (كيان دائم: قائد، نائب، أعضاء - يُختارون من قائمة الطلاب) -->
-            <div class="bg-white rounded-3xl shadow-xl border-4 border-indigo-500 flex flex-col overflow-hidden w-full shrink-0">
+            <!-- إدارة المجموعات - مُعطّلة (feature: groups) -->
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-indigo-500 flex-col overflow-hidden w-full shrink-0 feature-groups hidden">
                 <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-black flex items-center gap-3"><i class="fas fa-people-group"></i> إدارة المجموعات</h2>
                     <div class="flex flex-wrap justify-center gap-3">
@@ -615,8 +615,8 @@
                 </div>
             </div>
 
-            <!-- تقييم المجموعات اليومي (درجة إجمالية من 100 لكل مجموعة - تحدد الفائز اليومي والأسبوعي تلقائياً) -->
-            <div class="bg-white rounded-3xl shadow-xl border-4 border-purple-500 flex flex-col overflow-hidden w-full shrink-0">
+            <!-- تقييم المجموعات اليومي - مُعطّل (feature: groups) -->
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-purple-500 flex-col overflow-hidden w-full shrink-0 feature-groups hidden">
                 <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-black flex items-center gap-3"><i class="fas fa-clipboard-check"></i> تقييم المجموعات اليومي</h2>
                     <div class="flex items-center gap-2">
@@ -654,13 +654,32 @@
                     <h2 class="text-xl md:text-2xl font-black tracking-wide">لوحة التحكم السريعة (فرسان الحلقات)</h2>
                 </div>
                 <div class="p-6 bg-slate-50 flex flex-col justify-between flex-grow">
+                    <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 mb-4">
+                        <div class="font-black text-emerald-800 mb-1 flex items-center gap-2">
+                            <i class="fas fa-wand-magic-sparkles"></i> الاختيار الآلي
+                        </div>
+                        <p class="text-sm text-emerald-700 font-bold mb-3">
+                            يختار البرنامج الفرسان الثلاثة تلقائياً حسب الأعلى نقاطاً في اليوم (سرد + انضباط)، ويكتب إنجازهم. يمكنك التعديل بعدها.
+                        </p>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <label class="text-sm font-bold text-slate-600">تاريخ اليوم:</label>
+                            <input type="date" id="farsAutoDate" class="p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+                            <button onclick="autoPickKnights()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
+                                <i class="fas fa-bolt"></i> اختيار آلي
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mb-4">
-                        <label class="block text-base font-bold text-slate-600 mb-1">يوم الفرسان (يُعبّى تلقائياً بآخر يوم عمل):</label>
+                        <label class="block text-base font-bold text-slate-600 mb-1">يوم الفرسان:</label>
                         <select id="farsDayInput" class="w-full p-2.5 border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500">
                             <option value="الأحد">الأحد</option>
                             <option value="الإثنين">الإثنين</option>
                             <option value="الثلاثاء">الثلاثاء</option>
                             <option value="الأربعاء">الأربعاء</option>
+                            <option value="الخميس">الخميس</option>
+                            <option value="الجمعة">الجمعة</option>
+                            <option value="السبت">السبت</option>
                         </select>
                     </div>
                     <div class="space-y-4 mb-6">
@@ -1143,8 +1162,8 @@
                     <div>
                         <label class="block text-xl md:text-2xl font-bold text-slate-700 mb-3 text-center">اختر مسار إنجاز السرد الحالي لضبط النقاط تلقائياً:</label>
                         <div class="grid grid-cols-2 gap-4 max-w-xl mx-auto">
-                            <button id="btnTypeReview" onclick="setSardType('review')" class="py-4 px-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-2 border-4 border-blue-500 bg-blue-500 text-white shadow-md transition-all"><i class="fas fa-sync text-white"></i> مراجعة (×1 نقطة)</button>
-                            <button id="btnTypeNew" onclick="setSardType('new')" class="py-4 px-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-2 border-4 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all"><i class="fas fa-star text-yellow-500"></i> حفظ جديد (×3 نقاط)</button>
+                            <button id="btnTypeReview" onclick="setSardType('review')" class="py-4 px-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-2 border-4 border-blue-500 bg-blue-500 text-white shadow-md transition-all"><i class="fas fa-sync text-white"></i> مراجعة <span id="lblReviewMult">(×1)</span></button>
+                            <button id="btnTypeNew" onclick="setSardType('new')" class="py-4 px-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-2 border-4 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all"><i class="fas fa-star text-yellow-500"></i> حفظ جديد <span id="lblNewMult">(×3)</span></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-200">
@@ -1171,9 +1190,22 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-200 flex flex-col md:flex-row justify-center items-center gap-8">
-                        <div class="bg-white px-8 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">الآيات المحتسبة للتو</div><div class="text-4xl md:text-5xl font-black text-slate-800" id="resAyahs">0</div></div>
-                        <div class="bg-white px-8 py-4 rounded-2xl shadow text-center border-2 border-emerald-500"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">النقاط المكتسبة الموزونة</div><div class="text-4xl md:text-5xl font-black text-emerald-600" id="resWeightedPoints">0</div></div>
+                    <!-- معايير الانضباط -->
+                    <div id="criteriaSection" class="bg-amber-50 p-5 rounded-3xl border-2 border-amber-300">
+                        <h3 class="text-xl md:text-2xl font-black text-amber-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-star text-amber-500"></i> معايير الانضباط اليوم
+                        </h3>
+                        <div id="criteriaList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                        <div class="mt-4 bg-white rounded-2xl p-3 text-center border-2 border-amber-400">
+                            <span class="text-slate-600 font-bold">نقاط الانضباط:</span>
+                            <span id="criteriaTotal" class="text-3xl font-black text-amber-600 mr-2">0</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-200 flex flex-col md:flex-row justify-center items-center gap-6 flex-wrap">
+                        <div class="bg-white px-6 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">الآيات المحتسبة</div><div class="text-4xl font-black text-slate-800" id="resAyahs">0</div></div>
+                        <div class="bg-white px-6 py-4 rounded-2xl shadow text-center border-2 border-blue-400"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">نقاط السرد</div><div class="text-4xl font-black text-blue-600" id="resWeightedPoints">0</div></div>
+                        <div class="bg-white px-6 py-4 rounded-2xl shadow text-center border-2 border-emerald-500"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">الإجمالي</div><div class="text-4xl font-black text-emerald-600" id="resGrandTotal">0</div></div>
                     </div>
                 </div>
                 <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 rounded-b-3xl">
@@ -1413,6 +1445,35 @@
                 if (p && window.quranData.pageLengths[p]) pages += 1.0 / window.quranData.pageLengths[p];
             }
             return pages;
+        }
+
+        // ================================================================
+        // إعدادات البرنامج الحالي (أوزان النقاط وأيام العمل)
+        // تُقرأ من programs-store مع قيم احتياطية آمنة
+        // ================================================================
+        function getProgramSettings() {
+            const s = (typeof window !== 'undefined' && window.almahraPrograms)
+                ? window.almahraPrograms.getSettings()
+                : null;
+            return {
+                points: {
+                    attendance: s?.points?.attendance ?? 10,
+                    newMemorization: s?.points?.newMemorization ?? 3,
+                    review: s?.points?.review ?? 1
+                },
+                workingDays: (s?.workingDays && s.workingDays.length) ? s.workingDays : [0, 1, 2, 3],
+                criteria: Array.isArray(s?.criteria) ? s.criteria : []
+            };
+        }
+
+        // المعايير المفعّلة فقط
+        function getActiveCriteria() {
+            return getProgramSettings().criteria.filter(c => c.enabled !== false);
+        }
+
+        // هل هذا اليوم (رقم 0-6) من أيام العمل في البرنامج الحالي؟
+        function isWorkingDay(dayNum) {
+            return getProgramSettings().workingDays.includes(dayNum);
         }
 
         function escapeHTML(str) {
@@ -1912,14 +1973,20 @@
             return formatDateLocal(d);
         }
 
-        // آخر يوم عمل فعلي (أحد-أربعاء) قبل اليوم الحالي — يُستخدم كافتراضي لحقول اليوم بلوحة الشرف
+        // آخر يوم عمل قبل اليوم — يُحسب ديناميكياً من أيام العمل في إعدادات البرنامج
+        const ALL_DAY_NAMES = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         function getPreviousWorkingDayInfo() {
-            const offsets = {0:4, 1:1, 2:1, 3:1, 4:1, 5:2, 6:3};
+            const wd = getProgramSettings().workingDays;
             const now = new Date();
-            const offset = offsets[now.getDay()];
-            const prevDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
-            const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء"];
-            return { dateStr: formatDateLocal(prevDate), dayName: dayNames[prevDate.getDay()] };
+            // ارجع يوماً بيوم حتى تجد أول يوم عمل (بحد أقصى ١٤ يوماً)
+            for (let back = 1; back <= 14; back++) {
+                const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+                if (wd.includes(d.getDay())) {
+                    return { dateStr: formatDateLocal(d), dayName: ALL_DAY_NAMES[d.getDay()] };
+                }
+            }
+            const fallback = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+            return { dateStr: formatDateLocal(fallback), dayName: ALL_DAY_NAMES[fallback.getDay()] };
         }
 
         let weeklyGroupLog = [];
@@ -2742,7 +2809,7 @@
                 else if (day.sard > 0) { legacyAyahs += day.sard; }
                 goldenAyahs += (day.goldenSard || 0); goldenPages += (day.goldenPages || 0); goldenQuartersCrossed += (day.goldenRubs || 0);
             }
-            tripPoints += (attendanceDays * 10);
+            tripPoints += (attendanceDays * getProgramSettings().points.attendance);
             if (legacyAyahs > 0) { quartersCrossed += (legacyAyahs / 45.80539); exactPages += (legacyAyahs / 18.3221567); }
 
             let rawQuarters = quartersCrossed; let juzs = Math.floor(quartersCrossed / 8); let hizbs = Math.floor((quartersCrossed % 8) / 4); let quarters = Math.floor(quartersCrossed % 4);
@@ -2771,7 +2838,7 @@
             // لضمان تطابق تام بين مجموع البنود والإجمالي الحقيقي، بدل استخدام دالة مختلفة الغرض (calculateStudentAttendance مخصصة لحساب نسبة الحضور لا نقاطه)
             let attendanceDays = 0;
             for (const d in student.history) { if (student.history[d].attended) attendanceDays++; }
-            const attendanceBonus = attendanceDays * 10;
+            const attendanceBonus = attendanceDays * getProgramSettings().points.attendance;
 
             let groupBonus = 0;
             for (const d in student.history) { groupBonus += (student.history[d].groupDisciplinePoints || 0); }
@@ -2855,7 +2922,10 @@
             if(a1 < 1) { a1 = 1; document.getElementById('startAyah').value = a1; } if(a2 < 1) { a2 = 1; document.getElementById('endAyah').value = a2; }
 
             let stats = calculateRangeStats(s1, a1, s2, a2); document.getElementById('resAyahs').innerText = stats.totalAyahs;
-            const multiplier = currentSardType === 'new' ? 3 : 1; document.getElementById('resWeightedPoints').innerText = stats.totalAyahs * multiplier;
+            const pts = getProgramSettings().points;
+            const multiplier = currentSardType === 'new' ? pts.newMemorization : pts.review;
+            document.getElementById('resWeightedPoints').innerText = stats.totalAyahs * multiplier;
+            if (typeof updateGrandTotal === 'function') updateGrandTotal();
         }
 
         function adjustExamAyah(type, amount) {
@@ -2882,7 +2952,7 @@
             const totalAyahs = stats.totalAyahs * repetitions;
             document.getElementById('examResBaseAyahs').innerText = stats.totalAyahs;
             document.getElementById('examResAyahs').innerText = totalAyahs;
-            document.getElementById('examResWeightedPoints').innerText = totalAyahs; // نفس معدل المراجعة العادية: ×1 لكل آية
+            document.getElementById('examResWeightedPoints').innerText = totalAyahs * getProgramSettings().points.review;
         }
         function saveExamPrepProgress() {
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
@@ -2894,7 +2964,7 @@
             const rangeStr = `من ${startSurahName} (${startAyahVal}) إلى ${endSurahName} (${endAyahVal})`;
             const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal);
             const totalAyahs = stats.totalAyahs * repetitions; const totalPages = stats.exactPages * repetitions; const totalQuarters = stats.quartersCrossed * repetitions;
-            const weightedPoints = totalAyahs; // معدل المراجعة: ×1 لكل آية
+            const weightedPoints = totalAyahs * getProgramSettings().points.review;
 
             if (totalAyahs === 0) { showToast('اختر نطاقاً صحيحاً أولاً', 'error'); return; }
 
@@ -2922,7 +2992,8 @@
 
         function getWorkingDaysList(studentsArr) {
             let allDates = new Set(); studentsArr.forEach(s => { for (const dStr in s.history) { allDates.add(dStr); } });
-            return Array.from(allDates).sort().filter(dStr => { let dObj = new Date(dStr); if(isNaN(dObj.getTime())) return false; let dayNum = dObj.getDay(); return (dayNum >= 0 && dayNum <= 3); });
+            const wd = getProgramSettings().workingDays;
+            return Array.from(allDates).sort().filter(dStr => { let dObj = new Date(dStr); if(isNaN(dObj.getTime())) return false; return wd.includes(dObj.getDay()); });
         }
 
         function calculateStudentAttendance(student, workingDaysList) {
@@ -3409,6 +3480,133 @@
             }
         }
 
+        // ================================================================
+        // معايير الانضباط داخل نافذة الطالب
+        // ================================================================
+        // ================================================================
+        // الاختيار الآلي للفرسان (الأعلى نقاطاً في يوم محدد)
+        // ================================================================
+        function getDayRanking(dateStr) {
+            return students
+                .map(s => {
+                    const d = s.history?.[dateStr];
+                    if (!d || !d.attended) return null;
+                    return {
+                        student: s,
+                        points: d.earnedPoints || 0,
+                        sard: d.sard || 0,
+                        criteriaPoints: d.criteriaPoints || 0,
+                        criteria: d.criteria || {}
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.points - a.points || b.sard - a.sard);
+        }
+
+        // نص الإنجاز المُولَّد تلقائياً
+        function buildAchievementText(entry) {
+            const parts = [];
+            if (entry.sard > 0) parts.push(`${entry.sard} آية`);
+            if (entry.criteriaPoints > 0) {
+                const names = getActiveCriteria()
+                    .filter(c => entry.criteria[c.id])
+                    .map(c => c.name);
+                if (names.length >= 3) parts.push('انضباط كامل');
+                else if (names.length > 0) parts.push(names.join(' · '));
+            }
+            parts.push(`${entry.points} نقطة`);
+            return parts.join(' · ');
+        }
+
+        function autoPickKnights() {
+            const dateInput = document.getElementById('farsAutoDate');
+            const dateStr = dateInput?.value || getPreviousWorkingDayInfo().dateStr;
+            const ranking = getDayRanking(dateStr);
+
+            if (ranking.length === 0) {
+                showToast('لا يوجد طلاب حاضرون بهذا التاريخ', 'error');
+                return;
+            }
+
+            const top3 = ranking.slice(0, 3);
+            for (let i = 0; i < 3; i++) {
+                const sel = document.getElementById(`fars${i + 1}Select`);
+                const ach = document.getElementById(`fars${i + 1}Achievement`);
+                if (top3[i]) {
+                    if (sel) sel.value = top3[i].student.id;
+                    if (ach) ach.value = buildAchievementText(top3[i]);
+                } else {
+                    if (sel) sel.value = '';
+                    if (ach) ach.value = '';
+                }
+            }
+
+            // ضبط اسم اليوم تلقائياً
+            const d = new Date(dateStr + 'T12:00:00');
+            const daySel = document.getElementById('farsDayInput');
+            if (daySel && !isNaN(d.getTime())) daySel.value = ALL_DAY_NAMES[d.getDay()];
+
+            showToast(`✅ اختير ${top3.length} فرسان تلقائياً — يمكنك التعديل`);
+        }
+
+        function renderCriteriaList(student) {
+            const box = document.getElementById('criteriaList');
+            const section = document.getElementById('criteriaSection');
+            if (!box || !section) return;
+
+            const criteria = getActiveCriteria();
+            if (criteria.length === 0) { section.style.display = 'none'; return; }
+            section.style.display = '';
+
+            // المعايير المسجّلة لهذا الطالب اليوم (إن وُجدت)
+            const todayRec = student?.history?.[todayStr] || {};
+            const saved = todayRec.criteria || {};
+
+            box.innerHTML = criteria.map(c => `
+                <label class="flex items-center justify-between gap-3 p-3 bg-white rounded-xl border-2 border-amber-200 cursor-pointer hover:border-amber-400 transition">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="crit-box w-6 h-6 rounded accent-amber-600"
+                               data-cid="${c.id}" data-pts="${c.points}" ${saved[c.id] ? 'checked' : ''}
+                               onchange="updateCriteriaTotal()">
+                        <span class="font-bold text-slate-700">${escapeHTML(c.name)}</span>
+                    </div>
+                    <span class="font-black text-amber-600 shrink-0">+${c.points}</span>
+                </label>
+            `).join('');
+
+            updateCriteriaTotal();
+        }
+
+        function updateCriteriaTotal() {
+            let total = 0;
+            document.querySelectorAll('.crit-box:checked').forEach(cb => {
+                total += parseInt(cb.dataset.pts) || 0;
+            });
+            const el = document.getElementById('criteriaTotal');
+            if (el) el.textContent = total;
+            updateGrandTotal();
+            return total;
+        }
+
+        function getCriteriaSelection() {
+            const sel = {};
+            document.querySelectorAll('.crit-box').forEach(cb => {
+                if (cb.checked) sel[cb.dataset.cid] = parseInt(cb.dataset.pts) || 0;
+            });
+            return sel;
+        }
+
+        function getCriteriaPoints() {
+            return Object.values(getCriteriaSelection()).reduce((a, b) => a + b, 0);
+        }
+
+        function updateGrandTotal() {
+            const sard = parseInt(document.getElementById('resWeightedPoints')?.innerText) || 0;
+            const crit = parseInt(document.getElementById('criteriaTotal')?.innerText) || 0;
+            const el = document.getElementById('resGrandTotal');
+            if (el) el.textContent = sard + crit;
+        }
+
         function openSmartModal(id) {
             // حماية: لا إدخال في موسم مؤرشف
             if (window.almahraPrograms?.isCurrentSeasonArchived()) {
@@ -3424,6 +3622,12 @@
                 document.getElementById('startSurah').value = nextSurah; document.getElementById('startAyah').value = nextAyah; document.getElementById('endSurah').value = nextSurah; document.getElementById('endAyah').value = nextAyah;
             } else { document.getElementById('startSurah').value = 114; document.getElementById('startAyah').value = 1; document.getElementById('endSurah').value = 114; document.getElementById('endAyah').value = 1; }
             updateAyahMax('start'); updateAyahMax('end'); setSardType('review'); calculateQuran();
+
+            // تحديث مضاعفات النقاط من الإعدادات + عرض معايير الانضباط
+            const _pts = getProgramSettings().points;
+            const _lblR = document.getElementById('lblReviewMult'); if (_lblR) _lblR.textContent = `(×${_pts.review})`;
+            const _lblN = document.getElementById('lblNewMult'); if (_lblN) _lblN.textContent = `(×${_pts.newMemorization})`;
+            renderCriteriaList(student);
 
             selectedMinor = null; selectedJuzs = []; document.querySelectorAll('.minor-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.juz-checkbox').forEach(cb => { cb.checked = false; cb.disabled = false; }); const halfCb = document.getElementById('isHalfJuz'); if(halfCb) { halfCb.checked = false; halfCb.disabled = false; } updateSmartButton();
 
@@ -3451,13 +3655,23 @@
 
             student.history[todayStr].attended = true; student.history[todayStr].sard += stats.totalAyahs; student.history[todayStr].sessionPages = (student.history[todayStr].sessionPages || 0) + stats.exactPages; student.history[todayStr].sessionQuarters = (student.history[todayStr].sessionQuarters || 0) + stats.quartersCrossed; student.history[todayStr].earnedPoints += weightedPoints; student.history[todayStr].hijri = hijriDateStr;
             student.lastDailySardRange = rangeStr; student.lastDailySurah = s2; student.lastDailyAyah = endAyahVal;
-            
-            saveData(); updateAllUIs(); closeSmartModal(); 
-            
-            if (weightedPoints > 0) {
+
+            // معايير الانضباط - تُستبدل كاملة (لا تُجمَع) لأنها حالة اليوم لا تراكم
+            const critSel = getCriteriaSelection();
+            const oldCritPts = Object.values(student.history[todayStr].criteria || {}).reduce((a, b) => a + b, 0);
+            const newCritPts = Object.values(critSel).reduce((a, b) => a + b, 0);
+            student.history[todayStr].criteria = critSel;
+            student.history[todayStr].criteriaPoints = newCritPts;
+            student.history[todayStr].earnedPoints += (newCritPts - oldCritPts);
+
+            const totalAdded = weightedPoints + (newCritPts - oldCritPts);
+            saveData(); updateAllUIs(); closeSmartModal();
+
+            if (totalAdded > 0) {
+                var weightedPointsDisplay = totalAdded;
                 const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
                 const celModal = document.getElementById('knightCelebrationModal');
-                document.getElementById('celebrationTitle').innerText = "تم تسجيل الإنجاز والتحصيل بنجاح! ✨"; document.getElementById('celebrationName').innerText = escapeHTML(student.name); document.getElementById('celebrationPoints').innerText = `+ ${weightedPoints} نقطة جديدة مضافة للسباق 🎁`;
+                document.getElementById('celebrationTitle').innerText = "تم تسجيل الإنجاز والتحصيل بنجاح! ✨"; document.getElementById('celebrationName').innerText = escapeHTML(student.name); document.getElementById('celebrationPoints').innerText = `+ ${weightedPointsDisplay} نقطة جديدة مضافة للسباق 🎁`;
                 const totalEl = document.getElementById('celebrationTotalPointsContainer'); if(totalEl) { document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`; document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`; totalEl.classList.remove('hidden'); }
                 celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
                 const canvasEl = document.getElementById('celebrationCanvas'); if (!window.localConfettiInstance) { window.localConfettiInstance = confetti.create(canvasEl, { resize: true }); }
@@ -3960,6 +4174,31 @@
             const navBtns = document.querySelectorAll('nav .nav-btn');
             if (navBtns[1]) navBtns[1].style.display = f.pomodoro === false ? 'none' : '';
 
+            // أقسام المجموعات (معطّلة افتراضياً)
+            document.querySelectorAll('.feature-groups').forEach(el => {
+                if (f.groups === true) { el.classList.remove('hidden'); el.classList.add('flex'); }
+                else { el.classList.add('hidden'); el.classList.remove('flex'); }
+            });
+            // أزرار المجموعات في شريط أدوات الطلاب
+            ['openWeeklyGroupLogManager', 'openWeeklyChampionModal'].forEach(fn => {
+                document.querySelectorAll(`[onclick*="${fn}"]`).forEach(b => {
+                    b.style.display = (f.groups === true) ? '' : 'none';
+                });
+            });
+
+            // الاختبار النهائي والاستعداد
+            document.querySelectorAll('[onclick*="printExamCards"], #examEntryContainer')
+                .forEach(el => { const card = el.closest('.rounded-3xl'); if (card) card.style.display = (f.finalExam === false) ? 'none' : ''; });
+
+            // لوحة الفرسان
+            const knightsPanel = document.getElementById('supervisorPanel');
+            if (knightsPanel) knightsPanel.style.display = (f.knights === false) ? 'none' : '';
+
+            // زر لوحة الشرف
+            document.querySelectorAll('[onclick*="openHonorBoard"]').forEach(b => {
+                b.style.display = (f.honorBoard === false) ? 'none' : '';
+            });
+
             // اسم السباق وعنوانه الفرعي
             const raceTitle = document.querySelector('#taifTripContainer h2');
             if (raceTitle && settings.raceName) raceTitle.textContent = settings.raceName;
@@ -4088,6 +4327,20 @@
                         </div>
                     </div>
 
+                    <!-- معايير الانضباط -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-amber-300 lg:col-span-2">
+                        <h3 class="font-black text-lg text-slate-700 mb-2 flex items-center gap-2">
+                            <i class="fas fa-star text-amber-500"></i> معايير الانضباط
+                        </h3>
+                        <p class="text-sm text-slate-500 font-bold mb-4">
+                            تظهر للمعلم داخل نافذة الطالب، ونقاطها تُضاف لنقاط اليوم وتدخل في حساب الفرسان تلقائياً.
+                        </p>
+                        <div id="psCriteriaList" class="space-y-2 mb-3"></div>
+                        <button type="button" onclick="addCriterionRow()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-amber-300 font-bold py-2 px-5 rounded-xl text-sm">
+                            <i class="fas fa-plus"></i> إضافة معيار
+                        </button>
+                    </div>
+
                     <!-- الميزات -->
                     <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 lg:col-span-2">
                         <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
@@ -4147,6 +4400,63 @@
                         `).join('')}
                 </div>
             `;
+
+            renderCriteriaRows(s.criteria || []);
+        }
+
+        // ================================================================
+        // صفوف تحرير معايير الانضباط في الإعدادات
+        // ================================================================
+        function renderCriteriaRows(criteria) {
+            const box = document.getElementById('psCriteriaList');
+            if (!box) return;
+            if (!Array.isArray(criteria) || criteria.length === 0) {
+                box.innerHTML = '<div class="text-slate-400 font-bold text-sm text-center py-3 bg-slate-50 rounded-xl">لا توجد معايير — أضف واحداً</div>';
+                return;
+            }
+            box.innerHTML = criteria.map((c, i) => criterionRowHtml(c, i)).join('');
+        }
+
+        function criterionRowHtml(c, i) {
+            return `
+                <div class="crit-row flex flex-wrap items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200" data-cid="${escapeHTML(c.id || ('c' + i))}">
+                    <input type="text" class="crit-name flex-1 min-w-[160px] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm focus:border-amber-500 outline-none"
+                           value="${escapeHTML(c.name || '')}" placeholder="اسم المعيار">
+                    <input type="number" class="crit-pts w-20 p-2 border-2 border-slate-300 rounded-lg font-black text-center focus:border-amber-500 outline-none"
+                           value="${c.points ?? 0}" min="0" title="النقاط">
+                    <label class="flex items-center gap-2 cursor-pointer px-2">
+                        <input type="checkbox" class="crit-on w-5 h-5 rounded accent-emerald-600" ${c.enabled !== false ? 'checked' : ''}>
+                        <span class="text-xs font-bold text-slate-600">مفعّل</span>
+                    </label>
+                    <button type="button" onclick="this.closest('.crit-row').remove()"
+                            class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>`;
+        }
+
+        function addCriterionRow() {
+            const box = document.getElementById('psCriteriaList');
+            if (!box) return;
+            if (box.querySelector('.text-slate-400')) box.innerHTML = '';
+            const newId = 'c_' + Date.now().toString(36);
+            box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: 3, enabled: true }, 0));
+        }
+
+        function collectCriteriaFromRows() {
+            const rows = document.querySelectorAll('#psCriteriaList .crit-row');
+            const out = [];
+            rows.forEach(r => {
+                const name = r.querySelector('.crit-name')?.value.trim();
+                if (!name) return; // تجاهل الصفوف الفارغة
+                out.push({
+                    id: r.dataset.cid,
+                    name: name,
+                    points: parseInt(r.querySelector('.crit-pts')?.value) || 0,
+                    enabled: !!r.querySelector('.crit-on')?.checked
+                });
+            });
+            return out;
         }
 
         async function saveProgramSettings() {
@@ -4169,6 +4479,7 @@
                     review: parseInt(document.getElementById('psPtRev').value) || 0
                 },
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
+                criteria: collectCriteriaFromRows(),
                 features
             };
 
@@ -4296,6 +4607,7 @@
             const grpDateEl = document.getElementById('grpScoreDateInput');
             if (grpDateEl) { grpDateEl.value = getPreviousWorkingDayInfo().dateStr; renderGroupScoresEntry(); }
             const farsDayEl = document.getElementById('farsDayInput'); if (farsDayEl) farsDayEl.value = getPreviousWorkingDayInfo().dayName;
+            const farsAutoDateEl = document.getElementById('farsAutoDate'); if (farsAutoDateEl) farsAutoDateEl.value = getPreviousWorkingDayInfo().dateStr;
         });
     </script>
 </body>
