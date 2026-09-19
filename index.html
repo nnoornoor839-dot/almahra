@@ -89,6 +89,18 @@
         .ep-new-review { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; border-color: #3b82f6; }
         .ep-new-review:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(59,130,246,.4); }
 
+        /* وضع الأرشيف: تعطيل بصري لأي أداة تعديل متبقية */
+        body.archived-mode #studentsGrid .attendance-btn,
+        body.archived-mode #settingsStudentsList button,
+        body.archived-mode #supervisorPanel button,
+        body.archived-mode #examEntryContainer button,
+        body.archived-mode #examEntryContainer input {
+            opacity: .4 !important;
+            pointer-events: none !important;
+            filter: grayscale(1);
+        }
+        body.archived-mode #studentsGrid > div { cursor: not-allowed !important; }
+
         /* شارة الحدث الحالي في رأس البرنامج */
         #currentEventBadge {
             display: none; align-items: center; gap: 8px;
@@ -443,6 +455,20 @@
             <img src="https://i.postimg.cc/zB3VsFkq/lqtt-shasht-2026-06-28-194304.png" alt="شعار برنامج المهرة" class="h-16 md:h-24 w-auto rounded-xl shadow-sm object-contain">
         </div>
     </header>
+
+    <!-- شريط تنبيه الموسم المؤرشف -->
+    <div id="archivedBanner" style="display:none;" class="bg-gradient-to-r from-slate-700 to-slate-800 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 no-print shadow-lg">
+        <div class="flex items-center gap-3">
+            <span style="font-size:24px;">📦</span>
+            <div>
+                <div class="font-black text-base">أنت تعرض موسماً مؤرشفاً</div>
+                <div class="text-xs text-slate-300 font-bold" id="archivedBannerName"></div>
+            </div>
+        </div>
+        <button onclick="backToActiveSeason()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-5 rounded-xl text-sm shadow shrink-0">
+            <i class="fas fa-arrow-right-to-bracket"></i> العودة للموسم النشط
+        </button>
+    </div>
 
     <!-- شريط المستخدم للجوال (يظهر تحت الرأس) -->
     <div class="md:hidden bg-white border-b border-slate-200 px-3 py-2 flex items-center justify-between gap-2 no-print">
@@ -3384,6 +3410,11 @@
         }
 
         function openSmartModal(id) {
+            // حماية: لا إدخال في موسم مؤرشف
+            if (window.almahraPrograms?.isCurrentSeasonArchived()) {
+                showToast('📦 موسم مؤرشف — للعرض فقط، لا يمكن التعديل', 'error');
+                return;
+            }
             currentEditingStudentId = id; const student = students.find(s => s.id === id); if(!student) return;
             document.getElementById('smartStudentName').innerText = escapeHTML(student.name);
             let nextSurah = student.lastDailySurah || student.lastSurah; let nextAyah = student.lastDailyAyah || student.lastAyah;
@@ -3834,6 +3865,7 @@
             if (!ok) { showToast('تعذّر فتح البرنامج', 'error'); return; }
             closeEventPicker();
             updateCurrentEventBadge();
+            applyArchivedMode();
             applyProgramFeatures();
             if (typeof renderProgramSettings === 'function') renderProgramSettings();
             const p = window.almahraPrograms.getCurrentProgram();
@@ -3862,8 +3894,47 @@
             });
         }
 
+        // ================================================================
+        // وضع الأرشيف: تجميد كامل — التقارير فقط
+        // ================================================================
+        function applyArchivedMode() {
+            if (!window.almahraPrograms) return;
+            const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
+            const navBtns = document.querySelectorAll('nav .nav-btn');
+            const banner = document.getElementById('archivedBanner');
+            const season = window.almahraPrograms.getCurrentSeason();
+
+            if (isArchived) {
+                // إظهار تبويب السجل فقط (فهرس 3)
+                navBtns.forEach((btn, i) => { btn.style.display = (i === 3) ? '' : 'none'; });
+
+                // التحويل القسري لتبويب السجل
+                const recordsBtn = navBtns[3];
+                if (recordsBtn && !document.getElementById('page-records').classList.contains('active')) {
+                    switchTab('page-records', recordsBtn);
+                }
+
+                // شريط التنبيه
+                if (banner) {
+                    banner.style.display = 'flex';
+                    const nameEl = document.getElementById('archivedBannerName');
+                    if (nameEl) nameEl.textContent =
+                        `${season?.name || ''} · ${season?.startDate || ''} ← ${season?.endDate || ''} · عرض التقارير فقط`;
+                }
+
+                document.body.classList.add('archived-mode');
+            } else {
+                // استعادة كل التبويبات
+                navBtns.forEach(btn => { btn.style.display = ''; });
+                if (banner) banner.style.display = 'none';
+                document.body.classList.remove('archived-mode');
+            }
+        }
+
         // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
         function applyProgramFeatures() {
+            // في وضع الأرشيف لا نغيّر شيئاً — applyArchivedMode هي المسؤولة
+            if (window.almahraPrograms?.isCurrentSeasonArchived()) return;
             if (!window.almahraPrograms) return;
             const settings = window.almahraPrograms.getSettings();
             if (!settings || !settings.features) return;
@@ -4140,8 +4211,9 @@
         function viewArchivedSeason(programId, seasonId) {
             window.almahraPrograms.openArchivedSeason(programId, seasonId);
             updateCurrentEventBadge();
+            applyArchivedMode();
             renderProgramSettings();
-            showToast('📦 تعرض الآن موسماً مؤرشفاً (قراءة فقط)');
+            showToast('📦 تعرض الآن موسماً مؤرشفاً — التقارير فقط');
         }
 
         function backToActiveSeason() {
@@ -4149,6 +4221,8 @@
             if (!prog) return;
             window.almahraPrograms.openProgram(prog.id);
             updateCurrentEventBadge();
+            applyArchivedMode();
+            applyProgramFeatures();
             renderProgramSettings();
             showToast('↩️ عدت للموسم النشط');
         }
@@ -4204,6 +4278,7 @@
                 const overlay = document.getElementById('eventPickerOverlay');
                 if (overlay && overlay.classList.contains('flex')) renderEventsList();
                 updateCurrentEventBadge();
+                applyArchivedMode();
                 applyProgramFeatures();
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
             });
