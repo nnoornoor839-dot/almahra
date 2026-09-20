@@ -89,29 +89,62 @@
         .ep-new-review { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; border-color: #3b82f6; }
         .ep-new-review:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(59,130,246,.4); }
 
-        /* تبويبات صفحة الإعدادات */
-        #settingsTabsBar {
-            display: flex; gap: 6px; overflow-x: auto; padding: 6px;
-            background: #f1f5f9; border-radius: 18px; border: 2px solid #e2e8f0;
-            scrollbar-width: thin;
+        /* ═══ شبكة أيقونات الأقسام (الإعدادات والسجل) ═══ */
+        .panel-home { width: 100%; animation: fadeIn .3s ease-out; }
+        .panel-home-title {
+            font-weight: 900; font-size: 26px; color: #0f172a;
+            margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
         }
-        #settingsTabsBar::-webkit-scrollbar { height: 5px; }
-        #settingsTabsBar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-        .set-tab {
-            display: flex; align-items: center; gap: 7px; white-space: nowrap;
-            padding: 11px 18px; border-radius: 13px; border: none;
-            background: transparent; color: #64748b;
-            font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 15px;
-            cursor: pointer; transition: all .18s; flex-shrink: 0;
+        .panel-home-sub { color: #64748b; font-weight: 700; font-size: 15px; margin-bottom: 22px; }
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 16px;
         }
-        .set-tab:hover { background: #e2e8f0; color: #334155; }
-        .set-tab.active {
-            background: white; color: #047857;
-            box-shadow: 0 2px 10px rgba(0,0,0,.09);
-            border-bottom: 3px solid #10b981;
+        @media (max-width: 520px) { .panel-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+        .panel-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 22px;
+            padding: 26px 14px 20px; cursor: pointer; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 9px;
+            transition: transform .18s, box-shadow .18s, border-color .18s;
+            font-family: 'Cairo', sans-serif; position: relative; overflow: hidden;
         }
-        .set-panel { display: none; animation: fadeIn .3s ease-out; }
-        .set-panel.active { display: flex; flex-direction: column; gap: 24px; }
+        .panel-card::before {
+            content: ''; position: absolute; inset: 0 0 auto 0; height: 5px;
+            background: var(--pc-accent, #10b981); opacity: 0; transition: opacity .18s;
+        }
+        .panel-card:hover { transform: translateY(-5px); box-shadow: 0 14px 32px rgba(15,23,42,.13); border-color: var(--pc-accent, #10b981); }
+        .panel-card:hover::before { opacity: 1; }
+        .panel-card:active { transform: translateY(-1px); }
+        .pc-icon {
+            width: 62px; height: 62px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; background: var(--pc-bg, #ecfdf5); color: var(--pc-accent, #10b981);
+        }
+        .pc-title { font-weight: 900; font-size: 17px; color: #0f172a; line-height: 1.3; }
+        .pc-desc { font-size: 12px; color: #64748b; font-weight: 700; line-height: 1.5; }
+        .pc-badge {
+            margin-top: 2px; font-size: 11px; font-weight: 900;
+            background: #f1f5f9; color: #475569; padding: 3px 11px; border-radius: 999px;
+        }
+
+        /* شريط الرجوع داخل القسم */
+        .panel-back-bar {
+            display: flex; align-items: center; gap: 14px; width: 100%;
+            background: white; border: 2px solid #e2e8f0; border-radius: 18px;
+            padding: 12px 16px; margin-bottom: 4px;
+        }
+        .panel-back-btn {
+            background: #f1f5f9; border: 2px solid #e2e8f0; color: #334155;
+            width: 42px; height: 42px; border-radius: 13px; cursor: pointer;
+            font-size: 18px; display: flex; align-items: center; justify-content: center;
+            transition: all .15s; flex-shrink: 0;
+        }
+        .panel-back-btn:hover { background: #0f172a; color: white; border-color: #0f172a; }
+        .panel-back-title { font-weight: 900; font-size: 19px; color: #0f172a; }
+
+        .set-panel, .rec-panel { display: none; animation: fadeIn .3s ease-out; }
+        .set-panel.active, .rec-panel.active { display: flex; flex-direction: column; gap: 20px; }
 
         /* وضع الأرشيف: تعطيل بصري لأي أداة تعديل متبقية */
         body.archived-mode #studentsGrid .attendance-btn,
@@ -320,8 +353,11 @@
         }
         .honor-card-enter { animation: honorCardEnter 0.5s ease-out both; }
 
-        @media print { 
+        @media print {
             @page { size: landscape; margin: 10mm; }
+            /* عند الطباعة: أظهر كل أقسام السجل بغض النظر عن التبويب المفتوح */
+            .rec-panel { display: flex !important; flex-direction: column !important; }
+            #recordsHome, #recordsBackBar { display: none !important; }
             html, body { height: auto !important; min-height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; background-color: white !important; background: white !important; display: block !important; font-family: 'Cairo', sans-serif !important; }
             body > *:not(#page-records), header, nav, #knightCelebrationModal, #royalCelebrationModal, #threeKnightsModal, #recoveryModal, #winningGroupModal, .tab-content:not(.active) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
             #page-records, #page-records > div:not(.no-print) { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; display: block !important; }
@@ -564,13 +600,17 @@
                         <input type="text" id="studentSearchInput" oninput="debounceSearchStudents()" placeholder="ابحث عن اسم الطالب يدوياً ولحظياً..." class="w-full pr-12 pl-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl text-xl font-bold focus:border-emerald-500 focus:bg-white outline-none transition-all">
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-4 w-full border-t border-slate-100 pt-4 no-print">
-                    <button onclick="copyAbsenteesList()" class="bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center justify-center gap-3 border border-green-300">
-                        <i class="fab fa-whatsapp text-green-600 text-2xl"></i> حصر الغائبين وإرسال تنبيه لأولياء الأمور
-                    </button>
-                    <button onclick="copyChronicAbsenteesList()" class="bg-red-50 hover:bg-red-100 text-red-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center justify-center gap-3 border border-red-300">
-                        <i class="fab fa-whatsapp text-red-600 text-2xl"></i> حصر المنقطعين (يومين فأكثر متتالية)
-                    </button>
+                <!-- شريط تنبيه الغياب (يظهر فقط عند وجود غياب اليوم) -->
+                <div id="attendanceAlertBar" class="hidden w-full border-t border-slate-100 pt-4 no-print">
+                    <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 font-bold text-amber-900">
+                            <i class="fas fa-triangle-exclamation text-amber-500 text-2xl"></i>
+                            <span id="attendanceAlertText">—</span>
+                        </div>
+                        <button onclick="goToAbsenceReport()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-5 rounded-xl text-sm shrink-0">
+                            عرض في السجل <i class="fas fa-arrow-left mr-1"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div id="studentsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"></div>
@@ -581,78 +621,96 @@
     <div id="page-settings" class="tab-content p-4 md:p-8">
         <div class="max-w-[1800px] mx-auto flex flex-col gap-5 items-start w-full">
 
-            <!-- شريط تبويبات الإعدادات -->
-            <div id="settingsTabsBar" class="w-full no-print">
-                <button class="set-tab active" data-panel="setPanelProgram" onclick="switchSettingsTab('setPanelProgram', this)">
-                    <i class="fas fa-sliders"></i> البرنامج
-                </button>
-                <button class="set-tab" data-panel="setPanelPoints" onclick="switchSettingsTab('setPanelPoints', this)">
-                    <i class="fas fa-star"></i> النقاط والمعايير
-                </button>
-                <button class="set-tab" data-panel="setPanelTiers" onclick="switchSettingsTab('setPanelTiers', this)">
-                    <i class="fas fa-layer-group"></i> الشرائح
-                </button>
-                <button class="set-tab" data-panel="setPanelStudents" onclick="switchSettingsTab('setPanelStudents', this)">
-                    <i class="fas fa-users"></i> الطلاب
-                </button>
-                <button class="set-tab" data-panel="setPanelKnights" onclick="switchSettingsTab('setPanelKnights', this)">
-                    <i class="fas fa-trophy"></i> الفرسان
-                </button>
-                <button class="set-tab" data-panel="setPanelExam" onclick="switchSettingsTab('setPanelExam', this)">
-                    <i class="fas fa-graduation-cap"></i> الاختبار
-                </button>
-                <button class="set-tab feature-groups hidden" data-panel="setPanelGroups" onclick="switchSettingsTab('setPanelGroups', this)">
-                    <i class="fas fa-people-group"></i> المجموعات
-                </button>
-            </div>
-
-            <!-- ═══ تبويب: البرنامج ═══ -->
-            <div id="setPanelProgram" class="set-panel active w-full">
-                <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-500 flex flex-col overflow-hidden w-full">
-                    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h2 class="text-xl md:text-2xl font-black flex items-center gap-3">
-                            <i class="fas fa-sliders"></i> البرنامج والمواسم
-                        </h2>
-                        <button onclick="openEventPicker()" class="bg-white text-emerald-700 hover:bg-emerald-50 py-2.5 px-5 rounded-xl font-bold text-base flex items-center gap-2 shadow-md">
-                            <i class="fas fa-exchange-alt"></i> تبديل البرنامج
-                        </button>
-                    </div>
-                    <div class="p-5 bg-slate-50" id="psPanelProgramBody">
-                        <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
-                    </div>
+            <!-- ═══ الصفحة الرئيسية للإعدادات (شبكة أيقونات) ═══ -->
+            <div id="settingsHome" class="panel-home no-print">
+                <div class="panel-home-title"><i class="fas fa-cogs text-emerald-600"></i> الإعدادات</div>
+                <div class="panel-home-sub">اختر القسم الذي تريد ضبطه</div>
+                <div class="panel-grid">
+                    <button class="panel-card" style="--pc-accent:#10b981; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelProgram')">
+                        <span class="pc-icon"><i class="fas fa-sliders"></i></span>
+                        <span class="pc-title">البرنامج والمواسم</span>
+                        <span class="pc-desc">الاسم · السباق · الميزات · الأرشفة</span>
+                        <span class="pc-badge" id="scBadgeProgram">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#f59e0b; --pc-bg:#fffbeb" onclick="openSettingsSection('setPanelPoints')">
+                        <span class="pc-icon"><i class="fas fa-star"></i></span>
+                        <span class="pc-title">النقاط والمعايير</span>
+                        <span class="pc-desc">الأوزان · أيام العمل · الانضباط</span>
+                        <span class="pc-badge" id="scBadgeCriteria">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#6366f1; --pc-bg:#eef2ff" onclick="openSettingsSection('setPanelTiers')">
+                        <span class="pc-icon"><i class="fas fa-layer-group"></i></span>
+                        <span class="pc-title">الشرائح</span>
+                        <span class="pc-desc">المستويات وإسناد الطلاب</span>
+                        <span class="pc-badge" id="scBadgeTiers">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#0ea5e9; --pc-bg:#f0f9ff" onclick="openSettingsSection('setPanelStudents')">
+                        <span class="pc-icon"><i class="fas fa-users"></i></span>
+                        <span class="pc-title">الطلاب</span>
+                        <span class="pc-desc">إضافة · استيراد · نسخ احتياطية</span>
+                        <span class="pc-badge" id="scBadgeStudents">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#3b82f6; --pc-bg:#eff6ff" onclick="openSettingsSection('setPanelKnights')">
+                        <span class="pc-icon"><i class="fas fa-trophy"></i></span>
+                        <span class="pc-title">الفرسان</span>
+                        <span class="pc-desc">الاختيار الآلي وشاشة التكريم</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelExam')">
+                        <span class="pc-icon"><i class="fas fa-graduation-cap"></i></span>
+                        <span class="pc-title">الاختبار النهائي</span>
+                        <span class="pc-desc">إدخال الدرجات وطباعة البطاقات</span>
+                        <span class="pc-badge" id="scBadgeExam">—</span>
+                    </button>
+                    <button class="panel-card feature-groups hidden" style="--pc-accent:#8b5cf6; --pc-bg:#f5f3ff" onclick="openSettingsSection('setPanelGroups')">
+                        <span class="pc-icon"><i class="fas fa-people-group"></i></span>
+                        <span class="pc-title">المجموعات</span>
+                        <span class="pc-desc">فرق التنافس والتقييم اليومي</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- ═══ تبويب: النقاط والمعايير ═══ -->
+            <!-- ═══ قسم: البرنامج ═══ -->
+            <div id="setPanelProgram" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-sliders text-emerald-600 ml-1"></i> البرنامج والمواسم</span>
+                    <button onclick="openEventPicker()" class="mr-auto bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-xl font-bold text-sm flex items-center gap-2 shrink-0">
+                        <i class="fas fa-exchange-alt"></i> تبديل البرنامج
+                    </button>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-200 p-5" id="psPanelProgramBody">
+                    <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
+                </div>
+            </div>
+
+            <!-- ═══ قسم: النقاط والمعايير ═══ -->
             <div id="setPanelPoints" class="set-panel w-full">
-                <div class="bg-white rounded-3xl shadow-xl border-4 border-amber-400 flex flex-col overflow-hidden w-full">
-                    <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-5">
-                        <h2 class="text-xl md:text-2xl font-black flex items-center gap-3">
-                            <i class="fas fa-star"></i> النقاط ومعايير الانضباط
-                        </h2>
-                    </div>
-                    <div class="p-5 bg-slate-50" id="psPanelPointsBody">
-                        <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
-                    </div>
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-star text-amber-500 ml-1"></i> النقاط ومعايير الانضباط</span>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-200 p-5" id="psPanelPointsBody">
+                    <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
                 </div>
             </div>
 
-            <!-- ═══ تبويب: الشرائح ═══ -->
+            <!-- ═══ قسم: الشرائح ═══ -->
             <div id="setPanelTiers" class="set-panel w-full">
-                <div class="bg-white rounded-3xl shadow-xl border-4 border-indigo-400 flex flex-col overflow-hidden w-full">
-                    <div class="bg-gradient-to-r from-indigo-500 to-violet-500 text-white p-5">
-                        <h2 class="text-xl md:text-2xl font-black flex items-center gap-3">
-                            <i class="fas fa-layer-group"></i> الشرائح (المستويات)
-                        </h2>
-                    </div>
-                    <div class="p-5 bg-slate-50" id="psPanelTiersBody">
-                        <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
-                    </div>
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-layer-group text-indigo-500 ml-1"></i> الشرائح (المستويات)</span>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-200 p-5" id="psPanelTiersBody">
+                    <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
                 </div>
             </div>
 
-            <!-- ═══ تبويب: الطلاب ═══ -->
+            <!-- ═══ قسم: الطلاب ═══ -->
             <div id="setPanelStudents" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-users text-sky-500 ml-1"></i> إدارة الطلاب</span>
+                </div>
 
             <div class="bg-white rounded-3xl shadow-xl border-4 border-slate-300 flex flex-col overflow-hidden no-print w-full shrink-0">
                 <div class="bg-slate-700 text-white p-6 flex flex-col xl:flex-row justify-between items-center gap-4 text-center xl:text-right">
@@ -685,8 +743,12 @@
 
             </div><!-- /تبويب الطلاب -->
 
-            <!-- ═══ تبويب: المجموعات (مُعطّل افتراضياً) ═══ -->
+            <!-- ═══ قسم: المجموعات (مُعطّل افتراضياً) ═══ -->
             <div id="setPanelGroups" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-people-group text-violet-500 ml-1"></i> المجموعات</span>
+                </div>
 
             <!-- إدارة المجموعات - مُعطّلة (feature: groups) -->
             <div class="bg-white rounded-3xl shadow-xl border-4 border-indigo-500 flex-col overflow-hidden w-full shrink-0 feature-groups hidden">
@@ -720,8 +782,12 @@
 
             </div><!-- /تبويب المجموعات -->
 
-            <!-- ═══ تبويب: الاختبار ═══ -->
+            <!-- ═══ قسم: الاختبار ═══ -->
             <div id="setPanelExam" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-graduation-cap text-emerald-600 ml-1"></i> الاختبار النهائي</span>
+                </div>
 
             <!-- نتائج الاختبار النهائي (حفظ من 90 + ترتيل من 10 = 100، النجاح من 60 فأكثر) -->
             <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-600 flex flex-col overflow-hidden w-full shrink-0">
@@ -741,8 +807,12 @@
 
             </div><!-- /تبويب الاختبار -->
 
-            <!-- ═══ تبويب: الفرسان ═══ -->
+            <!-- ═══ قسم: الفرسان ═══ -->
             <div id="setPanelKnights" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-trophy text-blue-500 ml-1"></i> فرسان الحلقات</span>
+                </div>
 
             <!-- بوابة تكريم فرسان اليوم -->
             <div id="supervisorPanel" class="bg-white rounded-3xl shadow-xl border-4 border-blue-500 flex flex-col overflow-hidden w-full shrink-0">
@@ -812,10 +882,66 @@
     </div>
 
     <!-- تبويب السجل: عرض التقارير فقط -->
-    <div id="page-records" class="tab-content p-6 md:p-10">
-        <div class="max-w-[1800px] mx-auto flex flex-col gap-8 items-start w-full">
-            <div id="printableArea" class="max-w-[1800px] w-full flex flex-col gap-8">
-                
+    <div id="page-records" class="tab-content p-4 md:p-8">
+        <div class="max-w-[1800px] mx-auto flex flex-col gap-5 items-start w-full">
+
+            <!-- ═══ الصفحة الرئيسية للسجل (شبكة أيقونات) ═══ -->
+            <div id="recordsHome" class="panel-home no-print">
+                <div class="panel-home-title"><i class="fas fa-file-invoice text-blue-600"></i> السجل والتقارير</div>
+                <div class="panel-home-sub">اختر التقرير الذي تريد عرضه</div>
+                <div class="panel-grid">
+                    <button class="panel-card" style="--pc-accent:#2563eb; --pc-bg:#eff6ff" onclick="openRecordsSection('recPanelMain')">
+                        <span class="pc-icon"><i class="fas fa-table-list"></i></span>
+                        <span class="pc-title">السجل التراكمي</span>
+                        <span class="pc-desc">كل طالب: حضور · آيات · نقاط · واتساب</span>
+                        <span class="pc-badge" id="rcBadgeMain">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#10b981; --pc-bg:#ecfdf5" onclick="openRecordsSection('recPanelStats')">
+                        <span class="pc-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="pc-title">إحصائيات المجمع</span>
+                        <span class="pc-desc">آيات · صفحات · أحزاب · أجزاء · الانضباط</span>
+                        <span class="pc-badge" id="rcBadgeStats">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#a855f7; --pc-bg:#faf5ff" onclick="openRecordsSection('recPanelTimeline')">
+                        <span class="pc-icon"><i class="fas fa-calendar-days"></i></span>
+                        <span class="pc-title">الإنتاجية اليومية</span>
+                        <span class="pc-desc">حصاد كل يوم على حدة</span>
+                        <span class="pc-badge" id="rcBadgeTimeline">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#ef4444; --pc-bg:#fef2f2" onclick="openRecordsSection('recPanelAbsence')">
+                        <span class="pc-icon"><i class="fas fa-user-xmark"></i></span>
+                        <span class="pc-title">الغياب والانقطاع</span>
+                        <span class="pc-desc">حصر الغائبين والمنقطعين · واتساب</span>
+                        <span class="pc-badge" id="rcBadgeAbsence">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openRecordsSection('recPanelExam')">
+                        <span class="pc-icon"><i class="fas fa-award"></i></span>
+                        <span class="pc-title">نتائج الاختبار</span>
+                        <span class="pc-desc">مرتبة تنازلياً لحفل الختام</span>
+                        <span class="pc-badge" id="rcBadgeExam">—</span>
+                    </button>
+                    <button class="panel-card" style="--pc-accent:#475569; --pc-bg:#f8fafc" onclick="openRecordsSection('recPanelAll')">
+                        <span class="pc-icon"><i class="fas fa-print"></i></span>
+                        <span class="pc-title">عرض الكل وطباعة</span>
+                        <span class="pc-desc">التقرير الشامل للطباعة والتصدير</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- شريط الرجوع (يظهر داخل الأقسام) -->
+            <div id="recordsBackBar" class="panel-back-bar no-print" style="display:none;">
+                <button class="panel-back-btn" onclick="backToRecordsHome()"><i class="fas fa-arrow-right"></i></button>
+                <span class="panel-back-title" id="recordsBackTitle">—</span>
+                <div class="mr-auto flex gap-2 shrink-0">
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-4 rounded-xl"><i class="fas fa-file-excel"></i> إكسل</button>
+                    <button onclick="window.print()" class="bg-slate-600 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded-xl"><i class="fas fa-print"></i> طباعة</button>
+                </div>
+            </div>
+
+            <div id="printableArea" class="max-w-[1800px] w-full flex flex-col gap-6">
+
+                <!-- ═══ قسم: السجل التراكمي ═══ -->
+                <div id="recPanelMain" class="rec-panel w-full">
                 <div class="bg-white rounded-3xl shadow-xl border-4 border-blue-600 flex flex-col overflow-hidden w-full">
                     <div class="bg-blue-700 text-white p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-blue-900">
                         <div class="flex items-center gap-4">
@@ -855,7 +981,34 @@
                         </table>
                     </div>
                 </div>
+                </div><!-- /قسم السجل التراكمي -->
 
+                <!-- ═══ قسم: الغياب والانقطاع ═══ -->
+                <div id="recPanelAbsence" class="rec-panel w-full">
+                    <div class="bg-white rounded-3xl shadow-xl border-4 border-red-500 overflow-hidden w-full">
+                        <div class="bg-gradient-to-r from-red-600 to-rose-600 text-white p-5">
+                            <h2 class="text-xl md:text-2xl font-black flex items-center gap-3">
+                                <i class="fas fa-user-xmark"></i> الغياب والانقطاع
+                            </h2>
+                            <p class="text-sm text-red-100 font-bold mt-1">حصر الغائبين والمنقطعين وإرسال التنبيهات لأولياء الأمور</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 space-y-5">
+                            <div id="absenceSummary" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                            <div class="flex flex-wrap gap-4">
+                                <button onclick="copyAbsenteesList()" class="bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300">
+                                    <i class="fab fa-whatsapp text-green-600 text-2xl"></i> حصر غائبي اليوم وإرسال تنبيه
+                                </button>
+                                <button onclick="copyChronicAbsenteesList()" class="bg-red-50 hover:bg-red-100 text-red-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-red-300">
+                                    <i class="fab fa-whatsapp text-red-600 text-2xl"></i> حصر المنقطعين (يومان فأكثر)
+                                </button>
+                            </div>
+                            <div id="absenceDetailList" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div><!-- /قسم الغياب -->
+
+                <!-- ═══ قسم: إحصائيات المجمع ═══ -->
+                <div id="recPanelStats" class="rec-panel w-full">
                 <div id="overallEquivalencyDashboard" class="bg-white rounded-3xl shadow-xl border-4 border-emerald-500 p-6 w-full hidden no-print-break">
                     <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-4 border-slate-100 pb-3 flex items-center gap-3">
                         <i class="fas fa-chart-line text-emerald-500"></i> الإحصائيات الشاملة للمجمع
@@ -892,6 +1045,10 @@
                     </div>
                 </div>
 
+                </div><!-- /قسم الإحصائيات -->
+
+                <!-- ═══ قسم: الإنتاجية اليومية ═══ -->
+                <div id="recPanelTimeline" class="rec-panel w-full">
                 <div class="bg-white rounded-3xl shadow-xl border-4 border-purple-600 flex flex-col overflow-hidden w-full mt-2 no-print-break">
                     <div class="bg-purple-700 text-white p-5 flex items-center gap-4 border-b-4 border-purple-900">
                         <i class="fas fa-history text-5xl text-purple-300"></i>
@@ -915,6 +1072,10 @@
                     </div>
                 </div>
 
+                </div><!-- /قسم الإنتاجية -->
+
+                <!-- ═══ قسم: نتائج الاختبار ═══ -->
+                <div id="recPanelExam" class="rec-panel w-full">
                 <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-600 flex flex-col overflow-hidden w-full mt-2 no-print-break">
                     <div class="bg-emerald-700 text-white p-5 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-emerald-900">
                         <div class="flex items-center gap-4">
@@ -943,6 +1104,7 @@
                         </table>
                     </div>
                 </div>
+                </div><!-- /قسم الاختبار -->
             </div>
         </div>
     </div>
@@ -3165,7 +3327,14 @@
             return streak;
         }
         
-        function updateAllUIs() { renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable(); processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport(); }
+        function updateAllUIs() {
+            renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
+            processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
+            if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
+            if (typeof updateRecordsBadges === 'function') updateRecordsBadges();
+            if (typeof updateSettingsBadges === 'function') updateSettingsBadges();
+            if (document.getElementById('recPanelAbsence')?.classList.contains('active')) renderAbsenceReport();
+        }
         
         function updateThreeKnightsSelects() {
             const ids = ['fars1Select', 'fars2Select', 'fars3Select'];
@@ -4321,8 +4490,11 @@
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0);
-            // تحديث قسم إعدادات البرنامج عند فتح تبويب الإعدادات
-            if (id === 'page-settings' && typeof renderProgramSettings === 'function') renderProgramSettings();
+            if (id === 'page-settings') {
+                if (typeof renderProgramSettings === 'function') renderProgramSettings();
+                if (typeof backToSettingsHome === 'function') backToSettingsHome();
+            }
+            if (id === 'page-records' && typeof updateRecordsBadges === 'function') updateRecordsBadges();
         }
         function showToast(msg, type='success') { const t = document.getElementById('toastMessage'); document.getElementById('toastText').innerText = msg; if(type === 'error') { t.classList.replace('bg-emerald-600', 'bg-red-600'); } else { t.classList.replace('bg-red-600', 'bg-emerald-600'); } t.classList.remove('hidden', 'opacity-0'); t.classList.add('opacity-100'); setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => t.classList.add('hidden'), 300); }, 2500); }
         
@@ -4573,14 +4745,182 @@
             pomodoro: 'شاشة البومودورو'
         };
 
-        // تبديل تبويبات صفحة الإعدادات
-        function switchSettingsTab(panelId, btn) {
+        // ================================================================
+        // التنقّل في صفحة الإعدادات (شبكة أيقونات ← قسم)
+        // ================================================================
+        function openSettingsSection(panelId) {
+            const home = document.getElementById('settingsHome');
+            if (home) home.style.display = 'none';
             document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.set-tab').forEach(b => b.classList.remove('active'));
             document.getElementById(panelId)?.classList.add('active');
-            btn?.classList.add('active');
-            try { localStorage.setItem('almahra_settings_tab', panelId); } catch (e) {}
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToSettingsHome() {
+            document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
+            const home = document.getElementById('settingsHome');
+            if (home) { home.style.display = ''; updateSettingsBadges(); }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================================================================
+        // التنقّل في صفحة السجل (شبكة أيقونات ← تقرير)
+        // ================================================================
+        const RECORDS_TITLES = {
+            recPanelMain:     '<i class="fas fa-table-list text-blue-600 ml-1"></i> السجل التراكمي الشامل',
+            recPanelStats:    '<i class="fas fa-chart-line text-emerald-600 ml-1"></i> إحصائيات المجمع',
+            recPanelTimeline: '<i class="fas fa-calendar-days text-purple-600 ml-1"></i> الإنتاجية اليومية',
+            recPanelAbsence:  '<i class="fas fa-user-xmark text-red-600 ml-1"></i> الغياب والانقطاع',
+            recPanelExam:     '<i class="fas fa-award text-emerald-600 ml-1"></i> نتائج الاختبار النهائي',
+            recPanelAll:      '<i class="fas fa-print text-slate-600 ml-1"></i> التقرير الشامل للطباعة'
+        };
+
+        function openRecordsSection(panelId) {
+            document.getElementById('recordsHome').style.display = 'none';
+            document.getElementById('recordsBackBar').style.display = 'flex';
+            document.getElementById('recordsBackTitle').innerHTML = RECORDS_TITLES[panelId] || '';
+
+            const panels = document.querySelectorAll('.rec-panel');
+            if (panelId === 'recPanelAll') {
+                panels.forEach(p => p.classList.add('active')); // الكل للطباعة
+            } else {
+                panels.forEach(p => p.classList.remove('active'));
+                document.getElementById(panelId)?.classList.add('active');
+            }
+            if (panelId === 'recPanelAbsence') renderAbsenceReport();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToRecordsHome() {
+            document.querySelectorAll('.rec-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('recordsBackBar').style.display = 'none';
+            document.getElementById('recordsHome').style.display = '';
+            updateRecordsBadges();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // الانتقال من شريط التنبيه في التحضير إلى تقرير الغياب
+        function goToAbsenceReport() {
+            const recBtn = document.querySelectorAll('nav .nav-btn')[3];
+            if (recBtn) switchTab('page-records', recBtn);
+            setTimeout(() => openRecordsSection('recPanelAbsence'), 60);
+        }
+
+        // ================================================================
+        // تقرير الغياب والانقطاع
+        // ================================================================
+        function getTodayAbsentees() {
+            return students.filter(s => !s.history?.[todayStr]?.attended);
+        }
+
+        function getChronicAbsentees() {
+            const wdList = getWorkingDaysList(students);
+            return students
+                .map(s => ({ student: s, streak: getConsecutiveAbsenceStreak(s, wdList) }))
+                .filter(x => x.streak >= 2)
+                .sort((a, b) => b.streak - a.streak);
+        }
+
+        function renderAbsenceReport() {
+            const sum = document.getElementById('absenceSummary');
+            const list = document.getElementById('absenceDetailList');
+            if (!sum || !list) return;
+
+            const absentToday = getTodayAbsentees();
+            const chronic = getChronicAbsentees();
+            const present = students.length - absentToday.length;
+
+            const card = (color, icon, label, value) => `
+                <div class="bg-white rounded-2xl border-2 border-${color}-200 p-4 text-center">
+                    <div class="text-3xl mb-1">${icon}</div>
+                    <div class="text-3xl font-black text-${color}-700">${value}</div>
+                    <div class="text-sm font-bold text-slate-500 mt-1">${label}</div>
+                </div>`;
+
+            sum.innerHTML =
+                card('emerald', '✅', 'حاضرون اليوم', present) +
+                card('amber', '⚠️', 'غائبون اليوم', absentToday.length) +
+                card('red', '🚫', 'منقطعون (يومان+)', chronic.length);
+
+            let html = '';
+            if (chronic.length) {
+                html += `<div class="font-black text-red-700 mt-4 mb-2">🚫 المنقطعون (${chronic.length})</div>`;
+                html += chronic.map(x => `
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2">
+                        <span class="font-bold text-slate-700">${escapeHTML(x.student.name)}</span>
+                        <span class="text-sm font-black bg-red-600 text-white px-3 py-1 rounded-full shrink-0">غاب ${x.streak} أيام</span>
+                    </div>`).join('');
+            }
+            if (absentToday.length) {
+                html += `<div class="font-black text-amber-700 mt-5 mb-2">⚠️ غائبو اليوم (${absentToday.length})</div>`;
+                html += absentToday.map(s => `
+                    <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
+                        <span class="font-bold text-slate-700">${escapeHTML(s.name)}</span>
+                    </div>`).join('');
+            }
+            if (!html) html = '<div class="text-center text-emerald-600 font-black py-8 text-lg">🎉 لا يوجد غياب — الحمد لله</div>';
+            list.innerHTML = html;
+        }
+
+        // شريط تنبيه الغياب في صفحة التحضير
+        function updateAttendanceAlertBar() {
+            const bar = document.getElementById('attendanceAlertBar');
+            const txt = document.getElementById('attendanceAlertText');
+            if (!bar || !txt) return;
+            if (students.length === 0) { bar.classList.add('hidden'); return; }
+
+            const absentToday = getTodayAbsentees().length;
+            const chronic = getChronicAbsentees().length;
+            if (absentToday === 0 && chronic === 0) { bar.classList.add('hidden'); return; }
+
+            let parts = [];
+            if (absentToday) parts.push(`<strong>${absentToday}</strong> غائب اليوم`);
+            if (chronic) parts.push(`<strong>${chronic}</strong> منقطع (يومان فأكثر)`);
+            txt.innerHTML = parts.join(' · ');
+            bar.classList.remove('hidden');
+        }
+
+        // تحديث أرقام بطاقات السجل
+        function updateRecordsBadges() {
+            const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+            set('rcBadgeMain', `${students.length} طالب`);
+
+            let totalAyahs = 0;
+            students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });
+            set('rcBadgeStats', `${totalAyahs.toLocaleString('ar-EG')} آية`);
+
+            const days = new Set();
+            students.forEach(s => { for (const d in s.history) days.add(d); });
+            set('rcBadgeTimeline', `${days.size} يوم`);
+
+            const absent = getTodayAbsentees().length;
+            const chronic = getChronicAbsentees().length;
+            set('rcBadgeAbsence', absent || chronic ? `${absent} غائب · ${chronic} منقطع` : 'لا غياب');
+
+            const examCount = students.filter(s => s.examResult && s.examResult.total !== undefined).length;
+            set('rcBadgeExam', examCount ? `${examCount} نتيجة` : 'لا نتائج');
+        }
+
+        // تحديث الأرقام على بطاقات الإعدادات
+        function updateSettingsBadges() {
+            const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            const season = window.almahraPrograms?.getCurrentSeason();
+            set('scBadgeProgram', season?.name || prog?.name || '—');
+
+            const crit = getProgramSettings().criteria || [];
+            const pos = crit.filter(c => (c.points || 0) >= 0).length;
+            const neg = crit.length - pos;
+            set('scBadgeCriteria', `${pos} معيار · ${neg} مخالفة`);
+
+            const tiers = getTiers();
+            const assigned = students.filter(s => s.tierId && tiers.some(t => t.id === s.tierId)).length;
+            set('scBadgeTiers', tiers.length ? `${tiers.length} شرائح · ${assigned} مُسنَد` : 'لا شرائح');
+
+            set('scBadgeStudents', `${students.length} طالب`);
+
+            const examCount = students.filter(s => s.examResult && s.examResult.total !== undefined).length;
+            set('scBadgeExam', examCount ? `${examCount} نتيجة` : 'لا نتائج بعد');
         }
 
         // زر الحفظ المشترك (يظهر أسفل كل تبويب إعدادات)
@@ -4829,31 +5169,7 @@
             renderCriteriaRows(s.criteria || []);
             renderTierRows(s.tiers || []);
             fillFarsModeSelect();
-            restoreSettingsTab();
-        }
-
-        // استعادة آخر تبويب إعدادات كان مفتوحاً
-        function restoreSettingsTab() {
-            let saved = null;
-            try { saved = localStorage.getItem('almahra_settings_tab'); } catch (e) {}
-            const anyActive = document.querySelector('.set-panel.active');
-            if (!saved && anyActive) return; // تبويب نشط بالفعل
-
-            const target = (saved && document.getElementById(saved)) ? saved : 'setPanelProgram';
-            const btn = document.querySelector(`.set-tab[data-panel="${target}"]`);
-            // لا نستعيد تبويباً مخفياً (مثل المجموعات المعطّلة)
-            if (!btn || btn.classList.contains('hidden')) {
-                const fallback = document.querySelector('.set-tab[data-panel="setPanelProgram"]');
-                document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.set-tab').forEach(b => b.classList.remove('active'));
-                document.getElementById('setPanelProgram')?.classList.add('active');
-                fallback?.classList.add('active');
-                return;
-            }
-            document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.set-tab').forEach(b => b.classList.remove('active'));
-            document.getElementById(target)?.classList.add('active');
-            btn.classList.add('active');
+            updateSettingsBadges();
         }
 
         // ================================================================
