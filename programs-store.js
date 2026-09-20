@@ -133,7 +133,64 @@ function notify() {
 }
 
 // ================================================================
-// التهيئة: إنشاء البرنامجين + الموسم الأول إن لم يوجدا
+// ترقية الإعدادات: تضيف الحقول الجديدة للبرامج القائمة
+// كل زيادة في هذا الرقم تُشغّل الترقية مرة واحدة على كل برنامج
+// ================================================================
+const SETTINGS_VERSION = 2;
+
+function migrateSettings(programId, settings) {
+    const defaults = PROGRAM_DEFS[programId]?.defaultSettings;
+    if (!defaults) return { settings, changed: false };
+
+    const s = settings ? JSON.parse(JSON.stringify(settings)) : {};
+    let changed = false;
+
+    // الشرائح: تُضاف إن لم تكن معرّفة إطلاقاً (undefined ≠ مصفوفة فارغة متعمّدة)
+    if (s.tiers === undefined) {
+        s.tiers = JSON.parse(JSON.stringify(defaults.tiers || []));
+        changed = true;
+    }
+
+    // المعايير: تُضاف كاملة إن غابت، أو تُكمَّل بالسلبية إن لم توجد أي سالبة
+    if (!Array.isArray(s.criteria)) {
+        s.criteria = JSON.parse(JSON.stringify(defaults.criteria || []));
+        changed = true;
+    } else if ((s.settingsVersion || 0) < 2) {
+        const hasNegative = s.criteria.some(c => (c.points || 0) < 0);
+        if (!hasNegative) {
+            const negatives = (defaults.criteria || []).filter(c => (c.points || 0) < 0);
+            if (negatives.length) {
+                s.criteria = [...s.criteria, ...JSON.parse(JSON.stringify(negatives))];
+                changed = true;
+            }
+        }
+    }
+
+    // الميزات: نضم أي ميزة جديدة بقيمتها الافتراضية دون المساس بما ضبطه المستخدم
+    const mergedFeatures = { ...(defaults.features || {}), ...(s.features || {}) };
+    if (JSON.stringify(mergedFeatures) !== JSON.stringify(s.features || {})) {
+        s.features = mergedFeatures;
+        changed = true;
+    }
+
+    // بقية الحقول الأساسية
+    ['raceName', 'raceSubtitle', 'points', 'workingDays'].forEach(k => {
+        if (s[k] === undefined && defaults[k] !== undefined) {
+            s[k] = JSON.parse(JSON.stringify(defaults[k]));
+            changed = true;
+        }
+    });
+
+    if ((s.settingsVersion || 0) < SETTINGS_VERSION) {
+        s.settingsVersion = SETTINGS_VERSION;
+        changed = true;
+    }
+
+    return { settings: s, changed };
+}
+
+// ================================================================
+// التهيئة: إنشاء البرنامجين + الموسم الأول + ترقية الإعدادات
 // ================================================================
 async function ensureProgramsExist() {
     for (const key of Object.keys(PROGRAM_DEFS)) {
@@ -143,13 +200,23 @@ async function ensureProgramsExist() {
 
         if (!snap.exists()) {
             console.log(`🆕 إنشاء البرنامج: ${def.name}`);
+            const fresh = JSON.parse(JSON.stringify(def.defaultSettings));
+            fresh.settingsVersion = SETTINGS_VERSION;
             await setDoc(progRef, {
                 name: def.name,
                 type: def.id,
-                settings: JSON.parse(JSON.stringify(def.defaultSettings)),
+                settings: fresh,
                 activeSeasonId: null,
                 createdAt: serverTimestamp()
             });
+        } else {
+            // ترقية إعدادات برنامج قائم
+            const current = snap.data();
+            const { settings: upgraded, changed } = migrateSettings(def.id, current.settings);
+            if (changed) {
+                console.log(`⬆️ ترقية إعدادات: ${def.name} → v${SETTINGS_VERSION}`);
+                await updateDoc(progRef, { settings: upgraded });
+            }
         }
 
         // تأكد من وجود موسم نشط
@@ -301,10 +368,25 @@ window.almahraPrograms = {
     // تحديث إعدادات البرنامج
     updateSettings: async (programId, newSettings) => {
         try {
-            await updateDoc(doc(db, PROGRAMS, programId), { settings: newSettings });
+            const payload = { ...newSettings, settingsVersion: SETTINGS_VERSION };
+            await updateDoc(doc(db, PROGRAMS, programId), { settings: payload });
             return { success: true };
         } catch (err) {
             console.error('❌ updateSettings:', err);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // إعادة ضبط إعدادات برنامج للافتراضي (زر طوارئ)
+    resetSettings: async (programId) => {
+        try {
+            const def = PROGRAM_DEFS[programId];
+            if (!def) return { success: false, error: 'برنامج غير معروف' };
+            const fresh = JSON.parse(JSON.stringify(def.defaultSettings));
+            fresh.settingsVersion = SETTINGS_VERSION;
+            await updateDoc(doc(db, PROGRAMS, programId), { settings: fresh });
+            return { success: true };
+        } catch (err) {
             return { success: false, error: err.message };
         }
     },

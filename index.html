@@ -935,6 +935,25 @@
         </div>
     </div>
 
+    <!-- نافذة إسناد الطلاب للشرائح جماعياً -->
+    <div id="bulkTierModal" class="fixed inset-0 z-[6500] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
+            <div class="bg-indigo-600 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-users-gear"></i> إسناد الطلاب للشرائح</h3>
+                <button onclick="closeBulkTierModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 bg-indigo-50 text-indigo-800 font-bold border-b border-indigo-200 text-sm shrink-0">
+                اختر شريحة كل طالب من القائمة المقابلة له، ثم احفظ.
+            </div>
+            <div class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2" id="bulkTierList"></div>
+            <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0">
+                <button onclick="saveBulkTierAssign()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg py-3 rounded-2xl shadow">
+                    <i class="fas fa-check ml-2"></i> حفظ الإسناد
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- نافذة فحص الأسماء المتشابهة (تكرار محتمل) -->
     <div id="similarNamesModal" class="fixed inset-0 z-[6500] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border-4 border-orange-500 flex flex-col max-h-[90vh]">
@@ -3235,9 +3254,16 @@
             const searchInput = document.getElementById('settingsSearchInput'); const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
             students.forEach(student => {
                 if (query && !student.name.toLowerCase().includes(query)) return;
+                const tier = getStudentTier(student);
+                const tierBadge = tier
+                    ? `<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(tier.name)}</span>`
+                    : (getTiers().length ? `<span class="text-[10px] font-black bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full shrink-0">بلا شريحة</span>` : '');
                 container.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <span class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black">#${student.id}</span> ${escapeHTML(student.name)}</span>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black">#${student.id}</span> ${escapeHTML(student.name)}</div>
+                            <div class="mt-1">${tierBadge}</div>
+                        </div>
                         <div class="flex gap-1 shrink-0">
                             <button onclick="openStudentModal(${student.id})" class="text-blue-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-pen"></i></button>
                             <button onclick="confirmDelete(${student.id})" class="text-red-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-trash"></i></button>
@@ -4550,9 +4576,15 @@
                             تُقسّم الطلاب لمستويات، فيُكرَّم فارس من كل شريحة — حتى لا يستحوذ المتفوقون على التكريم دائماً.
                         </p>
                         <div id="psTiersList" class="space-y-2 mb-3"></div>
-                        <button type="button" onclick="addTierRow()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-2 border-indigo-300 font-bold py-2 px-5 rounded-xl text-sm">
-                            <i class="fas fa-plus"></i> إضافة شريحة
-                        </button>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="addTierRow()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-2 border-indigo-300 font-bold py-2 px-5 rounded-xl text-sm">
+                                <i class="fas fa-plus"></i> إضافة شريحة
+                            </button>
+                            <button type="button" onclick="openBulkTierAssign()" class="bg-white hover:bg-indigo-50 text-indigo-700 border-2 border-indigo-300 font-bold py-2 px-5 rounded-xl text-sm">
+                                <i class="fas fa-users-gear"></i> إسناد الطلاب للشرائح
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-400 font-bold mt-2">احفظ الإعدادات أولاً قبل إسناد الطلاب للشرائح الجديدة.</p>
                     </div>
 
                     <!-- معايير الانضباط -->
@@ -4586,9 +4618,14 @@
                 </div>
 
                 ${!isArchivedView ? `
-                <button onclick="saveProgramSettings()" class="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xl py-4 rounded-2xl shadow-lg transition-all">
-                    <i class="fas fa-save ml-2"></i> حفظ الإعدادات
-                </button>` : ''}
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button onclick="saveProgramSettings()" class="flex-[3] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xl py-4 rounded-2xl shadow-lg transition-all">
+                        <i class="fas fa-save ml-2"></i> حفظ الإعدادات
+                    </button>
+                    <button onclick="resetProgramSettings()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-2xl border-2 border-slate-300 transition-all">
+                        <i class="fas fa-rotate-left ml-1"></i> استعادة الافتراضي
+                    </button>
+                </div>` : ''}
 
                 <!-- إدارة المواسم -->
                 <div class="mt-8 pt-6 border-t-2 border-slate-200">
@@ -4782,6 +4819,66 @@
             showToast('✅ حُفظت الإعدادات');
             applyProgramFeatures();
             updateCurrentEventBadge();
+        }
+
+        // ================================================================
+        // إسناد الطلاب للشرائح جماعياً
+        // ================================================================
+        function openBulkTierAssign() {
+            const tiers = getTiers();
+            if (tiers.length === 0) { showToast('أضف شرائح واحفظ الإعدادات أولاً', 'error'); return; }
+            if (students.length === 0) { showToast('لا يوجد طلاب بعد', 'error'); return; }
+
+            const list = document.getElementById('bulkTierList');
+            const opts = '<option value="">— بلا شريحة —</option>' +
+                tiers.map(t => `<option value="${t.id}">${escapeHTML(t.name)}</option>`).join('');
+
+            list.innerHTML = students.map(s => `
+                <div class="bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                    <span class="font-bold text-slate-700 min-w-0 flex-1 truncate">
+                        <span class="text-slate-400 font-black">#${s.id}</span> ${escapeHTML(s.name)}
+                    </span>
+                    <select class="bulk-tier-sel p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 shrink-0"
+                            data-sid="${s.id}">${opts}</select>
+                </div>
+            `).join('');
+
+            // ضبط القيم الحالية
+            list.querySelectorAll('.bulk-tier-sel').forEach(sel => {
+                const st = students.find(x => String(x.id) === sel.dataset.sid);
+                sel.value = st?.tierId || '';
+            });
+
+            document.getElementById('bulkTierModal').classList.replace('hidden', 'flex');
+        }
+
+        function closeBulkTierModal() {
+            document.getElementById('bulkTierModal').classList.replace('flex', 'hidden');
+        }
+
+        function saveBulkTierAssign() {
+            let changed = 0;
+            document.querySelectorAll('.bulk-tier-sel').forEach(sel => {
+                const st = students.find(x => String(x.id) === sel.dataset.sid);
+                if (st && (st.tierId || '') !== sel.value) { st.tierId = sel.value; changed++; }
+            });
+            if (changed === 0) { showToast('لا تغييرات'); closeBulkTierModal(); return; }
+            saveData(); updateAllUIs(); closeBulkTierModal();
+            showToast(`✅ أُسند ${changed} طالب للشرائح`);
+            renderProgramSettings();
+        }
+
+        async function resetProgramSettings() {
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            if (!prog) return;
+            if (!confirm('استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(الشرائح، المعايير، النقاط، أيام العمل، الميزات)\n\nبيانات الطلاب لن تتأثر.')) return;
+            const r = await window.almahraPrograms.resetSettings(prog.id);
+            if (r.success) {
+                showToast('✅ استُعيدت الإعدادات الافتراضية');
+                setTimeout(() => { renderProgramSettings(); applyProgramFeatures(); updateAllUIs(); }, 500);
+            } else {
+                showToast('فشل: ' + r.error, 'error');
+            }
         }
 
         async function startNewSeasonFlow() {
