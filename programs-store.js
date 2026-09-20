@@ -56,10 +56,16 @@ export const PROGRAM_DEFS = {
                 { id: 'uniform',   name: 'الالتزام بالزي الرسمي',   points: 3,   enabled: true },
                 { id: 'engage',    name: 'المشاركة والتفاعل',       points: 3,   enabled: true },
                 { id: 'neat',      name: 'النظافة والمظهر',         points: 2,   enabled: true },
-                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true },
-                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true },
-                { id: 'disturb',   name: 'إزعاج أو تشويش',          points: -5,  enabled: true }
+                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true, blocksTitles: false },
+                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true, blocksTitles: true },
+                { id: 'disturb',   name: 'إزعاج أو تشويش',          points: -5,  enabled: true, blocksTitles: false }
             ],
+            // شروط استحقاق الألقاب (لوحة الشرف)
+            titleRules: {
+                requireSard: true,            // لا لقب لمن لم يسرد شيئاً
+                weeklyAttendancePct: 75,      // أدنى حضور لفارس الأسبوع (٪ من أيام العمل)
+                disciplineRequiresFullWeek: true // نجوم الانضباط: حضور كامل بلا غياب ولا مخالفة
+            },
             features: {
                 newMemorization: true,
                 review: true,
@@ -95,9 +101,14 @@ export const PROGRAM_DEFS = {
                 { id: 'early',     name: 'الحضور المبكر',          points: 5,   enabled: true },
                 { id: 'manners',   name: 'حسن الخلق والأدب',        points: 5,   enabled: true },
                 { id: 'engage',    name: 'المشاركة والتفاعل',       points: 3,   enabled: true },
-                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true },
-                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true }
+                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true, blocksTitles: false },
+                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true, blocksTitles: true }
             ],
+            titleRules: {
+                requireSard: true,
+                weeklyAttendancePct: 75,
+                disciplineRequiresFullWeek: true
+            },
             features: {
                 tiers: true,
                 newMemorization: false,  // مراجعة فقط
@@ -136,7 +147,7 @@ function notify() {
 // ترقية الإعدادات: تضيف الحقول الجديدة للبرامج القائمة
 // كل زيادة في هذا الرقم تُشغّل الترقية مرة واحدة على كل برنامج
 // ================================================================
-const SETTINGS_VERSION = 2;
+const SETTINGS_VERSION = 3;
 
 function migrateSettings(programId, settings) {
     const defaults = PROGRAM_DEFS[programId]?.defaultSettings;
@@ -163,6 +174,23 @@ function migrateSettings(programId, settings) {
                 s.criteria = [...s.criteria, ...JSON.parse(JSON.stringify(negatives))];
                 changed = true;
             }
+        }
+    }
+
+    // v3: خانة "تحجب الترشّح للألقاب" على المخالفات + شروط الألقاب
+    if ((s.settingsVersion || 0) < 3) {
+        if (Array.isArray(s.criteria)) {
+            s.criteria = s.criteria.map(c => {
+                if ((c.points || 0) >= 0 || c.blocksTitles !== undefined) return c;
+                // الافتراضي: مخالفة الأدب وحدها تحجب (ونتعرّف عليها بالمعرّف أو بالاسم)
+                const isManners = c.id === 'misbehave' || /أدب|خلق/.test(c.name || '');
+                changed = true;
+                return { ...c, blocksTitles: isManners };
+            });
+        }
+        if (s.titleRules === undefined) {
+            s.titleRules = JSON.parse(JSON.stringify(defaults.titleRules || {}));
+            changed = true;
         }
     }
 
@@ -399,6 +427,34 @@ window.almahraPrograms = {
         } catch (err) {
             return { success: false, error: err.message };
         }
+    },
+
+    // ============================================================
+    // فرسان اليوم المعتمدون — يُحفظون داخل الموسم ليظهروا على كل جهاز
+    // المسار: programs/{programId}/seasons/{seasonId} → حقل knightsLog
+    // ============================================================
+    saveKnightsEntry: async (programId, seasonId, entry) => {
+        if (!programId || !seasonId) return { success: false, error: 'لا يوجد موسم نشط' };
+        try {
+            const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);
+            const snap = await getDoc(ref);
+            const log = (snap.exists() && Array.isArray(snap.data().knightsLog)) ? snap.data().knightsLog : [];
+            // يُستبدل سجل اليوم نفسه إن وُجد، ولا يتكرر
+            const filtered = log.filter(e => e.dateStr !== entry.dateStr);
+            filtered.push(entry);
+            filtered.sort((a, b) => (a.dateStr < b.dateStr ? 1 : -1));
+            await updateDoc(ref, { knightsLog: filtered.slice(0, 200) });
+            return { success: true };
+        } catch (err) {
+            console.error('❌ saveKnightsEntry:', err);
+            return { success: false, error: err.message };
+        }
+    },
+
+    getKnightsLog: (programId, seasonId) => {
+        const list = seasonsCache[programId] || [];
+        const season = list.find(s => s.id === seasonId);
+        return Array.isArray(season?.knightsLog) ? season.knightsLog : [];
     },
 
     // تحديث اسم الموسم النشط

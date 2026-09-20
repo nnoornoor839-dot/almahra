@@ -1342,29 +1342,36 @@
         <canvas id="honorBoardCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-40"></canvas>
         <button onclick="closeHonorBoard()" class="absolute top-4 left-4 text-slate-400 hover:text-slate-700 text-5xl z-50 no-print"><i class="fas fa-times-circle"></i></button>
         <div class="relative z-10 w-full h-full grid grid-cols-2 grid-rows-2 gap-3 p-3 md:gap-4 md:p-4">
-            <div class="honor-card bg-white/95 border-8 border-blue-950 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
-                <div class="bg-gradient-to-r from-blue-950 to-slate-800 py-3 px-6 shrink-0">
-                    <h2 class="text-2xl md:text-4xl font-black text-amber-400 text-center"><i class="fas fa-star ml-2"></i> فرسان الأسبوع</h2>
-                </div>
-                <div id="hbWeeklyKnights" class="space-y-3 p-5 overflow-y-auto custom-scroll flex-grow"></div>
-            </div>
-            <div class="honor-card bg-white/95 border-8 border-teal-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
-                <div class="bg-gradient-to-r from-teal-500 to-cyan-500 py-3 px-6 shrink-0">
-                    <h2 class="text-2xl md:text-4xl font-black text-white text-center"><i class="fas fa-users ml-2"></i> نجوم الانضباط والتميز للأسبوع</h2>
-                </div>
-                <div id="hbWeeklyGroup" class="p-5 overflow-y-auto custom-scroll flex-grow flex flex-col items-center justify-center"></div>
-            </div>
+            <!-- ١) فرسان اليوم (لكل شريحة) -->
             <div class="honor-card bg-white/95 border-8 border-red-600 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
                 <div class="bg-gradient-to-r from-red-600 to-red-700 py-3 px-6 shrink-0">
-                    <h3 class="text-xl md:text-3xl font-black text-white text-center" id="hbDailyKnightsTitle">فرسان يوم ...</h3>
+                    <h3 class="text-xl md:text-3xl font-black text-white text-center" id="hbDailyKnightsTitle">فرسان اليوم</h3>
                 </div>
                 <div id="hbDailyKnights" class="space-y-3 p-5 overflow-y-auto custom-scroll flex-grow"></div>
             </div>
+
+            <!-- ٢) نجوم الانضباط للأسبوع -->
+            <div class="honor-card bg-white/95 border-8 border-teal-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
+                <div class="bg-gradient-to-r from-teal-500 to-cyan-500 py-3 px-6 shrink-0">
+                    <h2 class="text-xl md:text-3xl font-black text-white text-center"><i class="fas fa-shield-heart ml-2"></i> نجوم الانضباط للأسبوع</h2>
+                </div>
+                <div id="hbDisciplineStars" class="p-5 overflow-y-auto custom-scroll flex-grow"></div>
+            </div>
+
+            <!-- ٣) فرسان الأسبوع (لكل شريحة) -->
+            <div class="honor-card bg-white/95 border-8 border-blue-950 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
+                <div class="bg-gradient-to-r from-blue-950 to-slate-800 py-3 px-6 shrink-0">
+                    <h2 class="text-xl md:text-3xl font-black text-amber-400 text-center" id="hbWeeklyTitle"><i class="fas fa-star ml-2"></i> فرسان الأسبوع</h2>
+                </div>
+                <div id="hbWeeklyKnights" class="space-y-3 p-5 overflow-y-auto custom-scroll flex-grow"></div>
+            </div>
+
+            <!-- ٤) الأكثر تقدّماً / صدارة الموسم -->
             <div class="honor-card bg-white/95 border-8 border-emerald-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
                 <div class="bg-gradient-to-r from-emerald-500 to-green-600 py-3 px-6 shrink-0">
-                    <h3 class="text-xl md:text-3xl font-black text-white text-center" id="hbDailyGroupTitle">نجوم الانضباط والتميز ليوم ...</h3>
+                    <h3 class="text-xl md:text-3xl font-black text-white text-center" id="hbProgressTitle">الأكثر تقدّماً</h3>
                 </div>
-                <div id="hbDailyGroup" class="text-center p-5 overflow-y-auto custom-scroll flex-grow flex flex-col items-center justify-center"></div>
+                <div id="hbProgress" class="p-5 overflow-y-auto custom-scroll flex-grow"></div>
             </div>
         </div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 border-4 border-white shadow-2xl animate-trophy">
@@ -2531,12 +2538,38 @@
         }
 
         // --- فرسان اليوم الحاليين (آخر اعتماد محفوظ) ---
-        let currentThreeKnights = null;
+        // ================================================================
+        // فرسان اليوم المعتمدون — مصدرهم السحابة (داخل الموسم)
+        // localStorage يبقى كنسخة احتياطية محلية فقط عند تعذّر السحابة
+        // ================================================================
+        let currentThreeKnights = null;   // آخر اعتماد (للعرض على الشاشة)
+        let honorKnightsLog = [];         // كل اعتمادات الموسم (لعدّاد مرات الفوز)
+
         function loadCurrentThreeKnights() {
+            const programId = window.almahraPrograms?.getCurrentProgramId();
+            const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
+            if (programId && seasonId && window.almahraPrograms.getKnightsLog) {
+                honorKnightsLog = window.almahraPrograms.getKnightsLog(programId, seasonId) || [];
+                currentThreeKnights = honorKnightsLog.length ? honorKnightsLog[0] : null;
+                if (currentThreeKnights) return;
+            }
+            // احتياطي محلي (برنامج لم يُفتح بعد، أو تعذّرت السحابة)
             try { const saved = localStorage.getItem('almahara_current_knights_v1'); currentThreeKnights = saved ? JSON.parse(saved) : null; }
             catch(e) { currentThreeKnights = null; }
         }
-        function saveCurrentThreeKnights(data) { currentThreeKnights = data; try { localStorage.setItem('almahara_current_knights_v1', JSON.stringify(data)); } catch(e) {} }
+
+        async function saveCurrentThreeKnights(data) {
+            currentThreeKnights = data;
+            try { localStorage.setItem('almahara_current_knights_v1', JSON.stringify(data)); } catch(e) {}
+
+            const programId = window.almahraPrograms?.getCurrentProgramId();
+            const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
+            if (!programId || !seasonId) return;
+            if (window.almahraPrograms?.isCurrentSeasonArchived?.()) return; // موسم مؤرشف: لا كتابة
+
+            const res = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, data);
+            if (!res.success) showToast('تعذّر حفظ الفرسان سحابياً: ' + res.error, 'error');
+        }
 
         // --- لوحة الشرف ---
         let honorBoardLoopInterval = null;
@@ -2581,56 +2614,146 @@
             return `<ol class="mt-3 space-y-1.5 text-right">${names.map((n, i) => `<li class="font-bold text-lg md:text-xl">${i+1}- ${escapeHTML(n)}</li>`).join('')}</ol>`;
         }
 
+        // رسالة فارغة موحّدة داخل مربعات لوحة الشرف
+        function hbEmpty(msg, hint) {
+            return `<div class="text-center py-6">
+                        <div class="text-slate-400 text-lg font-bold">${msg}</div>
+                        ${hint ? `<div class="text-slate-300 text-sm font-bold mt-2">${hint}</div>` : ''}
+                    </div>`;
+        }
+
+        // سطر فائز واحد في لوحة الشرف
+        function hbWinnerRow(name, detail, opts = {}) {
+            const { medal = '', bg = 'bg-slate-50', border = 'border-slate-200', accent = 'text-amber-600', wins = 0, big = false } = opts;
+            return `
+                <div class="flex items-center gap-3 ${bg} rounded-xl px-4 py-3 border-2 ${border}">
+                    ${medal ? `<span class="${big ? 'text-3xl' : 'text-2xl'} shrink-0">${medal}</span>` : ''}
+                    <div class="flex-1 min-w-0">
+                        <div class="font-black ${big ? 'text-xl md:text-2xl' : 'text-lg'} text-slate-800 truncate">${escapeHTML(name)}</div>
+                        ${detail ? `<div class="text-xs md:text-sm font-bold text-slate-500 truncate">${escapeHTML(detail)}</div>` : ''}
+                    </div>
+                    ${wins > 1 ? `<span class="shrink-0 text-[11px] font-black bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">فاز ${wins}</span>` : ''}
+                </div>`;
+        }
+
         function renderHonorBoard() {
-            const champs = getWeeklyPointChampions();
-            const wkContainer = document.getElementById('hbWeeklyKnights');
-            if (champs.top3.length === 0) {
-                wkContainer.innerHTML = `<div class="text-center text-slate-400 text-lg py-6">لا توجد بيانات كافية للأسبوع الماضي بعد.</div>`;
-            } else {
-                const medals = ['🥇', '🥈', '🥉'];
-                wkContainer.innerHTML = champs.top3.map((c, i) => `
-                    <div class="flex items-center justify-between bg-blue-50 rounded-2xl px-5 py-4 border-2 border-blue-100">
-                        <span class="text-4xl">${medals[i]}</span>
-                        <span class="flex-1 text-center font-black text-xl md:text-2xl px-2 text-slate-800">${escapeHTML(c.name)}</span>
-                        <span class="text-amber-600 font-black text-xl shrink-0">${c.weeklyPoints} نقطة</span>
-                    </div>`).join('');
-            }
+            const tiers = getTiers();
+            const tiersOn = (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && tiers.length > 0;
+            const isReviewDay = window.almahraPrograms?.getCurrentProgramId() === 'review-day';
+            const winCounts = getKnightWinCounts();
 
-            const wgContainer = document.getElementById('hbWeeklyGroup');
-            const weeklyChamp = getCurrentWeeklyChampionGroup();
-            if (!weeklyChamp) {
-                wgContainer.innerHTML = `<div class="text-center text-slate-400 text-lg py-6">لم تُعتمد نجوم الانضباط والتميز للأسبوع بعد.</div>`;
-            } else {
-                wgContainer.innerHTML = `
-                    <div class="text-3xl md:text-4xl font-black text-teal-700 mb-1 text-center">${escapeHTML(weeklyChamp.name)}</div>
-                    ${weeklyChamp.total !== undefined ? `<div class="text-center mb-4"><span class="bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full font-black text-lg border-2 border-teal-200">مجموع الأسبوع: ${weeklyChamp.total} نقطة</span></div>` : ''}
-                    ${renderGroupMembersList(weeklyChamp.members)}
-                `;
-            }
-
-            document.getElementById('hbDailyKnightsTitle').innerText = currentThreeKnights ? `فرسان يوم ${currentThreeKnights.day}` : 'فرسان اليوم';
+            // ═══ ١) فرسان اليوم ═══
+            const dkTitle = document.getElementById('hbDailyKnightsTitle');
             const dkContainer = document.getElementById('hbDailyKnights');
-            const hasDailyKnights = currentThreeKnights && currentThreeKnights.fars.some(f => f.name);
-            if (!hasDailyKnights) {
-                dkContainer.innerHTML = `<div class="text-center text-slate-400 py-4">لم يُعتمد فرسان بعد.</div>`;
+            const approvedDate = currentThreeKnights?.dateStr || todayStr;
+            dkTitle.innerText = currentThreeKnights?.day ? `فرسان يوم ${currentThreeKnights.day}` : 'فرسان اليوم';
+
+            const approved = currentThreeKnights?.fars?.filter(f => f && f.name) || [];
+            if (approved.length > 0) {
+                // المعتمدون من المشرف لهم الأولوية دائماً
+                const medals = ['👑', '🥈', '🥉'];
+                dkContainer.innerHTML = approved.map((f, i) =>
+                    hbWinnerRow(f.name, f.achievement || '', {
+                        medal: medals[i], bg: 'bg-red-50', border: 'border-red-100',
+                        wins: winCounts[f.id] || 0, big: i === 0
+                    })).join('');
+            } else if (tiersOn) {
+                // اقتراح آلي لكل شريحة (حتى قبل الاعتماد)
+                let html = '';
+                tiers.forEach(t => {
+                    const winners = topTied(getDayTitleCandidates(approvedDate, t.id), e => e.points);
+                    if (winners.length === 0) return;
+                    html += `<div class="text-xs font-black text-slate-400 mt-2 mb-1">${escapeHTML(t.name)}</div>`;
+                    html += winners.map(w => hbWinnerRow(w.student.name, buildAchievementText(w), {
+                        medal: '👑', bg: 'bg-red-50', border: 'border-red-100', wins: winCounts[w.student.id] || 0
+                    })).join('');
+                });
+                dkContainer.innerHTML = html || hbEmpty('لم يُعتمد فرسان بعد', 'اعتمدهم من الإعدادات ← الفرسان');
             } else {
-                const medals2 = ['👑', '🥈', '🥉'];
-                dkContainer.innerHTML = currentThreeKnights.fars.map((f, i) => f.name ? `
-                    <div class="flex items-center gap-3 bg-red-50 rounded-xl px-4 py-3 border-2 border-red-100">
-                        <span class="text-2xl">${medals2[i]}</span><span class="font-black text-lg flex-1 text-slate-800">${escapeHTML(f.name)}</span>
-                    </div>` : '').join('');
+                const winners = topTied(getDayTitleCandidates(approvedDate), e => e.points);
+                dkContainer.innerHTML = winners.length
+                    ? winners.map(w => hbWinnerRow(w.student.name, buildAchievementText(w), {
+                        medal: '👑', bg: 'bg-red-50', border: 'border-red-100', wins: winCounts[w.student.id] || 0, big: true
+                      })).join('')
+                    : hbEmpty('لم يُعتمد فرسان بعد', 'اعتمدهم من الإعدادات ← الفرسان');
             }
 
-            const dgTitleEl = document.getElementById('hbDailyGroupTitle');
-            const dgContainer = document.getElementById('hbDailyGroup');
-            const prevWorkingDate = getPreviousWorkingDayInfo().dateStr;
-            const latestEntry = weeklyGroupLog.find(e => e.dateStr === prevWorkingDate) || null;
-            if (latestEntry) {
-                dgTitleEl.innerText = `نجوم الانضباط والتميز ليوم ${latestEntry.day}`;
-                dgContainer.innerHTML = `<span class="text-2xl font-black text-emerald-700">${escapeHTML(latestEntry.name)}</span>${latestEntry.score !== undefined ? `<div class="mt-1"><span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-black text-sm border-2 border-emerald-200">بدرجة ${latestEntry.score}/100</span></div>` : ''}${renderGroupMembersList(latestEntry.members)}`;
+            // ═══ ٢) نجوم الانضباط للأسبوع ═══
+            const dsContainer = document.getElementById('hbDisciplineStars');
+            const { stars, daysCount } = getDisciplineStars();
+            if (stars.length === 0) {
+                dsContainer.innerHTML = hbEmpty(
+                    'لم يستوفِ أحد الشروط بعد',
+                    'الشروط: حضور كل أيام الأسبوع · بلا أي مخالفة · تقييم انضباط يومي'
+                );
             } else {
-                dgTitleEl.innerText = 'نجوم الانضباط والتميز اليومي';
-                dgContainer.innerHTML = `<span class="text-slate-400">لم تُسجَّل بعد</span>`;
+                dsContainer.innerHTML = `
+                    <div class="text-center mb-3">
+                        <span class="bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full font-black text-sm border-2 border-teal-200">
+                            ما زال ملتزماً: ${stars.length} طالب · ${daysCount} أيام
+                        </span>
+                    </div>
+                    <div class="space-y-2">
+                        ${stars.map(s => hbWinnerRow(s.student.name, `${s.criteriaPoints} نقطة انضباط`, {
+                            medal: '⭐', bg: 'bg-teal-50', border: 'border-teal-100'
+                        })).join('')}
+                    </div>`;
+            }
+
+            // ═══ ٣) فرسان الأسبوع (يُستبدل بفرسان الموسم في اليوم القرآني) ═══
+            const wkTitle = document.getElementById('hbWeeklyTitle');
+            const wkContainer = document.getElementById('hbWeeklyKnights');
+
+            if (isReviewDay) {
+                wkTitle.innerHTML = '<i class="fas fa-crown ml-2"></i> فرسان الموسم';
+                const leaders = getSeasonLeaders(5);
+                wkContainer.innerHTML = leaders.length
+                    ? leaders.map((l, i) => hbWinnerRow(l.student.name, `${l.points} نقطة`, {
+                        medal: ['🥇','🥈','🥉','🏅','🏅'][i], bg: 'bg-blue-50', border: 'border-blue-100', big: i === 0
+                      })).join('')
+                    : hbEmpty('لا توجد بيانات بعد');
+            } else {
+                wkTitle.innerHTML = '<i class="fas fa-star ml-2"></i> فرسان الأسبوع';
+                if (tiersOn) {
+                    let html = '';
+                    tiers.forEach(t => {
+                        const winners = topTied(getWeekTitleCandidates(t.id), e => e.points);
+                        if (winners.length === 0) return;
+                        html += `<div class="text-xs font-black text-slate-400 mt-2 mb-1">${escapeHTML(t.name)}</div>`;
+                        html += winners.map(w => hbWinnerRow(w.student.name, `${w.points} نقطة · حضر ${w.attended}/${w.expected}`, {
+                            medal: '🥇', bg: 'bg-blue-50', border: 'border-blue-100'
+                        })).join('');
+                    });
+                    wkContainer.innerHTML = html || hbEmpty('لا مرشحين هذا الأسبوع', `الشرط: حضور ${getTitleRules().weeklyAttendancePct}٪ · بلا مخالفة أدب`);
+                } else {
+                    const winners = topTied(getWeekTitleCandidates(), e => e.points);
+                    wkContainer.innerHTML = winners.length
+                        ? winners.map(w => hbWinnerRow(w.student.name, `${w.points} نقطة · حضر ${w.attended}/${w.expected}`, {
+                            medal: '🥇', bg: 'bg-blue-50', border: 'border-blue-100', big: true
+                          })).join('')
+                        : hbEmpty('لا مرشحين هذا الأسبوع', `الشرط: حضور ${getTitleRules().weeklyAttendancePct}٪ · بلا مخالفة أدب`);
+                }
+            }
+
+            // ═══ ٤) الأكثر تقدّماً (أو صدارة الموسم إن لا سابقة) ═══
+            const prTitle = document.getElementById('hbProgressTitle');
+            const prContainer = document.getElementById('hbProgress');
+            const improved = getMostImproved(5);
+
+            if (improved.length > 0) {
+                prTitle.innerHTML = '<i class="fas fa-arrow-trend-up ml-2"></i> الأكثر تقدّماً';
+                prContainer.innerHTML = improved.map((m, i) => hbWinnerRow(
+                    m.student.name, `تقدّم ${m.growth}٪ · ${m.pastAvg} ← ${m.nowAvg} نقطة/يوم`,
+                    { medal: ['🚀','📈','📈','📈','📈'][i], bg: 'bg-emerald-50', border: 'border-emerald-100', big: i === 0 }
+                )).join('');
+            } else {
+                prTitle.innerHTML = '<i class="fas fa-crown ml-2"></i> صدارة الموسم';
+                const leaders = getSeasonLeaders(5);
+                prContainer.innerHTML = leaders.length
+                    ? leaders.map((l, i) => hbWinnerRow(l.student.name, `${l.points} نقطة`, {
+                        medal: ['🥇','🥈','🥉','🏅','🏅'][i], bg: 'bg-emerald-50', border: 'border-emerald-100', big: i === 0
+                      })).join('')
+                    : hbEmpty('لا توجد بيانات بعد', 'سجّل إنجازات الطلاب لتظهر هنا');
             }
         }
 
@@ -3358,6 +3481,8 @@
 
             saveCurrentThreeKnights({
                 day: farsDay,
+                dateStr: document.getElementById('farsAutoDate')?.value || todayStr,
+                savedAt: new Date().toISOString(),
                 fars: [
                     { id: student1 ? student1.id : null, name: student1 ? student1.name : null, achievement: ach1 || "التميز في الحفظ والسرد التراكمي" },
                     { id: student2 ? student2.id : null, name: student2 ? student2.name : null, achievement: ach2 || "التميز في الحفظ والسرد التراكمي" },
@@ -3909,6 +4034,196 @@
                 })
                 .filter(Boolean)
                 .sort((a, b) => b.criteriaPoints - a.criteriaPoints);
+        }
+
+        // ================================================================
+        // محرّك استحقاق الألقاب (لوحة الشرف)
+        // القواعد المتفق عليها:
+        //  • مخالفة موسومة "تحجب الترشّح" تُسقط لقبَي اليوم والأسبوع
+        //  • لا لقب لمن لم يسرد شيئاً
+        //  • فارس الأسبوع يشترط حضوراً لا يقل عن نسبة محددة
+        //  • نجوم الانضباط الأسبوعية: حضور كامل + صفر مخالفات + تقييم يومي فعلي
+        //  • التعادل يعني اشتراك اللقب
+        // ================================================================
+        function getTitleRules() {
+            const s = window.almahraPrograms?.getSettings()?.titleRules || {};
+            return {
+                requireSard: s.requireSard !== false,
+                weeklyAttendancePct: Number.isFinite(s.weeklyAttendancePct) ? s.weeklyAttendancePct : 75,
+                disciplineRequiresFullWeek: s.disciplineRequiresFullWeek !== false
+            };
+        }
+
+        // معرّفات المخالفات التي تحجب الترشّح
+        function getBlockingCriteriaIds() {
+            return getProgramSettings().criteria
+                .filter(c => (c.points || 0) < 0 && c.blocksTitles === true)
+                .map(c => c.id);
+        }
+
+        // هل في يوم الطالب مخالفة حاجبة؟
+        function dayHasBlockingViolation(dayRec, blockingIds) {
+            if (!dayRec || !dayRec.criteria) return false;
+            return blockingIds.some(id => dayRec.criteria[id] !== undefined);
+        }
+
+        // هل في يوم الطالب أي مخالفة أياً كانت؟
+        function dayHasAnyViolation(dayRec) {
+            if (!dayRec || !dayRec.criteria) return false;
+            return Object.values(dayRec.criteria).some(v => (v || 0) < 0);
+        }
+
+        // مرشحو لقب اليوم: حاضر + سرد + بلا مخالفة حاجبة
+        function getDayTitleCandidates(dateStr, tierId = null) {
+            const rules = getTitleRules();
+            const blocking = getBlockingCriteriaIds();
+            return getDayRanking(dateStr, tierId).filter(e => {
+                const d = e.student.history?.[dateStr];
+                if (rules.requireSard && (e.sard || 0) <= 0) return false;
+                if (dayHasBlockingViolation(d, blocking)) return false;
+                return true;
+            });
+        }
+
+        // كل المتصدرين المتعادلين في القمة (اشتراك اللقب)
+        function topTied(list, valueOf) {
+            if (!list || list.length === 0) return [];
+            const best = valueOf(list[0]);
+            return list.filter(e => valueOf(e) === best);
+        }
+
+        // نطاق الأسبوع الجاري (من أول أيام الأسبوع حتى اليوم)
+        function getCurrentWeekRange() {
+            const start = getWeekStartDate(todayStr);
+            return { startStr: start, endStr: todayStr };
+        }
+
+        // أيام العمل ضمن نطاق تاريخي (تعتمد أيام العمل من الإعدادات)
+        function getWorkingDatesInRange(startStr, endStr) {
+            const wd = getProgramSettings().workingDays;
+            const out = [];
+            const d = new Date(startStr + 'T12:00:00');
+            const end = new Date(endStr + 'T12:00:00');
+            let guard = 0;
+            while (d <= end && guard++ < 400) {
+                if (wd.includes(d.getDay())) out.push(formatDateLocal(d));
+                d.setDate(d.getDate() + 1);
+            }
+            return out;
+        }
+
+        // إحصاء الطالب خلال نطاق: نقاط، آيات، حضور، مخالفات
+        function summarizeRange(student, dates) {
+            let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, ratedDays = 0;
+            const blocking = getBlockingCriteriaIds();
+            dates.forEach(dt => {
+                const d = student.history?.[dt];
+                if (!d) return;
+                if (d.attended) attended++;
+                points += getDayPoints(d);
+                sard += (d.sard || 0);
+                if (dayHasAnyViolation(d)) violations++;
+                if (dayHasBlockingViolation(d, blocking)) blockingViolations++;
+                // هل قُيّم انضباطه فعلاً؟ (معيار إيجابي واحد على الأقل)
+                const crit = d.criteria || {};
+                if (Object.values(crit).some(v => (v || 0) > 0)) ratedDays++;
+            });
+            return { points, sard, attended, violations, blockingViolations, ratedDays, expected: dates.length };
+        }
+
+        // فرسان الأسبوع لشريحة (أو للكل) — مع شرط الحضور ومنع المخالفة الحاجبة
+        function getWeekTitleCandidates(tierId = null) {
+            const rules = getTitleRules();
+            const { startStr, endStr } = getCurrentWeekRange();
+            const dates = getWorkingDatesInRange(startStr, endStr);
+            if (dates.length === 0) return [];
+
+            return students
+                .filter(s => tierId === null || s.tierId === tierId)
+                .map(s => {
+                    const sum = summarizeRange(s, dates);
+                    if (sum.points <= 0) return null;
+                    if (rules.requireSard && sum.sard <= 0) return null;
+                    if (sum.blockingViolations > 0) return null;
+                    const attPct = (sum.attended / sum.expected) * 100;
+                    if (attPct < rules.weeklyAttendancePct) return null;
+                    return { student: s, points: sum.points, sard: sum.sard, attended: sum.attended, expected: sum.expected };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.points - a.points || b.sard - a.sard);
+        }
+
+        // نجوم الانضباط للأسبوع: حضور كامل + صفر مخالفات + تقييم كل يوم
+        function getDisciplineStars() {
+            const { startStr, endStr } = getCurrentWeekRange();
+            const dates = getWorkingDatesInRange(startStr, endStr);
+            if (dates.length === 0) return { stars: [], daysCount: 0 };
+
+            const stars = students.map(s => {
+                const sum = summarizeRange(s, dates);
+                if (sum.attended < sum.expected) return null;   // أي غياب يحجب (ولو بعذر)
+                if (sum.violations > 0) return null;             // أي مخالفة تحجب
+                if (sum.ratedDays < sum.expected) return null;   // لا بد من تقييم فعلي كل يوم
+                return { student: s, criteriaPoints: sumCriteriaPoints(s, dates), days: sum.expected };
+            }).filter(Boolean).sort((a, b) => b.criteriaPoints - a.criteriaPoints);
+
+            return { stars, daysCount: dates.length };
+        }
+
+        function sumCriteriaPoints(student, dates) {
+            let total = 0;
+            dates.forEach(dt => { total += (student.history?.[dt]?.criteriaPoints || 0); });
+            return total;
+        }
+
+        // الأكثر تقدّماً: مقارنة نقاط هذا الأسبوع بمعدّل الأسابيع السابقة
+        function getMostImproved(limit = 5) {
+            const { startStr, endStr } = getCurrentWeekRange();
+            const thisWeek = getWorkingDatesInRange(startStr, endStr);
+            if (thisWeek.length === 0) return [];
+
+            // كل أيام العمل السابقة لبداية هذا الأسبوع
+            const allDates = new Set();
+            students.forEach(s => { for (const d in s.history) allDates.add(d); });
+            const wd = getProgramSettings().workingDays;
+            const pastDates = Array.from(allDates).sort().filter(dt => {
+                if (dt >= startStr) return false;
+                const dd = new Date(dt + 'T12:00:00');
+                return !isNaN(dd.getTime()) && wd.includes(dd.getDay());
+            });
+            if (pastDates.length === 0) return []; // لا سابقة للمقارنة
+
+            return students.map(s => {
+                const now = summarizeRange(s, thisWeek);
+                const past = summarizeRange(s, pastDates);
+                if (now.points <= 0 || past.attended === 0) return null;
+                const pastAvg = past.points / past.attended;
+                const nowAvg = now.attended ? now.points / now.attended : 0;
+                if (pastAvg <= 0) return null;
+                const growth = ((nowAvg - pastAvg) / pastAvg) * 100;
+                if (growth <= 0) return null;
+                return { student: s, growth: Math.round(growth), nowAvg: Math.round(nowAvg), pastAvg: Math.round(pastAvg) };
+            }).filter(Boolean).sort((a, b) => b.growth - a.growth).slice(0, limit);
+        }
+
+        // صدارة الموسم (بديل "الأكثر تقدّماً" حين لا توجد بيانات سابقة)
+        function getSeasonLeaders(limit = 5) {
+            return students
+                .map(s => ({ student: s, points: getCumulativeStats(s).tripPoints }))
+                .filter(x => x.points > 0)
+                .sort((a, b) => b.points - a.points)
+                .slice(0, limit);
+        }
+
+        // عدّاد مرات الفوز بلقب فارس اليوم (من سجل الفرسان المعتمد)
+        function getKnightWinCounts() {
+            const counts = {};
+            (honorKnightsLog || []).forEach(entry => {
+                (entry.fars || []).forEach(f => {
+                    if (f && f.id != null) counts[f.id] = (counts[f.id] || 0) + 1;
+                });
+            });
+            return counts;
         }
 
         // نص الإنجاز المُولَّد تلقائياً
@@ -4592,6 +4907,7 @@
             updateCurrentEventBadge();
             applyArchivedMode();
             applyProgramFeatures();
+            if (typeof loadCurrentThreeKnights === 'function') loadCurrentThreeKnights();
             if (typeof renderProgramSettings === 'function') renderProgramSettings();
             const p = window.almahraPrograms.getCurrentProgram();
             showToast('📚 ' + (p?.name || ''));
@@ -4973,6 +5289,7 @@
 
             const wd = s.workingDays || [0, 1, 2, 3];
             const feats = s.features || {};
+            const tr = getTitleRules();
 
             // ══════════ تبويب: النقاط والمعايير ══════════
             if (ptsBox) ptsBox.innerHTML = `
@@ -5041,11 +5358,49 @@
                             <div class="font-black text-red-800 mb-1 flex items-center gap-2">
                                 <i class="fas fa-circle-minus"></i> مخالفات
                             </div>
-                            <p class="text-xs text-red-700 font-bold mb-3">تُخصم نقاطها — اكتب الرقم موجباً (٥ = خصم ٥)</p>
+                            <p class="text-xs text-red-700 font-bold mb-3">
+                                تُخصم نقاطها — اكتب الرقم موجباً (٥ = خصم ٥).
+                                وعلّم «تحجب اللقب» على ما يُسقط ترشّح الطالب لفارس اليوم والأسبوع.
+                            </p>
                             <div id="psCriteriaNegative" class="space-y-2 mb-3"></div>
                             <button type="button" onclick="addCriterionRow('negative')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
                                 <i class="fas fa-plus"></i> إضافة مخالفة
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- شروط استحقاق الألقاب -->
+                    <div class="bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2">
+                        <h3 class="font-black text-lg text-slate-700 mb-2 flex items-center gap-2">
+                            <i class="fas fa-trophy text-blue-500"></i> شروط استحقاق الألقاب
+                        </h3>
+                        <p class="text-sm text-slate-500 font-bold mb-4">
+                            تضبط من يستحق الظهور في لوحة الشرف: فارس اليوم، فارس الأسبوع، ونجوم الانضباط.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
+                                <input type="checkbox" id="psTrRequireSard" class="w-5 h-5 rounded accent-blue-600 mt-0.5" ${tr.requireSard ? 'checked' : ''}>
+                                <span>
+                                    <span class="font-bold text-slate-700 block">لا لقب لمن لم يسرد شيئاً</span>
+                                    <span class="text-xs text-slate-500 font-bold">الحضور وحده لا يكفي للقب فارس</span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
+                                <input type="checkbox" id="psTrDisciplineFullWeek" class="w-5 h-5 rounded accent-blue-600 mt-0.5" ${tr.disciplineRequiresFullWeek ? 'checked' : ''}>
+                                <span>
+                                    <span class="font-bold text-slate-700 block">نجوم الانضباط: أسبوع كامل بلا غياب</span>
+                                    <span class="text-xs text-slate-500 font-bold">أي غياب ولو بعذر يحجب الاستحقاق</span>
+                                </span>
+                            </label>
+                            <div class="p-4 bg-slate-50 rounded-xl border-2 border-slate-200 md:col-span-2">
+                                <label class="block font-bold text-slate-700 mb-1">أدنى نسبة حضور لفارس الأسبوع</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" id="psTrWeeklyAtt" value="${tr.weeklyAttendancePct}" min="0" max="100"
+                                           class="w-24 p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-blue-500 outline-none">
+                                    <span class="font-black text-slate-500">٪</span>
+                                    <span class="text-xs text-slate-500 font-bold">يمنع فوز صاحب "الطفرة" الذي يغيب ثم يسرد كثيراً في يوم</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5265,6 +5620,11 @@
                         <input type="checkbox" class="crit-on w-5 h-5 rounded accent-emerald-600" ${c.enabled !== false ? 'checked' : ''}>
                         <span class="text-xs font-bold text-slate-600">مفعّل</span>
                     </label>
+                    ${neg ? `
+                    <label class="flex items-center gap-2 cursor-pointer px-1" title="من ارتكب هذه المخالفة لا يُرشَّح لفارس اليوم أو الأسبوع">
+                        <input type="checkbox" class="crit-block w-5 h-5 rounded accent-red-600" ${c.blocksTitles === true ? 'checked' : ''}>
+                        <span class="text-xs font-bold text-red-700">تحجب اللقب</span>
+                    </label>` : ''}
                     <button type="button" onclick="this.closest('.crit-row').remove()"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
@@ -5288,12 +5648,14 @@
                 if (!name) return; // تجاهل الصفوف الفارغة
                 const raw = Math.abs(parseInt(r.querySelector('.crit-pts')?.value) || 0);
                 const isNeg = r.dataset.kind === 'negative';
-                out.push({
+                const item = {
                     id: r.dataset.cid,
                     name: name,
                     points: isNeg ? -raw : raw,
                     enabled: !!r.querySelector('.crit-on')?.checked
-                });
+                };
+                if (isNeg) item.blocksTitles = !!r.querySelector('.crit-block')?.checked;
+                out.push(item);
             });
             return out;
         }
@@ -5320,6 +5682,11 @@
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
                 criteria: collectCriteriaFromRows(),
                 tiers: collectTiersFromRows(),
+                titleRules: {
+                    requireSard: !!document.getElementById('psTrRequireSard')?.checked,
+                    weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),
+                    disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked
+                },
                 features
             };
 
@@ -5491,7 +5858,11 @@
                 updateCurrentEventBadge();
                 applyArchivedMode();
                 applyProgramFeatures();
+                if (typeof loadCurrentThreeKnights === 'function') loadCurrentThreeKnights();
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
+                // تحديث لوحة الشرف إن كانت معروضة
+                const hb = document.getElementById('honorBoardModal');
+                if (hb && hb.classList.contains('flex') && typeof renderHonorBoard === 'function') renderHonorBoard();
             });
         });
 
