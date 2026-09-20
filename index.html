@@ -4595,10 +4595,29 @@
                         <p class="text-sm text-slate-500 font-bold mb-4">
                             تظهر للمعلم داخل نافذة الطالب، ونقاطها تُضاف لنقاط اليوم وتدخل في حساب الفرسان تلقائياً.
                         </p>
-                        <div id="psCriteriaList" class="space-y-2 mb-3"></div>
-                        <button type="button" onclick="addCriterionRow()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border-2 border-amber-300 font-bold py-2 px-5 rounded-xl text-sm">
-                            <i class="fas fa-plus"></i> إضافة معيار
-                        </button>
+                        <!-- المعايير الإيجابية -->
+                        <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 mb-4">
+                            <div class="font-black text-emerald-800 mb-1 flex items-center gap-2">
+                                <i class="fas fa-circle-plus"></i> معايير إيجابية
+                            </div>
+                            <p class="text-xs text-emerald-700 font-bold mb-3">تُضاف نقاطها لرصيد الطالب</p>
+                            <div id="psCriteriaPositive" class="space-y-2 mb-3"></div>
+                            <button type="button" onclick="addCriterionRow('positive')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
+                                <i class="fas fa-plus"></i> إضافة معيار إيجابي
+                            </button>
+                        </div>
+
+                        <!-- المخالفات -->
+                        <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-4">
+                            <div class="font-black text-red-800 mb-1 flex items-center gap-2">
+                                <i class="fas fa-circle-minus"></i> مخالفات
+                            </div>
+                            <p class="text-xs text-red-700 font-bold mb-3">تُخصم نقاطها — اكتب الرقم موجباً (٥ = خصم ٥)</p>
+                            <div id="psCriteriaNegative" class="space-y-2 mb-3"></div>
+                            <button type="button" onclick="addCriterionRow('negative')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
+                                <i class="fas fa-plus"></i> إضافة مخالفة
+                            </button>
+                        </div>
                     </div>
 
                     <!-- الميزات -->
@@ -4729,23 +4748,38 @@
         // صفوف تحرير معايير الانضباط في الإعدادات
         // ================================================================
         function renderCriteriaRows(criteria) {
-            const box = document.getElementById('psCriteriaList');
-            if (!box) return;
-            if (!Array.isArray(criteria) || criteria.length === 0) {
-                box.innerHTML = '<div class="text-slate-400 font-bold text-sm text-center py-3 bg-slate-50 rounded-xl">لا توجد معايير — أضف واحداً</div>';
-                return;
-            }
-            box.innerHTML = criteria.map((c, i) => criterionRowHtml(c, i)).join('');
+            const posBox = document.getElementById('psCriteriaPositive');
+            const negBox = document.getElementById('psCriteriaNegative');
+            if (!posBox || !negBox) return;
+
+            const list = Array.isArray(criteria) ? criteria : [];
+            const positives = list.filter(c => (c.points || 0) >= 0);
+            const negatives = list.filter(c => (c.points || 0) < 0);
+
+            posBox.innerHTML = positives.length
+                ? positives.map((c, i) => criterionRowHtml(c, i, 'positive')).join('')
+                : '<div class="crit-empty text-slate-400 font-bold text-sm text-center py-3 bg-white/60 rounded-xl">لا توجد معايير إيجابية</div>';
+
+            negBox.innerHTML = negatives.length
+                ? negatives.map((c, i) => criterionRowHtml(c, i, 'negative')).join('')
+                : '<div class="crit-empty text-slate-400 font-bold text-sm text-center py-3 bg-white/60 rounded-xl">لا توجد مخالفات</div>';
         }
 
-        function criterionRowHtml(c, i) {
+        // kind: 'positive' | 'negative' — في السالبة نعرض القيمة المطلقة والحفظ يضع الإشارة
+        function criterionRowHtml(c, i, kind) {
+            const neg = kind === 'negative';
+            const shownPts = Math.abs(c.points ?? 0);
+            const accent = neg ? 'focus:border-red-500' : 'focus:border-emerald-500';
             return `
-                <div class="crit-row flex flex-wrap items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200" data-cid="${escapeHTML(c.id || ('c' + i))}">
-                    <input type="text" class="crit-name flex-1 min-w-[160px] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm focus:border-amber-500 outline-none"
-                           value="${escapeHTML(c.name || '')}" placeholder="اسم المعيار">
-                    <input type="number" class="crit-pts w-20 p-2 border-2 border-slate-300 rounded-lg font-black text-center focus:border-amber-500 outline-none"
-                           value="${c.points ?? 0}" min="0" title="النقاط">
-                    <label class="flex items-center gap-2 cursor-pointer px-2">
+                <div class="crit-row flex flex-wrap items-center gap-2 bg-white p-3 rounded-xl border border-slate-200" data-cid="${escapeHTML(c.id || (kind[0] + '_' + i))}" data-kind="${kind}">
+                    <input type="text" class="crit-name flex-1 min-w-[150px] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm ${accent} outline-none"
+                           value="${escapeHTML(c.name || '')}" placeholder="${neg ? 'اسم المخالفة' : 'اسم المعيار'}">
+                    <div class="flex items-center gap-1 shrink-0">
+                        <span class="font-black text-lg ${neg ? 'text-red-600' : 'text-emerald-600'}">${neg ? '−' : '+'}</span>
+                        <input type="number" class="crit-pts w-16 p-2 border-2 border-slate-300 rounded-lg font-black text-center ${accent} outline-none"
+                               value="${shownPts}" min="0" title="النقاط">
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer px-1">
                         <input type="checkbox" class="crit-on w-5 h-5 rounded accent-emerald-600" ${c.enabled !== false ? 'checked' : ''}>
                         <span class="text-xs font-bold text-slate-600">مفعّل</span>
                     </label>
@@ -4756,24 +4790,26 @@
                 </div>`;
         }
 
-        function addCriterionRow() {
-            const box = document.getElementById('psCriteriaList');
+        function addCriterionRow(kind) {
+            const box = document.getElementById(kind === 'negative' ? 'psCriteriaNegative' : 'psCriteriaPositive');
             if (!box) return;
-            if (box.querySelector('.text-slate-400')) box.innerHTML = '';
-            const newId = 'c_' + Date.now().toString(36);
-            box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: 3, enabled: true }, 0));
+            box.querySelector('.crit-empty')?.remove();
+            const newId = (kind === 'negative' ? 'n_' : 'p_') + Date.now().toString(36);
+            const defaults = kind === 'negative' ? 5 : 3;
+            box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: defaults, enabled: true }, 0, kind));
         }
 
         function collectCriteriaFromRows() {
-            const rows = document.querySelectorAll('#psCriteriaList .crit-row');
             const out = [];
-            rows.forEach(r => {
+            document.querySelectorAll('#psCriteriaPositive .crit-row, #psCriteriaNegative .crit-row').forEach(r => {
                 const name = r.querySelector('.crit-name')?.value.trim();
                 if (!name) return; // تجاهل الصفوف الفارغة
+                const raw = Math.abs(parseInt(r.querySelector('.crit-pts')?.value) || 0);
+                const isNeg = r.dataset.kind === 'negative';
                 out.push({
                     id: r.dataset.cid,
                     name: name,
-                    points: parseInt(r.querySelector('.crit-pts')?.value) || 0,
+                    points: isNeg ? -raw : raw,
                     enabled: !!r.querySelector('.crit-on')?.checked
                 });
             });
