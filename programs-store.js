@@ -45,12 +45,20 @@ export const PROGRAM_DEFS = {
             raceSubtitle: 'يوم الحضور (10) + الحفظ الجديد (3) + المراجعة (1) + محطات واعتمادات السرد',
             points: { attendance: 10, newMemorization: 3, review: 1 },
             workingDays: [0, 1, 2, 3], // الأحد=0 .. السبت=6
+            tiers: [
+                { id: 't_beginner',     name: 'المبتدئون',  order: 1 },
+                { id: 't_intermediate', name: 'المتوسطون',  order: 2 },
+                { id: 't_advanced',     name: 'المتقدمون',  order: 3 }
+            ],
             criteria: [
-                { id: 'early',    name: 'الحضور المبكر',        points: 5, enabled: true },
-                { id: 'uniform',  name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },
-                { id: 'manners',  name: 'حسن الخلق والأدب',      points: 5, enabled: true },
-                { id: 'engage',   name: 'المشاركة والتفاعل',     points: 3, enabled: true },
-                { id: 'neat',     name: 'النظافة والمظهر',       points: 2, enabled: true }
+                { id: 'early',     name: 'الحضور المبكر',          points: 5,   enabled: true },
+                { id: 'manners',   name: 'حسن الخلق والأدب',        points: 5,   enabled: true },
+                { id: 'uniform',   name: 'الالتزام بالزي الرسمي',   points: 3,   enabled: true },
+                { id: 'engage',    name: 'المشاركة والتفاعل',       points: 3,   enabled: true },
+                { id: 'neat',      name: 'النظافة والمظهر',         points: 2,   enabled: true },
+                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true },
+                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true },
+                { id: 'disturb',   name: 'إزعاج أو تشويش',          points: -5,  enabled: true }
             ],
             features: {
                 newMemorization: true,
@@ -62,7 +70,8 @@ export const PROGRAM_DEFS = {
                 finalExam: true,
                 examPrep: true,
                 groups: false,
-                pomodoro: true
+                pomodoro: true,
+                tiers: true
             }
         }
     },
@@ -77,13 +86,20 @@ export const PROGRAM_DEFS = {
             raceSubtitle: 'كل آية تُراجَع تُحتسب نقطة',
             points: { attendance: 10, newMemorization: 3, review: 1 },
             workingDays: [0, 1, 2, 3, 4, 5, 6], // يوم واحد - كل الأيام مسموحة
+            tiers: [
+                { id: 't_beginner',     name: 'المبتدئون',  order: 1 },
+                { id: 't_intermediate', name: 'المتوسطون',  order: 2 },
+                { id: 't_advanced',     name: 'المتقدمون',  order: 3 }
+            ],
             criteria: [
-                { id: 'early',    name: 'الحضور المبكر',        points: 5, enabled: true },
-                { id: 'uniform',  name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },
-                { id: 'manners',  name: 'حسن الخلق والأدب',      points: 5, enabled: true },
-                { id: 'engage',   name: 'المشاركة والتفاعل',     points: 3, enabled: true }
+                { id: 'early',     name: 'الحضور المبكر',          points: 5,   enabled: true },
+                { id: 'manners',   name: 'حسن الخلق والأدب',        points: 5,   enabled: true },
+                { id: 'engage',    name: 'المشاركة والتفاعل',       points: 3,   enabled: true },
+                { id: 'late',      name: 'تأخر بغير عذر',           points: -5,  enabled: true },
+                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة',  points: -10, enabled: true }
             ],
             features: {
+                tiers: true,
                 newMemorization: false,  // مراجعة فقط
                 review: true,
                 goldenBoard: true,
