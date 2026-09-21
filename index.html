@@ -2649,10 +2649,18 @@
             // ═══ ١) فرسان اليوم ═══
             const dkTitle = document.getElementById('hbDailyKnightsTitle');
             const dkContainer = document.getElementById('hbDailyKnights');
-            const approvedDate = currentThreeKnights?.dateStr || todayStr;
-            dkTitle.innerText = currentThreeKnights?.day ? `فرسان يوم ${currentThreeKnights.day}` : 'فرسان اليوم';
+            // يوم اللوحة = آخر يوم سُجّل فيه حضور (أول حضور اليوم ينقلها لليوم)
+            const boardDate = getBoardDate();
+            const approvedDate = boardDate || todayStr;
+            const boardDayName = boardDate
+                ? ALL_DAY_NAMES[new Date(boardDate + 'T12:00:00').getDay()]
+                : null;
+            dkTitle.innerText = boardDayName ? `فرسان يوم ${boardDayName}` : 'فرسان اليوم';
 
-            const approved = currentThreeKnights?.fars?.filter(f => f && f.name) || [];
+            // الاعتماد اليدوي يُعرض فقط إن كان ليوم اللوحة نفسه،
+            // وإلا انتقلت اللوحة تلقائياً لمتصدري اليوم الجديد
+            const approvedMatchesBoard = !currentThreeKnights?.dateStr || currentThreeKnights.dateStr === approvedDate;
+            const approved = (approvedMatchesBoard ? currentThreeKnights?.fars : null)?.filter(f => f && f.name) || [];
             if (approved.length > 0) {
                 // المعتمدون من المشرف لهم الأولوية دائماً
                 const medals = ['👑', '🥈', '🥉'];
@@ -4096,24 +4104,48 @@
             return list.filter(e => valueOf(e) === best);
         }
 
-        // نطاق الأسبوع الجاري (من أول أيام الأسبوع حتى اليوم)
-        function getCurrentWeekRange() {
-            const start = getWeekStartDate(todayStr);
-            return { startStr: start, endStr: todayStr };
+        // ================================================================
+        // يوم اللوحة وأسبوعها: يتبعان أول حضور مسجَّل، لا الساعة
+        //  • قبل أن يُسجَّل حضور اليوم → تعرض اللوحة آخر يوم سُجّل فيه حضور
+        //  • ما إن يُسجَّل أول طالب (أي يوم كان، حتى السبت) → تنتقل لليوم
+        //  • الأسبوع هو أسبوع ذلك اليوم، فلا يفرغ صباح الأحد وفيه نتائج الأسبوع الماضي
+        // ================================================================
+        function getBoardDate() {
+            let latest = null;
+            students.forEach(s => {
+                for (const ds in (s.history || {})) {
+                    if (ds <= todayStr && s.history[ds]?.attended && (!latest || ds > latest)) latest = ds;
+                }
+            });
+            return latest;
         }
 
-        // أيام العمل ضمن نطاق تاريخي (تعتمد أيام العمل من الإعدادات)
+        function addDaysToDateStr(dateStr, n) {
+            const d = new Date(dateStr + 'T12:00:00');
+            d.setDate(d.getDate() + n);
+            return formatDateLocal(d);
+        }
+
+        // نطاق أسبوع اللوحة (أحد → سبت). inProgress = الأسبوع الجاري لم ينتهِ بعد
+        function getBoardWeekRange() {
+            const ref = getBoardDate() || todayStr;
+            const startStr = getWeekStartDate(ref);
+            const weekEnd = addDaysToDateStr(startStr, 6);
+            const inProgress = todayStr <= weekEnd;
+            return { startStr, endStr: inProgress ? todayStr : weekEnd, inProgress };
+        }
+
+        // أيام الدوام الفعلية ضمن نطاق: كل يوم سُجّل فيه حضور طالب واحد على الأقل.
+        // نعتمد الواقع لا الجدول النظري، فلو عمل المجمع يوم سبت استثناءً حُسب،
+        // ولو تعطّل يوم عمل لم يُحسب على الطلاب غياباً.
         function getWorkingDatesInRange(startStr, endStr) {
-            const wd = getProgramSettings().workingDays;
-            const out = [];
-            const d = new Date(startStr + 'T12:00:00');
-            const end = new Date(endStr + 'T12:00:00');
-            let guard = 0;
-            while (d <= end && guard++ < 400) {
-                if (wd.includes(d.getDay())) out.push(formatDateLocal(d));
-                d.setDate(d.getDate() + 1);
-            }
-            return out;
+            const dates = new Set();
+            students.forEach(s => {
+                for (const ds in (s.history || {})) {
+                    if (ds >= startStr && ds <= endStr && s.history[ds]?.attended) dates.add(ds);
+                }
+            });
+            return Array.from(dates).sort();
         }
 
         // إحصاء الطالب خلال نطاق: نقاط، آيات، حضور، مخالفات
@@ -4138,7 +4170,7 @@
         // فرسان الأسبوع لشريحة (أو للكل) — مع شرط الحضور ومنع المخالفة الحاجبة
         function getWeekTitleCandidates(tierId = null) {
             const rules = getTitleRules();
-            const { startStr, endStr } = getCurrentWeekRange();
+            const { startStr, endStr } = getBoardWeekRange();
             const dates = getWorkingDatesInRange(startStr, endStr);
             if (dates.length === 0) return [];
 
@@ -4159,7 +4191,7 @@
 
         // نجوم الانضباط للأسبوع: حضور كامل + صفر مخالفات + تقييم كل يوم
         function getDisciplineStars() {
-            const { startStr, endStr } = getCurrentWeekRange();
+            const { startStr, endStr } = getBoardWeekRange();
             const dates = getWorkingDatesInRange(startStr, endStr);
             if (dates.length === 0) return { stars: [], daysCount: 0 };
 
@@ -4182,19 +4214,18 @@
 
         // الأكثر تقدّماً: مقارنة نقاط هذا الأسبوع بمعدّل الأسابيع السابقة
         function getMostImproved(limit = 5) {
-            const { startStr, endStr } = getCurrentWeekRange();
+            const { startStr, endStr } = getBoardWeekRange();
             const thisWeek = getWorkingDatesInRange(startStr, endStr);
             if (thisWeek.length === 0) return [];
 
-            // كل أيام العمل السابقة لبداية هذا الأسبوع
-            const allDates = new Set();
-            students.forEach(s => { for (const d in s.history) allDates.add(d); });
-            const wd = getProgramSettings().workingDays;
-            const pastDates = Array.from(allDates).sort().filter(dt => {
-                if (dt >= startStr) return false;
-                const dd = new Date(dt + 'T12:00:00');
-                return !isNaN(dd.getTime()) && wd.includes(dd.getDay());
+            // كل أيام الدوام السابقة لبداية هذا الأسبوع
+            const pastSet = new Set();
+            students.forEach(s => {
+                for (const ds in (s.history || {})) {
+                    if (ds < startStr && s.history[ds]?.attended) pastSet.add(ds);
+                }
             });
+            const pastDates = Array.from(pastSet).sort();
             if (pastDates.length === 0) return []; // لا سابقة للمقارنة
 
             return students.map(s => {
