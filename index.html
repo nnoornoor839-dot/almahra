@@ -2887,20 +2887,23 @@
             // ═══ ٢) نجوم الانضباط (للأسبوع في الصيفي، لليوم في اليوم المكثف) ═══
             const dsContainer = document.getElementById('hbDisciplineStars');
             let stars, chipText, teaseText, coverText, emptyHint;
+            // شروط الانضباط التي أشّرها المشرف تُذكر صراحةً ليعرف الجميع ما يُطالَب به
+            const discNames = getActiveCriteria().filter(c => (c.points || 0) > 0 && c.disciplineCriterion === true).map(c => c.name);
+            const discSuffix = discNames.length ? ' · ' + discNames.join(' · ') : ' · تقييم انضباط';
 
             if (isReviewDay) {
                 stars = getDayDisciplineStars(boardDate);
                 coverText = 'نجوم الانضباط اليوم';
                 chipText = `التزموا اليوم: ${hbCount(stars.length, 'student')}`;
                 teaseText = chipText;
-                emptyHint = 'الشروط: حضور · بلا أي مخالفة · تقييم انضباط';
+                emptyHint = 'الشروط: حضور · بلا أي مخالفة' + discSuffix;
             } else {
                 const res = getDisciplineStars();
                 stars = res.stars;
                 coverText = 'نجوم الانضباط للأسبوع';
                 chipText = `ما زال ملتزماً: ${hbCount(stars.length, 'student')} · ${hbCount(res.daysCount, 'day')}`;
                 teaseText = `ملتزمون حتى الآن: ${hbCount(stars.length, 'student')}`;
-                emptyHint = 'الشروط: حضور كل أيام الأسبوع · بلا أي مخالفة · تقييم انضباط يومي';
+                emptyHint = 'الشروط: حضور كل الأيام · بلا أي مخالفة' + discSuffix + ' (كل يوم)';
             }
 
             if (stars.length === 0) {
@@ -4379,8 +4382,26 @@
         }
 
         // إحصاء الطالب خلال نطاق: نقاط، آيات، حضور، مخالفات
+        // معرّفات المعايير الإيجابية التي أشّرها المشرف «شرطاً للانضباط»
+        function getDisciplineCriteriaIds() {
+            return getActiveCriteria()
+                .filter(c => (c.points || 0) > 0 && c.disciplineCriterion === true)
+                .map(c => c.id);
+        }
+
+        // هل استوفى يومُ الطالب شروط الانضباط؟
+        //  • إن أشّر المشرف شروطاً: يجب تحقيقها كلها في هذا اليوم
+        //  • إن لم يؤشّر شيئاً: يكفي تقييم إيجابي واحد (السلوك السابق، حتى لا تتغير النتائج فجأة)
+        function dayMeetsDisciplineCriteria(dayRec) {
+            if (!dayRec) return false;
+            const crit = dayRec.criteria || {};
+            const required = getDisciplineCriteriaIds();
+            if (required.length === 0) return Object.values(crit).some(v => (v || 0) > 0);
+            return required.every(id => (crit[id] || 0) > 0);
+        }
+
         function summarizeRange(student, dates) {
-            let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, ratedDays = 0;
+            let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, disciplineDays = 0;
             const blocking = getBlockingCriteriaIds();
             dates.forEach(dt => {
                 const d = student.history?.[dt];
@@ -4390,11 +4411,10 @@
                 sard += (d.sard || 0);
                 if (dayHasAnyViolation(d)) violations++;
                 if (dayHasBlockingViolation(d, blocking)) blockingViolations++;
-                // هل قُيّم انضباطه فعلاً؟ (معيار إيجابي واحد على الأقل)
-                const crit = d.criteria || {};
-                if (Object.values(crit).some(v => (v || 0) > 0)) ratedDays++;
+                // هل استوفى شروط الانضباط في هذا اليوم؟ (كل الشروط المؤشَّرة، أو تقييم إيجابي واحد إن لم يُؤشَّر شيء)
+                if (dayMeetsDisciplineCriteria(d)) disciplineDays++;
             });
-            return { points, sard, attended, violations, blockingViolations, ratedDays, expected: dates.length };
+            return { points, sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };
         }
 
         // فرسان الأسبوع لشريحة (أو للكل) — مع شرط الحضور ومنع المخالفة الحاجبة
@@ -4427,24 +4447,23 @@
 
             const stars = students.map(s => {
                 const sum = summarizeRange(s, dates);
-                if (sum.attended < sum.expected) return null;   // أي غياب يحجب (ولو بعذر)
-                if (sum.violations > 0) return null;             // أي مخالفة تحجب
-                if (sum.ratedDays < sum.expected) return null;   // لا بد من تقييم فعلي كل يوم
+                if (sum.attended < sum.expected) return null;      // أي غياب يحجب (ولو بعذر)
+                if (sum.violations > 0) return null;                // أي مخالفة تحجب
+                if (sum.disciplineDays < sum.expected) return null; // لا بد من استيفاء شروط الانضباط كل يوم
                 return { student: s, criteriaPoints: sumCriteriaPoints(s, dates), days: sum.expected };
             }).filter(Boolean).sort((a, b) => b.criteriaPoints - a.criteriaPoints);
 
             return { stars, daysCount: dates.length };
         }
 
-        // نجوم انضباط يوم واحد (اليوم القرآني المكثف): حضر + بلا أي مخالفة + قُيّم بمعيار إيجابي
+        // نجوم انضباط يوم واحد (اليوم القرآني المكثف): حضر + بلا أي مخالفة + استوفى شروط الانضباط
         function getDayDisciplineStars(dateStr) {
             if (!dateStr) return [];
             return students.map(s => {
                 const d = s.history?.[dateStr];
                 if (!d || !d.attended) return null;
                 if (dayHasAnyViolation(d)) return null;
-                const crit = d.criteria || {};
-                if (!Object.values(crit).some(v => (v || 0) > 0)) return null;
+                if (!dayMeetsDisciplineCriteria(d)) return null;
                 return { student: s, criteriaPoints: d.criteriaPoints || 0 };
             }).filter(Boolean).sort((a, b) => b.criteriaPoints - a.criteriaPoints);
         }
@@ -5926,7 +5945,11 @@
                     <label class="flex items-center gap-2 cursor-pointer px-1" title="من ارتكب هذه المخالفة لا يُرشَّح لفارس اليوم أو الأسبوع">
                         <input type="checkbox" class="crit-block w-5 h-5 rounded accent-red-600" ${c.blocksTitles === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-red-700">تحجب اللقب</span>
-                    </label>` : ''}
+                    </label>` : `
+                    <label class="flex items-center gap-2 cursor-pointer px-1" title="لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم">
+                        <input type="checkbox" class="crit-disc w-5 h-5 rounded accent-teal-600" ${c.disciplineCriterion === true ? 'checked' : ''}>
+                        <span class="text-xs font-bold text-teal-700">شرطٌ للانضباط</span>
+                    </label>`}
                     <button type="button" onclick="this.closest('.crit-row').remove()"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
@@ -5957,6 +5980,7 @@
                     enabled: !!r.querySelector('.crit-on')?.checked
                 };
                 if (isNeg) item.blocksTitles = !!r.querySelector('.crit-block')?.checked;
+                else item.disciplineCriterion = !!r.querySelector('.crit-disc')?.checked;
                 out.push(item);
             });
             return out;
