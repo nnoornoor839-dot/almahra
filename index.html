@@ -2548,19 +2548,23 @@
         function loadCurrentThreeKnights() {
             const programId = window.almahraPrograms?.getCurrentProgramId();
             const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
+
+            // المصدر الوحيد: موسم البرنامج المفتوح. لا احتياط مشترك بين البرامج،
+            // حتى لا تظهر فرسان الصيفي على شاشة اليوم القرآني (ولا العكس).
             if (programId && seasonId && window.almahraPrograms.getKnightsLog) {
                 honorKnightsLog = window.almahraPrograms.getKnightsLog(programId, seasonId) || [];
                 currentThreeKnights = honorKnightsLog.length ? honorKnightsLog[0] : null;
-                if (currentThreeKnights) return;
+            } else {
+                honorKnightsLog = [];
+                currentThreeKnights = null;
             }
-            // احتياطي محلي (برنامج لم يُفتح بعد، أو تعذّرت السحابة)
-            try { const saved = localStorage.getItem('almahara_current_knights_v1'); currentThreeKnights = saved ? JSON.parse(saved) : null; }
-            catch(e) { currentThreeKnights = null; }
+
+            // تنظيف المفتاح المحلي القديم الذي كان مشتركاً بين البرامج
+            try { localStorage.removeItem('almahara_current_knights_v1'); } catch(e) {}
         }
 
         async function saveCurrentThreeKnights(data) {
             currentThreeKnights = data;
-            try { localStorage.setItem('almahara_current_knights_v1', JSON.stringify(data)); } catch(e) {}
 
             const programId = window.almahraPrograms?.getCurrentProgramId();
             const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
