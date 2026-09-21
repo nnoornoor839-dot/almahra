@@ -439,8 +439,10 @@ window.almahraPrograms = {
             const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);
             const snap = await getDoc(ref);
             const log = (snap.exists() && Array.isArray(snap.data().knightsLog)) ? snap.data().knightsLog : [];
-            // يُستبدل سجل اليوم نفسه إن وُجد، ولا يتكرر
-            const filtered = log.filter(e => e.dateStr !== entry.dateStr);
+            // يُستبدل اعتماد اليوم نفسه ذي الوضع نفسه فقط، فتتجاور اعتمادات الشرائح في اليوم الواحد.
+            // السجلات القديمة بلا mode تُعامل كأنها "كل الطلاب" (all).
+            const entryMode = entry.mode || 'all';
+            const filtered = log.filter(e => !(e.dateStr === entry.dateStr && (e.mode || 'all') === entryMode));
             filtered.push(entry);
             filtered.sort((a, b) => (a.dateStr < b.dateStr ? 1 : -1));
             await updateDoc(ref, { knightsLog: filtered.slice(0, 200) });

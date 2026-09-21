@@ -2836,33 +2836,50 @@
             ].filter(Boolean).join(' · ');
 
             // ═══ ١) فرسان اليوم ═══
-            // الاعتماد اليدوي يُعرض فقط إن كان ليوم اللوحة نفسه،
-            // وإلا انتقلت اللوحة تلقائياً لمتصدري اليوم الجديد
-            const approvedMatchesBoard = !currentThreeKnights?.dateStr || currentThreeKnights.dateStr === approvedDate;
-            const approved = (approvedMatchesBoard ? currentThreeKnights?.fars : null)?.filter(f => f && f.name) || [];
+            // لكل شريحة اعتمادها المستقل (mode = معرّف الشريحة)، أو الاقتراح الآلي إن لم يُعتمد.
+            // اعتماد "كل الطلاب" (mode = all) يُعرض ككتلة واحدة حين لا شرائح أو حين اعتُمد صراحةً.
+            // اعتماد الانضباط لا يظهر هنا؛ تحسبه بطاقة نجوم الانضباط تلقائياً.
             let dkHtml = '', crowned = 0, groups = 0;
             const crownRow = (w, big) => hbWinnerRow(w.student.name, buildAchievementText(w), {
                 medal: '👑', wins: winCounts[w.student.id] || 0, big
             });
+            const approvedRow = (f, big) => hbWinnerRow(f.name, f.achievement || '', {
+                medal: '👑', wins: winCounts[f.id] || 0, big
+            });
+            // كتلة اقتراح آلي لشريحة: الفرسان المتعادلون في القمة، ثم الثاني والثالث
+            const autoTierBlock = (t) => {
+                const candidates = getDayTitleCandidates(approvedDate, t.id);
+                const winners = topTied(candidates, e => e.points);
+                if (winners.length === 0) return '';
+                const runnersUp = candidates.slice(winners.length, winners.length + 2);
+                groups++; crowned += winners.length;
+                return hbTier(t.name) + winners.map(w => crownRow(w, true)).join('')
+                    + hbDuo(runnersUp[0]?.student.name, runnersUp[1]?.student.name);
+            };
+            // كتلة اعتماد يدوي (فارس + الثاني والثالث)
+            const approvedBlock = (entry, tierName) => {
+                const list = (entry.fars || []).filter(f => f && f.name);
+                const [first, ...others] = list;
+                groups++; crowned += 1;
+                return (tierName ? hbTier(tierName) : '') + approvedRow(first, true) + hbDuo(others[0]?.name, others[1]?.name);
+            };
 
-            if (approved.length > 0) {
-                // المعتمدون من المشرف لهم الأولوية دائماً: الأول فارس، والباقيان في سطر الثاني والثالث
-                const [first, ...others] = approved;
-                crowned = approved.length;
-                dkHtml = hbWinnerRow(first.name, first.achievement || '', {
-                    medal: '👑', wins: winCounts[first.id] || 0, big: true
-                }) + hbDuo(others[0]?.name, others[1]?.name);
-            } else if (tiersOn) {
-                // اقتراح آلي لكل شريحة (حتى قبل الاعتماد): المتعادلون في القمة فرسان، والتاليان ثانٍ وثالث
-                tiers.forEach(t => {
-                    const candidates = getDayTitleCandidates(approvedDate, t.id);
-                    const winners = topTied(candidates, e => e.points);
-                    if (winners.length === 0) return;
-                    const runnersUp = candidates.slice(winners.length, winners.length + 2);
-                    groups++; crowned += winners.length;
-                    dkHtml += hbTier(t.name) + winners.map(w => crownRow(w, true)).join('')
-                        + hbDuo(runnersUp[0]?.student.name, runnersUp[1]?.student.name);
+            const approvedAll = getApprovedKnightsForMode(approvedDate, 'all');
+            const tierApprovals = tiersOn
+                ? tiers.map(t => ({ tier: t, appr: getApprovedKnightsForMode(approvedDate, t.id) }))
+                : [];
+            const hasTierApproval = tierApprovals.some(x => x.appr);
+
+            if (tiersOn && hasTierApproval) {
+                // لكل شريحة: اعتمادها إن وُجد، وإلا اقتراحها الآلي
+                tierApprovals.forEach(({ tier: t, appr }) => {
+                    dkHtml += appr ? approvedBlock(appr, t.name) : autoTierBlock(t);
                 });
+            } else if (approvedAll) {
+                // اعتماد "كل الطلاب" (يشمل السجلات القديمة بلا mode)
+                dkHtml = approvedBlock(approvedAll, null);
+            } else if (tiersOn) {
+                tiers.forEach(t => { dkHtml += autoTierBlock(t); });
             } else {
                 const candidates = getDayTitleCandidates(approvedDate);
                 const winners = topTied(candidates, e => e.points);
@@ -3727,6 +3744,7 @@
             saveCurrentThreeKnights({
                 day: farsDay,
                 dateStr: document.getElementById('farsAutoDate')?.value || todayStr,
+                mode: document.getElementById('farsAutoMode')?.value || 'all', // كل الطلاب / معرّف شريحة / انضباط
                 savedAt: new Date().toISOString(),
                 fars: [
                     { id: student1 ? student1.id : null, name: student1 ? student1.name : null, achievement: ach1 || "التميز في الحفظ والسرد التراكمي" },
@@ -4537,14 +4555,24 @@
         }
 
         // عدّاد مرات الفوز بلقب فارس اليوم (من سجل الفرسان المعتمد)
+        // عدّاد مرات الفوز بلقب فارس اليوم: المركز الأول فقط (لا الثاني والثالث)،
+        // ولا تُحسب اعتمادات الانضباط لأنها لقب مستقل
         function getKnightWinCounts() {
             const counts = {};
             (honorKnightsLog || []).forEach(entry => {
-                (entry.fars || []).forEach(f => {
-                    if (f && f.id != null) counts[f.id] = (counts[f.id] || 0) + 1;
-                });
+                if ((entry.mode || 'all') === 'discipline') return;
+                const first = (entry.fars || [])[0];
+                if (first && first.id != null) counts[first.id] = (counts[first.id] || 0) + 1;
             });
             return counts;
+        }
+
+        // اعتماد فرسان يوم محدد لوضع محدد (كل الطلاب / معرّف شريحة). السجلات القديمة بلا mode = "all"
+        function getApprovedKnightsForMode(dateStr, mode) {
+            return (honorKnightsLog || []).find(e =>
+                e.dateStr === dateStr && (e.mode || 'all') === mode &&
+                (e.fars || []).some(f => f && f.name)
+            ) || null;
         }
 
         // نص الإنجاز المُولَّد تلقائياً
