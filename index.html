@@ -1353,13 +1353,13 @@
             <!-- ٢) نجوم الانضباط للأسبوع -->
             <div class="honor-card bg-white/95 border-8 border-teal-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
                 <div class="bg-gradient-to-r from-teal-500 to-cyan-500 py-3 px-6 shrink-0">
-                    <h2 class="text-xl md:text-3xl font-black text-white text-center"><i class="fas fa-shield-heart ml-2"></i> نجوم الانضباط للأسبوع</h2>
+                    <h2 class="text-xl md:text-3xl font-black text-white text-center" id="hbDisciplineTitle"><i class="fas fa-shield-halved ml-2"></i> نجوم الانضباط للأسبوع</h2>
                 </div>
                 <div id="hbDisciplineStars" class="p-5 overflow-y-auto custom-scroll flex-grow"></div>
             </div>
 
             <!-- ٣) فرسان الأسبوع (لكل شريحة) -->
-            <div class="honor-card bg-white/95 border-8 border-blue-950 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
+            <div id="hbCardWeekly" class="honor-card bg-white/95 border-8 border-blue-950 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
                 <div class="bg-gradient-to-r from-blue-950 to-slate-800 py-3 px-6 shrink-0">
                     <h2 class="text-xl md:text-3xl font-black text-amber-400 text-center" id="hbWeeklyTitle"><i class="fas fa-star ml-2"></i> فرسان الأسبوع</h2>
                 </div>
@@ -1367,7 +1367,7 @@
             </div>
 
             <!-- ٤) الأكثر تقدّماً / صدارة الموسم -->
-            <div class="honor-card bg-white/95 border-8 border-emerald-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
+            <div id="hbCardProgress" class="honor-card bg-white/95 border-8 border-emerald-500 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col honor-card-pulse">
                 <div class="bg-gradient-to-r from-emerald-500 to-green-600 py-3 px-6 shrink-0">
                     <h3 class="text-xl md:text-3xl font-black text-white text-center" id="hbProgressTitle">الأكثر تقدّماً</h3>
                 </div>
@@ -2690,19 +2690,37 @@
                     : hbEmpty('لم يُعتمد فرسان بعد', 'اعتمدهم من الإعدادات ← الفرسان');
             }
 
-            // ═══ ٢) نجوم الانضباط للأسبوع ═══
+            // ═══ تخطيط اللوحة: اليوم المكثف ثلاثة مربعات، والثالث بعرض الصف كاملاً ═══
+            const cardProgress = document.getElementById('hbCardProgress');
+            const cardWeekly = document.getElementById('hbCardWeekly');
+            if (cardProgress) cardProgress.style.display = isReviewDay ? 'none' : '';
+            if (cardWeekly) cardWeekly.style.gridColumn = isReviewDay ? '1 / -1' : '';
+
+            // ═══ ٢) نجوم الانضباط (للأسبوع في الصيفي، لليوم في اليوم المكثف) ═══
+            const dsTitle = document.getElementById('hbDisciplineTitle');
             const dsContainer = document.getElementById('hbDisciplineStars');
-            const { stars, daysCount } = getDisciplineStars();
+            let stars, chipText, emptyHint;
+
+            if (isReviewDay) {
+                stars = getDayDisciplineStars(boardDate);
+                dsTitle.innerHTML = '<i class="fas fa-shield-halved ml-2"></i> نجوم الانضباط اليوم';
+                chipText = `التزموا اليوم: ${stars.length} طالب`;
+                emptyHint = 'الشروط: حضور · بلا أي مخالفة · تقييم انضباط';
+            } else {
+                const res = getDisciplineStars();
+                stars = res.stars;
+                dsTitle.innerHTML = '<i class="fas fa-shield-halved ml-2"></i> نجوم الانضباط للأسبوع';
+                chipText = `ما زال ملتزماً: ${stars.length} طالب · ${res.daysCount} أيام`;
+                emptyHint = 'الشروط: حضور كل أيام الأسبوع · بلا أي مخالفة · تقييم انضباط يومي';
+            }
+
             if (stars.length === 0) {
-                dsContainer.innerHTML = hbEmpty(
-                    'لم يستوفِ أحد الشروط بعد',
-                    'الشروط: حضور كل أيام الأسبوع · بلا أي مخالفة · تقييم انضباط يومي'
-                );
+                dsContainer.innerHTML = hbEmpty('لم يستوفِ أحد الشروط بعد', emptyHint);
             } else {
                 dsContainer.innerHTML = `
                     <div class="text-center mb-3">
                         <span class="bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full font-black text-sm border-2 border-teal-200">
-                            ما زال ملتزماً: ${stars.length} طالب · ${daysCount} أيام
+                            ${chipText}
                         </span>
                     </div>
                     <div class="space-y-2">
@@ -2717,13 +2735,33 @@
             const wkContainer = document.getElementById('hbWeeklyKnights');
 
             if (isReviewDay) {
-                wkTitle.innerHTML = '<i class="fas fa-crown ml-2"></i> فرسان الموسم';
-                const leaders = getSeasonLeaders(5);
-                wkContainer.innerHTML = leaders.length
-                    ? leaders.map((l, i) => hbWinnerRow(l.student.name, `${l.points} نقطة`, {
-                        medal: ['🥇','🥈','🥉','🏅','🏅'][i], bg: 'bg-blue-50', border: 'border-blue-100', big: i === 0
-                      })).join('')
-                    : hbEmpty('لا توجد بيانات بعد');
+                // اليوم المكثف حفل ليوم واحد: لا أسبوع ولا موسم، بل الحصاد الجماعي للحاضرين
+                wkTitle.innerHTML = '<i class="fas fa-seedling ml-2"></i> حصاد اليوم';
+                const h = getDayHarvest(boardDate);
+                if (h.attended === 0) {
+                    wkContainer.innerHTML = hbEmpty('لم يبدأ التسجيل بعد', 'يظهر هنا ما راجعه الطلاب جميعاً');
+                } else {
+                    const fmt = (n, digits = 0) => Number(n).toLocaleString('ar-EG', { maximumFractionDigits: digits });
+                    const tile = (icon, value, label, bg, fg) => `
+                        <div class="rounded-2xl ${bg} border-2 border-white/60 px-3 py-4 text-center shadow-sm">
+                            <div class="text-3xl mb-1">${icon}</div>
+                            <div class="text-3xl md:text-4xl font-black ${fg}">${value}</div>
+                            <div class="text-sm md:text-base font-bold text-slate-500 mt-1">${label}</div>
+                        </div>`;
+                    const juz = h.quarters / 8;
+                    const khatmaPct = Math.round((h.quarters / 240) * 100); // ٣٠ جزءاً = ٢٤٠ ربعاً
+                    wkContainer.innerHTML = `
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            ${tile('👥', `${fmt(h.attended)} <span class="text-lg text-slate-400">/ ${fmt(h.total)}</span>`, 'الحاضرون', 'bg-blue-50', 'text-blue-700')}
+                            ${tile('📖', fmt(h.ayahs), 'آية رُوجعت', 'bg-emerald-50', 'text-emerald-700')}
+                            ${tile('📄', fmt(h.pages, 1), 'صفحة', 'bg-amber-50', 'text-amber-700')}
+                            ${tile('📚', fmt(juz, 1), 'جزء', 'bg-purple-50', 'text-purple-700')}
+                        </div>
+                        ${khatmaPct >= 1 ? `
+                        <div class="text-center mt-4 text-lg md:text-2xl font-black text-emerald-700">
+                            بحمد الله، ما يعادل <span class="text-amber-600">${fmt(khatmaPct)}٪</span> من ختمة كاملة
+                        </div>` : ''}`;
+                }
             } else {
                 wkTitle.innerHTML = '<i class="fas fa-star ml-2"></i> فرسان الأسبوع';
                 if (tiersOn) {
@@ -2747,7 +2785,9 @@
                 }
             }
 
-            // ═══ ٤) الأكثر تقدّماً (أو صدارة الموسم إن لا سابقة) ═══
+            // ═══ ٤) الأكثر تقدّماً (أو صدارة الموسم إن لا سابقة) — للصيفي فقط ═══
+            if (isReviewDay) return; // اليوم المكثف: المربع مخفي
+
             const prTitle = document.getElementById('hbProgressTitle');
             const prContainer = document.getElementById('hbProgress');
             const improved = getMostImproved(5);
@@ -4204,6 +4244,43 @@
             }).filter(Boolean).sort((a, b) => b.criteriaPoints - a.criteriaPoints);
 
             return { stars, daysCount: dates.length };
+        }
+
+        // نجوم انضباط يوم واحد (اليوم القرآني المكثف): حضر + بلا أي مخالفة + قُيّم بمعيار إيجابي
+        function getDayDisciplineStars(dateStr) {
+            if (!dateStr) return [];
+            return students.map(s => {
+                const d = s.history?.[dateStr];
+                if (!d || !d.attended) return null;
+                if (dayHasAnyViolation(d)) return null;
+                const crit = d.criteria || {};
+                if (!Object.values(crit).some(v => (v || 0) > 0)) return null;
+                return { student: s, criteriaPoints: d.criteriaPoints || 0 };
+            }).filter(Boolean).sort((a, b) => b.criteriaPoints - a.criteriaPoints);
+        }
+
+        // حصاد يوم: الإنجاز الجماعي لكل الحاضرين (نفس منطق getCumulativeStats)
+        function getDayHarvest(dateStr) {
+            let attended = 0, ayahs = 0, pages = 0, quarters = 0;
+            if (dateStr) {
+                students.forEach(s => {
+                    const d = s.history?.[dateStr];
+                    if (!d || !d.attended) return;
+                    attended++;
+                    ayahs += (d.sard || 0) + (d.goldenSard || 0);
+                    if (d.sessionPages !== undefined || d.sessionQuarters !== undefined) {
+                        pages += (d.sessionPages || 0);
+                        quarters += (d.sessionQuarters || 0);
+                    } else if ((d.sard || 0) > 0) {
+                        // سجلات قديمة بلا صفحات دقيقة: تقدير بالمعدل العام
+                        pages += d.sard / 18.3221567;
+                        quarters += d.sard / 45.80539;
+                    }
+                    pages += (d.goldenPages || 0);
+                    quarters += (d.goldenRubs || 0);
+                });
+            }
+            return { attended, total: students.length, ayahs, pages, quarters };
         }
 
         function sumCriteriaPoints(student, dates) {
