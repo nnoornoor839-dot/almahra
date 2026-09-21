@@ -1541,7 +1541,10 @@
                 <button onclick="closeSmartModal()" class="absolute top-4 left-4 text-emerald-700 hover:text-red-500 text-5xl"><i class="fas fa-times-circle"></i></button>
                 <div class="text-6xl bg-white p-3 rounded-full shadow-sm text-emerald-500 border border-emerald-100"><i class="fas fa-quran"></i></div>
                 <div class="text-right flex-1">
-                    <h2 class="text-4xl md:text-5xl font-black" id="smartStudentName">اسم الطالب</h2>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h2 class="text-4xl md:text-5xl font-black" id="smartStudentName">اسم الطالب</h2>
+                        <span id="smartStudentTier" class="font-black text-sm md:text-base px-3 py-1 rounded-full text-white shadow-sm" style="display:none"></span>
+                    </div>
                     <p class="text-xl mt-1 text-emerald-700 font-bold">لوحة تسجيل الإنجاز والاعتمادات</p>
                 </div>
             </div>
@@ -1886,6 +1889,27 @@
 
         function getStudentTier(student) {
             return getTierById(student?.tierId) || null;
+        }
+
+        // ألوان الشرائح — قيم صريحة (Tailwind لا يتعرّف على الفئات المُولّدة ديناميكياً)
+        // مشتركة بين لوحة السباق ووسم الشريحة في بطاقة الطالب حتى تتطابق الألوان
+        const TIER_STYLES = [
+            { border: '#6ee7b7', head: '#10b981' }, // emerald
+            { border: '#93c5fd', head: '#3b82f6' }, // blue
+            { border: '#fcd34d', head: '#f59e0b' }, // amber
+            { border: '#d8b4fe', head: '#a855f7' }, // purple
+            { border: '#fda4af', head: '#f43f5e' }, // rose
+            { border: '#5eead4', head: '#14b8a6' }  // teal
+        ];
+
+        // وسم شريحة الطالب: لونه واسمه — أو null حين تُطفأ ميزة الشرائح (فلا يظهر وسم)
+        function getTierBadge(student) {
+            const enabled = window.almahraPrograms?.isFeatureEnabled('tiers') !== false;
+            const tiers = getTiers();
+            if (!enabled || tiers.length === 0) return null;
+            const i = tiers.findIndex(t => t.id === student?.tierId);
+            if (i < 0) return { name: 'بلا شريحة', border: '#cbd5e1', head: '#64748b', unassigned: true };
+            return { name: tiers[i].name, ...TIER_STYLES[i % TIER_STYLES.length] };
         }
 
         // ================================================================
@@ -3813,17 +3837,8 @@
                 return;
             }
 
-            // مع الشرائح: كل شريحة قائمتها المستقلة
+            // مع الشرائح: كل شريحة قائمتها المستقلة (بالألوان المشتركة TIER_STYLES)
             grid.className = 'flex flex-col gap-6 pt-2 pb-6';
-            // ألوان ثابتة بقيم صريحة (Tailwind لا يتعرّف على الفئات المُولّدة ديناميكياً)
-            const TIER_STYLES = [
-                { border: '#6ee7b7', head: '#10b981' }, // emerald
-                { border: '#93c5fd', head: '#3b82f6' }, // blue
-                { border: '#fcd34d', head: '#f59e0b' }, // amber
-                { border: '#d8b4fe', head: '#a855f7' }, // purple
-                { border: '#fda4af', head: '#f43f5e' }, // rose
-                { border: '#5eead4', head: '#14b8a6' }  // teal
-            ];
             let html = '';
 
             tiers.forEach((t, ti) => {
@@ -4760,6 +4775,19 @@
             }
             currentEditingStudentId = id; const student = students.find(s => s.id === id); if(!student) return;
             document.getElementById('smartStudentName').innerText = escapeHTML(student.name);
+            // وسم الشريحة بجانب الاسم (يختفي حين تُطفأ ميزة الشرائح)
+            const _tierEl = document.getElementById('smartStudentTier');
+            if (_tierEl) {
+                const _badge = getTierBadge(student);
+                if (_badge) {
+                    _tierEl.style.display = '';
+                    _tierEl.style.background = _badge.head;
+                    _tierEl.innerHTML = `<i class="fas fa-layer-group"></i> ${escapeHTML(_badge.name)}`;
+                } else {
+                    _tierEl.style.display = 'none';
+                    _tierEl.innerHTML = '';
+                }
+            }
             let nextSurah = student.lastDailySurah || student.lastSurah; let nextAyah = student.lastDailyAyah || student.lastAyah;
             if (nextSurah && nextAyah && quranMeta) {
                 nextAyah += 1; const maxAyahs = quranMeta.surahs.references.find(s => s.number === nextSurah).numberOfAyahs;
