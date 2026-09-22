@@ -204,7 +204,7 @@ window.almahraData = {
                     : {
                         name: data.name,
                         history: {},
-                        // مقدار الحفظ حقيقة تنتقل مع الطالب؛ الشريحة تُحسب بتعريفات الموسم الجديد (إعادة التصنيف)
+                        // مقدار الحفظ حقيقة تنتقل مع الطالب؛ الشريحة لا تُخزَّن بل تُحسب منه بتعريفات البرنامج
                         memorizedJuz: Number.isInteger(data.memorizedJuz) ? data.memorizedJuz : null,
                         lastSurah: data.lastSurah || null,
                         lastAyah: data.lastAyah || null,
