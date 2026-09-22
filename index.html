@@ -1301,13 +1301,34 @@
                 <button onclick="closeBulkTierModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
             </div>
             <div class="p-4 bg-indigo-50 text-indigo-800 font-bold border-b border-indigo-200 text-sm shrink-0">
-                اختر شريحة كل طالب من القائمة المقابلة له، ثم احفظ.
+                اختر مقدار حفظ كل طالب فتُحسب شريحته تلقائياً، أو غيّر الشريحة بيدك فيُعلَّم «منقولاً يدوياً» ✋. ثم احفظ.
             </div>
             <div class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2" id="bulkTierList"></div>
             <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0">
                 <button onclick="saveBulkTierAssign()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg py-3 rounded-2xl shadow">
                     <i class="fas fa-check ml-2"></i> حفظ الإسناد
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة معاينة إعادة تصنيف الطلاب حسب تعريفات الشرائح -->
+    <div id="reclassifyModal" class="fixed inset-0 z-[6500] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
+            <div class="bg-indigo-600 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-shuffle"></i> إعادة تصنيف الطلاب</h3>
+                <button onclick="closeReclassifyModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 bg-indigo-50 text-indigo-800 font-bold border-b border-indigo-200 text-sm shrink-0">
+                هذه التغييرات التي ستحدث حسب تعريفات الشرائح المحفوظة. لم يُنفَّذ شيء بعد.
+                <div id="reclassifyNotes" class="text-amber-700 mt-1"></div>
+            </div>
+            <div class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2" id="reclassifyList"></div>
+            <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 flex gap-3">
+                <button id="reclassifyApplyBtn" onclick="applyReclassify()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg py-3 rounded-2xl shadow">
+                    <i class="fas fa-check ml-2"></i> نفّذ النقل
+                </button>
+                <button onclick="closeReclassifyModal()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-black text-lg py-3 rounded-2xl">إلغاء</button>
             </div>
         </div>
     </div>
@@ -1715,9 +1736,14 @@
                     <label class="block text-2xl font-bold text-slate-700 mb-3 text-center">الاسم الرباعي للطالب</label>
                     <input type="text" id="studentNameInput" class="w-full p-4 border-4 border-slate-300 rounded-2xl text-2xl font-bold text-center focus:border-emerald-500 outline-none" placeholder="اكتب الاسم الكامل هنا...">
                 </div>
-                <div id="studentTierWrap" class="mt-5">
+                <div class="mt-5">
+                    <label class="block text-xl font-bold text-slate-700 mb-2 text-center">مقدار الحفظ (بالأجزاء)</label>
+                    <select id="studentMemorizedInput" onchange="onStudentMemorizedChange()" class="w-full p-3 border-4 border-slate-300 rounded-2xl text-lg font-bold text-center focus:border-emerald-500 outline-none"></select>
+                </div>
+                <div id="studentTierWrap" class="mt-5" data-active="0" data-manual="0">
                     <label class="block text-xl font-bold text-slate-700 mb-2 text-center">الشريحة (المستوى)</label>
-                    <select id="studentTierInput" class="w-full p-3 border-4 border-slate-300 rounded-2xl text-xl font-bold text-center focus:border-emerald-500 outline-none"></select>
+                    <select id="studentTierInput" onchange="onStudentTierChange()" class="w-full p-3 border-4 border-slate-300 rounded-2xl text-xl font-bold text-center focus:border-emerald-500 outline-none"></select>
+                    <div id="studentTierStatus" class="mt-2 text-center text-sm font-bold"></div>
                 </div>
             </div>
             <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300">
@@ -5141,35 +5167,149 @@
             saveData(); updateAllUIs(); closeAttendanceEditModal();
             showToast(`تم تحديث حضور (${escapeHTML(student.name)}) بنجاح`);
         }
-        // تعبئة قائمة الشرائح في نافذة الطالب
-        function fillTierSelect(selectedTierId) {
+        // ================================================================
+        // الشريحة من مقدار الحفظ: نحفظ الحقيقة (memorizedJuz) والنتيجة (tierId) معاً
+        //  • memorizedJuz: عدد الأجزاء المحفوظة ٠–٣٠، أو null إن لم يُسجَّل (لا undefined: Firestore يرفضها)
+        //  • tierManual: نقلٌ يدوي من المشرف — لا تمسّه إعادة التصنيف ولا تغيير مقدار الحفظ
+        // ================================================================
+        function tiersFeatureOn() {
+            return window.almahraPrograms?.isFeatureEnabled('tiers') !== false && getTiers().length > 0;
+        }
+
+        // الشريحة التي يقع فيها مقدار حفظ معيّن حسب تعريفات الإعدادات (أو null)
+        function classifyTierByJuz(n) {
+            if (!Number.isInteger(n)) return null;
+            const tiers = getTiers();
+            if (!tiers.length || tiers.some(t => !Number.isInteger(t.minJuz))) return null;
+            let found = null;
+            [...tiers].sort((a, b) => a.minJuz - b.minJuz).forEach(t => { if (t.minJuz <= n) found = t; });
+            return found;
+        }
+
+        // الشريحة التي يعطيها الحساب الآلي لطالب ('' إن لم يُسجَّل مقدار حفظه)
+        function autoTierIdFor(memorizedJuz) {
+            return classifyTierByJuz(memorizedJuz)?.id || '';
+        }
+
+        // منقول يدوياً؟ صراحةً، أو طالب قديم له شريحة بلا مقدار حفظ (أسندها المشرف بيده)
+        function isTierManual(s) {
+            return s?.tierManual === true || (!!s?.tierId && !Number.isInteger(s?.memorizedJuz));
+        }
+
+        // خيارات «مقدار الحفظ» — النص نفسه سيُستعمل في نموذج التسجيل (يبدأ كل خيار برقم)
+        function memorizedJuzLabel(n) {
+            if (n === 0) return '0 - لم يُتمّ حفظ جزء كامل بعد';
+            if (n === 1) return '1 - جزء واحد (مثل: عمّ)';
+            if (n === 2) return '2 - جزءان (مثل: عمّ وتبارك)';
+            if (n >= 30) return '30 - القرآن كاملاً';
+            return `${n} - ${n} ${n <= 10 ? 'أجزاء' : 'جزءاً'} (مثل: من عمّ حتى ${juzReachedFromEnd(n)})`;
+        }
+        function memorizedJuzOptionsHtml() {
+            let html = '<option value="">— غير محدد —</option>';
+            for (let n = 0; n <= 30; n++) html += `<option value="${n}">${escapeHTML(memorizedJuzLabel(n))}</option>`;
+            return html;
+        }
+
+        // تعبئة حقلَي مقدار الحفظ والشريحة في نافذة الطالب
+        function fillStudentTierFields(student) {
+            const memSel = document.getElementById('studentMemorizedInput');
+            if (memSel) {
+                memSel.innerHTML = memorizedJuzOptionsHtml();
+                memSel.value = Number.isInteger(student?.memorizedJuz) ? String(student.memorizedJuz) : '';
+            }
             const sel = document.getElementById('studentTierInput');
             const wrap = document.getElementById('studentTierWrap');
             if (!sel || !wrap) return;
-            const tiers = getTiers();
-            const enabled = window.almahraPrograms?.isFeatureEnabled('tiers') !== false;
-            if (!enabled || tiers.length === 0) { wrap.style.display = 'none'; return; }
+            if (!tiersFeatureOn()) { wrap.style.display = 'none'; wrap.dataset.active = '0'; return; }
             wrap.style.display = '';
+            wrap.dataset.active = '1';
             sel.innerHTML = '<option value="">— بلا شريحة —</option>' +
-                tiers.map(t => `<option value="${t.id}">${escapeHTML(t.name)}</option>`).join('');
-            sel.value = selectedTierId || '';
+                getTiers().map(t => `<option value="${t.id}">${escapeHTML(t.name)}</option>`).join('');
+            sel.value = student?.tierId || '';
+            wrap.dataset.manual = (student && isTierManual(student)) ? '1' : '0';
+            updateStudentTierStatus();
+        }
+
+        // تغيّر مقدار الحفظ: تُحسب الشريحة فوراً، إلا إن كان الطالب منقولاً يدوياً
+        function onStudentMemorizedChange() {
+            const wrap = document.getElementById('studentTierWrap');
+            if (!wrap || wrap.dataset.active !== '1') return;
+            if (wrap.dataset.manual !== '1') {
+                const n = parseTierMin(document.getElementById('studentMemorizedInput').value);
+                document.getElementById('studentTierInput').value = autoTierIdFor(n);
+            }
+            updateStudentTierStatus();
+        }
+
+        // غيّر المشرف الشريحة بيده: إن خالفت الحساب الآلي صار الطالب «منقولاً يدوياً»
+        function onStudentTierChange() {
+            const wrap = document.getElementById('studentTierWrap');
+            const n = parseTierMin(document.getElementById('studentMemorizedInput').value);
+            wrap.dataset.manual = document.getElementById('studentTierInput').value !== autoTierIdFor(n) ? '1' : '0';
+            updateStudentTierStatus();
+        }
+
+        function resetStudentTierToAuto() {
+            const wrap = document.getElementById('studentTierWrap');
+            const n = parseTierMin(document.getElementById('studentMemorizedInput').value);
+            wrap.dataset.manual = '0';
+            document.getElementById('studentTierInput').value = autoTierIdFor(n);
+            updateStudentTierStatus();
+        }
+
+        function updateStudentTierStatus() {
+            const box = document.getElementById('studentTierStatus');
+            const wrap = document.getElementById('studentTierWrap');
+            if (!box || !wrap) return;
+            const n = parseTierMin(document.getElementById('studentMemorizedInput')?.value);
+            if (wrap.dataset.manual === '1') {
+                box.className = 'mt-2 text-center text-sm font-bold text-amber-700';
+                box.innerHTML = '✋ منقول يدوياً — لا تغيّره إعادة التصنيف'
+                    + (n !== null ? ` <button type="button" onclick="resetStudentTierToAuto()" class="underline text-indigo-700 mr-1">إرجاع للتصنيف التلقائي</button>` : '');
+            } else if (n === null) {
+                box.className = 'mt-2 text-center text-sm font-bold text-slate-500';
+                box.textContent = 'اختر مقدار الحفظ لتُحسب الشريحة تلقائياً';
+            } else if (document.getElementById('studentTierInput')?.value !== autoTierIdFor(n)) {
+                // صُنّف قبل تغيير التعريفات؛ الشريحة ثابتة حتى يضغط المشرف «إعادة تصنيف الطلاب»
+                box.className = 'mt-2 text-center text-sm font-bold text-amber-700';
+                box.innerHTML = '🕓 مصنّف بتعريف سابق للشرائح'
+                    + ` <button type="button" onclick="resetStudentTierToAuto()" class="underline text-indigo-700 mr-1">طبّق التعريف الحالي</button>`;
+            } else {
+                box.className = 'mt-2 text-center text-sm font-bold text-emerald-700';
+                box.textContent = '🔄 محسوبة تلقائياً من مقدار الحفظ';
+            }
         }
 
         let delId = null;
         function openStudentModal(id=null) {
             const m = document.getElementById('studentModal'); const n = document.getElementById('studentNameInput'); const i = document.getElementById('studentIdInput');
-            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillTierSelect(s.tierId); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
-            else { n.value=""; i.value=""; fillTierSelect(getTiers()[0]?.id || ''); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
+            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
+            else { n.value=""; i.value=""; fillStudentTierFields(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
             m.classList.replace('hidden','flex'); n.focus();
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
         function saveStudent() {
             const n=document.getElementById('studentNameInput').value.trim();
             const i=document.getElementById('studentIdInput').value;
-            const tierId = document.getElementById('studentTierInput')?.value || '';
             if(!n) return;
-            if(i){ const idx=students.findIndex(s=>s.id==i); students[idx].name=n; students[idx].tierId = tierId; }
-            else{ const nid=students.length?Math.max(...students.map(s=>s.id))+1:1; students.push({id:nid, name:n, tierId: tierId, history:{}}); }
+            const memorizedJuz = parseTierMin(document.getElementById('studentMemorizedInput')?.value);
+            // الشريحة تُقرأ فقط إن كانت ظاهرة؛ وإلا تبقى كما هي (القائمة المخفية قد تحمل قيمة طالب سابق)
+            const wrap = document.getElementById('studentTierWrap');
+            const tiersActive = wrap?.dataset.active === '1';
+            const tierId = tiersActive ? (document.getElementById('studentTierInput')?.value || '') : null;
+            const tierManual = tiersActive ? wrap.dataset.manual === '1' : null;
+            if(i){
+                const st = students.find(s => s.id == i); if (!st) return;
+                st.name = n;
+                st.memorizedJuz = memorizedJuz;
+                if (tiersActive) { st.tierId = tierId; st.tierManual = tierManual; }
+            }
+            else{
+                const nid=students.length?Math.max(...students.map(s=>s.id))+1:1;
+                students.push({ id: nid, name: n, history: {}, memorizedJuz,
+                    tierId: tiersActive ? tierId : autoTierIdFor(memorizedJuz),
+                    tierManual: tiersActive ? tierManual : false });
+            }
             saveData(); updateAllUIs(); closeStudentModal(); showToast("تم حفظ بيانات الطالب");
         }
         function confirmDelete(id) {
@@ -5806,8 +5946,14 @@
                         <button type="button" onclick="openBulkTierAssign()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
                             <i class="fas fa-users-gear"></i> إسناد الطلاب للشرائح
                         </button>
+                        <button type="button" onclick="openReclassifyPreview()" class="bg-white hover:bg-indigo-50 text-indigo-700 border-2 border-indigo-400 font-bold py-2 px-5 rounded-xl text-sm">
+                            <i class="fas fa-shuffle"></i> إعادة تصنيف الطلاب
+                        </button>
                     </div>
-                    <p class="text-xs text-slate-400 font-bold mt-3">احفظ الإعدادات أولاً قبل إسناد الطلاب لشرائح جديدة.</p>
+                    <p class="text-xs text-slate-400 font-bold mt-3">
+                        احفظ الإعدادات أولاً قبل إسناد الطلاب أو إعادة تصنيفهم.
+                        الشريحة ثابتة طوال الموسم: إعادة التصنيف لا تحدث إلا حين تضغطها، ولا تمسّ المنقولين يدوياً ✋.
+                    </p>
                 </div>
                 ${saveBarHtml(isArchivedView)}`;
 
@@ -6238,26 +6384,69 @@
             if (students.length === 0) { showToast('لا يوجد طلاب بعد', 'error'); return; }
 
             const list = document.getElementById('bulkTierList');
-            const opts = '<option value="">— بلا شريحة —</option>' +
+            const tierOpts = '<option value="">— بلا شريحة —</option>' +
                 tiers.map(t => `<option value="${t.id}">${escapeHTML(t.name)}</option>`).join('');
+            const memOpts = memorizedJuzOptionsHtml();
 
             list.innerHTML = students.map(s => `
-                <div class="bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center justify-between gap-3">
-                    <span class="font-bold text-slate-700 min-w-0 flex-1 truncate">
+                <div class="bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2"
+                     data-sid="${s.id}" data-manual="${isTierManual(s) ? '1' : '0'}">
+                    <span class="font-bold text-slate-700 min-w-[140px] flex-1 truncate">
                         <span class="text-slate-400 font-black">#${s.id}</span> ${escapeHTML(s.name)}
                     </span>
+                    <select class="bulk-mem p-2 border-2 border-slate-300 rounded-xl font-bold text-xs outline-none focus:border-indigo-500 w-full sm:w-56"
+                            onchange="onBulkMemChange(this)" title="مقدار الحفظ">${memOpts}</select>
                     <select class="bulk-tier-sel p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 shrink-0"
-                            data-sid="${s.id}">${opts}</select>
+                            onchange="onBulkTierChange(this)" title="الشريحة">${tierOpts}</select>
+                    <span class="bulk-flag text-xs font-bold shrink-0"></span>
                 </div>
             `).join('');
 
             // ضبط القيم الحالية
-            list.querySelectorAll('.bulk-tier-sel').forEach(sel => {
-                const st = students.find(x => String(x.id) === sel.dataset.sid);
-                sel.value = st?.tierId || '';
+            list.querySelectorAll('.bulk-row').forEach(row => {
+                const st = students.find(x => String(x.id) === row.dataset.sid);
+                row.querySelector('.bulk-mem').value = Number.isInteger(st?.memorizedJuz) ? String(st.memorizedJuz) : '';
+                row.querySelector('.bulk-tier-sel').value = st?.tierId || '';
+                updateBulkRowFlag(row);
             });
 
             document.getElementById('bulkTierModal').classList.replace('hidden', 'flex');
+        }
+
+        // صفوف الإسناد الجماعي: القاعدة نفسها في نافذة الطالب
+        function onBulkMemChange(memSel) {
+            const row = memSel.closest('.bulk-row');
+            if (row.dataset.manual !== '1') {
+                row.querySelector('.bulk-tier-sel').value = autoTierIdFor(parseTierMin(memSel.value));
+            }
+            updateBulkRowFlag(row);
+        }
+        function onBulkTierChange(tierSel) {
+            const row = tierSel.closest('.bulk-row');
+            const auto = autoTierIdFor(parseTierMin(row.querySelector('.bulk-mem').value));
+            row.dataset.manual = tierSel.value !== auto ? '1' : '0';
+            updateBulkRowFlag(row);
+        }
+        function resetBulkRowToAuto(btn) {
+            const row = btn.closest('.bulk-row');
+            row.dataset.manual = '0';
+            row.querySelector('.bulk-tier-sel').value = autoTierIdFor(parseTierMin(row.querySelector('.bulk-mem').value));
+            updateBulkRowFlag(row);
+        }
+        function updateBulkRowFlag(row) {
+            const flag = row.querySelector('.bulk-flag');
+            const hasMem = parseTierMin(row.querySelector('.bulk-mem').value) !== null;
+            if (row.dataset.manual === '1') {
+                flag.className = 'bulk-flag text-xs font-bold shrink-0 text-amber-700';
+                flag.innerHTML = '✋ يدوي' + (hasMem ? ` <button type="button" onclick="resetBulkRowToAuto(this)" class="underline text-indigo-700" title="إرجاع للتصنيف التلقائي">↺</button>` : '');
+            } else if (hasMem && row.querySelector('.bulk-tier-sel').value !== autoTierIdFor(parseTierMin(row.querySelector('.bulk-mem').value))) {
+                // صُنّف قبل تغيير التعريفات
+                flag.className = 'bulk-flag text-xs font-bold shrink-0 text-amber-700';
+                flag.innerHTML = `🕓 تعريف سابق <button type="button" onclick="resetBulkRowToAuto(this)" class="underline text-indigo-700" title="طبّق التعريف الحالي">↺</button>`;
+            } else {
+                flag.className = 'bulk-flag text-xs font-bold shrink-0 text-emerald-700';
+                flag.textContent = hasMem ? '🔄 تلقائي' : '';
+            }
         }
 
         function closeBulkTierModal() {
@@ -6266,13 +6455,81 @@
 
         function saveBulkTierAssign() {
             let changed = 0;
-            document.querySelectorAll('.bulk-tier-sel').forEach(sel => {
-                const st = students.find(x => String(x.id) === sel.dataset.sid);
-                if (st && (st.tierId || '') !== sel.value) { st.tierId = sel.value; changed++; }
+            document.querySelectorAll('#bulkTierList .bulk-row').forEach(row => {
+                const st = students.find(x => String(x.id) === row.dataset.sid);
+                if (!st) return;
+                const mem = parseTierMin(row.querySelector('.bulk-mem').value);
+                const tierId = row.querySelector('.bulk-tier-sel').value;
+                const manual = row.dataset.manual === '1';
+                const oldMem = Number.isInteger(st.memorizedJuz) ? st.memorizedJuz : null;
+                if (oldMem === mem && (st.tierId || '') === tierId && isTierManual(st) === manual) return;
+                st.memorizedJuz = mem;
+                st.tierId = tierId;
+                st.tierManual = manual;
+                changed++;
             });
             if (changed === 0) { showToast('لا تغييرات'); closeBulkTierModal(); return; }
             saveData(); updateAllUIs(); closeBulkTierModal();
-            showToast(`✅ أُسند ${changed} طالب للشرائح`);
+            showToast(`✅ حُدِّث ${changed} طالب`);
+            renderProgramSettings();
+        }
+
+        // ================================================================
+        // إعادة تصنيف الطلاب حسب تعريفات الشرائح — بمعاينة قبل التنفيذ
+        // لا تمسّ المنقولين يدوياً، ولا من لم يُسجَّل مقدار حفظه
+        // ================================================================
+        let pendingReclassify = [];
+
+        function openReclassifyPreview() {
+            if (!tiersFeatureOn()) { showToast('ميزة الشرائح مطفأة أو لا توجد شرائح', 'error'); return; }
+            // التعريفات على الشاشة يجب أن تكون هي المحفوظة، وإلا صُنّف الطلاب بتعريفات قديمة
+            const saved = getTiers().map(t => `${t.id}:${t.minJuz}`).sort().join('|');
+            const onScreen = collectTiersFromRows().map(t => `${t.id}:${t.minJuz}`).sort().join('|');
+            if (saved !== onScreen) { showToast('احفظ الإعدادات أولاً، ثم أعد التصنيف بالتعريفات الجديدة', 'error'); return; }
+
+            const tierName = id => getTierById(id)?.name || 'بلا شريحة';
+            let manualCount = 0, noMemCount = 0;
+            pendingReclassify = [];
+            students.forEach(s => {
+                if (isTierManual(s)) { manualCount++; return; }
+                if (!Number.isInteger(s.memorizedJuz)) { noMemCount++; return; }
+                const auto = autoTierIdFor(s.memorizedJuz);
+                if (auto !== (s.tierId || '')) pendingReclassify.push({ s, from: s.tierId || '', to: auto });
+            });
+
+            const listEl = document.getElementById('reclassifyList');
+            listEl.innerHTML = pendingReclassify.length
+                ? pendingReclassify.map(m => `
+                    <div class="bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700 min-w-0 truncate">${escapeHTML(m.s.name)}
+                            <span class="text-slate-400 text-xs">(${escapeHTML(juzCountText(m.s.memorizedJuz))})</span></span>
+                        <span class="text-sm font-black shrink-0">
+                            <span class="text-slate-500">${escapeHTML(tierName(m.from))}</span>
+                            <span class="text-indigo-500 mx-1">←</span>
+                            <span class="text-indigo-700">${escapeHTML(tierName(m.to))}</span>
+                        </span>
+                    </div>`).join('')
+                : '<div class="text-center text-emerald-700 font-black py-6">✅ كل الطلاب في شرائحهم الصحيحة، لا شيء يتغيّر</div>';
+
+            const notes = [];
+            if (manualCount) notes.push(`✋ ${manualCount} منقول يدوياً — لن يُمسّ`);
+            if (noMemCount) notes.push(`${noMemCount} بلا مقدار حفظ — لن يُمسّ`);
+            document.getElementById('reclassifyNotes').textContent = notes.join(' · ');
+            document.getElementById('reclassifyApplyBtn').style.display = pendingReclassify.length ? '' : 'none';
+            document.getElementById('reclassifyModal').classList.replace('hidden', 'flex');
+        }
+
+        function closeReclassifyModal() {
+            document.getElementById('reclassifyModal').classList.replace('flex', 'hidden');
+            pendingReclassify = [];
+        }
+
+        function applyReclassify() {
+            if (!pendingReclassify.length) { closeReclassifyModal(); return; }
+            pendingReclassify.forEach(m => { m.s.tierId = m.to; m.s.tierManual = false; });
+            const n = pendingReclassify.length;
+            saveData(); updateAllUIs(); closeReclassifyModal();
+            showToast(`✅ نُقل ${n} طالب إلى شرائحهم حسب التعريفات`);
             renderProgramSettings();
         }
 
