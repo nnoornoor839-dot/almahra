@@ -45,10 +45,11 @@ export const PROGRAM_DEFS = {
             raceSubtitle: 'يوم الحضور (10) + الحفظ الجديد (3) + المراجعة (1) + محطات واعتمادات السرد',
             points: { attendance: 10, newMemorization: 3, review: 1 },
             workingDays: [0, 1, 2, 3], // الأحد=0 .. السبت=6
+            // minJuz: أقل عدد أجزاء محفوظة لدخول الشريحة (نهايتها = بداية التي تليها)
             tiers: [
-                { id: 't_beginner',     name: 'المبتدئون',  order: 1 },
-                { id: 't_intermediate', name: 'المتوسطون',  order: 2 },
-                { id: 't_advanced',     name: 'المتقدمون',  order: 3 }
+                { id: 't_beginner',     name: 'المبتدئون',  order: 1, minJuz: 0 },
+                { id: 't_intermediate', name: 'المتوسطون',  order: 2, minJuz: 2 },
+                { id: 't_advanced',     name: 'المتقدمون',  order: 3, minJuz: 3 }
             ],
             criteria: [
                 { id: 'early',     name: 'الحضور المبكر',          points: 5,   enabled: true },
@@ -93,9 +94,9 @@ export const PROGRAM_DEFS = {
             points: { attendance: 10, newMemorization: 3, review: 1 },
             workingDays: [0, 1, 2, 3, 4, 5, 6], // يوم واحد - كل الأيام مسموحة
             tiers: [
-                { id: 't_beginner',     name: 'المبتدئون',  order: 1 },
-                { id: 't_intermediate', name: 'المتوسطون',  order: 2 },
-                { id: 't_advanced',     name: 'المتقدمون',  order: 3 }
+                { id: 't_beginner',     name: 'المبتدئون',  order: 1, minJuz: 0 },
+                { id: 't_intermediate', name: 'المتوسطون',  order: 2, minJuz: 2 },
+                { id: 't_advanced',     name: 'المتقدمون',  order: 3, minJuz: 3 }
             ],
             criteria: [
                 { id: 'early',     name: 'الحضور المبكر',          points: 5,   enabled: true },
@@ -147,7 +148,29 @@ function notify() {
 // ترقية الإعدادات: تضيف الحقول الجديدة للبرامج القائمة
 // كل زيادة في هذا الرقم تُشغّل الترقية مرة واحدة على كل برنامج
 // ================================================================
-const SETTINGS_VERSION = 3;
+const SETTINGS_VERSION = 4;
+
+// v4: يعطي كل شريحة بدايتها بالأجزاء (minJuz) إن لم تكن لها.
+//  • الشرائح الافتراضية تأخذ قيمتها الافتراضية (٠ / ٢ / ٣)
+//  • الشرائح المخصّصة تأخذ رقماً يلي ما قبلها
+//  • الأولى (بالترتيب) تبدأ من الصفر دائماً، والبدايات متصاعدة بلا تكرار
+function fillTierMinJuz(tiers, defaultTiers) {
+    const sorted = [...tiers].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const mins = {};
+    let prev = -1;
+    sorted.forEach((t, i) => {
+        const def = (defaultTiers || []).find(d => d.id === t.id);
+        let m = Number.isInteger(t.minJuz) ? t.minJuz
+              : Number.isInteger(def?.minJuz) ? def.minJuz
+              : prev + 1;
+        if (i === 0) m = 0;
+        if (m <= prev) m = prev + 1;
+        m = Math.min(30, Math.max(0, m));
+        mins[t.id] = m;
+        prev = m;
+    });
+    return tiers.map(t => ({ ...t, minJuz: mins[t.id] }));
+}
 
 function migrateSettings(programId, settings) {
     const defaults = PROGRAM_DEFS[programId]?.defaultSettings;
@@ -192,6 +215,12 @@ function migrateSettings(programId, settings) {
             s.titleRules = JSON.parse(JSON.stringify(defaults.titleRules || {}));
             changed = true;
         }
+    }
+
+    // v4: تعريف الشرائح بالأجزاء — يُفحص دائماً (لا بالإصدار فقط) فأي شريحة بلا بداية تُكمَّل
+    if (Array.isArray(s.tiers) && s.tiers.some(t => !Number.isInteger(t.minJuz))) {
+        s.tiers = fillTierMinJuz(s.tiers, defaults.tiers);
+        changed = true;
     }
 
     // الميزات: نضم أي ميزة جديدة بقيمتها الافتراضية دون المساس بما ضبطه المستخدم

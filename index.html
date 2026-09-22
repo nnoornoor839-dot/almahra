@@ -5787,11 +5787,18 @@
             if (tiersBox) tiersBox.innerHTML = `
                 ${archivedBannerHtml(isArchivedView, season)}
                 <div class="bg-white p-5 rounded-2xl border-2 border-indigo-300">
-                    <p class="text-sm text-slate-500 font-bold mb-4">
+                    <p class="text-sm text-slate-500 font-bold mb-2">
                         تُقسّم الطلاب لمستويات، فيُكرَّم فارس من كل شريحة — حتى لا يستحوذ المتفوقون على التكريم دائماً.
                         ولوحة السباق تُعرض مقسّمة بالشرائح.
                     </p>
+                    <p class="text-sm text-indigo-700 font-bold mb-4 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2">
+                        عرّف كل شريحة بأقل عدد أجزاء يحفظه الطالب ليدخلها. نهاية كل شريحة هي بداية التي تليها،
+                        والشريحة الأولى تبدأ من الصفر دائماً حتى لا يبقى طالب بلا شريحة.
+                    </p>
                     <div id="psTiersList" class="space-y-2 mb-3"></div>
+                    <p id="psTiersOrderNote" class="text-xs text-amber-700 font-bold mb-3" style="display:none">
+                        <i class="fas fa-sort"></i> سيُعاد ترتيب الشرائح حسب بدايتها عند الحفظ.
+                    </p>
                     <div class="flex flex-wrap gap-2">
                         <button type="button" onclick="addTierRow()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-2 border-indigo-300 font-bold py-2 px-5 rounded-xl text-sm">
                             <i class="fas fa-plus"></i> إضافة شريحة
@@ -5916,20 +5923,29 @@
             }
             const sorted = [...tiers].sort((a, b) => (a.order || 0) - (b.order || 0));
             box.innerHTML = sorted.map((t, i) => tierRowHtml(t, i)).join('');
+            refreshTierHints();
         }
 
         function tierRowHtml(t, i) {
             const count = students.filter(s => s.tierId === t.id).length;
+            const minVal = Number.isInteger(t.minJuz) ? t.minJuz : (i === 0 ? 0 : '');
             return `
                 <div class="tier-row flex flex-wrap items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200" data-tid="${escapeHTML(t.id || ('t' + i))}">
-                    <span class="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-700 rounded-lg font-black text-sm shrink-0">${i + 1}</span>
+                    <span class="tier-num w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-700 rounded-lg font-black text-sm shrink-0">${i + 1}</span>
                     <input type="text" class="tier-name flex-1 min-w-[160px] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm focus:border-indigo-500 outline-none"
                            value="${escapeHTML(t.name || '')}" placeholder="اسم الشريحة">
+                    <label class="flex items-center gap-1.5 shrink-0 text-xs font-bold text-slate-600">
+                        يبدأ من
+                        <input type="number" class="tier-min w-16 p-2 border-2 border-slate-300 rounded-lg font-black text-sm text-center focus:border-indigo-500 outline-none disabled:bg-slate-100 disabled:text-slate-500"
+                               min="0" max="30" step="1" value="${minVal}" oninput="refreshTierHints()">
+                        جزء
+                    </label>
                     <span class="text-xs font-bold text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shrink-0">${count} طالب</span>
                     <button type="button" onclick="removeTierRow(this, '${escapeHTML(t.id)}', ${count})"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
                     </button>
+                    <div class="tier-hint basis-full text-xs font-bold text-indigo-700 pr-10"></div>
                 </div>`;
         }
 
@@ -5937,25 +5953,146 @@
             const box = document.getElementById('psTiersList');
             if (!box) return;
             if (box.querySelector('.text-slate-400')) box.innerHTML = '';
-            const count = box.querySelectorAll('.tier-row').length;
+            const rows = box.querySelectorAll('.tier-row');
+            // البداية المقترحة للشريحة الجديدة: بعد أعلى بداية حالية، حتى لا تتكرر
+            const mins = [...rows].map(r => parseTierMin(r.querySelector('.tier-min')?.value)).filter(m => m !== null);
+            const suggested = mins.length ? Math.min(30, Math.max(...mins) + 1) : 0;
             const newId = 't_' + Date.now().toString(36);
-            box.insertAdjacentHTML('beforeend', tierRowHtml({ id: newId, name: '' }, count));
+            box.insertAdjacentHTML('beforeend', tierRowHtml({ id: newId, name: '', minJuz: suggested }, rows.length));
+            refreshTierHints();
         }
 
         function removeTierRow(btn, tierId, count) {
             if (count > 0 && !confirm(`هذه الشريحة فيها ${count} طالب.\nعند الحذف سيصبحون بلا شريحة.\n\nهل تتابع؟`)) return;
             btn.closest('.tier-row')?.remove();
+            refreshTierHints();
         }
 
+        // ================================================================
+        // تعريف الشرائح بالأجزاء المحفوظة (يستعمل أسماء الأجزاء من المحرك القرآني)
+        // ================================================================
+        // رقم صحيح من ٠ إلى ٣٠ (يقبل الأرقام الهندية)، وإلا null
+        function parseTierMin(v) {
+            const s = String(v ?? '').trim().replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            if (!/^\d+$/.test(s)) return null;
+            const n = parseInt(s, 10);
+            return (n >= 0 && n <= 30) ? n : null;
+        }
+
+        function juzCountText(n) {
+            if (n === 0) return 'أقل من جزء';
+            if (n === 1) return 'جزء واحد';
+            if (n === 2) return 'جزءان';
+            return `${n} ${n <= 10 ? 'أجزاء' : 'جزءاً'}`;
+        }
+
+        // اسم الجزء الذي يبلغه من حفظ n أجزاء من آخر المصحف (١ = عمّ، ٢ = تبارك، ٣ = قد سمع ...)
+        function juzReachedFromEnd(n) {
+            if (n <= 0) return null;
+            if (n >= 30) return 'القرآن كاملاً';
+            const name = JUZ_NAMES[30 - n].replace(/\s*\(.*?\)\s*/g, '').replace(/^جزء\s+/, '').trim();
+            return name === 'عم' ? 'عمّ' : name;
+        }
+
+        // وصف مدى الشريحة: من بدايتها حتى ما قبل بداية التي تليها (أو مفتوحاً إن كانت الأخيرة)
+        function describeTierRange(min, next) {
+            const max = (next === undefined) ? null : next - 1;
+            let range, example = '';
+            if (max === null) {
+                range = min === 0 ? 'كل الطلاب' : `${juzCountText(min)} فأكثر`;
+                if (min >= 30) example = 'القرآن كاملاً';
+                else if (min > 0) example = `من جزء ${juzReachedFromEnd(min)} فأعلى`;
+            } else if (min === max) {
+                range = juzCountText(min);
+                example = min === 0 ? 'لم يُتمّ جزءاً كاملاً بعد'
+                        : min === 1 ? 'جزء عمّ'
+                        : min === 2 ? 'عمّ وتبارك'
+                        : `من عمّ حتى ${juzReachedFromEnd(min)}`;
+            } else {
+                range = min === 0 ? `حتى ${max === 2 ? 'جزأين' : juzCountText(max)}` : `من ${min} إلى ${max} ${max <= 10 ? 'أجزاء' : 'جزءاً'}`;
+                example = min === 0 ? `حتى جزء ${juzReachedFromEnd(max)}`
+                        : `من جزء ${juzReachedFromEnd(min)} حتى جزء ${juzReachedFromEnd(max)}`;
+            }
+            return `← ${range}${example ? ` (مثل: ${example})` : ''}`;
+        }
+
+        // تحديث الأرقام والقفل وتلميح المدى لكل صف، فوراً مع كل تعديل
+        function refreshTierHints() {
+            const rows = [...document.querySelectorAll('#psTiersList .tier-row')];
+            rows.forEach((r, i) => {
+                const num = r.querySelector('.tier-num');
+                if (num) num.textContent = i + 1;
+                const inp = r.querySelector('.tier-min');
+                if (i === 0 && inp) {
+                    inp.value = 0;
+                    inp.disabled = true;
+                    inp.title = 'الشريحة الأولى تبدأ من الصفر دائماً حتى لا يبقى طالب بلا شريحة';
+                }
+            });
+
+            const parsed = rows.map(r => ({ row: r, min: parseTierMin(r.querySelector('.tier-min')?.value) }));
+            const valid = parsed.filter(p => p.min !== null);
+            const uniqueMins = [...new Set(valid.map(p => p.min))].sort((a, b) => a - b);
+
+            parsed.forEach(p => {
+                const hint = p.row.querySelector('.tier-hint');
+                if (!hint) return;
+                hint.classList.remove('text-red-600');
+                hint.classList.add('text-indigo-700');
+                if (p.min === null) {
+                    hint.textContent = '⚠️ اكتب رقماً صحيحاً من 0 إلى 30';
+                } else if (valid.filter(x => x.min === p.min).length > 1) {
+                    hint.textContent = `⚠️ شريحة أخرى تبدأ من ${p.min} أيضاً — اجعل لكل شريحة بداية مختلفة`;
+                } else {
+                    hint.textContent = describeTierRange(p.min, uniqueMins.find(m => m > p.min));
+                    return;
+                }
+                hint.classList.remove('text-indigo-700');
+                hint.classList.add('text-red-600');
+            });
+
+            // تنبيه إن كان ترتيب الصفوف لا يوافق ترتيب البدايات
+            const note = document.getElementById('psTiersOrderNote');
+            if (note) {
+                const seq = valid.map(p => p.min);
+                const outOfOrder = seq.some((m, i) => i > 0 && m < seq[i - 1]);
+                note.style.display = outOfOrder ? '' : 'none';
+            }
+        }
+
+        // فحص التعريفات قبل الحفظ: يعيد نص الخطأ، أو null إن كان كل شيء سليماً
+        function validateTierRows() {
+            const rows = [...document.querySelectorAll('#psTiersList .tier-row')];
+            const named = rows
+                .map(r => ({ name: r.querySelector('.tier-name')?.value.trim(), min: parseTierMin(r.querySelector('.tier-min')?.value) }))
+                .filter(t => t.name);
+            if (named.length === 0) return null;
+            const bad = named.find(t => t.min === null);
+            if (bad) return `الشرائح: بداية «${bad.name}» يجب أن تكون رقماً صحيحاً من 0 إلى 30`;
+            for (let i = 0; i < named.length; i++) {
+                for (let j = i + 1; j < named.length; j++) {
+                    if (named[i].min === named[j].min) {
+                        return `الشرائح: «${named[i].name}» و«${named[j].name}» تبدآن من الرقم نفسه (${named[i].min}) — اجعل لكل شريحة بداية مختلفة`;
+                    }
+                }
+            }
+            if (Math.min(...named.map(t => t.min)) !== 0) {
+                return 'الشرائح: يجب أن تبدأ إحدى الشرائح من 0 حتى لا يبقى طالب بلا شريحة';
+            }
+            return null;
+        }
+
+        // الشرائح تُحفظ مرتّبة حسب بدايتها، فيتطابق الترتيب مع التعريف دائماً
         function collectTiersFromRows() {
             const rows = document.querySelectorAll('#psTiersList .tier-row');
             const out = [];
-            rows.forEach((r, i) => {
+            rows.forEach(r => {
                 const name = r.querySelector('.tier-name')?.value.trim();
                 if (!name) return;
-                out.push({ id: r.dataset.tid, name: name, order: i + 1 });
+                out.push({ id: r.dataset.tid, name: name, minJuz: parseTierMin(r.querySelector('.tier-min')?.value) ?? 0 });
             });
-            return out;
+            out.sort((a, b) => a.minJuz - b.minJuz);
+            return out.map((t, i) => ({ ...t, order: i + 1 }));
         }
 
         // ================================================================
@@ -6045,6 +6182,10 @@
         async function saveProgramSettings() {
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
+
+            // تعريفات الشرائح يجب أن تكون سليمة قبل أي حفظ (بلا تكرار، والأولى من الصفر)
+            const tierError = validateTierRows();
+            if (tierError) { showToast(tierError, 'error'); return; }
 
             const newName = document.getElementById('psProgName').value.trim();
             const seasonName = document.getElementById('psSeasonName').value.trim();
