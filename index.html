@@ -819,6 +819,7 @@
                         <input type="file" id="importBackupFile" accept=".json" class="hidden" onchange="importNuclearBackup(event)">
                         <button onclick="document.getElementById('importBackupFile').click()" class="bg-indigo-500 hover:bg-indigo-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md border-2 border-indigo-300 text-white"><i class="fas fa-upload"></i> استيراد ملف</button>
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
+                        <button onclick="openFormTextModal()" class="bg-sky-600 hover:bg-sky-700 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md text-white"><i class="fas fa-clipboard-list"></i> نص نموذج التسجيل</button>
                         <button onclick="startExcelImport()" class="bg-blue-500 hover:bg-blue-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md"><i class="fas fa-file-import"></i> استيراد إكسل</button>
                         <button onclick="openStudentModal()" class="bg-emerald-500 hover:bg-emerald-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md"><i class="fas fa-user-plus"></i> طالب يدوياً</button>
                         <button onclick="openWeeklyGroupLogManager()" class="bg-teal-500 hover:bg-teal-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md text-white"><i class="fas fa-list-check"></i> إدارة سجل نجوم الانضباط اليومي</button>
@@ -1328,6 +1329,40 @@
                     <i class="fas fa-check ml-2"></i> حفظ وتطبيق
                 </button>
                 <button onclick="cancelTierReclassify()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-black text-lg py-3 rounded-2xl">إلغاء (لن يُحفظ شيء)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة نص نموذج التسجيل (جوجل فورم): يولّده البرنامج فيبقى متوافقاً مع الاستيراد دائماً -->
+    <div id="formTextModal" class="fixed inset-0 z-[6500] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border-4 border-sky-500 flex flex-col max-h-[90vh]">
+            <div class="bg-sky-600 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-clipboard-list"></i> نص نموذج التسجيل</h3>
+                <button onclick="closeFormTextModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 bg-sky-50 text-sky-900 font-bold border-b border-sky-200 text-sm shrink-0 leading-relaxed">
+                انسخ هذين السؤالين إلى نموذج جوجل كما هما، واجعل كلاً منهما <span class="text-red-600">إجبارياً</span>.
+                البرنامج يتعرّف على الأعمدة بعناوينها، فلا تغيّر العنوانين. ويمكنك إضافة أي أسئلة أخرى تريدها — سيتجاهلها الاستيراد.
+            </div>
+            <div id="formTextBody" class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-4"></div>
+            <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 text-xs font-bold text-slate-600 leading-relaxed">
+                بعد انتهاء التسجيل: افتح جدول الردود في جوجل ← ملف ← تنزيل ← Microsoft Excel (.xlsx)، ثم اضغط «استيراد إكسل» هنا.
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة معاينة الاستيراد من الإكسل: لا يُحفظ شيء قبل التأكيد، والصف الناقص لا يدخل -->
+    <div id="importPreviewModal" class="fixed inset-0 z-[6500] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border-4 border-blue-500 flex flex-col max-h-[90vh]">
+            <div class="bg-blue-600 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-file-import"></i> معاينة الاستيراد</h3>
+                <button onclick="closeImportPreview()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
+            </div>
+            <div id="importPreviewSummary" class="p-4 bg-blue-50 text-blue-900 font-bold border-b border-blue-200 text-sm shrink-0 space-y-2"></div>
+            <div id="importPreviewList" class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2"></div>
+            <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 flex gap-3">
+                <button id="importPreviewConfirmBtn" onclick="confirmExcelImport()" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-black text-lg py-3 rounded-2xl shadow"></button>
+                <button onclick="closeImportPreview()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-black text-lg py-3 rounded-2xl">إلغاء</button>
             </div>
         </div>
     </div>
@@ -3275,45 +3310,197 @@
         }
 
         
-        // ⛔ قاعدة «لا دخول للبرنامج إلا بمستوى»: الاستيراد الحالي يقرأ الأسماء فقط فيُدخلهم بلا مستوى،
-        // لذا يُوقَف ما دامت هناك شرائح، حتى يُبنى الاستيراد الذي يقرأ مقدار الحفظ ويرفض الصف الناقص
+        // ⛔ قاعدة «لا دخول للبرنامج إلا بمستوى»: «استيراد المجموعات الجاهزة» يُدخل الأسماء وحدها (بلا مستوى)،
+        // فيُوقَف ما دامت هناك شرائح. (استيراد الإكسل يحترم القاعدة: يقرأ مقدار الحفظ ويرفض الصف الناقص)
         function importBlockedByLevelRule() {
             if (!tiersFeatureOn()) return false;
-            showToast('الاستيراد موقوف مؤقتاً: لا يدخل طالب بلا مستوى، والاستيراد الذي يقرأ مقدار الحفظ قيد البناء. أضف الطلاب من «طالب يدوياً».', 'error');
+            showToast('هذا الاستيراد يُدخل الأسماء بلا مستوى، والقاعدة: لا يدخل طالب بلا مستوى. أضف الطلاب من «استيراد إكسل» أو «طالب يدوياً».', 'error');
             return true;
         }
 
+        // ================================================================
+        // نص نموذج التسجيل + الاستيراد الذكي من الإكسل
+        // النموذج والاستيراد يستعملان العناوين نفسها ونص الخيارات نفسه، فيبقيان متوافقين دائماً
+        // ================================================================
+        const FORM_Q_NAME = 'اسم الطالب الرباعي';
+        const FORM_Q_MEM  = 'مقدار حفظ الطالب';
+
+        function formOptionsText() {
+            const lines = [];
+            for (let n = 0; n <= 30; n++) lines.push(memorizedJuzLabel(n));
+            return lines.join('\n');
+        }
+
+        function openFormTextModal() {
+            const card = (num, title, type, extra) => `
+                <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 space-y-2">
+                    <div class="text-xs font-black text-sky-700">السؤال ${num} — نوعه في جوجل: ${type} · <span class="text-red-600">إجباري</span></div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 font-black text-lg text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">${escapeHTML(title)}</div>
+                        <button type="button" onclick="copyToClipboard(${JSON.stringify(title).replace(/"/g, '&quot;')}, 'العنوان')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2 rounded-xl shrink-0"><i class="fas fa-copy"></i> نسخ العنوان</button>
+                    </div>
+                    ${extra || ''}
+                </div>`;
+            const opts = formOptionsText();
+            document.getElementById('formTextBody').innerHTML =
+                card(1, FORM_Q_NAME, 'إجابة قصيرة') +
+                card(2, FORM_Q_MEM, 'قائمة منسدلة', `
+                    <div class="text-xs font-bold text-slate-600">الخيارات (٣١ خياراً، كل خيار يبدأ برقم يقرؤه البرنامج):</div>
+                    <textarea readonly rows="7" class="w-full text-sm font-bold border border-slate-200 rounded-xl p-2 bg-slate-50 custom-scroll" dir="rtl">${escapeHTML(opts)}</textarea>
+                    <button type="button" onclick="copyToClipboard(formOptionsText(), 'الخيارات')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2 rounded-xl"><i class="fas fa-copy"></i> نسخ كل الخيارات</button>
+                    <div class="text-xs font-bold text-slate-500">الصقها في خانة الخيار الأول في جوجل، فيحوّل كل سطر إلى خيار مستقل. إن لم يفعل، الصق الأسطر واحداً واحداً.</div>`);
+            document.getElementById('formTextModal').classList.replace('hidden', 'flex');
+        }
+        function closeFormTextModal() { document.getElementById('formTextModal').classList.replace('flex', 'hidden'); }
+
+        async function copyToClipboard(text, label) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (e) {
+                // احتياط للمتصفحات التي تمنع الحافظة: نسخ عبر عنصر نصي مؤقت
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch (e2) { showToast('تعذّر النسخ — انسخ يدوياً من النافذة', 'error'); ta.remove(); return; }
+                ta.remove();
+            }
+            showToast(`✅ نُسخ ${label}`);
+        }
+
+        // تنظيف نص الخلية: علامات الاتجاه الخفية، والمسافات المكررة
+        function cleanCellText(v) {
+            return String(v ?? '').replace(/[‎‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim();
+        }
+        // مقدار الحفظ من خلية: رقم الخيار في أوله («3 - 3 أجزاء ...»)، بالأرقام العربية أو الهندية، ٠–٣٠؛ وإلا null
+        function parseMemorizedCell(v) {
+            const s = cleanCellText(v).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            const m = s.match(/^(\d{1,2})(?!\d)/);
+            if (!m) return null;
+            const n = parseInt(m[1], 10);
+            return (n >= 0 && n <= 30) ? n : null;
+        }
+        // عمود السؤال في صف العناوين: التطابق التام أولاً، ثم الاحتواء (مع استثناء ما لا يخصّه)
+        function findColumn(headerRow, exact, contains, exclude) {
+            const cells = headerRow.map(cleanCellText);
+            let i = cells.findIndex(c => c === exact);
+            if (i >= 0) return i;
+            return cells.findIndex(c => contains.some(k => c.includes(k)) && !(exclude || []).some(k => c.includes(k)));
+        }
+
+        let pendingImport = null; // { rows: [{ name, mem, status, reason }], fileName }
+
         function startExcelImport() {
-            if (importBlockedByLevelRule()) return;
             document.getElementById('excelFileInput').click();
         }
 
         function handleExcelImport(event) {
-            if (importBlockedByLevelRule()) { event.target.value = ''; return; }
             const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-                    let addedCount = 0;
-                    json.forEach((row) => {
-                        if (!row || row.length === 0) return; let nameCell = "";
-                        for (let i = 0; i < row.length; i++) {
-                            let cellStr = String(row[i]).trim(); if (cellStr === "" || !isNaN(cellStr)) continue;
-                            if (cellStr.includes('اسم') || cellStr.includes('طالب') || cellStr.includes('الاسم') || cellStr.length <= 1) continue;
-                            nameCell = cellStr; break; 
-                        }
-                        if (nameCell !== "") {
-                            if (!students.find(s => s.name === nameCell)) {
-                                const nid = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
-                                students.push({id: nid, name: nameCell, history: {}}); addedCount++;
-                            }
-                        }
-                    });
-                    if (addedCount > 0) { saveData(); updateAllUIs(); showToast(`تم استيراد ${addedCount} طالب بنجاح!`); } else { showToast("لم يتم العثور على أسماء جديدة.", "error"); }
-                } catch(error) { showToast("حدث خطأ في ملف الإكسل", "error"); } finally { document.getElementById('excelFileInput').value = ""; }
+                    buildImportPreview(json, file.name);
+                } catch(error) { showToast("تعذّرت قراءة ملف الإكسل — تأكّد أنه بصيغة .xlsx", "error"); } finally { document.getElementById('excelFileInput').value = ""; }
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        function buildImportPreview(json, fileName) {
+            const levelRequired = tiersFeatureOn();
+            // صف العناوين: أول صف (من أول ١٠) فيه عمود اسم الطالب أو عمود مقدار الحفظ
+            let headerIdx = -1, nameCol = -1, memCol = -1;
+            for (let r = 0; r < Math.min(10, json.length); r++) {
+                const row = json[r] || [];
+                const nc = findColumn(row, FORM_Q_NAME, ['اسم الطالب'], ['ولي']);
+                const mc = findColumn(row, FORM_Q_MEM, ['مقدار حفظ', 'مقدار الحفظ'], []);
+                if (nc >= 0 || mc >= 0) { headerIdx = r; nameCol = nc; memCol = mc; break; }
+            }
+            if (nameCol < 0 || (levelRequired && memCol < 0)) {
+                const missing = [nameCol < 0 ? `«${FORM_Q_NAME}»` : null, (levelRequired && memCol < 0) ? `«${FORM_Q_MEM}»` : null].filter(Boolean).join(' و');
+                showToast(`لم أجد في الملف عمود ${missing}. استعمل عناوين «نص نموذج التسجيل» كما هي.`, 'error');
+                return;
+            }
+
+            const existing = new Set(students.map(s => cleanCellText(s.name)));
+            const rows = [];
+            const lastValidByName = new Map(); // الاسم ← آخر صف صالح له
+            for (let r = headerIdx + 1; r < json.length; r++) {
+                const row = json[r] || [];
+                const name = cleanCellText(row[nameCol]);
+                const memRaw = memCol >= 0 ? cleanCellText(row[memCol]) : '';
+                if (!name && !memRaw) continue; // صف فارغ
+                const mem = memCol >= 0 ? parseMemorizedCell(row[memCol]) : null;
+                let status = 'new', reason = '';
+                if (!name) { status = 'rejected'; reason = 'بلا اسم'; }
+                else if (levelRequired && mem === null) { status = 'rejected'; reason = memRaw ? `مقدار الحفظ غير مفهوم: «${memRaw}»` : 'مقدار الحفظ فارغ'; }
+                else if (existing.has(name)) { status = 'duplicate'; reason = 'موجود مسبقاً في البرنامج'; }
+                const entry = { name, mem, status, reason, line: r + 1 };
+                if (status === 'new') {
+                    // ردود جوجل مرتّبة بوقت الإرسال: إن أرسل وليّ الأمر مرتين فالأخيرة تصحيحه، فتُعتمد هي
+                    const prev = lastValidByName.get(name);
+                    if (prev) { prev.status = 'duplicate'; prev.reason = `مكرر في الملف — اعتُمدت الإجابة الأحدث (صف ${entry.line})`; }
+                    lastValidByName.set(name, entry);
+                }
+                rows.push(entry);
+            }
+            pendingImport = { rows, fileName };
+            renderImportPreview(nameCol, memCol, json[headerIdx]);
+        }
+
+        function renderImportPreview(nameCol, memCol, headerRow) {
+            const { rows, fileName } = pendingImport;
+            const neu = rows.filter(r => r.status === 'new');
+            const dup = rows.filter(r => r.status === 'duplicate');
+            const rej = rows.filter(r => r.status === 'rejected');
+            const colLabel = (i) => i < 0 ? '—' : `«${escapeHTML(cleanCellText(headerRow[i]))}» (العمود ${XLSX.utils.encode_col(i)})`;
+            document.getElementById('importPreviewSummary').innerHTML = `
+                <div>الملف: ${escapeHTML(fileName)}</div>
+                <div>عمود الاسم: ${colLabel(nameCol)} · عمود مقدار الحفظ: ${colLabel(memCol)}</div>
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-0.5 rounded-full">سيُضاف: ${neu.length}</span>
+                    <span class="bg-slate-200 text-slate-700 border border-slate-300 px-3 py-0.5 rounded-full">يُتخطّى (مكرر): ${dup.length}</span>
+                    <span class="bg-red-100 text-red-700 border border-red-300 px-3 py-0.5 rounded-full">لن يدخل (ناقص): ${rej.length}</span>
+                </div>
+                ${rej.length ? '<div class="text-red-700">الطلاب «الناقصون» لا يدخلون البرنامج؛ أضفهم من «طالب يدوياً» بعد تحديد مقدار حفظهم.</div>' : ''}`;
+
+            const item = (r, cls, badge) => `
+                <div class="bg-white p-3 rounded-xl border-2 ${cls} flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-bold text-slate-700 min-w-0 truncate"><span class="text-slate-400 text-xs font-black">صف ${r.line}</span> ${escapeHTML(r.name || '(بلا اسم)')}</span>
+                    <span class="text-sm font-black shrink-0">${badge}</span>
+                </div>`;
+            document.getElementById('importPreviewList').innerHTML =
+                rej.map(r => item(r, 'border-red-300', `<span class="text-red-700">✖ ${escapeHTML(r.reason)}</span>`)).join('') +
+                neu.map(r => item(r, 'border-emerald-300', `<span class="text-slate-500">${r.mem !== null ? escapeHTML(juzCountText(r.mem)) : ''}</span> <span class="text-indigo-700">${escapeHTML(classifyTierByJuz(r.mem)?.name || '')}</span> <span class="text-emerald-700">✔ جديد</span>`)).join('') +
+                dup.map(r => item(r, 'border-slate-200', `<span class="text-slate-500">↷ ${escapeHTML(r.reason)}</span>`)).join('') ||
+                '<div class="text-center text-slate-500 font-black py-6">لا توجد صفوف بيانات في الملف</div>';
+
+            const btn = document.getElementById('importPreviewConfirmBtn');
+            btn.disabled = neu.length === 0;
+            btn.innerHTML = neu.length ? `<i class="fas fa-check ml-2"></i> استيراد ${neu.length} طالب` : 'لا يوجد طالب جديد للاستيراد';
+            document.getElementById('importPreviewModal').classList.replace('hidden', 'flex');
+        }
+
+        function closeImportPreview() {
+            document.getElementById('importPreviewModal').classList.replace('flex', 'hidden');
+            pendingImport = null;
+        }
+
+        function confirmExcelImport() {
+            if (!pendingImport) { closeImportPreview(); return; }
+            // نعيد فحص المكرر لحظة التأكيد: قائمة الطلاب قد تتغيّر من السحابة أثناء فتح المعاينة
+            const existing = new Set(students.map(s => cleanCellText(s.name)));
+            let nid = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
+            let added = 0;
+            pendingImport.rows.filter(r => r.status === 'new').forEach(r => {
+                if (existing.has(r.name)) return;
+                students.push({ id: nid++, name: r.name, history: {}, memorizedJuz: r.mem });
+                existing.add(r.name);
+                added++;
+            });
+            closeImportPreview();
+            if (!added) { showToast('لم يُضف أحد — كل الأسماء موجودة مسبقاً', 'error'); return; }
+            saveData(); updateAllUIs();
+            showToast(`✅ استُورد ${added} طالب بمستوياتهم`);
         }
 
         async function initQuranEngine() {
@@ -5185,7 +5372,7 @@
             if (memSel) {
                 memSel.innerHTML = memorizedJuzOptionsHtml();
                 memSel.value = Number.isInteger(student?.memorizedJuz) ? String(student.memorizedJuz) : '';
-                memSel.classList.remove('border-red-500');
+                memSel.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
             }
             const wrap = document.getElementById('studentTierWrap');
             if (!wrap) return;
@@ -5197,7 +5384,7 @@
 
         // تغيّر مقدار الحفظ: تتحدّث الشريحة المعروضة فوراً، ويزول تنبيه الحقل الإجباري
         function onStudentMemorizedChange() {
-            document.getElementById('studentMemorizedInput')?.classList.remove('border-red-500');
+            document.getElementById('studentMemorizedInput')?.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
             updateStudentTierDisplay();
         }
 
@@ -5226,7 +5413,8 @@
             const memorizedJuz = parseTierMin(memSel?.value);
             // ⛔ البوابة: لا يدخل طالب البرنامج بلا مستوى — مقدار الحفظ إجباري ما دامت هناك شرائح
             if (tiersFeatureOn() && memorizedJuz === null) {
-                memSel?.classList.add('border-red-500');
+                // حلقة حمراء خارجية: لون الخانة النشطة (الأخضر) يغطي لون الإطار، ولا يغطي الحلقة
+                memSel?.classList.add('border-red-500', 'ring-4', 'ring-red-400');
                 memSel?.focus();
                 showToast('حدّد مقدار حفظ الطالب — لا يُضاف طالب بلا مستوى', 'error');
                 return;
@@ -6357,7 +6545,7 @@
         }
 
         function onBulkMemChange(memSel) {
-            memSel.classList.remove('border-red-500');
+            memSel.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
             updateBulkRowTierDisplay(memSel.closest('.bulk-row'));
         }
         // تعرض الشريحة التي تنتج عن الرقم المختار (بلا مقدار حفظ = بلا مستوى)
@@ -6382,7 +6570,7 @@
                 return st && Number.isInteger(st.memorizedJuz) && parseTierMin(row.querySelector('.bulk-mem').value) === null;
             });
             if (cleared.length) {
-                cleared.forEach(row => row.querySelector('.bulk-mem').classList.add('border-red-500'));
+                cleared.forEach(row => row.querySelector('.bulk-mem').classList.add('border-red-500', 'ring-4', 'ring-red-400'));
                 showToast(`لا يُترك طالب بلا مستوى — اختر مقدار الحفظ لـ ${cleared.length} طالب`, 'error');
                 return;
             }
