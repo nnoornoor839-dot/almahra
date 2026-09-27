@@ -1363,8 +1363,8 @@
                 <button onclick="closeFormTextModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
             </div>
             <div class="p-4 bg-sky-50 text-sky-900 font-bold border-b border-sky-200 text-sm shrink-0 leading-relaxed">
-                انسخ هذين السؤالين إلى نموذج جوجل كما هما، واجعل كلاً منهما <span class="text-red-600">إجبارياً</span>.
-                البرنامج يتعرّف على الأعمدة بعناوينها، فلا تغيّر العنوانين. ويمكنك إضافة أي أسئلة أخرى تريدها — سيتجاهلها الاستيراد.
+                انسخ هذه الأسئلة إلى نموذج جوجل كما هي: الأولان <span class="text-red-600">إجباريان</span>، والثالث اختياري.
+                البرنامج يتعرّف على الأعمدة بعناوينها، فلا تغيّر العناوين. ويمكنك إضافة أي أسئلة أخرى تريدها — سيتجاهلها الاستيراد.
             </div>
             <div id="formTextBody" class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-4"></div>
             <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 text-xs font-bold text-slate-600 leading-relaxed">
@@ -1780,12 +1780,12 @@
     </div>
 
     <div id="studentModal" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-slate-900 bg-opacity-90 backdrop-blur-md p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden modal-enter border-4 border-emerald-500">
-            <div class="bg-emerald-600 text-white p-6 text-center relative">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden modal-enter border-4 border-emerald-500 flex flex-col max-h-[90vh]">
+            <div class="bg-emerald-600 text-white p-6 text-center relative shrink-0">
                 <button onclick="closeStudentModal()" class="absolute top-4 left-4 text-white hover:text-red-200 text-4xl"><i class="fas fa-times-circle"></i></button>
                 <h3 id="studentModalTitle" class="text-3xl font-black">إضافة طالب جديد</h3>
             </div>
-            <div class="p-8 bg-slate-50">
+            <div class="p-8 bg-slate-50 flex-grow overflow-y-auto custom-scroll">
                 <input type="hidden" id="studentIdInput">
                 <div class="text-center mb-6 text-emerald-500 w-24 h-24 mx-auto" id="modalStudentIconContainer"></div>
                 <div>
@@ -1802,8 +1802,14 @@
                     <div id="studentTierDisplay" class="w-full p-3 border-4 border-slate-200 bg-slate-50 rounded-2xl text-xl font-black text-center text-indigo-700"></div>
                     <p class="text-xs text-slate-400 font-bold text-center mt-2">تُحسب تلقائياً من مقدار الحفظ — لتغييرها عدّل الرقم أعلاه</p>
                 </div>
+                <div class="mt-5">
+                    <label class="block text-xl font-bold text-slate-700 mb-2 text-center">جوال ولي الأمر <span class="text-slate-400 text-base">(اختياري)</span></label>
+                    <input type="tel" id="studentPhoneInput" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" oninput="onStudentPhoneInput()"
+                           class="w-full p-3 border-4 border-slate-300 rounded-2xl text-lg font-bold text-center focus:border-emerald-500 outline-none">
+                    <p class="text-xs text-slate-400 font-bold text-center mt-2">لفتح محادثة واتساب معه مباشرة عند إرسال تقرير الطالب — اتركه فارغاً إن لم يتوفر</p>
+                </div>
             </div>
-            <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300">
+            <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 shrink-0">
                 <button onclick="saveStudent()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-2xl font-bold py-4 rounded-2xl shadow-lg"><i class="fas fa-check mr-2"></i> حفظ واعتماد البيانات</button>
             </div>
         </div>
@@ -3377,8 +3383,9 @@
         // نص نموذج التسجيل + الاستيراد الذكي من الإكسل
         // النموذج والاستيراد يستعملان العناوين نفسها ونص الخيارات نفسه، فيبقيان متوافقين دائماً
         // ================================================================
-        const FORM_Q_NAME = 'اسم الطالب الرباعي';
-        const FORM_Q_MEM  = 'مقدار حفظ الطالب';
+        const FORM_Q_NAME  = 'اسم الطالب الرباعي';
+        const FORM_Q_MEM   = 'مقدار حفظ الطالب';
+        const FORM_Q_PHONE = 'رقم جوال ولي الأمر';
 
         function formOptionsText() {
             const lines = [];
@@ -3387,9 +3394,9 @@
         }
 
         function openFormTextModal() {
-            const card = (num, title, type, extra) => `
-                <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 space-y-2">
-                    <div class="text-xs font-black text-sky-700">السؤال ${num} — نوعه في جوجل: ${type} · <span class="text-red-600">إجباري</span></div>
+            const card = (num, title, type, extra, optional) => `
+                <div class="bg-white rounded-2xl border-2 ${optional ? 'border-slate-200' : 'border-sky-200'} p-4 space-y-2">
+                    <div class="text-xs font-black text-sky-700">السؤال ${num} — نوعه في جوجل: ${type} · ${optional ? '<span class="text-slate-500">اختياري</span>' : '<span class="text-red-600">إجباري</span>'}</div>
                     <div class="flex items-center gap-2">
                         <div class="flex-1 font-black text-lg text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">${escapeHTML(title)}</div>
                         <button type="button" onclick="copyToClipboard(${JSON.stringify(title).replace(/"/g, '&quot;')}, 'العنوان')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2 rounded-xl shrink-0"><i class="fas fa-copy"></i> نسخ العنوان</button>
@@ -3403,7 +3410,10 @@
                     <div class="text-xs font-bold text-slate-600">الخيارات (٣١ خياراً، كل خيار يبدأ برقم يقرؤه البرنامج):</div>
                     <textarea readonly rows="7" class="w-full text-sm font-bold border border-slate-200 rounded-xl p-2 bg-slate-50 custom-scroll" dir="rtl">${escapeHTML(opts)}</textarea>
                     <button type="button" onclick="copyToClipboard(formOptionsText(), 'الخيارات')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2 rounded-xl"><i class="fas fa-copy"></i> نسخ كل الخيارات</button>
-                    <div class="text-xs font-bold text-slate-500">الصقها في خانة الخيار الأول في جوجل، فيحوّل كل سطر إلى خيار مستقل. إن لم يفعل، الصق الأسطر واحداً واحداً.</div>`);
+                    <div class="text-xs font-bold text-slate-500">الصقها في خانة الخيار الأول في جوجل، فيحوّل كل سطر إلى خيار مستقل. إن لم يفعل، الصق الأسطر واحداً واحداً.</div>`) +
+                card(3, FORM_Q_PHONE, 'إجابة قصيرة', `
+                    <div class="text-xs font-bold text-slate-600">يفتح به البرنامج محادثة واتساب ولي الأمر مباشرة عند إرسال تقرير ابنه. الطالب يدخل البرنامج بدونه، فاتركه غير إجباري إن شئت.</div>
+                    <div class="text-xs font-bold text-slate-500">يُقبل بأي صيغة سعودية: 05xxxxxxxx أو 9665xxxxxxxx أو +9665xxxxxxxx — والبرنامج يوحّدها.</div>`, true);
             document.getElementById('formTextModal').classList.replace('hidden', 'flex');
         }
         function closeFormTextModal() { document.getElementById('formTextModal').classList.replace('flex', 'hidden'); }
@@ -3434,6 +3444,24 @@
             const n = parseInt(m[1], 10);
             return (n >= 0 && n <= 30) ? n : null;
         }
+        // رقم جوال سعودي من أي صيغة (٠٥ / ٥ / ٩٦٦ / +٩٦٦ / ٠٠٩٦٦، بأرقام عربية أو هندية، بمسافات أو شرطات)
+        // يعيد '9665XXXXXXXX' الصالح لرابط واتساب، أو null إن لم يكن جوالاً سعودياً سليماً (الثابت ليس جوالاً)
+        function normalizeSaudiPhone(v) {
+            let s = cleanCellText(v)
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .replace(/[^\d+]/g, '')
+                .replace(/^\+/, '')
+                .replace(/^00/, '');
+            if (s.startsWith('966')) s = s.slice(3);
+            else if (s.startsWith('0')) s = s.slice(1);
+            return /^5\d{8}$/.test(s) ? '966' + s : null;
+        }
+        // 9665XXXXXXXX ← 05XXXXXXXX للعرض والتحرير (أسهل على المشرف من الصيغة الدولية)
+        function saudiPhoneLocal(p) {
+            const m = String(p || '').match(/^966(5\d{8})$/);
+            return m ? '0' + m[1] : String(p || '');
+        }
+
         // عمود السؤال في صف العناوين: التطابق التام أولاً، ثم الاحتواء (مع استثناء ما لا يخصّه)
         function findColumn(headerRow, exact, contains, exclude) {
             const cells = headerRow.map(cleanCellText);
@@ -3475,6 +3503,8 @@
                 showToast(`لم أجد في الملف عمود ${missing}. استعمل عناوين «نص نموذج التسجيل» كما هي.`, 'error');
                 return;
             }
+            // الجوال اختياري: غياب عموده لا يوقف الاستيراد (بخلاف الاسم ومقدار الحفظ)
+            const phoneCol = findColumn(json[headerIdx] || [], FORM_Q_PHONE, ['جوال', 'جوّال', 'واتس', 'الهاتف', 'رقم التواصل'], []);
 
             const existing = new Set(students.map(s => cleanCellText(s.name)));
             const rows = [];
@@ -3485,11 +3515,15 @@
                 const memRaw = memCol >= 0 ? cleanCellText(row[memCol]) : '';
                 if (!name && !memRaw) continue; // صف فارغ
                 const mem = memCol >= 0 ? parseMemorizedCell(row[memCol]) : null;
+                // الجوال لا يُسقط الصف أبداً: إن كان غير مفهوم يدخل الطالب بلا جوال مع ملاحظة في المعاينة
+                const phoneRaw = phoneCol >= 0 ? cleanCellText(row[phoneCol]) : '';
+                const phone = phoneRaw ? normalizeSaudiPhone(phoneRaw) : null;
+                const phoneNote = (phoneRaw && phone === null) ? `الجوال غير مفهوم: «${phoneRaw}»` : '';
                 let status = 'new', reason = '';
                 if (!name) { status = 'rejected'; reason = 'بلا اسم'; }
                 else if (levelRequired && mem === null) { status = 'rejected'; reason = memRaw ? `مقدار الحفظ غير مفهوم: «${memRaw}»` : 'مقدار الحفظ فارغ'; }
                 else if (existing.has(name)) { status = 'duplicate'; reason = 'موجود مسبقاً في البرنامج'; }
-                const entry = { name, mem, status, reason, line: r + 1 };
+                const entry = { name, mem, phone, phoneNote, status, reason, line: r + 1 };
                 if (status === 'new') {
                     // ردود جوجل مرتّبة بوقت الإرسال: إن أرسل وليّ الأمر مرتين فالأخيرة تصحيحه، فتُعتمد هي
                     const prev = lastValidByName.get(name);
@@ -3499,10 +3533,10 @@
                 rows.push(entry);
             }
             pendingImport = { rows, fileName };
-            renderImportPreview(nameCol, memCol, json[headerIdx]);
+            renderImportPreview(nameCol, memCol, phoneCol, json[headerIdx]);
         }
 
-        function renderImportPreview(nameCol, memCol, headerRow) {
+        function renderImportPreview(nameCol, memCol, phoneCol, headerRow) {
             const { rows, fileName } = pendingImport;
             const neu = rows.filter(r => r.status === 'new');
             const dup = rows.filter(r => r.status === 'duplicate');
@@ -3511,10 +3545,12 @@
             document.getElementById('importPreviewSummary').innerHTML = `
                 <div>الملف: ${escapeHTML(fileName)}</div>
                 <div>عمود الاسم: ${colLabel(nameCol)} · عمود مقدار الحفظ: ${colLabel(memCol)}</div>
+                <div>عمود جوال ولي الأمر: ${phoneCol < 0 ? '<span class="text-slate-500">غير موجود في الملف (اختياري)</span>' : colLabel(phoneCol)}</div>
                 <div class="flex flex-wrap gap-2 pt-1">
                     <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-0.5 rounded-full">سيُضاف: ${neu.length}</span>
                     <span class="bg-slate-200 text-slate-700 border border-slate-300 px-3 py-0.5 rounded-full">يُتخطّى (مكرر): ${dup.length}</span>
                     <span class="bg-red-100 text-red-700 border border-red-300 px-3 py-0.5 rounded-full">لن يدخل (ناقص): ${rej.length}</span>
+                    ${phoneCol >= 0 ? `<span class="bg-green-100 text-green-800 border border-green-300 px-3 py-0.5 rounded-full">بجوال: ${neu.filter(r => r.phone).length} من ${neu.length}</span>` : ''}
                 </div>
                 ${rej.length ? '<div class="text-red-700">الطلاب «الناقصون» لا يدخلون البرنامج؛ أضفهم من «طالب يدوياً» بعد تحديد مقدار حفظهم.</div>' : ''}`;
 
@@ -3525,7 +3561,7 @@
                 </div>`;
             document.getElementById('importPreviewList').innerHTML =
                 rej.map(r => item(r, 'border-red-300', `<span class="text-red-700">✖ ${escapeHTML(r.reason)}</span>`)).join('') +
-                neu.map(r => item(r, 'border-emerald-300', `<span class="text-slate-500">${r.mem !== null ? escapeHTML(juzCountText(r.mem)) : ''}</span> <span class="text-indigo-700">${escapeHTML(classifyTierByJuz(r.mem)?.name || '')}</span> <span class="text-emerald-700">✔ جديد</span>`)).join('') +
+                neu.map(r => item(r, r.phoneNote ? 'border-amber-300' : 'border-emerald-300', `<span class="text-slate-500">${r.mem !== null ? escapeHTML(juzCountText(r.mem)) : ''}</span> <span class="text-indigo-700">${escapeHTML(classifyTierByJuz(r.mem)?.name || '')}</span> ${r.phone ? '<span class="text-green-600" title="سيُحفظ جوال ولي الأمر"><i class="fab fa-whatsapp"></i></span>' : ''}${r.phoneNote ? `<span class="text-amber-700">⚠️ ${escapeHTML(r.phoneNote)}</span>` : ''} <span class="text-emerald-700">✔ جديد</span>`)).join('') +
                 dup.map(r => item(r, 'border-slate-200', `<span class="text-slate-500">↷ ${escapeHTML(r.reason)}</span>`)).join('') ||
                 '<div class="text-center text-slate-500 font-black py-6">لا توجد صفوف بيانات في الملف</div>';
 
@@ -3545,17 +3581,18 @@
             // نعيد فحص المكرر لحظة التأكيد: قائمة الطلاب قد تتغيّر من السحابة أثناء فتح المعاينة
             const existing = new Set(students.map(s => cleanCellText(s.name)));
             let nid = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
-            let added = 0;
+            let added = 0, withPhone = 0;
             pendingImport.rows.filter(r => r.status === 'new').forEach(r => {
                 if (existing.has(r.name)) return;
-                students.push({ id: nid++, name: r.name, history: {}, memorizedJuz: r.mem });
+                students.push({ id: nid++, name: r.name, history: {}, memorizedJuz: r.mem, parentPhone: r.phone ?? null });
                 existing.add(r.name);
+                if (r.phone) withPhone++;
                 added++;
             });
             closeImportPreview();
             if (!added) { showToast('لم يُضف أحد — كل الأسماء موجودة مسبقاً', 'error'); return; }
             saveData(); updateAllUIs();
-            showToast(`✅ استُورد ${added} طالب بمستوياتهم`);
+            showToast(`✅ استُورد ${added} طالب بمستوياتهم${withPhone ? `، منهم ${withPhone} بجوال ولي الأمر` : ''}`);
         }
 
         async function initQuranEngine() {
@@ -4496,7 +4533,16 @@
             } else {
                 let textArea = document.createElement("textarea"); textArea.value = msg; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(textArea);
             }
-            const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast(`✅ جاري فتح الواتساب لإرسال تقرير (${firstName})...`);
+            // إن كان جوال ولي الأمر محفوظاً فُتحت محادثته مباشرة؛ وإلا فالسلوك القديم (يختار المشرف بنفسه).
+            // نعيد التطبيع هنا لا نثق بالمحفوظ كما هو، فقد يأتي من نسخة احتياطية حُرّرت يدوياً
+            const encodedMsg = encodeURIComponent(msg);
+            const phone = normalizeSaudiPhone(student.parentPhone);
+            window.location.href = phone
+                ? `whatsapp://send?phone=${phone}&text=${encodedMsg}`
+                : `whatsapp://send?text=${encodedMsg}`;
+            showToast(phone
+                ? `✅ جاري فتح محادثة ولي أمر (${firstName})...`
+                : `✅ الواتساب يُفتح — اختر ولي أمر (${firstName}) بنفسك (لا جوال محفوظ له)`);
         }
         
         function switchSmartTab(tab) {
@@ -5441,6 +5487,17 @@
             updateStudentTierDisplay();
         }
 
+        // تعبئة حقل جوال ولي الأمر (اختياري) — يُعرض بالصيغة المحلية ٠٥…
+        function fillStudentPhoneField(student) {
+            const el = document.getElementById('studentPhoneInput');
+            if (!el) return;
+            el.value = student?.parentPhone ? saudiPhoneLocal(student.parentPhone) : '';
+            el.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
+        }
+        function onStudentPhoneInput() {
+            document.getElementById('studentPhoneInput')?.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
+        }
+
         // تغيّر مقدار الحفظ: تتحدّث الشريحة المعروضة فوراً، ويزول تنبيه الحقل الإجباري
         function onStudentMemorizedChange() {
             document.getElementById('studentMemorizedInput')?.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
@@ -5459,8 +5516,8 @@
         let delId = null;
         function openStudentModal(id=null) {
             const m = document.getElementById('studentModal'); const n = document.getElementById('studentNameInput'); const i = document.getElementById('studentIdInput');
-            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
-            else { n.value=""; i.value=""; fillStudentTierFields(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
+            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); fillStudentPhoneField(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
+            else { n.value=""; i.value=""; fillStudentTierFields(null); fillStudentPhoneField(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
             m.classList.replace('hidden','flex'); n.focus();
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
@@ -5478,17 +5535,29 @@
                 showToast('حدّد مقدار حفظ الطالب — لا يُضاف طالب بلا مستوى', 'error');
                 return;
             }
+            // جوال ولي الأمر اختياري: الفارغ يُقبل، أما المكتوب الخاطئ فيُرفض —
+            // رقم خاطئ محفوظ أسوأ من غيابه، لأن زر الواتساب سيفتح محادثة خاطئة أو يفشل
+            const phoneEl = document.getElementById('studentPhoneInput');
+            const phoneRaw = (phoneEl?.value || '').trim();
+            const parentPhone = phoneRaw ? normalizeSaudiPhone(phoneRaw) : null;
+            if (phoneRaw && parentPhone === null) {
+                phoneEl?.classList.add('border-red-500', 'ring-4', 'ring-red-400');
+                phoneEl?.focus();
+                showToast('رقم الجوال غير صحيح — اكتبه هكذا 05xxxxxxxx، أو اترك الحقل فارغاً', 'error');
+                return;
+            }
             // الشريحة لا تُحفظ: تُحسب من مقدار الحفظ عند العرض (studentTierId).
             // ونحذف بقايا النسخ السابقة (tierId, tierManual) حتى لا يبقى مصدر ثانٍ للحقيقة
             if(i){
                 const st = students.find(s => s.id == i); if (!st) return;
                 st.name = n;
                 st.memorizedJuz = memorizedJuz;
+                st.parentPhone = parentPhone;
                 delete st.tierId; delete st.tierManual;
             }
             else{
                 const nid=students.length?Math.max(...students.map(s=>s.id))+1:1;
-                students.push({ id: nid, name: n, history: {}, memorizedJuz });
+                students.push({ id: nid, name: n, history: {}, memorizedJuz, parentPhone });
             }
             saveData(); updateAllUIs(); closeStudentModal(); showToast("تم حفظ بيانات الطالب");
         }

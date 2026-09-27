@@ -206,6 +206,8 @@ window.almahraData = {
                         history: {},
                         // مقدار الحفظ حقيقة تنتقل مع الطالب؛ الشريحة لا تُخزَّن بل تُحسب منه بتعريفات البرنامج
                         memorizedJuz: Number.isInteger(data.memorizedJuz) ? data.memorizedJuz : null,
+                        // جوال ولي الأمر حقيقة تنتقل معه أيضاً — لا علاقة لها بتقدّم الموسم
+                        parentPhone: data.parentPhone || null,
                         lastSurah: data.lastSurah || null,
                         lastAyah: data.lastAyah || null,
                         lastDailySurah: data.lastDailySurah || null,
