@@ -1300,7 +1300,7 @@
                 <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-users-gear"></i> إسناد الطلاب للشرائح</h3>
                 <button onclick="closeBulkTierModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
             </div>
-            <div class="p-4 bg-indigo-50 text-indigo-800 font-bold border-b border-indigo-200 text-sm shrink-0">
+            <div id="bulkTierNote" class="p-4 bg-indigo-50 text-indigo-800 font-bold border-b border-indigo-200 text-sm shrink-0">
                 اختر مقدار حفظ كل طالب (باعتمادك بعد الاختبار)، وتُحسب شريحته تلقائياً. ثم احفظ.
             </div>
             <div class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2" id="bulkTierList"></div>
@@ -1308,6 +1308,28 @@
                 <button onclick="saveBulkTierAssign()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg py-3 rounded-2xl shadow">
                     <i class="fas fa-check ml-2"></i> حفظ الإسناد
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- تنبيه «طلاب بلا مستوى»: شبكة أمان لمن دخل من طريق لا يفحص مقدار الحفظ (استعادة ملف، أو
+         برنامج كان بلا شرائح، أو جهاز بنسخة قديمة). يظهر تلقائياً ولا يحذف شيئاً — يطلب إدخال المقادير -->
+    <div id="noLevelModal" class="fixed inset-0 z-[6600] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border-4 border-amber-500 flex flex-col max-h-[90vh]">
+            <div class="bg-amber-500 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-exclamation-triangle"></i> طلاب بلا مستوى</h3>
+                <button onclick="closeNoLevelModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 bg-amber-50 text-amber-900 font-bold border-b border-amber-200 text-sm shrink-0 leading-relaxed">
+                <span id="noLevelCount"></span> لا شريحة لهم،
+                <span class="text-red-700">فلن يدخلوا ترشيح فرسان اليوم ولا فرسان الأسبوع</span> حتى تُضبط مقادير حفظهم.
+            </div>
+            <div id="noLevelList" class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2"></div>
+            <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 flex flex-col sm:flex-row gap-3">
+                <button onclick="fixNoLevelNow()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black text-lg py-3 rounded-2xl shadow">
+                    <i class="fas fa-user-check ml-2"></i> أدخل مقاديرهم الآن
+                </button>
+                <button onclick="closeNoLevelModal()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-black text-lg py-3 rounded-2xl">لاحقاً</button>
             </div>
         </div>
     </div>
@@ -1771,7 +1793,7 @@
                     <input type="text" id="studentNameInput" class="w-full p-4 border-4 border-slate-300 rounded-2xl text-2xl font-bold text-center focus:border-emerald-500 outline-none" placeholder="اكتب الاسم الكامل هنا...">
                 </div>
                 <div class="mt-5">
-                    <label class="block text-xl font-bold text-slate-700 mb-2 text-center">مقدار الحفظ (بالأجزاء) <span class="text-red-600">*</span></label>
+                    <label class="block text-xl font-bold text-slate-700 mb-2 text-center">مقدار الحفظ (بالأجزاء) <span id="studentMemRequiredMark" class="text-red-600">*</span></label>
                     <p class="text-xs text-slate-400 font-bold text-center mb-2 -mt-1">اعتماد المشرف بعد الاختبار، لا رقم ولي الأمر بالضرورة</p>
                     <select id="studentMemorizedInput" onchange="onStudentMemorizedChange()" class="w-full p-3 border-4 border-slate-300 rounded-2xl text-lg font-bold text-center focus:border-emerald-500 outline-none"></select>
                 </div>
@@ -1946,11 +1968,30 @@
             return getTierById(studentTierId(student)) || null;
         }
 
-        // شبكة الأمان: الطلاب الذين بلا مقدار حفظ (لا يُفترض وجودهم لأن الإضافة تشترطه،
-        // لكن إن ظهروا بطريق غير متوقع فلا يُتركون صامتين: هم خارج ترشيح فرسان الشرائح)
+        // شبكة الأمان: من لا شريحة له (لا يُفترض وجودهم لأن الإضافة تشترط مقدار الحفظ،
+        // لكن إن ظهروا بطريق غير متوقع فلا يُتركون صامتين: هم خارج ترشيح فرسان الشرائح).
+        // الشرط هو نفسه الذي تعرضه لوحة السباق ووسم البطاقة، فلا تختلف الشاشات:
+        // يشمل من بلا مقدار حفظ، ومن مقدار حفظه لا تُطابقه أي شريحة معرَّفة
         function studentsWithoutLevel() {
             if (!tiersFeatureOn()) return [];
-            return students.filter(s => !Number.isInteger(s?.memorizedJuz));
+            return students.filter(s => !studentTierId(s));
+        }
+
+        // صيغ العدد العربية الصحيحة (مفرد/مثنى/جمع) — تُستعمل في الرسائل الموجّهة للمشرف
+        function countLabel(n, one, two, few, many) {
+            if (n === 1) return one;
+            if (n === 2) return two;
+            return `${n} ${n >= 3 && n <= 10 ? few : many}`;
+        }
+        const studentsCountLabel = n => countLabel(n, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً');
+        const juzCountLabel      = n => countLabel(n, 'جزء واحد', 'جزءان', 'أجزاء', 'جزءاً');
+
+        // سبب بقاء الطالب بلا شريحة — يُعرض في التنبيه ليعرف المشرف ما يصلحه
+        function noLevelReason(student) {
+            const n = student?.memorizedJuz;
+            if (!Number.isInteger(n)) return 'بلا مقدار حفظ';
+            if (n === 0) return 'لم يُتمّ جزءاً — لا شريحة تُطابقه';
+            return `${juzCountLabel(n)} — لا شريحة تُطابقه`;
         }
 
         // ألوان الشرائح — قيم صريحة (Tailwind لا يتعرّف على الفئات المُولّدة ديناميكياً)
@@ -3299,8 +3340,22 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (isValidStudentBackup(importedData)) {
-                        if(confirm('تنبيه هام ⚠️: استيراد هذا الملف سيمسح البيانات الحالية ويضع بيانات الملف مكانها. هل أنت متأكد؟')) {
-                            students = importedData; saveData(); updateAllUIs(); showToast("🎉 تم استعادة البيانات من الملف بنجاح!", "success");
+                        // الشريحة لا تُخزَّن بل تُحسب: نُسقط أي tierId قديم في الملف حتى لا يبقى أثر مخالف
+                        // لمقدار الحفظ، ونُثبّت مقدار الحفظ رقماً صحيحاً أو null (Firestore ترفض undefined)
+                        const clean = importedData.map(s => {
+                            const { tierId, tierManual, ...rest } = s;
+                            return { ...rest, memorizedJuz: Number.isInteger(s.memorizedJuz) ? s.memorizedJuz : null };
+                        });
+                        // لا نرفض الملف بسبب نقص المستوى — النسخة الاحتياطية أداة طوارئ، ورفضها يضيّع بيانات
+                        // حقيقية. نوضّح الأثر قبل الاستبدال، ثم يظهر تنبيه «بلا مستوى» بعد الاستيراد
+                        const noLevel = tiersFeatureOn() ? clean.filter(s => !Number.isInteger(s.memorizedJuz)).length : 0;
+                        const warn = noLevel
+                            ? `\n\n⚠️ ${noLevel} من ${clean.length} في الملف بلا مقدار حفظ، فلا شريحة لهم ولن يدخلوا ترشيح الفرسان. سيطلب البرنامج إدخال مقاديرهم بعد الاستيراد.`
+                            : '';
+                        if(confirm(`تنبيه هام ⚠️: استيراد هذا الملف سيمسح البيانات الحالية (${studentsCountLabel(students.length)}) ويضع بيانات الملف (${studentsCountLabel(clean.length)}) مكانها.${warn}\n\nهل أنت متأكد؟`)) {
+                            students = clean;
+                            _noLevelWarned = { key: '', ids: [] }; // استبدال كامل للبيانات: يستحق تنبيهاً جديداً
+                            saveData(); updateAllUIs(); showToast("🎉 تم استعادة البيانات من الملف بنجاح!", "success");
                         }
                     } else { showToast("ملف النسخة الاحتياطية غير صالح أو بنية بياناته ناقصة", "error"); }
                 } catch(err) { showToast("حدث خطأ أثناء قراءة الملف", "error"); }
@@ -3924,6 +3979,7 @@
             if (typeof updateRecordsBadges === 'function') updateRecordsBadges();
             if (typeof updateSettingsBadges === 'function') updateSettingsBadges();
             if (document.getElementById('recPanelAbsence')?.classList.contains('active')) renderAbsenceReport();
+            if (typeof scheduleNoLevelCheck === 'function') scheduleNoLevelCheck();
         }
         
         function updateThreeKnightsSelects() {
@@ -4049,11 +4105,11 @@
                 html += `
                     <div class="bg-white/70 rounded-2xl border-2 border-amber-400 overflow-hidden shadow-sm">
                         <div class="bg-amber-500 text-white px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> بلا مستوى — لم يُسجَّل مقدار حفظهم</h3>
+                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> بلا مستوى — لا شريحة لهم</h3>
                             <span class="bg-white/25 px-3 py-0.5 rounded-full text-sm font-black">${noTier.length} طالب</span>
                         </div>
                         <div class="px-5 py-2 bg-amber-50 text-amber-800 text-sm font-bold flex flex-wrap items-center justify-between gap-2 no-print">
-                            <span>لن يدخلوا ترشيح فرسان الشرائح حتى تُدخل مقدار حفظهم.</span>
+                            <span>لن يدخلوا ترشيح فرسان الشرائح حتى تُضبط مقادير حفظهم.</span>
                             <button onclick="openBulkTierAssign()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg font-black text-sm">أدخل مقاديرهم</button>
                         </div>
                         <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -5374,6 +5430,9 @@
                 memSel.value = Number.isInteger(student?.memorizedJuz) ? String(student.memorizedJuz) : '';
                 memSel.classList.remove('border-red-500', 'ring-4', 'ring-red-400');
             }
+            // علامة الإجبار (*) تظهر فقط حين يكون الحقل إجبارياً فعلاً، أي حين توجد شرائح
+            const mark = document.getElementById('studentMemRequiredMark');
+            if (mark) mark.style.display = tiersFeatureOn() ? '' : 'none';
             const wrap = document.getElementById('studentTierWrap');
             if (!wrap) return;
             if (!tiersFeatureOn()) { wrap.style.display = 'none'; wrap.dataset.active = '0'; return; }
@@ -6461,6 +6520,16 @@
             document.querySelectorAll('.ps-feat').forEach(c => { features[c.dataset.feat] = c.checked; });
             const newTiers = collectTiersFromRows();
 
+            // حذف كل الشرائح يوقف نظام المستويات كله — نوضّح الأثر قبل الحفظ، فلا يمرّ صامتاً
+            if (getTiers().length > 0 && newTiers.length === 0) {
+                const msg = 'ستُحذف كل الشرائح، فيتوقف نظام المستويات في هذا البرنامج:\n\n'
+                    + '• لن تُقسَّم لوحة السباق بالشرائح، ولا فرسان لكل شريحة.\n'
+                    + '• لن يُطلب مقدار الحفظ عند إضافة طالب جديد، فقد يدخل طلاب بلا مستوى.\n'
+                    + '• لا تُمسّ بيانات الطلاب: مقادير حفظهم تبقى كما هي، وتعود الشرائح إن أعدتها.\n\n'
+                    + 'هل تتابع؟';
+                if (!confirm(msg)) return;
+            }
+
             const settings = {
                 raceName: document.getElementById('psRaceName').value.trim(),
                 raceSubtitle: document.getElementById('psRaceSub').value.trim(),
@@ -6515,15 +6584,24 @@
         // ================================================================
         // إسناد الطلاب للشرائح جماعياً
         // ================================================================
-        function openBulkTierAssign() {
+        // onlyNoLevel: تُعرض شاشة الإدخال مقصورة على من بلا مستوى، فلا يبحث المشرف عنهم بين الجميع
+        function openBulkTierAssign(onlyNoLevel = false) {
             const tiers = getTiers();
             if (tiers.length === 0) { showToast('أضف شرائح واحفظ الإعدادات أولاً', 'error'); return; }
             if (students.length === 0) { showToast('لا يوجد طلاب بعد', 'error'); return; }
 
+            const shown = onlyNoLevel ? studentsWithoutLevel() : students;
+            if (shown.length === 0) { showToast('كل الطلاب لهم مستوى', 'error'); return; }
+
+            const note = document.getElementById('bulkTierNote');
+            if (note) note.textContent = onlyNoLevel
+                ? `${studentsCountLabel(shown.length)} بلا مستوى. اختر مقدار حفظ كل منهم (باعتمادك بعد الاختبار)، وتُحسب شريحته تلقائياً. ثم احفظ.`
+                : 'اختر مقدار حفظ كل طالب (باعتمادك بعد الاختبار)، وتُحسب شريحته تلقائياً. ثم احفظ.';
+
             const list = document.getElementById('bulkTierList');
             const memOpts = memorizedJuzOptionsHtml();
 
-            list.innerHTML = students.map(s => `
+            list.innerHTML = shown.map(s => `
                 <div class="bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2" data-sid="${s.id}">
                     <span class="font-bold text-slate-700 min-w-[140px] flex-1 truncate">
                         <span class="text-slate-400 font-black">#${s.id}</span> ${escapeHTML(s.name)}
@@ -6590,6 +6668,79 @@
             saveData(); updateAllUIs(); closeBulkTierModal();
             showToast(`✅ حُدِّث ${changed} طالب`);
             renderProgramSettings();
+        }
+
+        // ================================================================
+        // تنبيه «طلاب بلا مستوى» — شبكة أمان
+        // البوابة تمنع إضافة طالب بلا مقدار حفظ، لكن تبقى طرق لا تمرّ بها:
+        // استعادة نسخة احتياطية من ملف، أو برنامج كان بلا شرائح ثم أُضيفت له شرائح،
+        // أو جهاز يعمل بنسخة قديمة من البرنامج. فلا نتركهم صامتين خارج ترشيح الفرسان
+        // ================================================================
+        let _noLevelWarned = { key: '', ids: [] }; // آخر حالة نُبِّه عليها، فلا يتكرر التنبيه بلا داعٍ
+        let _noLevelTimer = null;
+
+        function noLevelContextKey() {
+            return (window.almahraData?.getActiveProgramId() || '') + '|' + (window.almahraData?.getActiveSeasonId() || '');
+        }
+
+        // هل هناك نافذة أو طبقة ظاهرة الآن؟ نفحص display الفعلي لا الفئات،
+        // لأن بعض الطبقات (شاشة التحميل) تحتفظ بفئة flex وهي مخفية
+        function anyOverlayVisible(exceptId) {
+            if (document.body.classList.contains('auth-not-ready')) return true;
+            if (document.body.classList.contains('event-not-selected')) return true;
+            return [...document.querySelectorAll('div[class*="inset-0"]')]
+                .some(el => el.id !== exceptId && getComputedStyle(el).display !== 'none');
+        }
+
+        // يُستدعى بعد كل تحديث بيانات، بتأخير بسيط حتى تستقر الواجهة
+        function scheduleNoLevelCheck() {
+            if (_noLevelTimer) clearTimeout(_noLevelTimer);
+            _noLevelTimer = setTimeout(maybeWarnNoLevel, 900);
+        }
+
+        function maybeWarnNoLevel() {
+            // الموسم المؤرشف للعرض فقط، فلا يُطلب من المشرف إصلاحه
+            if (window.almahraData?.isReadOnly()) return;
+
+            const key = noLevelContextKey();
+            const list = studentsWithoutLevel();
+            if (list.length === 0) { _noLevelWarned = { key, ids: [] }; return; }
+
+            // حالة تستحق تنبيهاً: برنامج/موسم آخر، أو ظهر طالب لم نُنبّه عليه من قبل.
+            // ونقص العدد (إصلاح أو حذف) لا يعيد التنبيه، فلا نُزعج المشرف بما عالجه
+            const ids = list.map(s => String(s.id));
+            if (key === _noLevelWarned.key && ids.every(id => _noLevelWarned.ids.includes(id))) return;
+
+            // لا نقاطع نافذة مفتوحة — يُعاد الفحص مع أول تحديث بيانات تالٍ
+            if (anyOverlayVisible('noLevelModal')) return;
+
+            _noLevelWarned = { key, ids };
+            openNoLevelModal(list);
+        }
+
+        function openNoLevelModal(list) {
+            const box = document.getElementById('noLevelList');
+            const cnt = document.getElementById('noLevelCount');
+            const modal = document.getElementById('noLevelModal');
+            if (!box || !cnt || !modal) return;
+            cnt.textContent = studentsCountLabel(list.length);
+            box.innerHTML = list.map(s => `
+                <div class="bg-white p-3 rounded-xl border-2 border-amber-200 flex items-center gap-2">
+                    <span class="text-slate-400 font-black shrink-0">#${escapeHTML(String(s.id))}</span>
+                    <span class="font-bold text-slate-700 flex-1 truncate">${escapeHTML(s.name || 'بلا اسم')}</span>
+                    <span class="text-[11px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(noLevelReason(s))}</span>
+                </div>`).join('');
+            modal.classList.replace('hidden', 'flex');
+        }
+
+        function closeNoLevelModal() {
+            document.getElementById('noLevelModal').classList.replace('flex', 'hidden');
+        }
+
+        // من التنبيه إلى شاشة الإدخال مباشرة، مقصورة على من بلا مستوى
+        function fixNoLevelNow() {
+            closeNoLevelModal();
+            openBulkTierAssign(true);
         }
 
         // ================================================================
