@@ -146,6 +146,65 @@
         .set-panel, .rec-panel { display: none; animation: fadeIn .3s ease-out; }
         .set-panel.active, .rec-panel.active { display: flex; flex-direction: column; gap: 20px; }
 
+        /* ═══════════ صدر الرئيسية: الحديث بخط الثلث ═══════════ */
+        /* الألوان كلها من لوحة البرنامج الحالية: أبيض + slate + emerald */
+        .home-verse {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 24px;
+            padding: clamp(24px, 4.5vw, 48px) clamp(16px, 4vw, 52px);
+            text-align: center; position: relative; overflow: hidden;
+        }
+        /* التدرّج الهادئ داخل البطاقة */
+        .home-verse::after {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(115% 85% at 50% -20%, rgba(16,185,129,.10), transparent 60%);
+        }
+        /* خيط أخضر شعري في الحافة العليا */
+        .home-verse::before {
+            content: ""; position: absolute; top: 0; right: 0; left: 0; height: 2px; z-index: 1;
+            background: linear-gradient(90deg, transparent, #10b981, transparent); opacity: .55;
+        }
+        /* الصورة خلفيتها رمادية متفاوتة، فنُبيّضها ونمزجها طرحياً لتذوب حافتها في البطاقة */
+        #homeArt {
+            position: relative; z-index: 1; display: block; margin: 0 auto;
+            width: min(100%, 880px); height: auto;
+            filter: brightness(1.09) contrast(1.05);
+            mix-blend-mode: multiply;
+            transform-style: preserve-3d;
+            transition: transform .45s cubic-bezier(.22,.9,.3,1);
+            animation: hvRise 1.1s cubic-bezier(.16,.84,.34,1) both;
+        }
+        @keyframes hvRise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+        .hv-src { position: relative; z-index: 1; margin-top: clamp(12px,2.6vw,22px);
+            font-size: clamp(10.5px,2.1vw,12.5px); font-weight: 600; color: #94a3b8; }
+        .hv-brand { position: relative; z-index: 1; margin-top: clamp(14px,2.6vw,20px);
+            padding-top: clamp(12px,2.4vw,18px); border-top: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap;
+            font-size: clamp(11.5px,2.3vw,13px); font-weight: 700; color: #64748b; }
+        .hv-dot { width: 3px; height: 3px; border-radius: 50%; background: #94a3b8; }
+        @media (prefers-reduced-motion: reduce) {
+            #homeArt { animation: none; transition: none; }
+        }
+
+        /* ═══════════ لوحة معلومات المجمع ═══════════ */
+        .home-dash { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (min-width: 640px) { .home-dash { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1100px) { .home-dash { grid-template-columns: repeat(6, 1fr); } }
+        .dash-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 18px;
+            padding: 17px 15px; text-align: right; font-family: 'Cairo', sans-serif;
+            cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s;
+            display: flex; flex-direction: column; gap: 9px;
+        }
+        .dash-card:hover { transform: translateY(-3px); border-color: #10b981; box-shadow: 0 8px 20px rgba(16,185,129,.12); }
+        .dash-card:focus-visible { outline: 3px solid #10b981; outline-offset: 2px; }
+        .dash-card .dc-lab { font-size: 11.5px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
+        .dash-card .dc-val { font-size: clamp(23px, 4.4vw, 30px); font-weight: 900; color: #334155;
+            line-height: 1; font-variant-numeric: tabular-nums; }
+        .dash-card .dc-sub { font-size: 11px; font-weight: 600; color: #94a3b8; }
+        .dash-card.alert .dc-val { color: #b91c1c; }
+        .dash-card.alert:hover { border-color: #ef4444; box-shadow: 0 8px 20px rgba(239,68,68,.12); }
+        .dash-empty { grid-column: 1 / -1; text-align: center; color: #94a3b8; font-weight: 800; padding: 26px; }
+
         /* وضع الأرشيف: تعطيل بصري لأي أداة تعديل متبقية */
         body.archived-mode #studentsGrid .attendance-btn,
         body.archived-mode #settingsStudentsList button,
@@ -636,27 +695,23 @@
     </div>
 
     <div id="page-home" class="tab-content active p-4 md:p-8 flex-grow">
-        <div class="max-w-[1800px] mx-auto flex flex-col gap-6 w-full h-full">
-            
-            <!-- سباق رحلة الطائف: محتوى الصفحة الرئيسية الوحيد الآن (عرض احتفالي نظيف) -->
-            <div id="taifTripContainer" class="bg-white rounded-3xl shadow-xl border-4 border-yellow-400 flex-grow flex flex-col min-h-[85vh]">
-                <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-4 md:p-6 text-center border-b-4 border-yellow-600 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
-                    <div class="flex items-center gap-4">
-                        <i class="fas fa-bus-alt text-yellow-100 text-5xl md:text-6xl animate-bounce"></i>
-                        <div class="text-right">
-                            <h2 class="text-3xl md:text-5xl font-black tracking-wide drop-shadow-md">سباق رحلة الطائف (النقاط الموزونة)</h2>
-                            <p class="text-base md:text-lg text-yellow-900 font-bold mt-1">يوم الحضور (10) + الحفظ الجديد (3) + المراجعة (1) + محطات واعتمادات السرد (مكافأة ثابتة)</p>
-                        </div>
-                    </div>
-                    <button onclick="openHonorBoard()" class="bg-white/20 hover:bg-white/30 text-white font-black text-lg md:text-xl py-3 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 border-2 border-white/40 shrink-0">
-                        <i class="fas fa-trophy text-xl"></i> لوحة الشرف
-                    </button>
-                </div>
-                <div class="p-6 bg-slate-50 overflow-y-auto custom-scroll flex-grow relative">
-                    <div id="compactTripGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pt-2 pb-6"></div>
-                    <div id="emptyTripMessage" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-3xl font-bold"><i class="fas fa-users-slash text-6xl mb-4"></i>لم يتم إضافة طلاب بعد.</div>
+        <div class="max-w-[1800px] mx-auto flex flex-col gap-5 w-full">
+
+            <!-- صدر الرئيسية: الحديث الذي اشتُقّ منه اسم البرنامج، بخط الثلث -->
+            <div id="homeVerse" class="home-verse">
+                <img id="homeArt" src="hadith-thuluth.jpg"
+                     alt="قال النبي صلى الله عليه وسلم: الماهر بالقرآن مع السفرة الكرام البررة">
+                <div class="hv-src">متفق عليه · عن عائشة رضي الله عنها</div>
+                <div class="hv-brand">
+                    <span id="hvProgName">برنامج المهرة</span>
+                    <span class="hv-dot"></span>
+                    <span id="hvSeason">—</span>
                 </div>
             </div>
+
+            <!-- لوحة معلومات المجمع -->
+            <div id="homeDashboard" class="home-dash"></div>
+
         </div>
     </div>
 
@@ -723,6 +778,12 @@
                 <div class="panel-home-title"><i class="fas fa-cogs text-emerald-600"></i> الإعدادات</div>
                 <div class="panel-home-sub">اختر القسم الذي تريد ضبطه</div>
                 <div class="panel-grid">
+                    <button class="panel-card" style="--pc-accent:#eab308; --pc-bg:#fefce8" onclick="openSettingsSection('setPanelRace')">
+                        <span class="pc-icon"><i class="fas fa-bus-alt"></i></span>
+                        <span class="pc-title">لوحة السباق</span>
+                        <span class="pc-desc">ترتيب الطلاب بالنقاط داخل كل شريحة</span>
+                        <span class="pc-badge" id="scBadgeRace">—</span>
+                    </button>
                     <button class="panel-card" style="--pc-accent:#10b981; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelProgram')">
                         <span class="pc-icon"><i class="fas fa-sliders"></i></span>
                         <span class="pc-title">البرنامج والمواسم</span>
@@ -763,6 +824,32 @@
                         <span class="pc-title">المجموعات</span>
                         <span class="pc-desc">فرق التنافس والتقييم اليومي</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- ═══ قسم: لوحة السباق (كانت في الرئيسية) ═══ -->
+            <div id="setPanelRace" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title"><i class="fas fa-bus-alt text-yellow-500 ml-1"></i> لوحة السباق</span>
+                </div>
+                <div id="taifTripContainer" class="bg-white rounded-3xl shadow-xl border-4 border-yellow-400 flex flex-col">
+                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-4 md:p-6 text-center border-b-4 border-yellow-600 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-bus-alt text-yellow-100 text-5xl md:text-6xl"></i>
+                            <div class="text-right">
+                                <h2 class="text-2xl md:text-4xl font-black tracking-wide drop-shadow-md">سباق رحلة الطائف (النقاط الموزونة)</h2>
+                                <p class="text-sm md:text-base text-yellow-900 font-bold mt-1">يوم الحضور (10) + الحفظ الجديد (3) + المراجعة (1) + محطات واعتمادات السرد (مكافأة ثابتة)</p>
+                            </div>
+                        </div>
+                        <button onclick="openHonorBoard()" class="bg-white/20 hover:bg-white/30 text-white font-black text-lg md:text-xl py-3 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 border-2 border-white/40 shrink-0">
+                            <i class="fas fa-trophy text-xl"></i> لوحة الشرف
+                        </button>
+                    </div>
+                    <div class="p-4 md:p-6 bg-slate-50 relative min-h-[50vh]">
+                        <div id="compactTripGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pt-2 pb-6"></div>
+                        <div id="emptyTripMessage" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-2xl font-bold"><i class="fas fa-users-slash text-6xl mb-4"></i>لم يتم إضافة طلاب بعد.</div>
+                    </div>
                 </div>
             </div>
 
@@ -3820,6 +3907,127 @@
             };
         }
 
+        // ================================================================
+        // ⭐ المصدر الوحيد لأرقام المجمع — تستعملها لوحة الرئيسية وقسم «إحصائيات المجمع» معاً،
+        // فيستحيل أن تختلف الشاشتان. كلها مشتقّة من الدوال الأساسية نفسها لكل طالب.
+        // ================================================================
+        function computeComplexStats() {
+            const workingDaysList = getWorkingDaysList(students);
+            let ayahs = 0, pages = 0, quarters = 0, points = 0;
+            let expected = 0, actual = 0, activeExpected = 0, activeActual = 0, chronic = 0;
+
+            students.forEach(st => {
+                const s = getCumulativeStats(st);
+                // totalAyahs/totalPages/totalRawQuarters تشمل المسار اليومي واللوحة الذهبية معاً
+                ayahs += s.totalAyahs; pages += s.totalPages; quarters += s.totalRawQuarters; points += s.tripPoints;
+
+                const att = calculateStudentAttendance(st, workingDaysList);
+                expected += att.expectedDays; actual += att.actualDays;
+
+                // المنقطع: ٣ أيام عمل متتالية فأكثر. ويُستثنى من نسبة «النشطين» وحدها
+                if (getConsecutiveAbsenceStreak(st, workingDaysList) > 2) chronic++;
+                else { activeExpected += att.expectedDays; activeActual += att.actualDays; }
+            });
+
+            const presentToday = students.filter(s => s.history[todayStr] && s.history[todayStr].attended).length;
+            const pct = (a, b) => b > 0 ? Math.round((a / b) * 100) : 0;
+
+            return {
+                workingDaysList,
+                studentCount: students.length,
+                ayahs, pages, points, quarters,
+                juzs: quarters / 8,
+                hizbs: quarters / 4,
+                expected, actual, activeExpected, activeActual, chronic,
+                attendancePct: pct(actual, expected),
+                activePct: pct(activeActual, activeExpected),
+                presentToday,
+                absentToday: students.length - presentToday,
+                todayPct: pct(presentToday, students.length)
+            };
+        }
+
+        // ================================================================
+        // لوحة معلومات الرئيسية — مربعات تفاعلية تفتح الشاشة المناسبة عند الضغط
+        // أرقامها من computeComplexStats نفسها التي يستعملها قسم «إحصائيات المجمع»
+        // ================================================================
+        function renderHomeDashboard() {
+            const box = document.getElementById('homeDashboard');
+            if (!box) return;
+            initHadithTilt();
+
+            // اسم البرنامج والموسم في صدر الصفحة
+            const prog = window.almahraPrograms?.getCurrentProgram();
+            const season = window.almahraPrograms?.getCurrentSeason();
+            const pn = document.getElementById('hvProgName');
+            const sn = document.getElementById('hvSeason');
+            if (pn) pn.textContent = prog?.name || 'برنامج المهرة';
+            if (sn) sn.textContent = season?.name || '—';
+
+            if (students.length === 0) {
+                box.innerHTML = '<div class="dash-empty">لم يُضَف طلاب بعد — أضفهم من الإعدادات ← الطلاب</div>';
+                return;
+            }
+
+            const c = computeComplexStats();
+            const num = n => Math.round(n).toLocaleString('ar-EG');
+            const dec = (n, d = 1) => (n % 1 === 0 ? n : n.toFixed(d)).toLocaleString?.('ar-EG') ?? n;
+            const tierCount = tiersFeatureOn() ? getTiers().length : 0;
+
+            const card = (cls, lab, val, sub, act) => `
+                <button type="button" class="dash-card ${cls}" onclick="${act}">
+                    <span class="dc-lab">${lab}</span>
+                    <span class="dc-val">${val}</span>
+                    <span class="dc-sub">${sub}</span>
+                </button>`;
+
+            box.innerHTML =
+                card('', '<i class="fas fa-users"></i> الطلاب', num(c.studentCount),
+                     tierCount ? `على ${tierCount} شرائح` : 'في البرنامج', "goHome('page-students')") +
+                card('', '<i class="fas fa-user-check"></i> حضور اليوم', c.todayPct + '٪',
+                     `حضر ${num(c.presentToday)} · غاب ${num(c.absentToday)}`, "goHome('page-students')") +
+                card('', '<i class="fas fa-quran"></i> الآيات', num(c.ayahs),
+                     'حفظاً ومراجعة', "goRecords('recPanelStats')") +
+                card('', '<i class="fas fa-file-alt"></i> الصفحات', num(c.pages),
+                     'صفحات دقيقة', "goRecords('recPanelStats')") +
+                card('', '<i class="fas fa-book-open"></i> الأجزاء', dec(c.juzs, 2),
+                     `${dec(c.hizbs, 1)} حزب`, "goRecords('recPanelStats')") +
+                card(c.chronic ? 'alert' : '', '<i class="fas fa-user-xmark"></i> المنقطعون', num(c.chronic),
+                     c.chronic ? 'ثلاثة أيام فأكثر' : 'لا انقطاع ولله الحمد', "goRecords('recPanelAbsence')");
+        }
+
+        // الانتقال من مربع اللوحة إلى الشاشة المناسبة
+        function goHome(tabId) {
+            const btn = [...document.querySelectorAll('nav .nav-btn')]
+                .find(b => (b.getAttribute('onclick') || '').includes(tabId));
+            if (btn) switchTab(tabId, btn);
+        }
+        function goRecords(panelId) {
+            goHome('page-records');
+            if (typeof openRecordsSection === 'function') openRecordsSection(panelId);
+        }
+
+        // حركة الخط مع الماوس: ميلان انسيابي شبه دائري. بلا ماوس (الجوال) لا حركة
+        function initHadithTilt() {
+            const box = document.getElementById('homeVerse');
+            const art = document.getElementById('homeArt');
+            if (!box || !art || box.dataset.tilt === '1') return;
+            if (window.matchMedia('(hover: none)').matches) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            box.dataset.tilt = '1';
+            box.addEventListener('pointermove', e => {
+                const r = box.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - 0.5;
+                const y = (e.clientY - r.top) / r.height - 0.5;
+                art.style.transition = 'transform .12s linear';
+                art.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 4.5}deg) translateZ(12px)`;
+            });
+            box.addEventListener('pointerleave', () => {
+                art.style.transition = 'transform .5s cubic-bezier(.22,.9,.3,1)';
+                art.style.transform = '';
+            });
+        }
+
         function getStudentRank(studentId) {
             const calcs = students.map(s => { return {id: s.id, tripPoints: getCumulativeStats(s).tripPoints}; }).sort((a,b)=>b.tripPoints - a.tripPoints);
             const idx = calcs.findIndex(s => s.id === studentId); return idx !== -1 ? idx + 1 : 0;
@@ -4010,6 +4218,7 @@
         }
         
         function updateAllUIs() {
+            renderHomeDashboard();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
             processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
             if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
@@ -4314,16 +4523,17 @@
             }
             
             const calcs = students.map(s => { return {...s, ...getCumulativeStats(s)}; }).sort((a,b)=>b.tripPoints - a.tripPoints);
-            let globalExpected = 0; let globalActual = 0;
-            let activeExpected = 0; let activeActual = 0; // نفس الحساب لكن باستثناء الطلاب المنقطعين (3 أيام فأكثر)، لعرض الصورتين معاً بشفافية
+            // أرقام المجمع من المصدر الوحيد، فلا تختلف هذه الشاشة عن لوحة الرئيسية
+            const CS = computeComplexStats();
+            totalAyahsAll = CS.ayahs; totalPointsAll = CS.points; globalExactPages = CS.pages; globalQuarters = CS.quarters;
+            const globalExpected = CS.expected, globalActual = CS.actual;
+            const activeExpected = CS.activeExpected, activeActual = CS.activeActual;
 
             calcs.forEach((s, idx) => {
                 // الإجمالي الكلي (totalAyahs/totalPages/totalRawQuarters) يشمل أصلاً المسار اليومي + اللوحة الذهبية معاً،
                 // فيُستخدم هنا مباشرة لضمان تطابق تام بين مجموع كل الطلاب وبين الإحصائية العامة للمجمع
-                totalAyahsAll += s.totalAyahs; totalPointsAll += s.tripPoints; globalExactPages += s.totalPages; globalQuarters += s.totalRawQuarters;
-                let attStats = calculateStudentAttendance(s, workingDaysList); globalExpected += attStats.expectedDays; globalActual += attStats.actualDays;
+                let attStats = calculateStudentAttendance(s, workingDaysList);
                 const absenceStreak = getConsecutiveAbsenceStreak(s, workingDaysList);
-                if (absenceStreak <= 2) { activeExpected += attStats.expectedDays; activeActual += attStats.actualDays; }
                 let absenceBadge = '';
                 if (absenceStreak >= 2) { absenceBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب ${absenceStreak} أيام</span>`; }
                 else if (absenceStreak === 1) { absenceBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب آخر يوم</span>`; }
@@ -4372,7 +4582,7 @@
             const eqCumCard = document.getElementById('eqCumulativeAttendance'); if(eqCumCard) { eqCumCard.innerText = cumulativeAttendancePerc + "%"; }
 
             // تنبيه بجانب نسبة الانضباط التراكمي: عدد الطلاب المنقطعين 3 أيام متتالية فأكثر (يومان فأقل يُعتبر منضبطًا) من أصل كل الطلاب المسجلين
-            const chronicCount = students.filter(s => getConsecutiveAbsenceStreak(s, workingDaysList) > 2).length;
+            const chronicCount = CS.chronic;
             const eqWarningEl = document.getElementById('eqChronicAbsenteesWarning');
             if (eqWarningEl) {
                 if (chronicCount > 0) {
