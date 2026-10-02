@@ -174,7 +174,7 @@
             mix-blend-mode: multiply;
             transform-style: preserve-3d;
             transition: transform .45s cubic-bezier(.22,.9,.3,1);
-            animation: hvRise 1.1s cubic-bezier(.16,.84,.34,1) both;
+            animation: hvRise 1.1s cubic-bezier(.16,.84,.34,1) backwards; /* لا both: التثبيت بعد الانتهاء يتغلّب على ميلان الماوس */
         }
         @keyframes hvRise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
         .hv-src { position: relative; z-index: 1; margin-top: clamp(12px,2.6vw,22px);
@@ -4040,7 +4040,7 @@
                 const x = (e.clientX - r.left) / r.width - 0.5;
                 const y = (e.clientY - r.top) / r.height - 0.5;
                 art.style.transition = 'transform .12s linear';
-                art.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 4.5}deg) translateZ(12px)`;
+                art.style.transform = `perspective(900px) rotateY(${x * 14}deg) rotateX(${-y * 9}deg) translateZ(12px)`;
             });
             box.addEventListener('pointerleave', () => {
                 art.style.transition = 'transform .5s cubic-bezier(.22,.9,.3,1)';
