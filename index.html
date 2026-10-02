@@ -208,6 +208,55 @@
         .dash-card.alert:hover { border-color: #ef4444; box-shadow: 0 8px 20px rgba(239,68,68,.12); }
         .dash-empty { grid-column: 1 / -1; text-align: center; color: #94a3b8; font-weight: 800; padding: 26px; }
 
+        /* ═══════════ قسما الرئيسية: المتابعة والمتصدّرون ═══════════ */
+        .home-extras { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        @media (min-width: 1024px) { .home-extras { grid-template-columns: 1fr 1fr; } }
+        .home-sec {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 18px;
+            padding: 16px 15px; display: flex; flex-direction: column; gap: 10px;
+            /* بلا هذا يرفض عنصر الشبكة النزول تحت عرض محتواه، فتتجاوز البطاقة الشاشة على الجوال */
+            min-width: 0;
+        }
+        .hs-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .hs-title { font-size: 15px; font-weight: 900; color: #334155; display: flex; align-items: center; gap: 7px; }
+        .hs-note { font-size: 11px; font-weight: 700; color: #94a3b8; }
+        .hs-rows { display: flex; flex-direction: column; gap: 7px; }
+        .hs-row { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 12px; border: 1px solid; }
+        .hs-name { flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: 13.5px; color: #334155;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hs-tag { font-size: 11px; font-weight: 800; border-radius: 999px; padding: 3px 9px; white-space: nowrap; flex-shrink: 0; }
+        .hs-empty { text-align: center; color: #059669; font-weight: 800; font-size: 13px; padding: 16px 8px; }
+        .hs-all {
+            background: transparent; border: 1px dashed #cbd5e1; border-radius: 11px; padding: 7px;
+            font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 12px; color: #64748b; cursor: pointer;
+        }
+        .hs-all:hover { background: #f8fafc; color: #334155; }
+        .hs-all:focus-visible { outline: 3px solid #10b981; outline-offset: 2px; }
+
+        /* المتابعة: البرتقالي لمن غاب يومين، والأحمر لمن انقطع ثلاثة فأكثر */
+        .hs-row.care { background: #fff7ed; border-color: #fed7aa; }
+        .hs-row.care .hs-tag { background: #fff; border: 1px solid #fed7aa; color: #c2410c; }
+        .hs-row.gone { background: #fef2f2; border-color: #fecaca; }
+        .hs-row.gone .hs-tag { background: #fff; border: 1px solid #fecaca; color: #b91c1c; }
+        .hs-wa {
+            width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            background: #25d366; color: #fff; text-decoration: none;
+        }
+        .hs-wa:hover { background: #1da851; }
+        .hs-wa.off { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+        /* المتصدّرون */
+        .hs-row.lead { background: #fefce8; border-color: #fef08a; }
+        .hs-rank { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; color: #fff;
+            font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; background: #eab308; }
+        .hs-rank.s2 { background: #94a3b8; }
+        .hs-rank.s3 { background: #b45309; }
+        .hs-tier { font-size: 10.5px; font-weight: 700; color: #92400e; background: #fef9c3;
+            border: 1px solid #fde68a; border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+        .hs-pts { font-size: 12.5px; font-weight: 900; color: #047857; background: #fff; border: 1px solid #a7f3d0;
+            border-radius: 999px; padding: 3px 9px; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
         /* وضع الأرشيف: تعطيل بصري لأي أداة تعديل متبقية */
         body.archived-mode #studentsGrid .attendance-btn,
         body.archived-mode #settingsStudentsList button,
@@ -721,6 +770,12 @@
             <!-- لوحة معلومات المجمع -->
             <div id="homeDashboard" class="home-dash"></div>
 
+            <!-- المتابعة والمتصدّرون: يظهران فقط إذا كان في الموسم طلاب -->
+            <div id="homeExtras" class="home-extras" style="display:none">
+                <section id="homeCare" class="home-sec"></section>
+                <section id="homeLead" class="home-sec"></section>
+            </div>
+
         </div>
     </div>
 
@@ -1191,8 +1246,8 @@
                                 <button onclick="copyAbsenteesList()" class="bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300">
                                     <i class="fab fa-whatsapp text-green-600 text-2xl"></i> حصر غائبي اليوم وإرسال تنبيه
                                 </button>
-                                <button onclick="copyChronicAbsenteesList()" class="bg-red-50 hover:bg-red-100 text-red-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-red-300">
-                                    <i class="fab fa-whatsapp text-red-600 text-2xl"></i> حصر المنقطعين (يومان فأكثر)
+                                <button onclick="copyFollowupList()" class="bg-red-50 hover:bg-red-100 text-red-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-red-300">
+                                    <i class="fab fa-whatsapp text-red-600 text-2xl"></i> حصر من يحتاج متابعة (يومان فأكثر)
                                 </button>
                             </div>
                             <div id="absenceDetailList" class="space-y-2"></div>
@@ -3934,7 +3989,7 @@
                 expected += att.expectedDays; actual += att.actualDays;
 
                 // المنقطع: ٣ أيام عمل متتالية فأكثر. ويُستثنى من نسبة «النشطين» وحدها
-                if (getConsecutiveAbsenceStreak(st, workingDaysList) > 2) chronic++;
+                if (getConsecutiveAbsenceStreak(st, workingDaysList) >= CHRONIC_MIN_STREAK) chronic++;
                 else { activeExpected += att.expectedDays; activeActual += att.actualDays; }
             });
 
@@ -3973,10 +4028,13 @@
             if (pn) pn.textContent = prog?.name || 'برنامج المهرة';
             if (sn) sn.textContent = season?.name || '—';
 
+            const extras = document.getElementById('homeExtras');
             if (students.length === 0) {
                 box.innerHTML = '<div class="dash-empty">لم يُضَف طلاب بعد — أضفهم من الإعدادات ← الطلاب</div>';
+                if (extras) extras.style.display = 'none';
                 return;
             }
+            if (extras) extras.style.display = '';
 
             const c = computeComplexStats();
             // الأرقام باللاتينية كبقية البرنامج (التقارير ولوحة السباق)، فلا تختلط الأنظمة
@@ -4005,6 +4063,9 @@
                      `${dec(c.hizbs, 1)} حزب`, "goRecords('recPanelStats')") +
                 card(c.chronic ? 'alert' : '', '<i class="fas fa-user-xmark"></i> المنقطعون', num(c.chronic),
                      c.chronic ? 'ثلاثة أيام فأكثر' : 'لا انقطاع ولله الحمد', "goRecords('recPanelAbsence')");
+
+            renderHomeCare();
+            renderHomeLeaders();
         }
 
         // الانتقال من مربع اللوحة إلى الشاشة المناسبة
@@ -4016,6 +4077,114 @@
         function goRecords(panelId) {
             goHome('page-records');
             if (typeof openRecordsSection === 'function') openRecordsSection(panelId);
+        }
+        function goRace() {
+            goHome('page-settings');
+            if (typeof openSettingsSection === 'function') setTimeout(() => openSettingsSection('setPanelRace'), 60);
+        }
+
+        // ================================================================
+        // قسم «بحاجة متابعة» في الرئيسية — أسماء من غابوا يومين فأكثر مع زر واتساب لولي الأمر
+        // التعريف والترتيب من getFollowupAbsentees نفسها التي يستعملها السجل، فلا تختلف الشاشتان
+        // ================================================================
+        const HOME_CARE_LIMIT = 5;
+
+        function renderHomeCare() {
+            const box = document.getElementById('homeCare');
+            if (!box) return;
+
+            const list = getFollowupAbsentees();
+            const head = `
+                <div class="hs-head">
+                    <span class="hs-title"><i class="fas fa-triangle-exclamation" style="color:#ea580c"></i> بحاجة متابعة</span>
+                    <span class="hs-note">${list.length ? studentsCountLabel(list.length) : 'ولله الحمد'}</span>
+                </div>`;
+
+            if (list.length === 0) {
+                box.innerHTML = head + '<div class="hs-empty"><i class="fas fa-circle-check"></i> لا انقطاع متتابع اليوم</div>';
+                return;
+            }
+
+            const daysLabel = n => countLabel(n, 'يوماً واحداً', 'يومين', 'أيام', 'يوماً');
+            const rows = list.slice(0, HOME_CARE_LIMIT).map(x => {
+                const st = x.student;
+                const gone = x.streak >= CHRONIC_MIN_STREAK;
+                const phone = normalizeSaudiPhone(st.parentPhone);
+                // رسالة محايدة بلا توقيع جهة، فتصلح لأي جمعية تستعمل البرنامج
+                const msg = encodeURIComponent(
+                    `السلام عليكم ورحمة الله وبركاته\n`
+                    + `ولي أمر ${st.name.split(' ')[0]} الكريم:\n\n`
+                    + `نفتقد حضوره في حلقة القرآن منذ ${daysLabel(x.streak)}، ونأمل منكم المتابعة والتواصل معنا.\n\n`
+                    + `جزاكم الله خيراً`
+                );
+                const wa = phone
+                    ? `<a class="hs-wa" href="whatsapp://send?phone=${phone}&text=${msg}" title="مراسلة ولي الأمر"><i class="fab fa-whatsapp"></i></a>`
+                    : `<span class="hs-wa off" title="لا جوال محفوظ لولي أمره"><i class="fab fa-whatsapp"></i></span>`;
+                return `
+                    <div class="hs-row ${gone ? 'gone' : 'care'}">
+                        <span class="hs-name" title="${escapeHTML(st.name)}">${escapeHTML(st.name)}</span>
+                        <span class="hs-tag">غاب ${daysLabel(x.streak)}</span>
+                        ${wa}
+                    </div>`;
+            }).join('');
+
+            const more = list.length > HOME_CARE_LIMIT
+                ? `<button type="button" class="hs-all" onclick="goRecords('recPanelAbsence')">عرض الكل (${list.length}) ←</button>`
+                : '';
+
+            box.innerHTML = head + `<div class="hs-rows">${rows}</div>` + more;
+        }
+
+        // ================================================================
+        // قسم «المتصدّرون» — متصدّر كل شريحة، فلا يُقارَن المبتدئ بالمتقدّم.
+        // وإن أُطفئت الشرائح فأول ثلاثة عموماً
+        // ================================================================
+        function renderHomeLeaders() {
+            const box = document.getElementById('homeLead');
+            if (!box) return;
+
+            const calcs = students
+                .map(s => ({ ...s, ...getCumulativeStats(s) }))
+                .filter(s => s.tripPoints > 0)
+                .sort((a, b) => b.tripPoints - a.tripPoints);
+
+            const tiersOn = tiersFeatureOn();
+            const head = `
+                <div class="hs-head">
+                    <span class="hs-title"><i class="fas fa-trophy" style="color:#eab308"></i> المتصدّرون</span>
+                    <span class="hs-note">${tiersOn ? 'متصدّر كل شريحة' : 'الأعلى نقاطاً'}</span>
+                </div>`;
+
+            let rows = '';
+            if (tiersOn) {
+                getTiers().forEach(t => {
+                    const top = calcs.find(s => studentTierId(s) === t.id);
+                    if (!top) return;
+                    rows += `
+                        <div class="hs-row lead">
+                            <span class="hs-rank"><i class="fas fa-crown"></i></span>
+                            <span class="hs-name" title="${escapeHTML(top.name)}">${escapeHTML(top.name)}</span>
+                            <span class="hs-tier">${escapeHTML(t.name)}</span>
+                            <span class="hs-pts">${top.tripPoints.toLocaleString('en-US')}</span>
+                        </div>`;
+                });
+            } else {
+                calcs.slice(0, 3).forEach((s, i) => {
+                    rows += `
+                        <div class="hs-row lead">
+                            <span class="hs-rank ${i === 1 ? 's2' : i === 2 ? 's3' : ''}">${i + 1}</span>
+                            <span class="hs-name" title="${escapeHTML(s.name)}">${escapeHTML(s.name)}</span>
+                            <span class="hs-pts">${s.tripPoints.toLocaleString('en-US')}</span>
+                        </div>`;
+                });
+            }
+
+            if (!rows) {
+                box.innerHTML = head + '<div class="hs-empty" style="color:#94a3b8">لم تُسجَّل نقاط بعد</div>';
+                return;
+            }
+            box.innerHTML = head + `<div class="hs-rows">${rows}</div>`
+                + `<button type="button" class="hs-all" onclick="goRace()">افتح لوحة السباق ←</button>`;
         }
 
         // الرأس يلبس الأبيض عند النزول، ويبقى شفافاً في أعلى الصفحة
@@ -4223,6 +4392,12 @@
             return { expectedDays, actualDays, absences: Math.max(0, expectedDays - actualDays) };
         }
 
+        // ⭐ حدّا الغياب المتتالي — مصدر واحد تقرأ منه كل الشاشات فلا تتضارب أرقامها:
+        //  • بحاجة متابعة: يومان فأكثر — تنبيه مبكّر للتواصل مع ولي الأمر
+        //  • منقطع: ثلاثة أيام فأكثر — وهو وحده الذي يُستثنى من نسبة حضور النشطين في الإحصاءات
+        const FOLLOWUP_MIN_STREAK = 2;
+        const CHRONIC_MIN_STREAK = 3;
+
         // عدد أيام العمل الغائبة المتتالية حالياً (من آخر يوم للخلف، تتوقف أول ما تصادف يوم حضور) بدءاً من أول يوم تسجيل للطالب نفسه
         function getConsecutiveAbsenceStreak(student, workingDaysList) {
             const firstDateStr = Object.keys(student.history).sort()[0];
@@ -4400,7 +4575,7 @@
                 const hist = student.history[todayStr] || {}; const isPresent = hist.attended; const cStats = getCumulativeStats(student);
                 const absenceStreak = getConsecutiveAbsenceStreak(student, workingDaysList);
                 let cardBorder = 'border-2 border-slate-200'; let absenceBadge = '';
-                if (absenceStreak >= 2) {
+                if (absenceStreak >= FOLLOWUP_MIN_STREAK) {
                     cardBorder = 'border-4 border-red-500';
                     absenceBadge = `<div class="absolute -top-2 -left-2 bg-red-500 text-white text-[11px] font-black px-2 py-1 rounded-full shadow-lg z-10">⚠️ غاب ${absenceStreak} أيام</div>`;
                 } else if (absenceStreak === 1) {
@@ -4556,7 +4731,7 @@
                 let attStats = calculateStudentAttendance(s, workingDaysList);
                 const absenceStreak = getConsecutiveAbsenceStreak(s, workingDaysList);
                 let absenceBadge = '';
-                if (absenceStreak >= 2) { absenceBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب ${absenceStreak} أيام</span>`; }
+                if (absenceStreak >= FOLLOWUP_MIN_STREAK) { absenceBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب ${absenceStreak} أيام</span>`; }
                 else if (absenceStreak === 1) { absenceBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب آخر يوم</span>`; }
 
                 let quranStatsHtml = `
@@ -5594,13 +5769,9 @@
             const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast("جاري فتح الواتساب وتجهيز الرسالة...");
         }
 
-        function copyChronicAbsenteesList() {
-            const workingDaysList = getWorkingDaysList(students);
-            const chronic = students
-                .map(s => ({ student: s, streak: getConsecutiveAbsenceStreak(s, workingDaysList) }))
-                .filter(x => x.streak >= 2)
-                .sort((a, b) => b.streak - a.streak);
-            if (chronic.length === 0) { showToast("لا يوجد طلاب منقطعين يومين متتاليين فأكثر حالياً، ولله الحمد!", "success"); return; }
+        function copyFollowupList() {
+            const chronic = getFollowupAbsentees();
+            if (chronic.length === 0) { showToast("لا يوجد طلاب غابوا يومين متتاليين فأكثر حالياً، ولله الحمد!", "success"); return; }
             let msg = `📋 *تنبيه انقطاع متكرر - برنامج المهرة*\n🗓️ بتاريخ: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\n\n`;
             chronic.forEach((x, idx) => { msg += `${idx + 1}. ${x.student.name} - غاب ${x.streak} أيام متتالية\n`; });
             msg += `\nنأمل التواصل معهم لمعرفة السبب ومتابعة الحضور 🌹`;
@@ -6127,12 +6298,18 @@
             return students.filter(s => !s.history?.[todayStr]?.attended);
         }
 
-        function getChronicAbsentees() {
+        // بحاجة متابعة: يومان فأكثر — تشمل المنقطعين، مرتّبة من الأطول انقطاعاً
+        function getFollowupAbsentees() {
             const wdList = getWorkingDaysList(students);
             return students
                 .map(s => ({ student: s, streak: getConsecutiveAbsenceStreak(s, wdList) }))
-                .filter(x => x.streak >= 2)
+                .filter(x => x.streak >= FOLLOWUP_MIN_STREAK)
                 .sort((a, b) => b.streak - a.streak);
+        }
+
+        // المنقطعون: ثلاثة أيام فأكثر — نفس تعريف الإحصاءات في computeComplexStats
+        function getChronicAbsentees() {
+            return getFollowupAbsentees().filter(x => x.streak >= CHRONIC_MIN_STREAK);
         }
 
         function renderAbsenceReport() {
@@ -6141,7 +6318,9 @@
             if (!sum || !list) return;
 
             const absentToday = getTodayAbsentees();
-            const chronic = getChronicAbsentees();
+            const followup = getFollowupAbsentees();
+            const chronic = followup.filter(x => x.streak >= CHRONIC_MIN_STREAK);
+            const needsCare = followup.filter(x => x.streak < CHRONIC_MIN_STREAK);
             const present = students.length - absentToday.length;
 
             const card = (color, icon, label, value) => `
@@ -6154,15 +6333,23 @@
             sum.innerHTML =
                 card('emerald', '✅', 'حاضرون اليوم', present) +
                 card('amber', '⚠️', 'غائبون اليوم', absentToday.length) +
-                card('red', '🚫', 'منقطعون (يومان+)', chronic.length);
+                card('red', '🚫', 'منقطعون (ثلاثة أيام+)', chronic.length);
 
             let html = '';
             if (chronic.length) {
-                html += `<div class="font-black text-red-700 mt-4 mb-2">🚫 المنقطعون (${chronic.length})</div>`;
+                html += `<div class="font-black text-red-700 mt-4 mb-2">🚫 المنقطعون — ثلاثة أيام فأكثر (${chronic.length})</div>`;
                 html += chronic.map(x => `
                     <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2">
                         <span class="font-bold text-slate-700">${escapeHTML(x.student.name)}</span>
                         <span class="text-sm font-black bg-red-600 text-white px-3 py-1 rounded-full shrink-0">غاب ${x.streak} أيام</span>
+                    </div>`).join('');
+            }
+            if (needsCare.length) {
+                html += `<div class="font-black text-orange-700 mt-5 mb-2">🔔 بحاجة متابعة — يومان متتاليان (${needsCare.length})</div>`;
+                html += needsCare.map(x => `
+                    <div class="bg-orange-50 border-2 border-orange-200 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2">
+                        <span class="font-bold text-slate-700">${escapeHTML(x.student.name)}</span>
+                        <span class="text-sm font-black bg-orange-500 text-white px-3 py-1 rounded-full shrink-0">غاب ${x.streak} أيام</span>
                     </div>`).join('');
             }
             if (absentToday.length) {
@@ -6184,12 +6371,15 @@
             if (students.length === 0) { bar.classList.add('hidden'); return; }
 
             const absentToday = getTodayAbsentees().length;
-            const chronic = getChronicAbsentees().length;
-            if (absentToday === 0 && chronic === 0) { bar.classList.add('hidden'); return; }
+            const followup = getFollowupAbsentees();
+            const chronic = followup.filter(x => x.streak >= CHRONIC_MIN_STREAK).length;
+            const needsCare = followup.length - chronic;
+            if (absentToday === 0 && followup.length === 0) { bar.classList.add('hidden'); return; }
 
             let parts = [];
             if (absentToday) parts.push(`<strong>${absentToday}</strong> غائب اليوم`);
-            if (chronic) parts.push(`<strong>${chronic}</strong> منقطع (يومان فأكثر)`);
+            if (needsCare) parts.push(`<strong>${needsCare}</strong> بحاجة متابعة (يومان)`);
+            if (chronic) parts.push(`<strong>${chronic}</strong> منقطع (ثلاثة أيام فأكثر)`);
             txt.innerHTML = parts.join(' · ');
             bar.classList.remove('hidden');
         }
@@ -6208,8 +6398,13 @@
             set('rcBadgeTimeline', `${days.size} يوم`);
 
             const absent = getTodayAbsentees().length;
-            const chronic = getChronicAbsentees().length;
-            set('rcBadgeAbsence', absent || chronic ? `${absent} غائب · ${chronic} منقطع` : 'لا غياب');
+            const followupList = getFollowupAbsentees();
+            const chronic = followupList.filter(x => x.streak >= CHRONIC_MIN_STREAK).length;
+            const bits = [];
+            if (absent) bits.push(`${absent} غائب`);
+            if (followupList.length - chronic) bits.push(`${followupList.length - chronic} متابعة`);
+            if (chronic) bits.push(`${chronic} منقطع`);
+            set('rcBadgeAbsence', bits.length ? bits.join(' · ') : 'لا غياب');
 
             const examCount = students.filter(s => s.examResult && s.examResult.total !== undefined).length;
             set('rcBadgeExam', examCount ? `${examCount} نتيجة` : 'لا نتائج');
