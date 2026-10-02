@@ -4040,7 +4040,7 @@
                 const x = (e.clientX - r.left) / r.width - 0.5;
                 const y = (e.clientY - r.top) / r.height - 0.5;
                 art.style.transition = 'transform .12s linear';
-                art.style.transform = `perspective(900px) rotateY(${x * 14}deg) rotateX(${-y * 9}deg) translateZ(12px)`;
+                art.style.transform = `perspective(900px) rotateY(${x * 24}deg) rotateX(${-y * 16}deg) translateZ(12px)`;
             });
             box.addEventListener('pointerleave', () => {
                 art.style.transition = 'transform .5s cubic-bezier(.22,.9,.3,1)';
