@@ -2033,6 +2033,8 @@
 
     <div id="examCardsPrintArea"></div>
 
+    <!-- خريطة مصحف المدينة (طبعة 1441هـ): السور والصفحات والأجزاء والأرباع — ملف محلي، المصدر الوحيد للبرنامج ومحرك الاختبار -->
+    <script src="quran/quran-meta.js"></script>
     <script>
         let students = [];
         let todayStr = ""; 
@@ -3746,24 +3748,26 @@
             showToast(`✅ استُورد ${added} طالب بمستوياتهم${withPhone ? `، منهم ${withPhone} بجوال ولي الأمر` : ''}`);
         }
 
-        async function initQuranEngine() {
+        // خريطة المصحف من quran/quran-meta.js (طبعة المدينة 1441هـ) — بلا إنترنت، وهي نفسها التي يبني عليها محرك الاختبار.
+        // تُحوَّل إلى الشكل الذي تتوقعه setupQuranLogic (كان يأتي من api.alquran.cloud وصفحاته تخالف طبعة 1441 في 25 صفحة).
+        function initQuranEngine() {
             try {
-                const cached = localStorage.getItem('quran_meta_cache_v5'); 
-                if(cached) {
-                    setupQuranLogic(JSON.parse(cached));
-                } else {
-                    const res = await fetch('https://api.alquran.cloud/v1/meta'); 
-                    if (!res.ok) throw new Error("Network Error");
-                    const data = await res.json();
-                    localStorage.setItem('quran_meta_cache_v5', JSON.stringify(data.data)); 
-                    setupQuranLogic(data.data);
-                }
-            } catch (e) { 
-                console.error("Quran API Error:", e);
-                setTimeout(() => showToast("تنبيه أمان: فشل تحميل خريطة المصحف، يرجى التأكد من اتصال الإنترنت لتفعيل التتبع المكاني", "error"), 1000);
-            } finally { 
-                buildJuzGrid(); 
-                const overlay = document.getElementById('loadingOverlay'); overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 500); 
+                try { localStorage.removeItem('quran_meta_cache_v5'); } catch (e) { }   // نسخة alquran.cloud المخزّنة قديماً
+                const M = window.QURAN_META;
+                const okArr = (a, n) => Array.isArray(a) && a.length === n;
+                if (!M || M.edition !== '1441' || !okArr(M.surahs, 114) || !okArr(M.titles, 114) || !okArr(M.pages, 604) || !okArr(M.quarters, 240)
+                    || M.surahs.reduce((n, s) => n + s[1], 0) !== 6236) throw new Error('quran-meta.js missing or invalid');
+                setupQuranLogic({
+                    surahs: { references: M.surahs.map((s, i) => ({ number: i + 1, name: M.titles[i], numberOfAyahs: s[1] })) },   // العناوين المشكولة نفسها التي عرضها البرنامج دائماً
+                    pages: { references: M.pages.map(([surah, ayah]) => ({ surah, ayah })) },
+                    hizbQuarters: { references: M.quarters.map(([surah, ayah]) => ({ surah, ayah })) }
+                });
+            } catch (e) {
+                console.error("Quran meta error:", e);
+                setTimeout(() => showToast("تعذّر تحميل خريطة المصحف، أعد تحميل الصفحة", "error"), 1000);
+            } finally {
+                buildJuzGrid();
+                const overlay = document.getElementById('loadingOverlay'); overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 500);
             }
         }
         
