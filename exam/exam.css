@@ -1,0 +1,341 @@
+/*
+ * exam.css — أنماط شاشة الاختبار الشفوي (exam-ui.js) في برنامج المهرة.
+ * كل القواعد تحت الجذر .xa فلا تمسّ البرنامج المضيف. ألوان المهرة: زمردي للأساس، ورمادي مزرق للنص.
+ * يعمل فوق Tailwind (preflight): الأساس المحلي أدناه يعيد ما تمسحه للأزرار والقوائم والعناوين.
+ * صفحة المصحف بقواعد العارض المعتمد (mushaf-viewer.html) بأسماء الشاشة: .body←.xa-pb، .ln←.xa-ln، .title←.ttl،
+ * .tt←.xa-tt، .tx←.xa-tx، .mk←.xa-mk، --fs-title←--xa-fs-title، والتظليل بالكلمة .q داخل سطر .qrow.
+ * خط المصحف (Amiri Quran) يُربط مستقلاً: quran/fonts/amiri-quran.css (مسارات الخط فيه نسبية لمجلده).
+ */
+
+/* ═════════════ الألوان ═════════════ */
+.xa {
+  --xa-bg: #f1f5f9; --xa-card: #ffffff; --xa-ink: #0f172a; --xa-soft: #64748b; --xa-faint: #94a3b8;
+  --xa-line: #e2e8f0; --xa-line2: #cbd5e1;
+  --xa-em: #10b981; --xa-em-d: #047857; --xa-em-dd: #065f46; --xa-em-l: #ecfdf5; --xa-em-b: #a7f3d0;
+  --xa-bad: #b91c1c; --xa-bad-l: #fef2f2; --xa-bad-b: #fecaca;
+  --xa-warn: #92400e; --xa-warn-l: #fffbeb; --xa-warn-b: #fde68a;
+  --xa-soft-bg: rgba(16, 185, 129, .07);
+  --xa-paper: #fffdf8; --xa-frame: #1f2937; --xa-q: #fde68a; --xa-qrow: #fffbeb;
+}
+
+/* ═════════════ الجذر: شاشة كاملة فوق البرنامج ═════════════ */
+.xa {
+  position: fixed; inset: 0; z-index: 5000;
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  background: var(--xa-bg); color: var(--xa-ink);
+  font-family: 'Cairo', system-ui, 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-size: 15px; line-height: 1.55; text-align: right;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* أساس محلي (يعيد ما تمسحه Tailwind preflight). داخل :where() فأولويته صفر:
+   لا يغلب أنماط المكوّنات أدناه (.xa-btn وغيرها) ولا يمحو حشوها أو خطها */
+:where(.xa) *, :where(.xa) *::before, :where(.xa) *::after { box-sizing: border-box; }
+:where(.xa) :where(h1, h2, h3, p, ul, ol, pre, table) { margin: 0; }
+:where(.xa) :where(ul, ol) { list-style: none; padding: 0; }
+:where(.xa) :where(button, input, select) { font: inherit; color: inherit; }
+:where(.xa) button { cursor: pointer; background: none; border: 0; padding: 0; }
+:where(.xa) button:disabled { cursor: not-allowed; }
+:where(.xa) table { border-collapse: collapse; }
+:where(.xa) b { font-weight: 800; }
+.xa [hidden] { display: none !important; }
+.xa :focus-visible { outline: 3px solid var(--xa-em); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .xa * { transition: none !important; animation: none !important; } }
+
+/* ═════════════ الشريط العلوي والتبويبات ═════════════ */
+.xa-top {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  padding-left: calc(10px + env(safe-area-inset-left, 0px)); padding-right: calc(10px + env(safe-area-inset-right, 0px));
+  background: linear-gradient(135deg, var(--xa-em), var(--xa-em-d)); color: #fff;
+  box-shadow: 0 2px 10px rgba(4, 120, 87, .25);
+}
+.xa-top h1 { flex: 1 1 auto; min-width: 0; font-size: 17px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xa-icon {
+  flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: #fff; background: rgba(255, 255, 255, .16);
+}
+.xa-icon:hover { background: rgba(255, 255, 255, .26); }
+.xa-total {
+  flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .18);
+  font-weight: 900; font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+
+.xa-tabs {
+  flex: 0 0 auto; display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain;
+  padding: 8px 10px; background: var(--xa-card); border-bottom: 1px solid var(--xa-line);
+  scrollbar-width: thin;
+}
+.xa-tab {
+  flex: 0 0 auto; min-width: 56px; min-height: 44px; padding: 4px 12px; border-radius: 12px;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25;
+  border: 1.5px solid var(--xa-line2) !important; background: #fff; color: #334155; font-weight: 800; font-size: 13.5px;
+}
+.xa-tab small { font-size: 12px; font-weight: 700; color: var(--xa-soft); font-variant-numeric: tabular-nums; }
+.xa-tab.on { background: var(--xa-em); border-color: var(--xa-em) !important; color: #fff; }
+.xa-tab.on small { color: #d1fae5; }
+.xa-tab.bad small { color: var(--xa-bad); }
+.xa-tab.on.bad small { color: #fee2e2; }
+
+/* ═════════════ المحتوى ═════════════ */
+.xa-main {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+}
+.xa-wrap { max-width: 720px; margin: 0 auto; padding: 14px 14px 28px; display: flex; flex-direction: column; gap: 12px; }
+.xa-card {
+  background: var(--xa-card); border: 1px solid var(--xa-line); border-radius: 16px;
+  padding: 14px 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+}
+.xa-h2 { font-size: 16px; font-weight: 900; color: #334155; }
+.xa-h3 { font-size: 14px; font-weight: 900; color: #475569; margin-top: 6px; }
+.xa-muted { color: var(--xa-soft); font-size: 13.5px; }
+.xa-foot { color: var(--xa-soft); font-size: 12.5px; text-align: center; }
+.xa-pad { padding: 12px; }
+.xa-bad { color: var(--xa-bad); }
+
+.xa-note {
+  background: var(--xa-warn-l); border: 1px solid var(--xa-warn-b); color: var(--xa-warn);
+  border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.7;
+}
+.xa-note.bad { background: var(--xa-bad-l); border-color: var(--xa-bad-b); color: var(--xa-bad); }
+
+/* ═════════════ الأزرار ═════════════ */
+.xa-btn {
+  min-height: 44px; padding: 8px 16px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center;
+  border: 1.5px solid var(--xa-line2) !important; background: #fff; color: #334155; font-weight: 800; font-size: 15px;
+  transition: background .15s, border-color .15s;
+}
+.xa-btn:hover:not(:disabled) { background: #f8fafc; border-color: var(--xa-faint) !important; }
+.xa-btn.pri { background: var(--xa-em); border-color: var(--xa-em) !important; color: #fff; }
+.xa-btn.pri:hover:not(:disabled) { background: var(--xa-em-d); border-color: var(--xa-em-d) !important; }
+.xa-btn.dng { color: var(--xa-bad); border-color: var(--xa-bad-b) !important; }
+.xa-btn.dng:hover:not(:disabled) { background: var(--xa-bad-l); }
+.xa-btn.sm { padding: 6px 12px; font-size: 14px; }
+.xa-btn:disabled { opacity: .5; }
+.xa-big { width: 100%; min-height: 52px; font-size: 17px; }
+.xa-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.xa-actions > .xa-btn { flex: 1 1 140px; }
+
+/* ═════════════ القوائم ═════════════ */
+.xa-list > li { border-bottom: 1px solid var(--xa-line); }
+.xa-list > li:last-child { border-bottom: 0; }
+.xa-row { display: flex; align-items: center; gap: 10px; padding: 10px 2px; min-height: 52px; }
+.xa-row-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.xa-row-main > b { font-size: 15px; }
+.xa-row-act { flex: 0 0 auto; display: flex; gap: 6px; }
+.xa-click { cursor: pointer; border-radius: 10px; }
+.xa-click:hover { background: #f8fafc; }
+.xa-cands { max-height: 50vh; overflow-y: auto; }
+.xa-score-chip {
+  flex: 0 0 auto; min-width: 64px; padding: 6px 10px; border-radius: 12px; text-align: center;
+  background: var(--xa-em-l); color: var(--xa-em-dd); font-weight: 900; font-size: 19px; line-height: 1.2; font-variant-numeric: tabular-nums;
+}
+.xa-score-chip small { display: block; font-size: 11.5px; font-weight: 700; color: var(--xa-em-d); }
+.xa-score-chip.fail { background: var(--xa-bad-l); color: var(--xa-bad); }
+.xa-score-chip.fail small { color: var(--xa-bad); }
+.xa-chosen { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.xa-chosen > div { display: flex; flex-direction: column; min-width: 0; }
+.xa-chosen > div > b { font-size: 16px; }
+.xa-wb { display: block; font-size: .85em; }
+
+/* ═════════════ الحقول ═════════════ */
+.xa-input, .xa-fld input, .xa-fld select, .xa-lvcustom select {
+  width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 10px;
+  border: 1.5px solid var(--xa-line2) !important; background: #fff; color: var(--xa-ink);
+  font-size: 16px; /* ١٦ فأكثر: لا يكبّر Safari الشاشة عند الكتابة */
+}
+.xa-input:focus, .xa-fld input:focus, .xa-fld select:focus { border-color: var(--xa-em) !important; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, .2); }
+.xa-fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.xa-fld > span:first-child { font-size: 13px; font-weight: 800; color: #475569; }
+.xa-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 340px) { .xa-grid2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* اختيار من خيارات (نوع النطاق، نوع الاختبار، نعم/لا) */
+.xa-seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 12px; background: #f1f5f9; }
+.xa-seg > button {
+  flex: 1 1 auto; min-height: 44px; min-width: 56px; padding: 6px 12px; border-radius: 9px;
+  font-weight: 800; font-size: 14px; color: #475569; white-space: nowrap;
+}
+.xa-seg > button.on { background: #fff; color: var(--xa-em-d); box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
+.xa-sum { font-size: 14px; font-weight: 800; color: var(--xa-em-dd); background: var(--xa-em-l); border-radius: 10px; padding: 8px 12px; }
+.xa-sum.bad { color: var(--xa-bad); background: var(--xa-bad-l); }
+.xa-sum:empty { display: none; }
+
+.xa-juz { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+@media (min-width: 420px) { .xa-juz { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.xa-jz {
+  min-height: 44px; border-radius: 10px; border: 1.5px solid var(--xa-line2) !important; background: #fff;
+  font-weight: 800; font-size: 15px; color: #334155; font-variant-numeric: tabular-nums;
+}
+.xa-jz.on { background: var(--xa-em); border-color: var(--xa-em) !important; color: #fff; }
+
+/* ═════════════ الأسئلة المقترحة ═════════════ */
+.xa-q { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 10px 0; }
+.xa-qn {
+  width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--xa-em-l); color: var(--xa-em-dd); font-weight: 900; font-size: 14px;
+}
+.xa-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+.xa-pill.easy { background: #dcfce7; color: #166534; }
+.xa-pill.medium { background: #dbeafe; color: #1e40af; }
+.xa-pill.hard { background: #fee2e2; color: #991b1b; }
+
+/* ═════════════ أثناء الاختبار ═════════════ */
+.xa-qtitle { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.xa-qtitle > b { font-size: 16px; }
+.xa-qscore { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.xa-qscore > span { color: var(--xa-soft); font-size: 14px; font-weight: 700; }
+.xa-qscore > b { font-size: 30px; font-weight: 900; color: var(--xa-em-d); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.xa-qscore > small { flex-basis: 100%; color: var(--xa-soft); font-size: 12.5px; }
+.xa-qscore.bad > b { color: var(--xa-bad); text-decoration: line-through; }
+
+.xa-dock {
+  flex: 0 0 auto; background: var(--xa-card); border-top: 1px solid var(--xa-line);
+  box-shadow: 0 -6px 16px rgba(15, 23, 42, .06);
+  padding: 8px 10px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(10px + env(safe-area-inset-left, 0px)); padding-right: calc(10px + env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.xa-deds { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; max-width: 720px; width: 100%; margin: 0 auto; }
+.xa-ded {
+  min-height: 72px; padding: 6px 6px; border-radius: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1.25;
+  border: 2px solid var(--xa-line2) !important; background: #fff; color: #334155;
+  -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+.xa-ded:active { transform: scale(.97); }
+.xa-ded-n { font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.xa-ded > b { font-size: 13px; }
+.xa-ded > small { font-size: 11.5px; color: var(--xa-soft); }
+.xa-ded.d-tanbih { border-color: #fcd34d !important; background: #fffbeb; }
+.xa-ded.d-tanbih .xa-ded-n { color: #b45309; }
+.xa-ded.d-hifzError { border-color: #fca5a5 !important; background: #fef2f2; }
+.xa-ded.d-hifzError .xa-ded-n { color: var(--xa-bad); }
+.xa-ded.d-lahnJali { border-color: #c4b5fd !important; background: #f5f3ff; }
+.xa-ded.d-lahnJali .xa-ded-n { color: #6d28d9; }
+.xa-nav { display: flex; gap: 8px; max-width: 720px; width: 100%; margin: 0 auto; }
+.xa-nav > .xa-btn { flex: 1 1 0; padding-left: 8px; padding-right: 8px; }
+@media (max-height: 520px) and (min-width: 560px) {   /* الجوال أفقياً (لا جوال صغير عمودي ٣٢٠×٤٨٠): الأشرطة أقصر، والحسم والتنقل صف واحد ليبقى للمصحف مكان */
+  .xa-top { padding-top: calc(3px + env(safe-area-inset-top, 0px)); padding-bottom: 3px; }
+  .xa-top h1 { font-size: 16px; }
+  .xa-tabs { padding-top: 4px; padding-bottom: 4px; }
+  .xa-tab { flex-direction: row; gap: 6px; }
+  .xa-dock { flex-direction: row; align-items: stretch; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px)); }
+  .xa-deds { flex: 1 1 auto; max-width: none; margin: 0; }
+  .xa-nav { flex: 0 0 auto; width: auto; margin: 0; }
+  .xa-nav > .xa-btn { flex: 0 0 auto; }
+  .xa-ded { min-height: 48px; padding: 2px 6px; }
+  .xa-ded-n { font-size: 18px; }
+  .xa-ded > small { display: none; }
+}
+
+.xa-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.xa-item {
+  min-height: 56px; padding: 8px 10px; border-radius: 12px; text-align: right;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 8px;
+  border: 1.5px solid var(--xa-line2) !important; background: #fff; color: #334155;
+  touch-action: manipulation;
+}
+.xa-item > b { font-size: 14px; }
+.xa-item > small { grid-column: 1 / -1; font-size: 11.5px; color: var(--xa-soft); }
+.xa-item-n {
+  min-width: 30px; height: 30px; padding: 0 6px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+  background: #f1f5f9; font-weight: 900; font-variant-numeric: tabular-nums;
+}
+.xa-item.has { border-color: var(--xa-em) !important; background: var(--xa-em-l); }
+.xa-item.has .xa-item-n { background: var(--xa-em); color: #fff; }
+
+/* ═════════════ النتيجة ═════════════ */
+.xa-table { width: 100%; font-variant-numeric: tabular-nums; }
+.xa-table th, .xa-table td { padding: 8px 6px; border-bottom: 1px solid var(--xa-line); }
+.xa-table th { text-align: right; font-weight: 800; }
+.xa-table td { text-align: center; width: 22%; }
+.xa-table thead th, .xa-table thead td { color: var(--xa-soft); font-size: 13px; font-weight: 800; }
+.xa-table tfoot th, .xa-table tfoot td { border-bottom: 0; border-top: 2px solid var(--xa-line2); font-weight: 900; font-size: 16px; }
+.xa-kv { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid var(--xa-line); }
+.xa-kv > span { color: var(--xa-soft); font-weight: 700; }
+.xa-kv b.ok, .xa b.ok { color: var(--xa-em-d); }
+.xa-kv b.bad, .xa b.bad { color: var(--xa-bad); }
+.xa-hero { align-items: stretch; }
+.xa-hero > div:first-child { display: flex; flex-direction: column; }
+.xa-hero-name { font-size: 20px; font-weight: 900; }
+.xa-hero-score { text-align: center; font-size: 46px; font-weight: 900; color: var(--xa-em-d); line-height: 1.15; font-variant-numeric: tabular-nums; padding: 6px 0; }
+.xa-hero-score small { display: block; font-size: 14px; font-weight: 700; color: var(--xa-soft); }
+.xa-mini > li { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--xa-line); }
+.xa-mini > li:last-child { border-bottom: 0; }
+.xa-mini > li > span { min-width: 0; overflow-wrap: anywhere; }
+.xa-mini > li > b { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.xa-mini > li > b.bad { color: var(--xa-bad); }
+
+/* ═════════════ الإعدادات ═════════════ */
+.xa-set { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 8px 0; border-bottom: 1px solid var(--xa-line); }
+.xa-set:last-of-type { border-bottom: 0; }
+.xa-set > span:first-child { flex: 1 1 14em; font-size: 14.5px; }
+.xa-set-v { display: inline-flex; align-items: center; gap: 6px; }
+.xa-set-v .xa-input { width: 5.5em; text-align: center; }
+.xa-set > small, .xa-set .xa-bad { flex-basis: 100%; color: var(--xa-bad); font-size: .85em; }
+.xa-set > small:empty { display: none; }
+.xa-seg.sm { padding: 3px; }
+.xa-seg.sm > button { min-height: 44px; padding: 4px 14px; font-size: 14px; }
+.xa-example {
+  margin: 4px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--xa-soft-bg);
+  white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 13.5px; line-height: 1.8; color: #334155;
+}
+.xa-lvrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--xa-line); }
+.xa-lvrow > .xa-input:first-child { flex: 1 1 10em; width: auto; }
+.xa-lvrow > select.xa-input { flex: 1 1 12em; width: auto; }
+.xa-lvcustom { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.xa-lvcustom .xa-input { width: 4.5em; }
+.xa-lvcustom select { width: auto; max-width: 11em; }
+
+/* ═════════════ الإشعار ═════════════ */
+.xa-toast {
+  position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px);
+  max-width: calc(100vw - 32px); padding: 10px 18px; border-radius: 12px;
+  background: #0f172a; color: #fff; font-weight: 700; font-size: 14px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 2;
+}
+.xa-toast.on { opacity: 1; transform: translate(-50%, 0); }
+.xa-toast.err { background: var(--xa-bad); }
+
+/* ═════════════ صفحة المصحف (قواعد العارض المعتمد) ═════════════ */
+.xa-pages { display: flex; flex-direction: column; gap: 14px; padding: 0 24px; }
+.xa-page {
+  position: relative; background: var(--xa-paper); border: 1.5px solid var(--xa-frame); border-radius: 6px;
+  box-shadow: inset 0 0 0 4px var(--xa-paper), inset 0 0 0 5.5px var(--xa-frame), 0 8px 26px rgba(15, 23, 42, .14);
+  aspect-ratio: 1 / 1.42; width: 100%; max-width: 100%;
+  display: flex; flex-direction: column; padding: 14px 18px 10px;
+}
+.xa-ph, .xa-pf { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: 'Amiri Quran', serif; color: #111; font-size: 15px; line-height: 1.2; flex: 0 0 auto; }
+.xa-ph { padding-bottom: 6px; }
+.xa-ph > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xa-pf { justify-content: center; padding-top: 4px; font-size: 16px; }
+.xa-pb { flex: 1 1 auto; display: grid; min-height: 0; }
+.xa-ln { position: relative; display: flex; align-items: center; min-height: 0; }
+.xa-tx { width: 100%; font-family: 'Amiri Quran', serif; color: #000; line-height: 1; white-space: normal; text-align: justify; text-align-last: justify; word-spacing: 0; }
+.xa-ln.ttl .xa-tt {
+  width: 100%; border: 1.2px solid #111; border-radius: 5px; text-align: center; font-family: 'Amiri Quran', serif;
+  font-size: var(--xa-fs-title, 20px); line-height: 1.5; background: linear-gradient(#fffdf8, #f5f1e6); color: #000;
+}
+.xa-ln.bas .xa-tx { text-align: center; text-align-last: center; }
+.xa-mk { position: absolute; left: -24px; top: 50%; transform: translateY(-50%); font-family: 'Amiri Quran', serif; font-size: 19px; color: #111; }
+/* تظليل السؤال: السطر خفيفاً، وكلمات السؤال نفسها أقوى (يبدأ وينتهي بالكلمة) */
+.xa-ln.qrow { background: var(--xa-qrow); border-radius: 3px; }
+.xa-tx .q { background: var(--xa-q); box-shadow: 0 0 0 2px var(--xa-q); border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+@media (max-width: 520px) {
+  .xa-pages { padding: 0 20px; }
+  .xa-page { padding: 12px 12px 8px; }
+  .xa-mk { left: -19px; font-size: 16px; }
+  .xa-ph { font-size: 13px; }
+  .xa-pf { font-size: 14px; }
+}
+
+/* ═════════════ إسناد المصادر ═════════════ */
+.xa-credit { color: var(--xa-faint); font-size: 11.5px; text-align: center; line-height: 1.8; }
+.xa-credit a { color: inherit; text-decoration: underline; }

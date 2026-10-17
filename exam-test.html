@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="data:,">
+    <script>
+        // أول شيء في الصفحة: فشل تحميل أي ملف بعده (404 لملف أنماط أو برنامج) يظهر سببه، لا شاشة فارغة أو بلا تنسيق.
+        // الرسائل تُجمع حتى توجد عناصر الصفحة ثم تُعرض.
+        var ERRS = [];
+        function showErr(msg) {
+            if (msg) ERRS.push(msg);
+            var el = document.getElementById('err'); if (!el || !ERRS.length) return;
+            el.classList.remove('hidden'); el.textContent = ERRS.join('\n');
+        }
+        window.addEventListener('error', function (e) {
+            var t = e.target;
+            if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) showErr('تعذّر تحميل الملف: ' + (t.src || t.href));
+            else if (e.message) showErr('خطأ: ' + e.message);
+        }, true);
+        document.addEventListener('DOMContentLoaded', function () { showErr(); });
+    </script>
+    <title>تجربة الاختبار الشفوي — المهرة</title>
+    <!-- Tailwind وخط Cairo كما يحمّلهما البرنامج، لتظهر أي مشكلة تداخل أنماط الآن لا عند الربط -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Cairo', 'sans-serif'] }, colors: { primary: '#10b981', secondary: '#3b82f6', accent: '#f59e0b', background: '#f8fafc' } } } };
+    </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">
+    <link rel="stylesheet" href="./quran/fonts/amiri-quran.css?v=a883ef9552">
+    <link rel="stylesheet" href="./exam/exam.css?v=c20fac81ca">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f1f5f9; min-height: 100vh; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body>
+    <main class="max-w-xl mx-auto py-10 flex flex-col gap-4 text-slate-800">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-3 shadow-sm">
+            <h1 class="text-2xl font-black text-emerald-700">تجربة الاختبار الشفوي</h1>
+            <p class="text-slate-600 leading-8">صفحة تجربة لمحرك الاختبار في برنامج المهرة. الأسماء تجريبية، وكل ما يُحفظ هنا على هذا الجهاز وحده، وكل نتيجة معلَّمة «تجريبية».</p>
+            <div id="status" class="text-sm text-slate-500" role="status">جارٍ تحميل المصحف…</div>
+            <div id="err" class="hidden rounded-xl border border-red-200 bg-red-50 text-red-800 p-3 text-sm leading-7" role="alert"></div>
+            <button id="open" class="min-h-[48px] rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg disabled:opacity-50" disabled>افتح الاختبار</button>
+            <button id="wipe" class="min-h-[44px] rounded-xl border-2 border-red-200 text-red-700 font-bold hover:bg-red-50">امسح بيانات التجربة من هذا الجهاز</button>
+        </div>
+        <p class="text-center text-xs text-slate-400 leading-6">نص المصحف وترتيب أسطره: مصحف المدينة النبوية، مجمع الملك فهد لطباعة المصحف الشريف (طبعة ١٤٤١هـ)، جداول السور والأجزاء والأرباع: <a class="underline" href="https://tanzil.net" target="_blank" rel="noopener">مشروع Tanzil</a> (CC BY 3.0)، خط المصحف: Amiri Quran (رخصة OFL)</p>
+    </main>
+
+    <script src="./quran/quran-meta.js?v=6201413ae7" defer></script>
+    <script src="./quran/quran-lines.js?v=75b8c03961" defer></script>
+    <script src="./quran/quran-text.js?v=7b0928c76b" defer></script>
+    <script src="./exam/exam-core.js?v=5983f6bf2a" defer></script>
+    <script src="./exam/exam-store.js?v=781ace8bc9" defer></script>
+    <script src="./exam/exam-ui.js?v=40bff417b6" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var NS_TRIAL = 'almahra.exam.v1:trial:';
+            var openBtn = document.getElementById('open'), status = document.getElementById('status');
+            var missing = ['QURAN_META', 'QURAN_LINES', 'QURAN_TEXT', 'ExamCore', 'ExamStore', 'ExamUI'].filter(function (g) { return !window[g]; });
+            if (missing.length) { status.textContent = ''; showErr('لم يُحمَّل: ' + missing.join('، ')); return; }
+            var AR = '٠١٢٣٤٥٦٧٨٩', ar = function (n) { return String(n).replace(/[0-9]/g, function (d) { return AR[d]; }); };
+            // أسماء تجريبية صريحة بمعرّفات ثابتة؛ اثنان لهما «ما حفظه» لتجربة هذا النطاق
+            var cands = [];
+            for (var i = 1; i <= 8; i++) cands.push({ id: 'trial-' + i, name: 'طالب تجريبي ' + ar(i), sub: 'بيانات تجريبية' });
+            cands[0].frontier = { surah: 78, ayah: 40 };
+            cands[1].frontier = { surah: 67, ayah: 30 };
+            var store;
+            try { store = ExamStore.createLocalStore({ scope: 'trial' }); }
+            catch (e) { status.textContent = ''; showErr(e.message); return; }
+            function open() {
+                openBtn.disabled = true;
+                ExamUI.open({
+                    getCandidates: function () { return cands; },
+                    store: store, meta: window.QURAN_META, lines: window.QURAN_LINES, text: window.QURAN_TEXT,
+                    readOnly: false, isTest: true, candidateSource: 'trial',
+                    onClose: function () { openBtn.disabled = false; openBtn.focus(); }
+                }).catch(function (e) { openBtn.disabled = false; showErr(e.message); });
+            }
+            openBtn.addEventListener('click', open);
+            document.getElementById('wipe').addEventListener('click', function () {
+                if (ExamUI.isOpen()) return;
+                if (!confirm('مسح كل بيانات التجربة (الاختبارات والنتائج والإعدادات التجريبية) من هذا الجهاز؟')) return;
+                var keys = [];
+                for (var k = 0; k < localStorage.length; k++) { var key = localStorage.key(k); if (key && key.indexOf(NS_TRIAL) === 0) keys.push(key); }
+                keys.forEach(function (key) { localStorage.removeItem(key); });
+                status.textContent = 'مُسح ' + ar(keys.length) + ' عنصراً من بيانات التجربة.';
+            });
+            status.textContent = 'جاهز.';
+            openBtn.disabled = false;
+            open();
+        });
+    </script>
+</body>
+</html>
