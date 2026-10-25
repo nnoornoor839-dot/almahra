@@ -1810,11 +1810,11 @@
                         </div>
                         <div class="space-y-4">
                             <h3 class="text-2xl md:text-3xl font-bold text-red-500 border-b-2 border-red-100 pb-2"><i class="fas fa-stop"></i> إلى</h3>
-                            <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">السورة</label><select id="endSurah" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl md:text-2xl font-bold focus:border-red-500 outline-none" onchange="updateAyahMax('end'); calculateQuran();"></select></div>
+                            <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">السورة</label><select id="endSurah" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl md:text-2xl font-bold focus:border-red-500 outline-none" onchange="onEndSurahChange('end'); calculateQuran();"></select></div>
                             <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">الآية</label>
                                 <div class="flex items-center gap-2">
                                     <button onclick="adjustAyah('end', -1)" class="w-14 h-14 rounded-xl bg-slate-200 text-slate-700 text-3xl font-bold">-</button>
-                                    <input type="number" id="endAyah" min="1" value="1" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-2xl md:text-3xl font-bold text-center focus:border-red-500 outline-none" oninput="calculateQuran()">
+                                    <input type="number" id="endAyah" min="1" value="1" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-2xl md:text-3xl font-bold text-center focus:border-red-500 outline-none" oninput="endAyahTouched.end = true; calculateQuran()">
                                     <button onclick="adjustAyah('end', 1)" class="w-14 h-14 rounded-xl bg-red-100 text-red-700 text-3xl font-bold">+</button>
                                 </div>
                             </div>
@@ -1834,11 +1834,15 @@
 
                     <div class="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-200 flex flex-col md:flex-row justify-center items-center gap-6 flex-wrap">
                         <div class="bg-white px-6 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">الآيات المحتسبة</div><div class="text-4xl font-black text-slate-800" id="resAyahs">0</div></div>
+                        <div class="bg-white px-6 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">الأوجه والأرباع</div><div class="text-xl font-black text-slate-700 mt-2"><span id="resPages">0</span> وجه · <span id="resQuarters">0</span> ربع</div></div>
                         <div class="bg-white px-6 py-4 rounded-2xl shadow text-center border-2 border-blue-400"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">نقاط السرد</div><div class="text-4xl font-black text-blue-600" id="resWeightedPoints">0</div></div>
                         <div class="bg-white px-6 py-4 rounded-2xl shadow text-center border-2 border-emerald-500"><div class="text-slate-500 text-base md:text-lg font-bold mb-1">الإجمالي</div><div class="text-4xl font-black text-emerald-600" id="resGrandTotal">0</div></div>
                     </div>
+                    <p id="resMeaning" class="text-center text-slate-600 font-bold text-sm md:text-base mt-3 leading-relaxed"></p>
                 </div>
-                <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 rounded-b-3xl">
+                <div class="p-6 bg-slate-200 flex flex-wrap gap-4 border-t-2 border-slate-300 rounded-b-3xl">
+                    <!-- حفظ المعايير وحدها بلا تسجيل سرد: خيار صريح لا يُخمَّن من «المدى لم يُلمس» -->
+                    <label for="disciplineOnlyCheck" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-amber-300 text-amber-800 font-black text-lg md:text-xl cursor-pointer select-none"><input type="checkbox" id="disciplineOnlyCheck" class="w-6 h-6 rounded accent-amber-600"> انضباط فقط — بلا سرد</label>
                     <button onclick="saveSmartProgress()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة الإنجاز اليومي وحفظ السجل</button>
                 </div>
             </div>
@@ -1899,11 +1903,11 @@
                         </div>
                         <div class="space-y-4">
                             <h3 class="text-2xl md:text-3xl font-bold text-red-500 border-b-2 border-red-100 pb-2"><i class="fas fa-stop"></i> إلى</h3>
-                            <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">السورة</label><select id="examEndSurah" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl md:text-2xl font-bold focus:border-red-500 outline-none" onchange="updateAyahMax('examEnd'); calculateExamPrepQuran();"></select></div>
+                            <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">السورة</label><select id="examEndSurah" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl md:text-2xl font-bold focus:border-red-500 outline-none" onchange="onEndSurahChange('examEnd'); calculateExamPrepQuran();"></select></div>
                             <div><label class="block text-xl md:text-2xl font-bold text-slate-700 mb-2">الآية</label>
                                 <div class="flex items-center gap-2">
                                     <button onclick="adjustExamAyah('examEnd', -1)" class="w-14 h-14 rounded-xl bg-slate-200 text-slate-700 text-3xl font-bold">-</button>
-                                    <input type="number" id="examEndAyah" min="1" value="1" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-2xl md:text-3xl font-bold text-center focus:border-red-500 outline-none" oninput="calculateExamPrepQuran()">
+                                    <input type="number" id="examEndAyah" min="1" value="1" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-2xl md:text-3xl font-bold text-center focus:border-red-500 outline-none" oninput="endAyahTouched.examEnd = true; calculateExamPrepQuran()">
                                     <button onclick="adjustExamAyah('examEnd', 1)" class="w-14 h-14 rounded-xl bg-red-100 text-red-700 text-3xl font-bold">+</button>
                                 </div>
                             </div>
@@ -1920,8 +1924,10 @@
                     <div class="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-200 flex flex-col md:flex-row justify-center items-center gap-8">
                         <div class="bg-white px-8 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">آيات النطاق (مرة واحدة)</div><div class="text-4xl md:text-5xl font-black text-slate-800" id="examResBaseAyahs">0</div></div>
                         <div class="bg-white px-8 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">الآيات الإجمالية (بعد التكرار)</div><div class="text-4xl md:text-5xl font-black text-slate-800" id="examResAyahs">0</div></div>
+                        <div class="bg-white px-8 py-4 rounded-2xl shadow text-center"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">الأوجه والأرباع (بعد التكرار)</div><div class="text-xl md:text-2xl font-black text-slate-700 mt-2"><span id="examResPages">0</span> وجه · <span id="examResQuarters">0</span> ربع</div></div>
                         <div class="bg-white px-8 py-4 rounded-2xl shadow text-center border-2 border-emerald-500"><div class="text-slate-500 text-lg md:text-xl font-bold mb-1">النقاط المكتسبة</div><div class="text-4xl md:text-5xl font-black text-emerald-600" id="examResWeightedPoints">0</div></div>
                     </div>
+                    <p id="examResMeaning" class="text-center text-slate-600 font-bold text-sm md:text-base mt-3 leading-relaxed"></p>
                 </div>
                 <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 rounded-b-3xl">
                     <button onclick="saveExamPrepProgress()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة مراجعة الاستعداد للاختبار</button>
@@ -2034,7 +2040,11 @@
     <div id="examCardsPrintArea"></div>
 
     <!-- خريطة مصحف المدينة (طبعة 1441هـ): السور والصفحات والأجزاء والأرباع — ملف محلي، المصدر الوحيد للبرنامج ومحرك الاختبار -->
-    <script src="quran/quran-meta.js"></script>
+    <script src="quran/quran-meta.js?v=6201413ae7"></script>
+    <!-- الميزان الواحد للأوجه والأرباع والأحزاب والأجزاء (وزن السطر، طبعة 1441هـ): أسطر الطبعة + كلمات الآيات + دالة القياس -->
+    <script src="quran/quran-lines.js?v=75b8c03961"></script>
+    <script src="quran/quran-words.js?v=c2a2af8c5b"></script>
+    <script src="quran/quran-measure.js?v=30d5d31b16"></script>
     <script>
         let students = [];
         let todayStr = ""; 
@@ -2061,26 +2071,9 @@
             "جزء ومن يقنت (في سورة الأحزاب)", "جزء وما أنزلنا على قومه (في سورة يس)", "جزء فمن أظلم (في سورة الزمر)",
             "جزء إليه يرد (في سورة فصلت)", "جزء الأحقاف", "جزء الذاريات", "جزء قد سمع", "جزء تبارك", "جزء عم"
         ];
-        const JUZ_AYATS = [
-            148, 111, 126, 131, 124, 110, 149, 142, 159, 127, 151, 170, 154, 227, 185, 269, 190, 202, 339, 171, 178, 169, 357, 175, 246, 195, 399, 137, 431, 564
-        ];
         let selectedMinor = null;
         let selectedJuzs = [];
 
-        // موقع بداية الجزء كرقم آية مطلق في المصحف (يُستخدم لحساب صفحاته الحقيقية بدل افتراض 20 صفحة ثابتة لكل جزء)
-        function getJuzAbsStart(jIdx) {
-            let cum = 0;
-            for (let i = 0; i < jIdx; i++) cum += JUZ_AYATS[i];
-            return cum + 1;
-        }
-        function getExactPagesForAbsRange(startAbs, endAbs) {
-            let pages = 0;
-            for (let abs = startAbs; abs <= endAbs; abs++) {
-                const p = window.quranData.ayahToPage[abs];
-                if (p && window.quranData.pageLengths[p]) pages += 1.0 / window.quranData.pageLengths[p];
-            }
-            return pages;
-        }
 
         // ================================================================
         // إعدادات البرنامج الحالي (أوزان النقاط وأيام العمل)
@@ -2199,7 +2192,17 @@
             });
         }
 
-        window.quranData = { surahStarts: {}, ayahToPage: {}, pageLengths: {}, quarterStarts: [], quarterStartsSet: new Set() };
+        window.quranData = { surahStarts: {} };
+        // حالة الميزان الواحد (quran/quran-measure.js)؛ تُضبط في initQuranEngine. ما لم يكن جاهزاً لا يُحفظ أي سرد
+        let quranMeasureStatus = { ok: false, reason: 'لم يُهيَّأ بعد' };
+        const measureReady = () => quranMeasureStatus.ok && typeof QuranMeasure !== 'undefined' && QuranMeasure.isReady();
+        function requireQuranMeasure() {
+            if (measureReady()) return true;
+            showToast('ميزان المصحف لم يُحمَّل؛ أعد تحميل الصفحة ثم أعد المحاولة', 'error'); return false;
+        }
+        // قوائم الاختبار مرتبة بمقدار الحفظ، وهو يحتاج الميزان؛ بدونه تُرتَّب بالاسم مع تنبيه صريح (لا ترتيب محسوب من أصفار)
+        const byMemorizedQuantity = (a, b) => measureReady() ? getStudentMemorizedQuantity(b) - getStudentMemorizedQuantity(a) : (a.name || '').localeCompare(b.name || '', 'ar');
+        const EXAM_ORDER_NOTICE = '⚠️ ميزان المصحف لم يُحمَّل: القائمة مرتبة بالاسم لا بمقدار الحفظ — أعد تحميل الصفحة';
 
         const POMO_DEFAULT_TRACKS = [
             { id: 1, name: "الابتدائي", color: "emerald", blocks: [
@@ -2508,31 +2511,48 @@
             { name: "المجموعة 9", leader: "سعيد حسن أحمد الكرساوي", deputy: "سعود محمد سعود الحجاجي", members: ["سالم يحيى سراج الجبيري", "احمد صالح البركاتي", "الياس علي البركاتي"] },
             { name: "المجموعة 10", leader: "عبد الرحمن صفر الحجاجي", deputy: "امين سويلم معيصب الحسناني", members: ["عمر إيهاب"] }
         ];
-        function resolveOrCreateStudentByName(name, stats) {
+        function resolveOrCreateStudentByName(name, stats, created) {
+            // الجديد يُضاف إلى students فوراً (فيُطابَق الاسم المكرر ولا يتكرر الرقم)، وإلى created ليُرسَل وحده ويُزال إن فشل
             const trimmedName = name.trim();
             const existing = students.find(s => s.name.trim() === trimmedName);
             if (existing) { stats.matched++; return existing.id; }
             const nid = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
-            students.push({ id: nid, name: trimmedName, history: {} });
+            const doc = { id: nid, name: trimmedName, history: {}, memorizedJuz: null, parentPhone: null, frontierBase: null, lastDailyBase: null };
+            students.push(doc); created.push(doc);
             stats.created++;
             return nid;
         }
         function importPresetGroups() {
             if (importBlockedByLevelRule()) return; // تُنشئ طلاباً بأسمائهم فقط، أي بلا مستوى
             if (!confirm('سيتم استيراد 10 مجموعات جاهزة بأسمائها. أي اسم غير موجود حالياً في قائمة طلابك سيُنشأ كطالب جديد تلقائياً ويمكنك تعديله لاحقاً. هل تريد المتابعة؟')) return;
-            const stats = { matched: 0, created: 0 };
+            if (!canWriteCloud()) return;
+            const stats = { matched: 0, created: 0 }, created = [], newGroups = [];
+            let nextGroupId = groupIdCounter;
             PRESET_GROUPS_IMPORT_DATA.forEach(gData => {
-                const leaderId = resolveOrCreateStudentByName(gData.leader, stats);
-                const deputyId = resolveOrCreateStudentByName(gData.deputy, stats);
-                const memberIds = gData.members.map(m => resolveOrCreateStudentByName(m, stats));
-                groups.push({ id: groupIdCounter++, name: gData.name, leaderId, deputyId, memberIds });
+                const leaderId = resolveOrCreateStudentByName(gData.leader, stats, created);
+                const deputyId = resolveOrCreateStudentByName(gData.deputy, stats, created);
+                const memberIds = gData.members.map(m => resolveOrCreateStudentByName(m, stats, created));
+                newGroups.push({ id: nextGroupId++, name: gData.name, leaderId, deputyId, memberIds });
             });
-            saveData();
-            saveGroupsData();
-            updateAllUIs();
-            renderGroupsList();
-            renderGroupScoresEntry();
-            showToast(`تم استيراد 10 مجموعات! (${stats.matched} طالباً تمت مطابقتهم بالاسم، ${stats.created} أُنشئوا كطلاب جدد)`);
+            // الجدد وحدهم وثائقَ كاملة في دفعة واحدة (الموجودون لا يُعاد كتابتهم)؛ بلا جدد لا طلب
+            if (created.length) updateAllUIs();
+            const sent = created.length ? window.almahraData.commitBatch(created.map(({ id, ...data }) => ({ type: 'set', id, data }))) : Promise.resolve({ success: true });
+            sent.then(r => {
+                if (!r.success) {
+                    // بالرقم، وما لم يهبط فقط: الدفعات بالترتيب، فأول committed وثيقة محفوظة فعلاً
+                    const lost = new Set(created.slice(r.committed || 0).map(s => s.id));
+                    students = students.filter(s => !lost.has(s.id)); updateAllUIs();
+                    showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+                    return;
+                }
+                // المجموعات لا تُحفظ إلا بعد نجاح إنشاء أعضائها، فلا تشير مجموعة إلى طالب ليس في السحابة
+                groups.push(...newGroups); groupIdCounter = nextGroupId;
+                saveGroupsData();
+                updateAllUIs();
+                renderGroupsList();
+                renderGroupScoresEntry();
+                showToast(`تم استيراد 10 مجموعات! (${stats.matched} طالباً تمت مطابقتهم بالاسم، ${stats.created} أُنشئوا كطلاب جدد)`);
+            });
         }
 
         // --- المجموعات (كيان دائم: قائد، نائب، أعضاء - كلها معرّفات طلاب حقيقيين) ---
@@ -2776,15 +2796,28 @@
             catch(e) { return dateStr; }
         }
 
-        function clearGroupDisciplinePointsForDate(dateStr) {
+        function groupPointsFields(student, dateStr, pts) {
+            // نقاط المجموعة على يوم عضو بحسب شكله: اليوم ذو entries يضيف له dayStats نقاط المجموعة بنفسه فتُكتب وحدها؛
+            // اليوم القديم أو المُنشأ بالحضور فقط يقرأ earnedPoints وحده، فيُعدَّل بالفرق (السلوك القديم بالضبط)
+            const day = student.history[dateStr], p = `history.${dateStr}.`, fields = { [p + 'groupDisciplinePoints']: pts };
+            if (!('entries' in day)) fields[p + 'earnedPoints'] = (day.earnedPoints || 0) - (day.groupDisciplinePoints || 0) + pts;
+            return fields;
+        }
+        function commitGroupPoints(dateStr, targets) {
+            // targets: طالب ← نقاط المجموعة المطلوبة له في التاريخ (بعد التصفير والفوز معاً) ← عملية واحدة لكل عضو تغيّرت نقاطه، في دفعة واحدة
+            return commitPatches([...targets].filter(([s, pts]) => pts !== (s.history[dateStr].groupDisciplinePoints || 0))
+                .map(([s, pts]) => ({ student: s, fields: groupPointsFields(s, dateStr, pts) })));
+        }
+        function clearGroupDisciplinePointsForDate(dateStr, targets) {
             // يُلغي أي نقاط انضباط جماعية سابقة أُضيفت لهذا التاريخ تحديداً (لتفادي التكرار لو أُعيد حفظ الدرجات أو تغيّرت المجموعة الفائزة)
+            // لا يكتب: يسجّل الصفر في targets، ويُحفظ مع الفائز في commitGroupPoints
             students.forEach(s => {
                 const day = s.history[dateStr];
-                if (day && day.groupDisciplinePoints) { day.earnedPoints -= day.groupDisciplinePoints; day.groupDisciplinePoints = 0; }
+                if (day && day.groupDisciplinePoints) targets.set(s, 0);
             });
         }
 
-        function applyGroupWinnerForDate(dateStr, groupId) {
+        function applyGroupWinnerForDate(dateStr, groupId, targets) {
             const dayScores = groupDailyScores[dateStr] || {};
             const score = dayScores[groupId];
             if (score === undefined) return;
@@ -2802,24 +2835,25 @@
             upsertWeeklyGroupLogEntry(dateStr, dayNames[dayOfWeek], group.name, presentMemberIds, score);
 
             // نقاط رحلة الطائف لأعضاء المجموعة الفائزة الحاضرين فقط باليوم، بمقدار درجة المجموعة بالضبط
+            // (تُسجَّل في targets وتُحفظ في commitGroupPoints)
             presentMemberIds.forEach(mid => {
                 const student = students.find(s => s.id === mid); if (!student) return;
-                student.history[dateStr].earnedPoints = (student.history[dateStr].earnedPoints || 0) + score;
-                student.history[dateStr].groupDisciplinePoints = score;
+                targets.set(student, score);
             });
         }
 
         // يُرجع {tie:false} لو تم حسم الفائز تلقائياً، أو {tie:true, candidates, bestScore} لو تعادلت أكثر من مجموعة على الدرجة الأعلى
         function applyAutoDailyGroupWinner(dateStr) {
-            clearGroupDisciplinePointsForDate(dateStr);
+            const targets = new Map();
+            clearGroupDisciplinePointsForDate(dateStr, targets);
             const dayScores = groupDailyScores[dateStr] || {};
             let bestScore = -1;
             for (const gid in dayScores) { if (dayScores[gid] > bestScore) bestScore = dayScores[gid]; }
-            if (bestScore < 0) { saveData(); return { tie: false }; }
+            if (bestScore < 0) { commitGroupPoints(dateStr, targets); return { tie: false }; }
             const candidates = Object.keys(dayScores).filter(gid => dayScores[gid] === bestScore);
-            if (candidates.length > 1) { saveData(); return { tie: true, candidates, bestScore }; }
-            applyGroupWinnerForDate(dateStr, candidates[0]);
-            saveData();
+            if (candidates.length > 1) { commitGroupPoints(dateStr, targets); return { tie: true, candidates, bestScore }; }
+            applyGroupWinnerForDate(dateStr, candidates[0], targets);
+            commitGroupPoints(dateStr, targets);
             return { tie: false };
         }
 
@@ -2842,8 +2876,13 @@
             document.getElementById('groupTieBreakerModal').classList.remove('flex'); document.getElementById('groupTieBreakerModal').classList.add('hidden');
         }
         function resolveGroupTie(dateStr, groupId) {
-            applyGroupWinnerForDate(dateStr, groupId);
-            saveData();
+            // الحارس قبل أي تعديل (سجل المجموعات الأسبوعي يُكتب داخل applyGroupWinnerForDate)
+            if (!canWriteCloud()) return;
+            // تصفير نقاط اليوم السابقة في الدفعة نفسها: حسمٌ ثانٍ أو بعد تعادل جديد لا يترك نقاط الفائز السابق
+            const targets = new Map();
+            clearGroupDisciplinePointsForDate(dateStr, targets);
+            applyGroupWinnerForDate(dateStr, groupId, targets);
+            if (!commitGroupPoints(dateStr, targets)) return;
             closeGroupTieBreakerModal();
             updateAllUIs();
             if (typeof renderHonorBoard === 'function') renderHonorBoard();
@@ -2851,6 +2890,8 @@
         }
 
         function saveGroupDailyScoresForDate() {
+            // الحارس قبل حفظ الدرجات ورسالة النجاح: موسم مؤرشف أو بلا برنامج لا يُعدَّل فيه شيء
+            if (!canWriteCloud()) return;
             const dateStr = document.getElementById('grpScoreDateInput').value;
             if (!dateStr) { showToast('اختر التاريخ أولاً', 'error'); return; }
             if (dateStr > getGroupScoreMaxSelectableDate()) { showToast('لا يمكن إدخال تقييم لهذا التاريخ — حصته لم تبدأ بعد (تبدأ 4:30 عصراً)', 'error'); return; }
@@ -3372,7 +3413,7 @@
             const range = getLastCompletedWeekRange();
             const ranked = students.map(s => {
                 let weeklyPoints = 0;
-                for (const d in s.history) { if (d >= range.startStr && d <= range.endStr) weeklyPoints += getDayPoints(s.history[d]); }
+                for (const d in s.history) { if (d >= range.startStr && d <= range.endStr) weeklyPoints += dayPoints(s.history[d]); }
                 return { id: s.id, name: s.name, weeklyPoints };
             }).filter(x => x.weeklyPoints > 0).sort((a,b) => b.weeklyPoints - a.weeklyPoints);
             return { range, top3: ranked.slice(0, 3) };
@@ -3473,6 +3514,78 @@
                     showToast('فشل الحفظ السحابي: ' + err.message, 'error');
                 });
             }, 300);
+        }
+
+        // ================================================================
+        // الحفظ بالحقول: كل عملية تكتب ما غيّرته وحده لطالب واحد (updateDoc بمسارات منقّطة) — design.md §٣
+        // أما saveData — إعادة كتابة الكل — فباقية للاستعادة والاستيراد فقط
+        // ================================================================
+        // علامة الحذف: الصفحة لا تستورد Firebase، وdata-store.js يحوّلها إلى deleteField()
+        const DEL_FIELD = Object.freeze({ __almahraDelete: true });
+        // لقطة معايير الانضباط عند فتح نافذة الطالب: الحفظ لا يرسلها إلا إن غيّرها المشرف، فلا تطمس معايير سجّلها جهاز آخر
+        const criteriaAtOpen = { sel: null };
+        function applyFieldsLocally(student, fields) {
+            // يطبّق المسارات المنقّطة على الكائن المحلي كما سيطبّقها Firestore بالضبط، فيرى الجهاز فوراً ما سيصله من السحابة:
+            // الخرائط الوسيطة تُنشأ (وتحلّ محل غير الخريطة)، والحذف لا ينشئها، والقيمة تُنسخ عميقاً فلا يشارك المحلي كائناً مع الطلب
+            const isMap = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+            const copy = v => Array.isArray(v) ? v.map(copy) : isMap(v) ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, copy(x)])) : v;
+            Object.keys(fields).forEach(path => {
+                const segs = path.split('.'), last = segs.pop(), val = fields[path];
+                let cur = student;
+                if (val && val.__almahraDelete === true) {
+                    for (const s of segs) { if (!isMap(cur[s])) return; cur = cur[s]; }
+                    delete cur[last];
+                    return;
+                }
+                segs.forEach(s => { if (!isMap(cur[s])) cur[s] = {}; cur = cur[s]; });
+                cur[last] = copy(val);
+            });
+        }
+        function canWriteCloud() {
+            // حارسا saveData نفسهما؛ عند المنع لا يُعدَّل شيء محلياً ولا يُرسل شيء
+            if (!window.almahraData) { console.warn('⚠️ almahraData not ready, save skipped'); return false; }
+            if (!window.almahraData.getActiveSeasonId()) {
+                showToast('⚠️ لم تختر برنامجاً بعد — افتح برنامجاً أولاً', 'error');
+                if (typeof openEventPicker === 'function') openEventPicker();
+                return false;
+            }
+            if (window.almahraData.isReadOnly()) { showToast('📦 هذا موسم مؤرشف — للعرض فقط، لا يمكن التعديل', 'error'); return false; }
+            return true;
+        }
+        function commitStudentPatch(student, fields) {
+            // طالب واحد: المحلي يُحدَّث فوراً ثم يُرسل الطلب (بلا تأخير التجميع — لم يعد هناك «الكل» ليُجمَّع). يُرجع false إن منعه الحارس
+            // عند الفشل يعود الطالب محلياً كما كان، فلا يُرى إنجاز لم يصل إلى السحابة
+            if (!canWriteCloud()) return false;
+            const backup = structuredClone(student);
+            applyFieldsLocally(student, fields);
+            window.almahraData.patchStudent(student.id, fields).then(r => {
+                if (r.success) return;
+                restoreStudent(student, backup); updateAllUIs();
+                showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+            });
+            return true;
+        }
+        function commitPatches(list) {
+            // عدة طلاب ([{ student, fields }]) في commitBatch واحدة — للمجموعات والتوزيع الجماعي
+            if (!canWriteCloud()) return false;
+            if (!list.length) return true;
+            const backups = list.map(p => structuredClone(p.student));
+            list.forEach(p => applyFieldsLocally(p.student, p.fields));
+            window.almahraData.commitBatch(list.map(p => ({ type: 'update', id: p.student.id, fields: p.fields }))).then(r => {
+                if (r.success) return;
+                // الدفعات بالترتيب: أول committed عملية هبطت فعلاً، وما بعدها وحده يعود كما كان
+                list.forEach((p, i) => { if (i >= (r.committed || 0)) restoreStudent(p.student, backups[i]); });
+                updateAllUIs();
+                showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+            });
+            return true;
+        }
+        function restoreStudent(student, backup) {
+            // يعيد الكائن نفسه (لا نسخة جديدة) لأن الشاشات والمتغيرات تمسك به. إن استبدلته لقطة من السحابة فلا يُعاد شيء:
+            // Firestore يرسل بنفسه لقطة مصحَّحة بعد رفض الكتابة، والنسخة القديمة قد تمحو ما وصل بعدها
+            if (!students.includes(student)) return;
+            Object.keys(student).forEach(k => { delete student[k]; });
+            Object.assign(student, backup);
         }
         
         function exportNuclearBackup() {
@@ -3757,10 +3870,15 @@
                 const okArr = (a, n) => Array.isArray(a) && a.length === n;
                 if (!M || M.edition !== '1441' || !okArr(M.surahs, 114) || !okArr(M.titles, 114) || !okArr(M.pages, 604) || !okArr(M.quarters, 240)
                     || M.surahs.reduce((n, s) => n + s[1], 0) !== 6236) throw new Error('quran-meta.js missing or invalid');
+                // الميزان قبل setupQuranLogic لأنها ترسم الواجهة (updateAllUIs) فتحسب الكميات
+                quranMeasureStatus = typeof QuranMeasure === 'undefined' ? { ok: false, reason: 'quran-measure.js لم يُحمَّل' }
+                    : QuranMeasure.init(M, window.QURAN_LINES, window.QURAN_WORDS);
+                if (!quranMeasureStatus.ok) {
+                    console.error("Quran measure error:", quranMeasureStatus);
+                    setTimeout(() => showToast("تعذّر تحميل ميزان المصحف (الأوجه والأرباع)؛ لن يُحفظ أي سرد حتى تعيد تحميل الصفحة", "error"), 1200);
+                }
                 setupQuranLogic({
-                    surahs: { references: M.surahs.map((s, i) => ({ number: i + 1, name: M.titles[i], numberOfAyahs: s[1] })) },   // العناوين المشكولة نفسها التي عرضها البرنامج دائماً
-                    pages: { references: M.pages.map(([surah, ayah]) => ({ surah, ayah })) },
-                    hizbQuarters: { references: M.quarters.map(([surah, ayah]) => ({ surah, ayah })) }
+                    surahs: { references: M.surahs.map((s, i) => ({ number: i + 1, name: M.titles[i], numberOfAyahs: s[1] })) }   // العناوين المشكولة نفسها التي عرضها البرنامج دائماً
                 });
             } catch (e) {
                 console.error("Quran meta error:", e);
@@ -3773,23 +3891,11 @@
         
         function setupQuranLogic(data) {
             quranMeta = data;
-            window.quranData = { surahStarts: {}, ayahToPage: {}, pageLengths: {}, quarterStarts: [], quarterStartsSet: new Set() };
-            
+            window.quranData = { surahStarts: {} };   // لقوائم السور وحراسة المعاينة فقط؛ الأوجه والأرباع من QuranMeasure وحده
+
             let absIndex = 1;
             data.surahs.references.forEach(s => { window.quranData.surahStarts[s.number] = absIndex; absIndex += s.numberOfAyahs; });
-            
-            if(data.pages && data.hizbQuarters) {
-                let pageStarts = data.pages.references.map(p => window.quranData.surahStarts[p.surah] + p.ayah - 1);
-                pageStarts.push(6237);
-                for(let i = 0; i < pageStarts.length - 1; i++) {
-                    let start = pageStarts[i]; let end = pageStarts[i+1] - 1; let len = end - start + 1;
-                    window.quranData.pageLengths[i+1] = len;
-                    for(let a = start; a <= end; a++) { window.quranData.ayahToPage[a] = i+1; }
-                }
-                window.quranData.quarterStarts = data.hizbQuarters.references.map(q => window.quranData.surahStarts[q.surah] + q.ayah - 1);
-                window.quranData.quarterStartsSet = new Set(window.quranData.quarterStarts);
-            }
-            
+
             let options = '';
             for (let i = quranMeta.surahs.references.length - 1; i >= 0; i--) {
                 const s = quranMeta.surahs.references[i]; options += `<option value="${s.number}">${s.number}. ${escapeHTML(s.name.replace('سُورَةُ ', ''))}</option>`;
@@ -3874,98 +3980,265 @@
         function saveSmartMastery() {
             const student = students.find(s => s.id === currentEditingStudentId);
             if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
+            if (!requireQuranMeasure()) return;
 
             let logText = ""; let addedPts = 0; let addedAyats = 0; let addedPages = 0; let addedRubs = 0;
+            let spec, iv = [];   // مقطع التسجيل: spec للعرض، وiv الفترات المقيسة فعلاً
             const isHalf = document.getElementById('isHalfJuz').checked;
 
             if (selectedMinor) {
                 logText = selectedMinor.name; addedPts = selectedMinor.points;
                 // نطاقات الآيات الثابتة (من سورة:آية إلى الناس 114:6) لكل محطة، محسوبة عبر نفس محرك calculateRangeStats
                 // بدل الأرقام المقدّرة يدوياً سابقاً التي كانت تحتسب صفحات/أرباع أقل من الواقع بمقدار 2.4 إلى 3.7 ضعف
-                if(selectedMinor.id === 'qisar') { const st = calculateRangeStats(92, 11, 114, 6); addedAyats = st.totalAyahs; addedPages = st.exactPages; addedRubs = st.quartersCrossed; }
-                if(selectedMinor.id === 'half_amma') { const st = calculateRangeStats(87, 7, 114, 6); addedAyats = st.totalAyahs; addedPages = st.exactPages; addedRubs = st.quartersCrossed; }
-                if(selectedMinor.id === 'three_q_amma') { const st = calculateRangeStats(82, 8, 114, 6); addedAyats = st.totalAyahs; addedPages = st.exactPages; addedRubs = st.quartersCrossed; }
+                const from = { qisar: [92, 11], half_amma: [87, 7], three_q_amma: [82, 8] }[selectedMinor.id];
+                if (from) { const st = calculateRangeStats(from[0], from[1], 114, 6); addedAyats = st.totalAyahs; addedPages = st.exactPages; addedRubs = st.quartersCrossed; spec = { from, to: [114, 6] }; iv = st.intervals; }
             } else if (selectedJuzs.length > 0) {
                 if (isHalf) {
                     let jIdx = selectedJuzs[0]; logText = `نصف ${JUZ_NAMES[jIdx]}`; addedPts = 50;
-                    addedAyats = Math.round(JUZ_AYATS[jIdx] / 2); addedRubs = 4;
-                    const juzStartAbs = getJuzAbsStart(jIdx);
-                    addedPages = getExactPagesForAbsRange(juzStartAbs, juzStartAbs + addedAyats - 1);
+                    // كما كان: نصف آيات الجزء من أوله (يصير حزباً حسب اتجاه الطالب في الخطوة ٥)؛ الكميات من الميزان لا ثوابت
+                    // بلا spec: الفترة في iv وحدها (لا وحدة مصحف تصفها بعد)
+                    const [juzFirst, juzLast] = QuranMeasure.specToIntervals({ juz: [jIdx + 1] })[0];
+                    iv = [[juzFirst, juzFirst + Math.round((juzLast - juzFirst + 1) / 2) - 1]];
+                    const st = QuranMeasure.measureIntervals(iv);
+                    addedAyats = st.ayahs; addedPages = st.pages; addedRubs = st.quarters;
                 } else {
                     let N = selectedJuzs.length; logText = `سرد ${selectedJuzs.map(i => JUZ_NAMES[i]).join(' و ')}`;
-                    addedPts = (N * 100) + (N >= 2 ? (N * 25) : 0); addedRubs = N * 8;
-                    addedAyats = selectedJuzs.reduce((sum, idx) => sum + JUZ_AYATS[idx], 0);
-                    addedPages = selectedJuzs.reduce((sum, idx) => {
-                        const juzStartAbs = getJuzAbsStart(idx);
-                        return sum + getExactPagesForAbsRange(juzStartAbs, juzStartAbs + JUZ_AYATS[idx] - 1);
-                    }, 0);
+                    addedPts = (N * 100) + (N >= 2 ? (N * 25) : 0);
+                    spec = { juz: selectedJuzs.map(i => i + 1) };
+                    const st = QuranMeasure.measure(spec);
+                    addedAyats = st.ayahs; addedPages = st.pages; addedRubs = st.quarters; iv = st.intervals;
                 }
             } else { return; }
 
-            const confirmMsg = `تأكيد الاعتماد لـ (${student.name}):\n${logText}\nالآيات: ${addedAyats} — النقاط: +${addedPts}\n\nهل تريد اعتماد هذا الآن؟`;
+            const confirmMsg = `تأكيد الاعتماد لـ (${student.name}):\n${logText}\nالآيات: ${addedAyats} — الأوجه: ${fmtQty(addedPages)} — الأرباع: ${fmtQty(addedRubs)} — النقاط: +${addedPts}\n\nهل تريد اعتماد هذا الآن؟`;
             if (!confirm(confirmMsg)) return;
 
-            if(!student.history[todayStr]) student.history[todayStr] = { attended: false, sard: 0, earnedPoints: 0, hijri: hijriDateStr };
-
-            // اعتماد الذهبية يمنح الطالب نقاطاً رمزية فقط (مكافأة إتقان) ولا يُضاف لسرده الشخصي في تقريره الفردي؛
-            // الآيات تُسجَّل بحقل goldenSard المنفصل، وتُحتسب فقط ضمن إحصائيات المجمع العامة (نشاط مؤسسي مجمّع)
-            student.history[todayStr].attended = true; student.history[todayStr].earnedPoints += addedPts;
-            student.history[todayStr].goldenSard = (student.history[todayStr].goldenSard || 0) + addedAyats;
-            student.history[todayStr].goldenPages = (student.history[todayStr].goldenPages || 0) + addedPages;
-            student.history[todayStr].goldenRubs = (student.history[todayStr].goldenRubs || 0) + addedRubs;
-            student.history[todayStr].hijri = hijriDateStr;
-            
-            if(student.history[todayStr].sardAccreditation) { student.history[todayStr].sardAccreditation += " و " + logText; } 
-            else { student.history[todayStr].sardAccreditation = logText; }
-            
-            saveData(); updateAllUIs(); closeSmartModal();
+            // اعتماد الذهبية يمنح الطالب نقاطاً رمزية فقط (مكافأة إتقان) ولا يُضاف لسرده الشخصي في تقريره الفردي:
+            // التسجيل من نوع golden تعدّه dayStats في الزيادة الذهبية المنفصلة، وlabel نصّه الذي تقرؤه رسالة واتساب
+            if (!commitStudentPatch(student, buildEntryPatch(student, todayStr, { kind: 'golden', spec, iv, rep: 1, points: addedPts, label: logText }))) return;
+            updateAllUIs(); closeSmartModal();
             const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
             triggerRoyalCelebration(student.name, logText, addedPts, totalStats.tripPoints, currentRank);
         }
 
+        // غلاف للتوافق فوق الميزان الواحد (quran/quran-measure.js، وزن السطر): لا مكان آخر في البرنامج يحسب وجهاً أو ربعاً أو جزءاً.
+        // المقطع بتفسير المهرة نفسه (الصاعد عبر السور: سورة البداية من آيتها إلى آخرها + ما بينهما + سورة النهاية من أولها)؛
+        // quartersCrossed صار كسراً دقيقاً (نسبة أسطر كل ربع) بدل عدّ بدايات الأرباع، وexactPages بالأسطر بدل كسر الآية
         function calculateRangeStats(s1, a1, s2, a2) {
-            if (!window.quranData || !window.quranData.surahStarts[s1] || !window.quranData.surahStarts[s2] || !quranMeta) return { totalAyahs: 0, exactPages: 0, quartersCrossed: 0 };
-            let max1 = quranMeta.surahs.references.find(s => s.number === s1).numberOfAyahs; let max2 = quranMeta.surahs.references.find(s => s.number === s2).numberOfAyahs;
-            a1 = Math.min(Math.max(1, a1), max1); a2 = Math.min(Math.max(1, a2), max2);
+            const none = { totalAyahs: 0, exactPages: 0, quartersCrossed: 0, intervals: [] };
+            if (!quranMeta || !measureReady()) return none;
+            s1 = parseInt(s1); s2 = parseInt(s2);   // حقل قديم قد يصل نصاً من السحابة («5»)
+            const ref1 = quranMeta.surahs.references[s1 - 1], ref2 = quranMeta.surahs.references[s2 - 1];
+            if (!ref1 || !ref2) return none;
+            a1 = parseInt(a1); a2 = parseInt(a2);
+            if (!Number.isInteger(a1) || !Number.isInteger(a2)) return none;   // آية غير عددية لا تُخمَّن (المستدعون يحوّلون الفارغ إلى ١ قبل الاستدعاء)
+            a1 = Math.min(Math.max(1, a1), ref1.numberOfAyahs); a2 = Math.min(Math.max(1, a2), ref2.numberOfAyahs);
+            try {
+                const r = QuranMeasure.measure({ from: [s1, a1], to: [s2, a2] });
+                return { totalAyahs: r.ayahs, exactPages: r.pages, quartersCrossed: r.quarters, intervals: r.intervals };
+            } catch (e) { console.error('calculateRangeStats:', e); return none; }
+        }
 
-            let exactPages = 0; let quartersCrossed = 0; let ayahsToProcess = [];
+        // عرض الكميات الكسرية في المعاينة والتأكيد: منزلتان عشريتان بلا أصفار زائدة؛ والموجب الأصغر من ٠٫٠١ بثلاث منازل للأعلى فلا يظهر صفراً
+        const fmtQty = x => { x = x || 0; return String(x > 0 && x < 0.01 ? Math.ceil(x * 1000) / 1000 : Math.round(x * 100) / 100); };
+        // نص ما سيُحتسب فعلاً بترتيب المصحف (يكشف سوء الإدخال قبل الحفظ، مثل «النبأ ١» بدل جزء عمّ كاملاً)؛ بلا تشكيل لأن خط الجوال يكسره
+        function rangeMeaningLabel(intervals) {
+            const ref = s => quranMeta.surahs.references[s - 1];
+            // الألف + علامة المدّ المنفصلة (آل عمران) تُدمج «آ» قبل حذف التشكيل، والتطويل يُحذف (المائـدة)،
+            // والهمزة المتطرفة على ياء الكسر في الرسم المشكول («النَّبَإِ»، «سَبَإٍ») تُكتب بلا تشكيل كما يعرفها المعلم: النبأ، سبأ
+            const name = s => ref(s).name.replace('سُورَةُ ', '').replace(/آ/g, 'آ').replace(/[ـً-ٰٟۖ-ۭ]/g, '').replace(/ٱ/g, 'ا').replace(/إ$/, 'أ');
+            return (intervals || []).map(([a, b]) => {
+                const p = QuranMeasure.locate(a), q = QuranMeasure.locate(b);
+                if (p.surah !== q.surah) return `من ${name(p.surah)} ${p.ayah} إلى ${name(q.surah)} ${q.ayah}`;
+                if (p.ayah === 1 && q.ayah === ref(p.surah).numberOfAyahs) return `${name(p.surah)} كاملة`;
+                return p.ayah === q.ayah ? `${name(p.surah)} ${p.ayah}` : `${name(p.surah)} ${p.ayah}–${q.ayah}`;
+            }).join(' + ');
+        }
+        // المعاينة الفورية في نافذتي التسجيل: الأوجه والأرباع (بالتكرار إن وُجد) ونص المقطع المفسَّر
+        function showRangePreview(prefix, stats, rep = 1) {
+            document.getElementById(prefix + 'Pages').innerText = fmtQty(stats.exactPages * rep);
+            document.getElementById(prefix + 'Quarters').innerText = fmtQty(stats.quartersCrossed * rep);
+            const meaning = document.getElementById(prefix + 'Meaning');
+            if (!measureReady()) { meaning.innerText = 'ميزان المصحف غير محمَّل — أعد تحميل الصفحة'; return; }
+            meaning.innerText = stats.intervals.length ? 'يُحتسب: ' + rangeMeaningLabel(stats.intervals) : '';
+        }
+        // الأرباع صارت كسوراً: مجموع كسور يبلغ حدّاً صحيحاً قد يخرج 7.9999999 فيُظهر الـ floor «٠ جزء» بدل «١»؛ يُلصق بالعدد الصحيح القريب
+        const snapQuarters = x => { const r = Math.round(x); return Math.abs(x - r) < 1e-6 ? r : x; };
 
-            if (s1 === s2) { let minA = Math.min(a1, a2); let maxA = Math.max(a1, a2); for(let a = minA; a <= maxA; a++) { ayahsToProcess.push(window.quranData.surahStarts[s1] + a - 1); }
-            } else if (s1 < s2) { 
-                for(let a = a1; a <= max1; a++) ayahsToProcess.push(window.quranData.surahStarts[s1] + a - 1);
-                for(let s = s1 + 1; s < s2; s++) { let maxM = quranMeta.surahs.references.find(ss => ss.number === s).numberOfAyahs; for(let a = 1; a <= maxM; a++) ayahsToProcess.push(window.quranData.surahStarts[s] + a - 1); }
-                for(let a = 1; a <= a2; a++) ayahsToProcess.push(window.quranData.surahStarts[s2] + a - 1);
-            } else { 
-                for(let a = a1; a <= max1; a++) ayahsToProcess.push(window.quranData.surahStarts[s1] + a - 1);
-                for(let s = s1 - 1; s > s2; s--) { let maxM = quranMeta.surahs.references.find(ss => ss.number === s).numberOfAyahs; for(let a = 1; a <= maxM; a++) ayahsToProcess.push(window.quranData.surahStarts[s] + a - 1); }
-                for(let a = 1; a <= a2; a++) ayahsToProcess.push(window.quranData.surahStarts[s2] + a - 1);
+        // ===== يوم السجل من مقاطعه (خطوة «حفظ كل تسجيل بمقطعه في السحابة» — notes/quarters-fix/design.md §٣) =====
+        // دوال صافية بلا DOM ولا حفظ. منقولة من النموذج المعتمد (fixes.js) على الميزان الحقيقي؛ لم تُربط بأي شاشة بعد.
+        // كثافة منطقة الطالب للسجلات القديمة: أرباع/وجه وآيات/وجه للجزء الذي فيه مؤشره، وإلا متوسط المصحف
+        function densityFor(student) {
+            const s = parseInt(student && (student.lastDailySurah || student.lastSurah)), a = parseInt(student && (student.lastDailyAyah || student.lastAyah));
+            if (measureReady() && s && a) {
+                try { const j = QuranMeasure.locate(QuranMeasure.abs(s, a)).juz, m = QuranMeasure.measure({ juz: [j] }); return { r: 8 / m.pages, ayahsPerPage: m.ayahs / m.pages, juz: j }; } catch (e) { }
             }
-
-            ayahsToProcess.forEach(abs => {
-                let p = window.quranData.ayahToPage[abs]; if(p && window.quranData.pageLengths[p]) exactPages += 1.0 / window.quranData.pageLengths[p];
-                if (window.quranData.quarterStartsSet.has(abs)) quartersCrossed++;
+            return { r: 240 / 604, ayahsPerPage: 6236 / 604, juz: null };
+        }
+        // Firestore يرفض المصفوفة داخل المصفوفة، فيُخزَّن iv مسطّحاً [a1, b1, a2, b2, …]؛ القراءة تقبل الشكلين وتُرجع أزواجاً
+        const ivPairs = iv => Array.isArray(iv[0]) ? iv : Array.from({ length: Math.ceil(iv.length / 2) }, (_, i) => [iv[2 * i], iv[2 * i + 1]]);
+        // قياس تسجيل واحد: iv (المخزون المطبَّع) يتقدّم على spec؛ rep يضاعف الكمية لكل الأنواع (new/review/exam/golden)
+        // التكرار الغائب = ١؛ أما صفر أو غير صالح فيرفضه الميزان (BAD_REP) فيُعدّ التسجيل شاذاً لا يُخمَّن
+        const measureEntry = e => QuranMeasure.measureIntervals(QuranMeasure.specToIntervals(e.iv ? { iv: ivPairs(e.iv) } : { spec: e.spec }), e.rep == null ? 1 : e.rep);
+        // كميات اليوم ونقاطه عند القراءة (لا مجاميع مخزّنة لليوم الجديد):
+        //  - يوم قديم غير مرحَّل (!('entries' in day)): الحقول المخزونة؛ الأرباع تُشتق من الأوجه بكثافة المنطقة (عدّ البدايات القديم لا معنى له)، موسوماً estimate
+        //  - يوم بـ entries: Σ قياس كل تسجيل حسب kind (golden منفصلة)؛ legacy-daily/legacy-golden بأرقامها؛ legacy-points نقاط فقط
+        //  - groupDisciplinePoints تُضاف في كل حال للأيام الجديدة (earnedPoints القديم يحويها أصلاً)
+        function dayStats(day, density) {
+            const d = density || { r: 240 / 604, ayahsPerPage: 6236 / 604 };
+            const acc = { ayahs: 0, pages: 0, quarters: 0, golden: { ayahs: 0, pages: 0, quarters: 0 }, points: 0, estimate: false, unavailable: false, anomalies: 0 };
+            if (!day) return acc;
+            if (!('entries' in day)) {
+                if (day.sessionPages !== undefined) { acc.ayahs = day.sard || 0; acc.pages = day.sessionPages || 0; acc.quarters = acc.pages * d.r; acc.estimate = true; }
+                // الفئة ج (أوائل الموسم قبل حقل الأوجه): تبقى بتقديرها القديم نفسه كما عُرض ونُشر — لا قاعدة عامة أصح منه على البيانات الحقيقية:
+                // كثافة موضع الطالب الحالي ترفع أوجه الموسم ٨٨٤١ ← ٩٣٩٢، ومتوسط المصحف ← ١٠٥٣٧ (قراءة أول الموسم كانت غالباً في جزء عمّ الكثيف).
+                // تُحسَّن لاحقاً في الترحيل من نصوص المشرفين («من الناس إلى النبأ»…) — قرار مؤقت ينتظر المالك
+                else if ((day.sard || 0) > 0) { acc.ayahs = day.sard; acc.pages = day.sard / 18.3221567; acc.quarters = day.sard / 45.80539; acc.estimate = true; }
+                acc.golden = { ayahs: day.goldenSard || 0, pages: day.goldenPages || 0, quarters: day.goldenRubs || 0 };
+                acc.points = day.earnedPoints || 0;
+                return acc;
+            }
+            Object.values(day.entries || {}).forEach(e => {
+                if (!e || typeof e !== 'object') { acc.anomalies++; return; }
+                acc.points += (Number(e.points) || 0);
+                if (e.kind === 'legacy-points') return;
+                let m;
+                // legacy-daily بأرباع مخزونة (الفئة ج المرحَّلة) تبقى كما هي فلا يتغير اليوم بين قبل الترحيل وبعده (Sol)؛ وإلا تُشتق من الأوجه
+                if (e.kind === 'legacy-daily') { m = { ayahs: e.ayahs || 0, pages: e.pages || 0, quarters: e.quarters != null ? e.quarters : (e.pages || 0) * d.r }; acc.estimate = true; }
+                else if (e.kind === 'legacy-golden') { m = { ayahs: e.ayahs || 0, pages: e.pages || 0, quarters: e.quarters || 0 }; acc.estimate = true; }
+                else if (!e.iv && !e.spec) { acc.anomalies++; return; }          // عنصر بلا فترات لا يُسقط اليوم
+                else if (!measureReady()) { acc.unavailable = true; return; }     // النقاط تبقى صحيحة، والكميات «—»
+                else { try { m = measureEntry(e); } catch (err) { acc.anomalies++; return; } }
+                const t = (e.kind === 'golden' || e.kind === 'legacy-golden') ? acc.golden : acc;
+                t.ayahs += m.ayahs; t.pages += m.pages; t.quarters += m.quarters;
             });
-            return { totalAyahs: ayahsToProcess.length, exactPages, quartersCrossed };
+            acc.points += (day.groupDisciplinePoints || 0);
+            return acc;
+        }
+        // نقاط اليوم = نقاط التسجيلات (+ المجموعة) + الانضباط، بحد أدنى صفر — تحل محل getDayPoints عند الربط
+        // stats اختياري: نتيجة dayStats المحسوبة للقارئ نفسه، فلا تُقاس مقاطع اليوم مرتين (Sol — النقاط لا تتوقف على الكثافة)
+        const dayPoints = (day, stats) => day ? Math.max(0, (stats || dayStats(day)).points + (day.criteriaPoints || 0)) : 0;
+        // تسجيل يُكتب إلى Firestore: لا مفتاح قيمته undefined (Firestore ترفضه)، وnull يبقى
+        function makeEntry(fields) { const e = {}; Object.keys(fields).forEach(k => { if (fields[k] !== undefined) e[k] = fields[k]; }); return e; }
+        // مفتاح التسجيل يمنع جهازين من طمس تسجيل بعضهما: الوقت بالمللي ثانية + ٨ أحرف عشوائية (٣٦^٨ ≈ ٢٫٨ تريليون)
+        const newEntryId = () => 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10).padEnd(8, '0');
+        const newDayRecord = (attended, hijri) => ({ attended: !!attended, hijri: hijri || null, entries: {} });
+        // «أبعد» في اتجاه الطالب: السورة أولاً ثم الآية تصاعدياً في الاتجاهين (صاعد: سورة أصغر أبعد؛ نازل: سورة أكبر أبعد)
+        function isFurther(sNew, aNew, sOld, aOld, dir) { if (sOld == null) return true; if (sNew === sOld) return aNew > aOld; return dir === 'down' ? sNew > sOld : sNew < sOld; }
+        // نهاية تسجيل في اتجاه الطالب: نازل = آخر آية؛ صاعد = أعلى آية داخل أصغر سورة في المقطع
+        function endPointOf(e, dir) {
+            const iv = QuranMeasure.specToIntervals(e.iv ? { iv: ivPairs(e.iv) } : { spec: e.spec });
+            const lo = Math.min(...iv.map(x => x[0])), hi = Math.max(...iv.map(x => x[1]));
+            if (dir === 'down') { const p = QuranMeasure.locate(hi); return { surah: p.surah, ayah: p.ayah }; }
+            const loS = QuranMeasure.locate(lo).surah; let best = lo;
+            iv.forEach(([a, b]) => { for (let x = a; x <= b; x++) if (QuranMeasure.locate(x).surah === loS && x > best) best = x; });
+            const p = QuranMeasure.locate(best); return { surah: p.surah, ayah: p.ayah };
+        }
+        // حدّ الحفظ مشتق لا مخزَّن: الأبعد بين تسجيلات «new» والأساس frontierBase، وإلا المؤشر القديم — بشكل { surah, ayah } الذي يستهلكه محرك الاختبار
+        function computeFrontier(student) {
+            if (!student) return null;
+            const dir = student.direction === 'down' ? 'down' : 'up';
+            // الرجوع إلى المؤشر القديم للطالب القديم فقط (لا حقل frontierBase أصلاً)؛ وجود الحقل ولو null يمنعه،
+            // وإلا عاد الحدّ إلى نهاية تسجيل محذوف كان قد كتب lastDaily* (Sol)
+            const base = ('frontierBase' in student) ? student.frontierBase : ((student.lastDailySurah || student.lastSurah) && (student.lastDailyAyah || student.lastAyah)
+                ? { surah: parseInt(student.lastDailySurah || student.lastSurah), ayah: parseInt(student.lastDailyAyah || student.lastAyah) } : null);
+            let f = base ? { surah: base.surah, ayah: base.ayah } : null;
+            if (!measureReady()) return f;
+            Object.keys(student.history || {}).sort().forEach(ds => Object.values((student.history[ds] || {}).entries || {}).forEach(e => {
+                if (!e || e.kind !== 'new' || (!e.iv && !e.spec)) return;
+                try { measureEntry(e); } catch (err) { return; }   // ما يرفضه dayStats (تكرار ٠، مقطع خارج المصحف) لا يقدّم الحدّ (Sol)
+                let p; try { p = endPointOf(e, dir); } catch (err) { return; }
+                if (!f || isFurther(p.surah, p.ayah, f.surah, f.ayah, dir)) f = p;
+            }));
+            return f;
+        }
+        // تنسيق كمية القرآن للعرض (خطوة «توحيد عرض الأرقام» — design.md §٦ و§١٢-٤؛ لم تُربط بعد). qty = { quarters, pages }:
+        //  'parent'  رسالة ولي الأمر وبطاقته: تقريب للأسفل إلى أرباع كاملة بلا كسور، والحزب مطويّ في الأرباع («٣ أجزاء وربعان»)؛
+        //            أقل من ربع ← أوجه كاملة للأسفل؛ أقل من وجه ← «أقل من وجه». لا مبالغة أبداً — إلا السماح الصريح لضجيج الحساب العشري:
+        //            ما يقلّ عن العدد الصحيح بأقل من جزء من مليون (snapQuarters) يُعدّ العدد نفسه (جمع نصفي ربع قد يخرج 0.9999999)
+        //  'decimal' الإحصائيات والتقارير وExcel: «٣٫٣١ جزء» (منزلتان)، والأوجه والأرباع بمنزلة
+        function formatQuranQty(qty, style) {
+            const q = snapQuarters(Math.max(0, Number(qty && qty.quarters) || 0)), p = Math.max(0, Number(qty && qty.pages) || 0);
+            const fix = (x, d) => Number(x.toFixed(d)).toLocaleString('en-US', { maximumFractionDigits: d });
+            if (style === 'decimal') return { juz: `${fix(q / 8, 2)} جزء`, quarters: `${fix(q, 1)} ربع`, pages: `${fix(p, 1)} وجه` };
+            const whole = Math.floor(q), j = Math.floor(whole / 8), r = whole % 8;
+            if (whole === 0) { const pg = Math.floor(snapQuarters(p)); return pg === 0 ? (p > 0 ? 'أقل من وجه' : '0') : countLabel(pg, 'وجه واحد', 'وجهان', 'أوجه', 'وجهاً'); }
+            const rq = r ? countLabel(r, 'ربع', 'ربعان', 'أرباع', 'ربعاً') : '';
+            return j ? juzCountLabel(j) + (rq ? ' و' + rq : '') : rq;
+        }
+        // نص المقطع بصيغة lastDailySardRange التاريخية («من X (a) إلى Y (b)» بعناوين القائمة) — رسالة واتساب والتقرير يقرآنه
+        const rangeLabelOf = spec => { const t = s => quranMeta.surahs.references[s - 1].name.replace('سُورَةُ ', ''); return `من ${t(spec.from[0])} (${spec.from[1]}) إلى ${t(spec.to[0])} (${spec.to[1]})`; };
+        // آخر نشاط (lastDaily*) يُعاد اشتقاقه عند التصفير أو حذف تسجيل: آخر تسجيل new/review متبقٍّ بترتيب التاريخ ثم الوقت، وإلا الأساس المرحَّل
+        // النهاية: spec.to كما أدخلها المشرف (ما يكتبه saveSmartProgress اليوم)؛ تسجيل بفترات iv فقط أو spec فاسد مع iv صالح ← نهايته في اتجاه
+        // الطالب ونصّه من المعاينة؛ والتسجيل الذي يرفضه الميزان يُتخطّى ولا يُسقط الحساب (Sol)
+        function computeLastDaily(student) {
+            let best = null;
+            const dir = student && student.direction === 'down' ? 'down' : 'up';
+            Object.keys((student && student.history) || {}).sort().forEach(ds => Object.values((student.history[ds] || {}).entries || {})
+                .filter(e => e && (e.kind === 'new' || e.kind === 'review') && (e.iv || e.spec))
+                .sort((x, y) => (x.at || 0) - (y.at || 0))
+                .forEach(e => {
+                    let m; try { m = measureEntry(e); } catch (err) { return; }   // ما يرفضه dayStats (تكرار ٠، مقطع فاسد) لا يكون «آخر نشاط» (Sol)
+                    try { if (e.spec && e.spec.from && e.spec.to) { QuranMeasure.specToIntervals({ spec: e.spec }); best = { surah: e.spec.to[0], ayah: e.spec.to[1], range: rangeLabelOf(e.spec) }; return; } } catch (err) { }   // spec يُتحقق منه بالميزان ولو قيس اليوم بـ iv (آية ٩٩٩ — Sol)
+                    try { const p = endPointOf(e, dir); best = { surah: p.surah, ayah: p.ayah, range: rangeMeaningLabel(m.intervals) }; } catch (err) { }   // spec فاسد مع iv صالح ← من الفترات
+                }));
+            return best || (student && student.lastDailyBase) || null;
+        }
+        function legacyEntriesOf(day, dens, dateStr) {
+            // أرقام يوم قديم (لا entries فيه) تسجيلاتٍ تحفظها كما هي: dayStats عليه قبل التحويل = بعده (الأوجه والأرباع مخزونة،
+            // لا تُعاد بكثافة أخرى). المفاتيح حتمية m_<التاريخ>_daily|golden|points والفارغ لا يُكتب؛ النقاط = earnedPoints − groupDisciplinePoints
+            // لأن الفرع الجديد يضيف groupDisciplinePoints وحده. يُستدعى على يوم بلا entries فقط
+            const s = dayStats(day, dens), g = s.golden, out = {}, key = `m_${dateStr}_`;
+            if (s.ayahs > 0 || s.pages > 0) out[key + 'daily'] = { kind: 'legacy-daily', ayahs: s.ayahs, pages: s.pages, quarters: s.quarters, points: 0, migrated: true };
+            if (g.ayahs > 0 || g.pages > 0 || g.quarters > 0) out[key + 'golden'] = { kind: 'legacy-golden', ayahs: g.ayahs, pages: g.pages, quarters: g.quarters, points: 0, migrated: true };
+            const pts = (day.earnedPoints || 0) - (day.groupDisciplinePoints || 0);
+            if (pts !== 0) out[key + 'points'] = { kind: 'legacy-points', points: pts, migrated: true };
+            return out;
+        }
+        function pinBaseFields(student) {
+            // أول كتابة لطالب قديم تثبّت أساسه (إلى أن يُرحَّل في الخطوة ٤): بلاه يرجع computeFrontier إلى lastDaily* التي تحرّكها المراجعة،
+            // ويُرجع computeLastDaily بعد التصفير null فيضيع مؤشره ويرفض واتساب الإرسال. المفتاح الموجود (ولو null) لا يُعاد كتابته
+            const fields = {};
+            if (!('frontierBase' in student)) fields.frontierBase = computeFrontier(student) || null;
+            if (!('lastDailyBase' in student)) {
+                const s = parseInt(student.lastDailySurah || student.lastSurah), a = parseInt(student.lastDailyAyah || student.lastAyah);
+                fields.lastDailyBase = s && a ? { surah: s, ayah: a, range: student.lastDailySardRange || student.lastSardRange || null } : null;
+            }
+            return fields;
+        }
+        function buildEntryPatch(student, dateStr, entry) {
+            // حقول تسجيل واحد ليوم dateStr: الحضور والهجري + التسجيل على مساره history.<d>.entries.<مفتاح> وحده (لا الخريطة ولا مجاميع)،
+            // مع تثبيت الأساس قبل التسجيل. يوم الرفع القديم (بلا entries وفيه أرقام) يُحوَّل في الطلب نفسه وإلا أسقطت entries أرقامه من dayStats؛
+            // ويُكتب بمسارات منفردة (ق٩): مفاتيحه حتمية فجهازان يحوّلانه معاً يكتبان القيم نفسها، ولا يطمس أحدهما تسجيل الآخر
+            const p = `history.${dateStr}.`, day = (student.history || {})[dateStr];
+            const fields = Object.assign(pinBaseFields(student), { [p + 'attended']: true, [p + 'hijri']: hijriDateStr });
+            if (day && !('entries' in day)) {
+                const legacy = legacyEntriesOf(day, densityFor(student), dateStr);
+                Object.keys(legacy).forEach(k => { fields[p + 'entries.' + k] = legacy[k]; });
+            }
+            // iv مسطّح: Firestore يرفض المصفوفة داخل المصفوفة قبل الإرسال (ivPairs تعيده أزواجاً عند القراءة)
+            fields[p + 'entries.' + newEntryId()] = makeEntry(Object.assign({}, entry, { iv: entry.iv && entry.iv.flat(), at: Date.now(), by: window.almahraAuth?.currentUser?.uid || null }));
+            return fields;
         }
 
         function getCumulativeStats(student) {
-            let attendanceDays = 0, sardAyahs = 0, tripPoints = 0; let exactPages = 0, quartersCrossed = 0; let legacyAyahs = 0;
+            let attendanceDays = 0, sardAyahs = 0, tripPoints = 0; let exactPages = 0, quartersCrossed = 0;
             let goldenAyahs = 0, goldenPages = 0, goldenQuartersCrossed = 0;
+            const dens = densityFor(student);   // كثافة منطقة الطالب مرة واحدة (لا لكل يوم): تُشتق بها أرباع الأيام القديمة من الأوجه
             for (const date in student.history) {
-                let day = student.history[date]; if(day.attended) attendanceDays++; sardAyahs += (day.sard || 0); tripPoints += getDayPoints(day);
-                if (day.sessionPages !== undefined || day.sessionQuarters !== undefined) { exactPages += (day.sessionPages || 0); quartersCrossed += (day.sessionQuarters || 0); }
-                else if (day.sard > 0) { legacyAyahs += day.sard; }
-                goldenAyahs += (day.goldenSard || 0); goldenPages += (day.goldenPages || 0); goldenQuartersCrossed += (day.goldenRubs || 0);
+                let day = student.history[date]; const ds = dayStats(day, dens); if(day.attended) attendanceDays++; sardAyahs += ds.ayahs; tripPoints += dayPoints(day, ds);
+                exactPages += ds.pages; quartersCrossed += ds.quarters;
+                goldenAyahs += ds.golden.ayahs; goldenPages += ds.golden.pages; goldenQuartersCrossed += ds.golden.quarters;
             }
             tripPoints += (attendanceDays * getProgramSettings().points.attendance);
-            if (legacyAyahs > 0) { quartersCrossed += (legacyAyahs / 45.80539); exactPages += (legacyAyahs / 18.3221567); }
+            quartersCrossed = snapQuarters(quartersCrossed); goldenQuartersCrossed = snapQuarters(goldenQuartersCrossed);
 
             let rawQuarters = quartersCrossed; let juzs = Math.floor(quartersCrossed / 8); let hizbs = Math.floor((quartersCrossed % 8) / 4); let quarters = Math.floor(quartersCrossed % 4);
 
             // زيادة اللوحة الذهبية: بند منفصل واضح لكل طالب (كانت تُحسب فقط ضمن إحصائيات المجمع العامة دون أن تظهر للطالب نفسه)
             let goldenJuzs = Math.floor(goldenQuartersCrossed / 8); let goldenHizbs = Math.floor((goldenQuartersCrossed % 8) / 4); let goldenQuartersRemainder = Math.floor(goldenQuartersCrossed % 4);
 
-            let totalRawQuarters = rawQuarters + goldenQuartersCrossed;
+            let totalRawQuarters = snapQuarters(rawQuarters + goldenQuartersCrossed);
             let totalJuzs = Math.floor(totalRawQuarters / 8); let totalHizbs = Math.floor((totalRawQuarters % 8) / 4); let totalQuarters = Math.floor(totalRawQuarters % 4);
 
             return {
@@ -4301,7 +4574,19 @@
             if(parseInt(input.value) > max) input.value = max;
         }
         
+        // آية النهاية تلقائياً: تغيير سورة النهاية إلى سورة غير سورة البداية يضع آيتها على آخر السورة (جزء عمّ صاعداً = الناس ١ → النبأ ٤٠، لا النبأ ١)،
+        // ما لم يكتبها المشرف بيده أو بزرّي +/− منذ فتح النافذة؛ عندها تُقصّ إلى حدّ السورة فقط كما كان
+        const endAyahTouched = { end: false, examEnd: false };
+        function onEndSurahChange(type) {
+            updateAyahMax(type);
+            if (!quranMeta || endAyahTouched[type]) return;
+            const s2 = parseInt(document.getElementById(type + 'Surah').value), s1 = parseInt(document.getElementById((type === 'end' ? 'start' : 'examStart') + 'Surah').value);
+            const ref = quranMeta.surahs.references[s2 - 1];
+            if (ref && s2 !== s1) document.getElementById(type + 'Ayah').value = ref.numberOfAyahs;
+        }
+
         function adjustAyah(type, amount) {
+            if (type === 'end') endAyahTouched.end = true;
             const input = document.getElementById(type + 'Ayah'); let val = (parseInt(input.value) || 1) + amount;
             if(val < 1) val = 1; if(val > parseInt(input.max)) val = parseInt(input.max); input.value = val; calculateQuran();
         }
@@ -4316,6 +4601,7 @@
             if(a1 < 1) { a1 = 1; document.getElementById('startAyah').value = a1; } if(a2 < 1) { a2 = 1; document.getElementById('endAyah').value = a2; }
 
             let stats = calculateRangeStats(s1, a1, s2, a2); document.getElementById('resAyahs').innerText = stats.totalAyahs;
+            showRangePreview('res', stats);
             const pts = getProgramSettings().points;
             const multiplier = currentSardType === 'new' ? pts.newMemorization : pts.review;
             document.getElementById('resWeightedPoints').innerText = stats.totalAyahs * multiplier;
@@ -4323,6 +4609,7 @@
         }
 
         function adjustExamAyah(type, amount) {
+            if (type === 'examEnd') endAyahTouched.examEnd = true;
             const input = document.getElementById(type + 'Ayah'); let val = (parseInt(input.value) || 1) + amount;
             if(val < 1) val = 1; if(val > parseInt(input.max)) val = parseInt(input.max); input.value = val; calculateExamPrepQuran();
         }
@@ -4346,10 +4633,12 @@
             const totalAyahs = stats.totalAyahs * repetitions;
             document.getElementById('examResBaseAyahs').innerText = stats.totalAyahs;
             document.getElementById('examResAyahs').innerText = totalAyahs;
+            showRangePreview('examRes', stats, repetitions);
             document.getElementById('examResWeightedPoints').innerText = totalAyahs * getProgramSettings().points.review;
         }
         function saveExamPrepProgress() {
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
+            if (!requireQuranMeasure()) return;
             const startSurahSelect = document.getElementById('examStartSurah'); const endSurahSelect = document.getElementById('examEndSurah');
             const startSurahName = startSurahSelect.options[startSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, ''); const endSurahName = endSurahSelect.options[endSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, '');
             const s1 = parseInt(startSurahSelect.value); const s2 = parseInt(endSurahSelect.value);
@@ -4357,23 +4646,16 @@
             const repetitions = Math.max(1, parseInt(document.getElementById('examRepetitions').value) || 1);
             const rangeStr = `من ${startSurahName} (${startAyahVal}) إلى ${endSurahName} (${endAyahVal})`;
             const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal);
-            const totalAyahs = stats.totalAyahs * repetitions; const totalPages = stats.exactPages * repetitions; const totalQuarters = stats.quartersCrossed * repetitions;
+            const totalAyahs = stats.totalAyahs * repetitions;
             const weightedPoints = totalAyahs * getProgramSettings().points.review;
 
             if (totalAyahs === 0) { showToast('اختر نطاقاً صحيحاً أولاً', 'error'); return; }
 
-            if(!student.history[todayStr]) student.history[todayStr] = { attended: false, sard: 0, earnedPoints: 0, hijri: hijriDateStr };
-            student.history[todayStr].attended = true;
-            student.history[todayStr].sard += totalAyahs;
-            student.history[todayStr].sessionPages = (student.history[todayStr].sessionPages || 0) + totalPages;
-            student.history[todayStr].sessionQuarters = (student.history[todayStr].sessionQuarters || 0) + totalQuarters;
-            student.history[todayStr].earnedPoints += weightedPoints;
-            student.history[todayStr].hijri = hijriDateStr;
+            // تسجيل exam: الكمية = المقطع × التكرار (rep) عند القراءة؛ ولا يحرّك lastDaily* (كما كان)
             const examNote = `استعداد اختبار: ${rangeStr}${repetitions > 1 ? ` ×${repetitions}` : ''}`;
-            if(student.history[todayStr].sardAccreditation) { student.history[todayStr].sardAccreditation += " و " + examNote; }
-            else { student.history[todayStr].sardAccreditation = examNote; }
-
-            saveData(); updateAllUIs(); closeSmartModal();
+            const fields = buildEntryPatch(student, todayStr, { kind: 'exam', spec: { from: [s1, startAyahVal], to: [s2, endAyahVal] }, iv: stats.intervals, rep: repetitions, points: weightedPoints, label: examNote });
+            if (!commitStudentPatch(student, fields)) return;
+            updateAllUIs(); closeSmartModal();
 
             const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
             const celModal = document.getElementById('knightCelebrationModal');
@@ -4847,24 +5129,22 @@
             }
             
             students.forEach(s => {
-                let dates = Object.keys(s.history).sort();
+                let dates = Object.keys(s.history).sort(); const dens = densityFor(s);   // كثافة الطالب مرة واحدة لا لكل يوم
                 dates.forEach(dStr => {
                     let dayData = s.history[dStr];
-                    const goldenAyahs = dayData ? (dayData.goldenSard || 0) : 0;
-                    if(dayData && (dayData.sard > 0 || goldenAyahs > 0)) {
+                    if(dayData) {
+                        const ds = dayStats(dayData, dens);   // الأساسي + الذهبي، لليوم القديم والجديد (يوم بلا كميات يضيف أصفاراً فيبقى صفّه)
                         if(!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0, hijri: dayData.hijri || dStr };
-                        dailyProduction[dStr].ayahs += dayData.sard + goldenAyahs;
-                        let dPages = dayData.sessionPages; let dQuarts = dayData.sessionQuarters;
-                        if (dPages === undefined && dayData.sard > 0) { dPages = dayData.sard / 18.3221567; dQuarts = dayData.sard / 45.80539; }
-                        dailyProduction[dStr].exactPages += (dPages || 0) + (dayData.goldenPages || 0); dailyProduction[dStr].quarters += (dQuarts || 0) + (dayData.goldenRubs || 0);
-                    } else if (dayData) { if(!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0, hijri: dayData.hijri || dStr }; }
+                        dailyProduction[dStr].ayahs += ds.ayahs + ds.golden.ayahs;
+                        dailyProduction[dStr].exactPages += ds.pages + ds.golden.pages; dailyProduction[dStr].quarters += ds.quarters + ds.golden.quarters;
+                    }
                 });
             });
             const sortedProdDates = Object.keys(dailyProduction).sort();
             if(sortedProdDates.length === 0) { dailyBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">لا يوجد إنتاج يومي مسجل حتى الآن.</td></tr>`; } 
             else {
                 sortedProdDates.forEach(dStr => {
-                    let dayObj = dailyProduction[dStr]; 
+                    let dayObj = dailyProduction[dStr]; dayObj.quarters = snapQuarters(dayObj.quarters);
                     let dJuzs = Math.floor(dayObj.quarters / 8); let dHizbs = Math.floor((dayObj.quarters % 8) / 4); let dQuarters = Math.floor(dayObj.quarters % 4); let dPages = dayObj.exactPages.toFixed(1);
                     
                     let expectedStudentsThatDay = 0; let dayAttendedCount = 0;
@@ -4897,6 +5177,14 @@
             return "يوم الأحد القادم";
         }
 
+        function dayAccreditationTexts(day) {
+            // نصوص إنجازات اليوم (المحطات والأجزاء والاستعداد) لرسالة ولي الأمر: أجزاء sardAccreditation القديم،
+            // ثم label كل تسجيل golden|exam بترتيب وقته — اليوم الجديد لا نص مجمّعاً فيه
+            const old = day && day.sardAccreditation ? day.sardAccreditation.split(' و ') : [];
+            const labels = Object.values((day && day.entries) || {}).filter(e => e && (e.kind === 'golden' || e.kind === 'exam') && e.label)
+                .sort((x, y) => (x.at || 0) - (y.at || 0)).map(e => e.label);
+            return old.concat(labels);
+        }
         function copyStudentWhatsAppReport(studentId) {
             const student = students.find(s => s.id === studentId);
             if (!student) { showToast("حدث خطأ، لم يتم العثور على الطالب", "error"); return; }
@@ -4921,7 +5209,7 @@
             
             for(let dStr in student.history) {
                 let entryDate = new Date(dStr);
-                if(entryDate >= oneWeekAgo && student.history[dStr].sardAccreditation) { let parts = student.history[dStr].sardAccreditation.split(' و '); rawAccreditations.push(...parts); }
+                if(entryDate >= oneWeekAgo) rawAccreditations.push(...dayAccreditationTexts(student.history[dStr]));
             }
             
             let normalizedAccreditations = rawAccreditations.map(item => {
@@ -4985,11 +5273,12 @@
                 .map(s => {
                     const d = s.history?.[dateStr];
                     if (!d || !d.attended) return null;
+                    const ds = dayStats(d);   // الآيات والنقاط لا تتوقف على الكثافة
                     return {
                         student: s,
-                        points: getDayPoints(d),
-                        sard: d.sard || 0,
-                        sardPoints: d.earnedPoints || 0,
+                        points: dayPoints(d, ds),
+                        sard: ds.ayahs,
+                        sardPoints: ds.points,
                         criteriaPoints: d.criteriaPoints || 0,
                         criteria: d.criteria || {}
                     };
@@ -5138,8 +5427,9 @@
                 const d = student.history?.[dt];
                 if (!d) return;
                 if (d.attended) attended++;
-                points += getDayPoints(d);
-                sard += (d.sard || 0);
+                const ds = dayStats(d);
+                points += dayPoints(d, ds);
+                sard += ds.ayahs;
                 if (dayHasAnyViolation(d)) violations++;
                 if (dayHasBlockingViolation(d, blocking)) blockingViolations++;
                 // هل استوفى شروط الانضباط في هذا اليوم؟ (كل الشروط المؤشَّرة، أو تقييم إيجابي واحد إن لم يُؤشَّر شيء)
@@ -5207,17 +5497,10 @@
                     const d = s.history?.[dateStr];
                     if (!d || !d.attended) return;
                     attended++;
-                    ayahs += (d.sard || 0) + (d.goldenSard || 0);
-                    if (d.sessionPages !== undefined || d.sessionQuarters !== undefined) {
-                        pages += (d.sessionPages || 0);
-                        quarters += (d.sessionQuarters || 0);
-                    } else if ((d.sard || 0) > 0) {
-                        // سجلات قديمة بلا صفحات دقيقة: تقدير بالمعدل العام
-                        pages += d.sard / 18.3221567;
-                        quarters += d.sard / 45.80539;
-                    }
-                    pages += (d.goldenPages || 0);
-                    quarters += (d.goldenRubs || 0);
+                    const ds = dayStats(d, densityFor(s));   // كثافة الطالب مرة واحدة؛ الأساسي + الذهبي لليوم القديم والجديد
+                    ayahs += ds.ayahs + ds.golden.ayahs;
+                    pages += ds.pages + ds.golden.pages;
+                    quarters += ds.quarters + ds.golden.quarters;
                 });
             }
             return { attended, total: students.length, ayahs, pages, quarters };
@@ -5492,6 +5775,8 @@
                 if (nextAyah > maxAyahs) { nextSurah -= 1; nextAyah = 1; } if (nextSurah < 1) { nextSurah = 114; nextAyah = 1; }
                 document.getElementById('startSurah').value = nextSurah; document.getElementById('startAyah').value = nextAyah; document.getElementById('endSurah').value = nextSurah; document.getElementById('endAyah').value = nextAyah;
             } else { document.getElementById('startSurah').value = 114; document.getElementById('startAyah').value = 1; document.getElementById('endSurah').value = 114; document.getElementById('endAyah').value = 1; }
+            endAyahTouched.end = false; endAyahTouched.examEnd = false;   // نافذة جديدة: آية النهاية لم يلمسها المشرف بعد
+            document.getElementById('disciplineOnlyCheck').checked = false;   // «انضباط فقط» قرار لكل حفظ، لا يبقى من فتح سابق
             updateAyahMax('start'); updateAyahMax('end'); setSardType('review'); calculateQuran();
 
             // تحديث مضاعفات النقاط من الإعدادات + عرض معايير الانضباط
@@ -5499,6 +5784,7 @@
             const _lblR = document.getElementById('lblReviewMult'); if (_lblR) _lblR.textContent = `(×${_pts.review})`;
             const _lblN = document.getElementById('lblNewMult'); if (_lblN) _lblN.textContent = `(×${_pts.newMemorization})`;
             renderCriteriaList(student);
+            criteriaAtOpen.sel = getCriteriaSelection();   // ما رسمته النافذة من السجل؛ الحفظ يقارن به
 
             selectedMinor = null; selectedJuzs = []; document.querySelectorAll('.minor-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.juz-checkbox').forEach(cb => { cb.checked = false; cb.disabled = false; }); const halfCb = document.getElementById('isHalfJuz'); if(halfCb) { halfCb.checked = false; halfCb.disabled = false; } updateSmartButton();
 
@@ -5515,27 +5801,38 @@
         
         function saveSmartProgress() {
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
+            if (!requireQuranMeasure()) return;
             const startSurahSelect = document.getElementById('startSurah'); const endSurahSelect = document.getElementById('endSurah');
             const startSurahName = startSurahSelect.options[startSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, ''); const endSurahName = endSurahSelect.options[endSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, '');
             const s1 = parseInt(startSurahSelect.value); const s2 = parseInt(endSurahSelect.value);
             const startAyahVal = parseInt(document.getElementById('startAyah').value) || 1; const endAyahVal = parseInt(document.getElementById('endAyah').value) || 1;
             const rangeStr = `من ${startSurahName} (${startAyahVal}) إلى ${endSurahName} (${endAyahVal})`;
             const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal); const weightedPoints = parseInt(document.getElementById('resWeightedPoints').innerText) || 0;
-
-            if(!student.history[todayStr]) student.history[todayStr] = { attended: false, sard: 0, earnedPoints: 0, hijri: hijriDateStr };
-
-            student.history[todayStr].attended = true; student.history[todayStr].sard += stats.totalAyahs; student.history[todayStr].sessionPages = (student.history[todayStr].sessionPages || 0) + stats.exactPages; student.history[todayStr].sessionQuarters = (student.history[todayStr].sessionQuarters || 0) + stats.quartersCrossed; student.history[todayStr].earnedPoints += weightedPoints; student.history[todayStr].hijri = hijriDateStr;
-            student.lastDailySardRange = rangeStr; student.lastDailySurah = s2; student.lastDailyAyah = endAyahVal;
+            // «انضباط فقط» خيار صريح: لا تخمين بأن المدى لم يُلمس (آية الدَّين وحدها ٢:٢٨٢→٢:٢٨٢ تسميع صحيح)
+            const disciplineOnly = document.getElementById('disciplineOnlyCheck').checked;
+            if (!disciplineOnly && stats.totalAyahs === 0) { showToast('اختر نطاقاً صحيحاً، أو أشّر انضباط فقط', 'error'); return; }
 
             // معايير الانضباط - تُستبدل كاملة (حالة اليوم، لا تراكم) وتُخزَّن منفصلة عن السرد
             const critSel = getCriteriaSelection();
-            const oldCritPts = student.history[todayStr].criteriaPoints || 0;
+            const oldCritPts = (student.history[todayStr] || {}).criteriaPoints || 0;
             const newCritPts = Object.values(critSel).reduce((a, b) => a + b, 0);
-            student.history[todayStr].criteria = critSel;
-            student.history[todayStr].criteriaPoints = newCritPts;
+            const p = `history.${todayStr}.`;
+            const fields = disciplineOnly
+                ? { [p + 'attended']: true, [p + 'hijri']: hijriDateStr }
+                : Object.assign(buildEntryPatch(student, todayStr, { kind: currentSardType, spec: { from: [s1, startAyahVal], to: [s2, endAyahVal] }, iv: stats.intervals, rep: 1, points: weightedPoints }),
+                    { lastDailySurah: s2, lastDailyAyah: endAyahVal, lastDailySardRange: rangeStr });
+            // المعايير تُكتب إن أُشّر «انضباط فقط» (غرضه) أو غيّرها المشرف منذ فتح النافذة؛ وإلا لا تُرسل،
+            // فلا يطمس حفظُ السرد معاييرَ سجّلها جهاز آخر بعد الفتح (اللقطة null = لم تُفتح النافذة: تُكتب كما كانت)
+            const selKey = sel => JSON.stringify(Object.keys(sel).sort().map(k => [k, sel[k]]));
+            const writeCrit = disciplineOnly || criteriaAtOpen.sel === null || selKey(critSel) !== selKey(criteriaAtOpen.sel);
+            if (writeCrit) {
+                fields[p + 'criteria'] = critSel;
+                fields[p + 'criteriaPoints'] = newCritPts;
+            }
 
-            const totalAdded = weightedPoints + (newCritPts - oldCritPts);
-            saveData(); updateAllUIs(); closeSmartModal();
+            const totalAdded = (disciplineOnly ? 0 : weightedPoints) + (writeCrit ? newCritPts - oldCritPts : 0);
+            if (!commitStudentPatch(student, fields)) return;
+            updateAllUIs(); closeSmartModal();
 
             if (totalAdded > 0) {
                 var weightedPointsDisplay = totalAdded;
@@ -5591,8 +5888,8 @@
             const searchInput = document.getElementById('examSearchInput'); const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
             const sortedStudents = [...students]
                 .filter(s => !query || s.name.toLowerCase().includes(query))
-                .sort((a, b) => getStudentMemorizedQuantity(b) - getStudentMemorizedQuantity(a));
-            container.innerHTML = sortedStudents.map(s => {
+                .sort(byMemorizedQuantity);
+            container.innerHTML = (measureReady() ? '' : `<div class="bg-amber-50 border-2 border-amber-300 text-amber-800 rounded-2xl p-3 mb-3 text-center font-black">${EXAM_ORDER_NOTICE}</div>`) + (sortedStudents.map(s => {
                 const status = getExamStatus(s);
                 let badge = status.tested
                     ? (status.passed ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-lg text-xs font-black">✅ مجتاز (${status.total})</span>` : `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded-lg text-xs font-black">غير مجتاز (${status.total})</span>`)
@@ -5610,7 +5907,7 @@
                     <div class="flex items-center gap-1"><label class="text-xs font-bold text-slate-500">ترتيل (١٠)</label><input type="number" min="0" max="10" id="examTarteel_${s.id}" value="${tVal}" class="w-14 p-1.5 border-2 border-slate-300 rounded-lg text-center font-bold text-sm outline-none focus:border-emerald-500"></div>
                     <button onclick="saveExamScore(${s.id})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shrink-0"><i class="fas fa-save"></i> حفظ</button>
                 </div>`;
-            }).join('') || `<p class="text-center text-slate-400 font-bold py-6">${query ? 'لا يوجد طالب مطابق للبحث' : 'لا يوجد طلاب مسجلين بعد'}</p>`;
+            }).join('') || `<p class="text-center text-slate-400 font-bold py-6">${query ? 'لا يوجد طالب مطابق للبحث' : 'لا يوجد طلاب مسجلين بعد'}</p>`);
         }
 
         function saveExamScore(studentId) {
@@ -5619,8 +5916,8 @@
             if (hifzInput.value === '' && tarteelInput.value === '') { showToast("أدخل درجة الحفظ أو الترتيل أولاً", "error"); return; }
             const hifz = Math.max(0, Math.min(90, parseFloat(hifzInput.value) || 0));
             const tarteel = Math.max(0, Math.min(10, parseFloat(tarteelInput.value) || 0));
-            student.examHifz = hifz; student.examTarteel = tarteel;
-            saveData(); renderExamEntryList(); renderExamResultsReport();
+            if (!commitStudentPatch(student, { examHifz: hifz, examTarteel: tarteel })) return;
+            renderExamEntryList(); renderExamResultsReport();
             const total = hifz + tarteel;
             if (total >= 60) {
                 const celModal = document.getElementById('knightCelebrationModal');
@@ -5639,9 +5936,9 @@
         function renderExamResultsReport() {
             const tbody = document.getElementById('examResultsReportBody'); if (!tbody) return;
             const results = students.map(s => ({ id: s.id, name: s.name, range: getStudentFrontierRangeLabel(s), quantity: getStudentMemorizedQuantity(s), ...getExamStatus(s) }));
-            const ordered = results.sort((a, b) => b.quantity - a.quantity);
+            const ordered = measureReady() ? results.sort((a, b) => b.quantity - a.quantity) : results.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
             if (ordered.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 font-bold">لا يوجد طلاب</td></tr>`; return; }
-            tbody.innerHTML = ordered.map((r, idx) => {
+            tbody.innerHTML = (measureReady() ? '' : `<tr><td colspan="5" class="py-3 px-4 text-center font-black text-amber-800 bg-amber-50">${EXAM_ORDER_NOTICE}</td></tr>`) + ordered.map((r, idx) => {
                 let gradeHtml, rowClass = 'border-b border-slate-200';
                 if (!r.tested) { gradeHtml = `<span class="text-slate-400 font-bold">لم يختبر</span>`; }
                 else if (r.passed) { gradeHtml = `<span class="text-emerald-700 font-black">✅ مجتاز</span>`; rowClass += ' bg-emerald-50'; }
@@ -5657,6 +5954,7 @@
         }
 
         function exportExamResultsToExcel() {
+            if (!requireQuranMeasure()) return;   // الترتيب بمقدار الحفظ يحتاج الميزان؛ ملف بترتيب خاطئ لا يُصلحه إعادة التحميل
             const results = students.map(s => ({ id: s.id, name: s.name, range: getStudentFrontierRangeLabel(s), quantity: getStudentMemorizedQuantity(s), ...getExamStatus(s) }));
             const ordered = results.sort((a, b) => b.quantity - a.quantity);
             const exp = ordered.map((r, idx) => ({ "م": idx + 1, "اسم الطالب": r.name, "النطاق المحفوظ (آخر ما وصل إليه)": r.range, "الدرجة": r.tested ? r.total : "-", "التقدير": !r.tested ? "لم يختبر" : (r.passed ? "مجتاز" : "غير مجتاز") }));
@@ -5729,6 +6027,7 @@
         let isPrintingExamCards = false;
         function printExamCards() {
             if (isPrintingExamCards) return;
+            if (!requireQuranMeasure()) return;   // البطاقات مرتبة بمقدار الحفظ
             if (students.length === 0) { showToast('لا يوجد طلاب لطباعة بطاقاتهم', 'error'); return; }
             isPrintingExamCards = true;
             const sortedStudents = [...students].sort((a, b) => getStudentMemorizedQuantity(b) - getStudentMemorizedQuantity(a));
@@ -5783,8 +6082,36 @@
             const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast("جاري فتح الواتساب وتجهيز قائمة المنقطعين...");
         }
         
-        function resetStudentToday() { const student = students.find(s => s.id === currentEditingStudentId); if(student && student.history[todayStr]) { student.history[todayStr].sard = 0; student.history[todayStr].earnedPoints = 0; student.history[todayStr].sessionPages = 0; student.history[todayStr].sessionQuarters = 0; student.history[todayStr].sardAccreditation = null; saveData(); updateAllUIs(); closeSmartModal(); showToast("تم تصفير إنجاز ونقاط اليوم بنجاح", "success"); } else { showToast("لا يوجد إنجاز لتصفيره", "error"); } }
-        function markPresent(id) { const student = students.find(s => s.id === id); if(!student) return; if(!student.history[todayStr]) student.history[todayStr] = { attended: false, sard: 0, earnedPoints:0, hijri: hijriDateStr }; const curr = student.history[todayStr].attended; student.history[todayStr].attended = !curr; student.history[todayStr].hijri = hijriDateStr; saveData(); updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
+        function resetStudentToday() {
+            // التصفير يفرغ تسجيلات اليوم فتصير كمياته وذهبيته ونقاطه صفراً عند القراءة، حتى في اليوم القديم؛
+            // ويبقي الحضور والمعايير ونقاط المجموعة. ثم يُعاد اشتقاق «آخر نشاط» من الطالب كما سيكون بعد التصفير
+            // بلا الميزان يُرجع computeLastDaily null فيُحذف المؤشر ويُثبَّت الحدّ ناقصاً — فلا تصفير قبله
+            if (!requireQuranMeasure()) return;
+            const student = students.find(s => s.id === currentEditingStudentId);
+            const day = student && student.history[todayStr];
+            if (!day) { showToast("لا يوجد إنجاز لتصفيره", "error"); return; }
+            // ق٥: الأساس يُثبَّت أولاً، وإلا أرجع computeLastDaily لطالب قديم null فمحا مؤشره
+            const fields = pinBaseFields(student), p = `history.${todayStr}.`;
+            // يُحذف ما يراه هذا الجهاز من تسجيلات، كلٌّ على مساره: تسجيل جهاز آخر لم يصل بعد يبقى.
+            // اليوم القديم بلا entries يصير «جديداً» بنقاط صفر بمفاتيح التحويل نفسها (لا الخريطة كاملة أبداً):
+            // تحويلٌ من جهاز آخر يكتب هذه المفاتيح فيُحيَّد، وتسجيله الجديد e_… يبقى
+            if ('entries' in day) Object.keys(day.entries || {}).forEach(id => { fields[p + 'entries.' + id] = DEL_FIELD; });
+            else {
+                const m = `${p}entries.m_${todayStr}_`;
+                fields[m + 'daily'] = DEL_FIELD;
+                fields[m + 'golden'] = DEL_FIELD;
+                fields[m + 'points'] = { kind: 'legacy-points', points: 0 };
+            }
+            // نص المحطات القديم يُحذف كذلك، وإلا بقيت المحطة الممسوحة في رسالة واتساب
+            if (day.sardAccreditation !== undefined) fields[p + 'sardAccreditation'] = DEL_FIELD;
+            const last = computeLastDaily(Object.assign({}, student, fields, { history: Object.assign({}, student.history, { [todayStr]: Object.assign({}, day, { entries: {} }) }) }));
+            fields.lastDailySurah = last ? (last.surah ?? null) : DEL_FIELD;
+            fields.lastDailyAyah = last ? (last.ayah ?? null) : DEL_FIELD;
+            fields.lastDailySardRange = last ? (last.range ?? null) : DEL_FIELD;
+            if (!commitStudentPatch(student, fields)) return;
+            updateAllUIs(); closeSmartModal(); showToast("تم تصفير إنجاز ونقاط اليوم بنجاح", "success");
+        }
+        function markPresent(id) { const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended; if (!commitStudentPatch(student, { [`history.${todayStr}.attended`]: !curr, [`history.${todayStr}.hijri`]: hijriDateStr })) return; updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
 
         let attEditStudentId = null; let attEditChoice = null;
         function openAttendanceEditModal(id) {
@@ -5824,15 +6151,15 @@
             const student = students.find(s => s.id === attEditStudentId); if (!student) return;
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
-            if (!student.history[dateStr]) {
+            const fields = { [`history.${dateStr}.attended`]: attEditChoice };
+            if (!student.history[dateStr]) {   // الهجري يُكتب لليوم الجديد فقط؛ الموجود يبقى نصّه
                 let hijriForDate;
                 try { hijriForDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(new Date(dateStr + 'T12:00:00')); }
                 catch(e) { hijriForDate = dateStr; }
-                student.history[dateStr] = { attended: attEditChoice, sard: 0, earnedPoints: 0, hijri: hijriForDate };
-            } else {
-                student.history[dateStr].attended = attEditChoice;
+                fields[`history.${dateStr}.hijri`] = hijriForDate;
             }
-            saveData(); updateAllUIs(); closeAttendanceEditModal();
+            if (!commitStudentPatch(student, fields)) return;
+            updateAllUIs(); closeAttendanceEditModal();
             showToast(`تم تحديث حضور (${escapeHTML(student.name)}) بنجاح`);
         }
         // ================================================================
@@ -5956,23 +6283,38 @@
             // ونحذف بقايا النسخ السابقة (tierId, tierManual) حتى لا يبقى مصدر ثانٍ للحقيقة
             if(i){
                 const st = students.find(s => s.id == i); if (!st) return;
-                st.name = n;
-                st.memorizedJuz = memorizedJuz;
-                st.parentPhone = parentPhone;
-                delete st.tierId; delete st.tierManual;
+                if (!commitStudentPatch(st, { name: n, memorizedJuz, parentPhone, tierId: DEL_FIELD, tierManual: DEL_FIELD })) return;
             }
             else{
+                if (!canWriteCloud()) return;
                 const nid=students.length?Math.max(...students.map(s=>s.id))+1:1;
-                students.push({ id: nid, name: n, history: {}, memorizedJuz, parentPhone });
+                // الجديد بلا أساس سابق (null صريح لا غياب: الغياب يعني «طالب قديم» عند computeFrontier)؛
+                // يُضاف محلياً فوراً فلا يأخذ طالب ثانٍ الرقم نفسه على هذا الجهاز، ويُزال إن رفضته السحابة
+                const doc = { id: nid, name: n, history: {}, memorizedJuz, parentPhone, frontierBase: null, lastDailyBase: null };
+                students.push(doc);
+                window.almahraData.upsertStudent(doc).then(r => {
+                    if (r.success) return;
+                    students = students.filter(s => s.id !== nid); updateAllUIs();   // بالرقم: قد تكون لقطةٌ استبدلت الكائن
+                    showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+                });
             }
-            saveData(); updateAllUIs(); closeStudentModal(); showToast("تم حفظ بيانات الطالب");
+            updateAllUIs(); closeStudentModal(); showToast("تم حفظ بيانات الطالب");
         }
         function confirmDelete(id) {
             const student = students.find(s => s.id === id); if (!student) return;
             delId = id; document.getElementById('deleteStudentName').innerText = `${student.name} — رقم #${student.id}`; document.getElementById('deleteModal').classList.replace('hidden','flex');
         }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.replace('flex','hidden'); delId=null; }
-        function executeDelete() { students=students.filter(s=>s.id!==delId); saveData(); updateAllUIs(); closeDeleteModal(); showToast("تم حذف الطالب من الحلقات"); }
+        function executeDelete() {
+            // حذف وثيقة الطالب وحدها؛ يُزال محلياً عند نجاح السحابة فقط، فلا يختفي طالب ما زال فيها
+            if (!canWriteCloud()) return;
+            const id = delId;
+            window.almahraData.removeStudent(id).then(r => {
+                if (!r.success) { showToast('فشل الحذف السحابي: ' + (r.error || 'خطأ غير معروف'), 'error'); return; }
+                students = students.filter(s => s.id !== id); updateAllUIs(); showToast("تم حذف الطالب من الحلقات");
+            });
+            closeDeleteModal();
+        }
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
@@ -7152,7 +7494,7 @@
                 showToast(`لا يُترك طالب بلا مستوى — اختر مقدار الحفظ لـ ${cleared.length} طالب`, 'error');
                 return;
             }
-            let changed = 0;
+            const patches = [];
             rows.forEach(row => {
                 const st = students.find(x => String(x.id) === row.dataset.sid);
                 if (!st) return;
@@ -7160,13 +7502,12 @@
                 const oldMem = Number.isInteger(st.memorizedJuz) ? st.memorizedJuz : null;
                 if (oldMem === mem) return;
                 // الشريحة لا تُحفظ: تُحسب من مقدار الحفظ عند العرض. ونحذف بقايا النسخ السابقة
-                st.memorizedJuz = mem;
-                delete st.tierId; delete st.tierManual;
-                changed++;
+                patches.push({ student: st, fields: { memorizedJuz: mem, tierId: DEL_FIELD, tierManual: DEL_FIELD } });
             });
-            if (changed === 0) { showToast('لا تغييرات'); closeBulkTierModal(); return; }
-            saveData(); updateAllUIs(); closeBulkTierModal();
-            showToast(`✅ حُدِّث ${changed} طالب`);
+            if (patches.length === 0) { showToast('لا تغييرات'); closeBulkTierModal(); return; }
+            if (!commitPatches(patches)) return;
+            updateAllUIs(); closeBulkTierModal();
+            showToast(`✅ حُدِّث ${patches.length} طالب`);
             renderProgramSettings();
         }
 

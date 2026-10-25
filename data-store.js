@@ -11,6 +11,8 @@ import {
     collection,
     doc,
     setDoc,
+    updateDoc,
+    deleteField,
     deleteDoc,
     onSnapshot,
     writeBatch,
@@ -51,6 +53,23 @@ function notifySubscribers() {
     studentsSubscribers.forEach(cb => {
         try { cb([...studentsCache]); } catch (e) { console.error('subscriber error:', e); }
     });
+}
+
+function hasUndefined(v) {
+    // Firestore يرفض الطلب كله إن وُجد undefined في أي عمق؛ يُكشف هنا قبل الإرسال
+    if (v === undefined) return true;
+    if (v === null || typeof v !== 'object') return false;
+    return Object.values(v).some(hasUndefined);
+}
+
+function toFirestoreFields(fields) {
+    // index.html لا يستورد Firebase فيرسل علامة الحذف { __almahraDelete: true }؛ تتحول هنا إلى deleteField() على المفتاح المباشر وحده
+    const out = {};
+    Object.keys(fields).forEach(k => {
+        const v = fields[k];
+        out[k] = (v && v.__almahraDelete === true) ? deleteField() : v;
+    });
+    return out;
 }
 
 // ================================================================
@@ -142,6 +161,51 @@ window.almahraData = {
         } catch (err) {
             console.error('❌ upsertStudent:', err);
             return { success: false, error: err.message };
+        }
+    },
+
+    // كتابة حقول طالب واحد بمساراتها المنقّطة (history.<تاريخ>.entries.<مفتاح>…) بدل الوثيقة كلها:
+    // جهازان يحفظان للطالب نفسه في اللحظة نفسها لا يطمس أحدهما ما كتبه الآخر
+    patchStudent: async (id, fields) => {
+        if (isReadOnly) return { success: false, error: 'هذا موسم مؤرشف — للقراءة فقط' };
+        if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
+        if (!fields || typeof fields !== 'object' || !Object.keys(fields).length) return { success: false, error: 'لا حقول للحفظ' };
+        if (hasUndefined(fields)) return { success: false, error: 'قيمة غير معرّفة (undefined) في الحقول — لم يُرسل شيء' };
+        try {
+            await updateDoc(studentDocRef(id), toFirestoreFields(fields));
+            return { success: true };
+        } catch (err) {
+            console.error('❌ patchStudent:', err);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // عمليات جماعية (نقاط المجموعات، التوزيع، الاستيراد): { type: 'update', id, fields } | { type: 'set', id, data } | { type: 'delete', id }
+    // تُقسَّم دفعات ≤ ٤٥٠ (حد Firestore ٥٠٠): كل دفعة ذرّية وحدها، أما المجموع الأكبر من دفعة فليس ذرّياً —
+    // committed يقول كم هبط فعلاً قبل أول دفعة فاشلة
+    commitBatch: async (ops) => {
+        if (isReadOnly) return { success: false, committed: 0, error: 'هذا موسم مؤرشف — للقراءة فقط' };
+        if (!activeProgramId || !activeSeasonId) return { success: false, committed: 0, error: 'لم تُحدَّد جلسة عمل' };
+        if (!Array.isArray(ops)) return { success: false, committed: 0, error: 'ops يجب أن تكون مصفوفة' };
+        if (hasUndefined(ops)) return { success: false, committed: 0, error: 'قيمة غير معرّفة (undefined) في العمليات — لم يُرسل شيء' };
+        let committed = 0;
+        try {
+            for (let i = 0; i < ops.length; i += 450) {
+                const chunk = ops.slice(i, i + 450), batch = writeBatch(db);
+                chunk.forEach(op => {
+                    const ref = studentDocRef(op.id);
+                    if (op.type === 'update') batch.update(ref, toFirestoreFields(op.fields));
+                    else if (op.type === 'set') batch.set(ref, op.data);
+                    else if (op.type === 'delete') batch.delete(ref);
+                    else throw new Error('عملية غير معروفة: ' + op.type);
+                });
+                await batch.commit();
+                committed += chunk.length;
+            }
+            return { success: true, committed };
+        } catch (err) {
+            console.error('❌ commitBatch:', err);
+            return { success: false, committed, error: err.message };
         }
     },
 
