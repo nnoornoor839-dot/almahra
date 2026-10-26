@@ -11,7 +11,9 @@ import {
     collection,
     doc,
     getDoc,
+    getDocFromServer,
     getDocs,
+    getDocsFromServer,
     setDoc,
     updateDoc,
     deleteDoc,
@@ -19,7 +21,8 @@ import {
     query,
     orderBy,
     serverTimestamp,
-    writeBatch
+    writeBatch,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -663,26 +666,56 @@ window.almahraPrograms = {
     },
 
     // حذف موسم مؤرشف نهائياً (مع كل طلابه)
+    // إضافة طالب بين فحص الخلو وحذف الموسم لا يمكن إغلاقها من العميل (المعاملات لا تستعلم مجموعات)؛ مقبول ضمن ق٢ (مشرف واحد، جهاز واحد) ولموسم مؤرشف.
     deleteSeason: async (programId, seasonId) => {
+        let deletedCount = 0;
         try {
             const prog = programsCache[programId];
             if (prog?.activeSeasonId === seasonId) {
-                return { success: false, error: 'لا يمكن حذف الموسم النشط' };
+                return { success: false, error: 'لا يمكن حذف الموسم النشط', deletedCount };
+            }
+
+            const programSnap = await getDocFromServer(doc(db, PROGRAMS, programId));
+            if (programSnap.data()?.activeSeasonId === seasonId) {
+                return { success: false, error: 'لا يمكن حذف الموسم النشط', deletedCount };
             }
 
             // حذف كل الطلاب أولاً (Firestore لا يحذف المجموعات الفرعية تلقائياً)
-            const studentsSnap = await getDocs(collection(db, PROGRAMS, programId, SEASONS, seasonId, 'students'));
-            if (!studentsSnap.empty) {
+            const studentsRef = collection(db, PROGRAMS, programId, SEASONS, seasonId, 'students');
+            const studentsSnap = await getDocsFromServer(studentsRef);
+            for (let i = 0; i < studentsSnap.docs.length; i += 450) {
                 const batch = writeBatch(db);
-                studentsSnap.forEach(d => batch.delete(d.ref));
+                const students = studentsSnap.docs.slice(i, i + 450);
+                students.forEach(d => batch.delete(d.ref));
                 await batch.commit();
+                deletedCount += students.length;
             }
 
-            await deleteDoc(doc(db, PROGRAMS, programId, SEASONS, seasonId));
-            return { success: true };
+            const remainingSnap = await getDocsFromServer(studentsRef);
+            if (!remainingSnap.empty) {
+                return { success: false, error: 'تعذر حذف الموسم: لا تزال هناك وثائق طلاب', deletedCount };
+            }
+
+            await runTransaction(db, async (transaction) => {
+                const programRef = doc(db, PROGRAMS, programId);
+                const seasonRef = doc(db, PROGRAMS, programId, SEASONS, seasonId);
+                const programSnap = await transaction.get(programRef);
+                if (programSnap.data()?.activeSeasonId === seasonId) {
+                    throw new Error('لا يمكن حذف الموسم النشط');
+                }
+                const seasonSnap = await transaction.get(seasonRef);
+                if (!seasonSnap.exists()) {
+                    throw new Error('الموسم غير موجود');
+                }
+                if (seasonSnap.data()?.status === 'active') {
+                    throw new Error('لا يمكن حذف الموسم النشط');
+                }
+                transaction.delete(seasonRef);
+            });
+            return { success: true, deletedCount };
         } catch (err) {
             console.error('❌ deleteSeason:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: err.message, deletedCount };
         }
     },
 
