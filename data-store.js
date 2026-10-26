@@ -16,7 +16,8 @@ import {
     deleteDoc,
     onSnapshot,
     writeBatch,
-    getDocs
+    getDocs,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -72,6 +73,42 @@ function toFirestoreFields(fields) {
     return out;
 }
 
+// إنشاء general فقط: معاملة تحمي مستند الرقم من الاستبدال، ولا تضمن تفرد الاسم بين الأجهزة.
+async function createGeneralStudentIfAbsent(student, expectedSeasonId) {
+    const programId = activeProgramId, seasonId = activeSeasonId;
+    const validId = value => typeof value === 'string' && value.trim() === value &&
+        value.length > 0 && new TextEncoder().encode(value).length <= 1500 &&
+        !value.includes('/') && value !== '.' && value !== '..' && !/^__.*__$/.test(value);
+    const contextValid = () => programId === 'general' && activeProgramId === programId &&
+        activeSeasonId === seasonId && seasonId === expectedSeasonId && isReady && !isReadOnly;
+    if (!contextValid() || !validId(expectedSeasonId))
+        return { success: false, code: 'IMPORT_CONTEXT_INVALID', error: 'سياق general غير جاهز أو تغيّر أو للقراءة فقط' };
+    if (!student || typeof student !== 'object' || Array.isArray(student) || hasUndefined(student) ||
+        !['number', 'string'].includes(typeof student.id) ||
+        !/^[1-9]\d*$/.test(String(student.id)) || !Number.isSafeInteger(Number(student.id)) ||
+        !validId(student.sid) || !validId(student.teacherId) || !validId(student.stage))
+        return { success: false, code: 'INVALID_STUDENT', error: 'معرّفات الطالب غير صالحة أو توجد قيمة undefined' };
+    try {
+        const { id, ...data } = structuredClone(student);
+        const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, String(id));
+        const guard = () => {
+            if (!contextValid()) throw Object.assign(new Error('تغيّر سياق الحفظ أو صلاحية الكتابة'), { code: 'IMPORT_CONTEXT_INVALID' });
+        };
+        await runTransaction(db, async transaction => {
+            guard();
+            const snapshot = await transaction.get(ref);
+            guard();
+            if (snapshot.exists()) throw Object.assign(new Error('رقم الطالب موجود؛ لم يُعدّل مستنده'), { code: 'STUDENT_ID_CONFLICT' });
+            transaction.set(ref, data);
+            guard();
+        });
+        // المعاملة المرسلة قد تنجح بعد تبديل الواجهة: نجاحها يُنسب إلى سياقها المثبّت وحده.
+        return { success: true, programId, seasonId, contextChanged: !contextValid() };
+    } catch (error) {
+        return { success: false, code: error.code || 'STUDENT_CREATE_FAILED', error: error.message };
+    }
+}
+
 // ================================================================
 // المستمع اللحظي
 // ================================================================
@@ -120,6 +157,8 @@ function stopStudentsListener() {
 // الواجهة العامة
 // ================================================================
 window.almahraData = {
+
+    createGeneralStudentIfAbsent,
 
     getStudents: () => [...studentsCache],
     isReady: () => isReady,

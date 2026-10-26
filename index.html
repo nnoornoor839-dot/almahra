@@ -1287,8 +1287,13 @@
                         </div>
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border-2 border-purple-300 shadow-sm flex flex-col items-center text-center transform hover:scale-105 transition">
                             <i class="fas fa-file-alt text-5xl text-purple-600 mb-3"></i>
-                            <div class="text-slate-600 font-bold text-2xl mb-1">صفحات</div>
+                            <div id="eqPagesLabel" class="text-slate-600 font-bold text-2xl mb-1">صفحات</div>
                             <div class="text-5xl font-black text-purple-800" id="eqTotalPages">0</div>
+                        </div>
+                        <div id="eqGeneralQuartersCard" class="hidden bg-rose-50 p-6 rounded-2xl border-2 border-rose-300 shadow-sm flex flex-col items-center text-center">
+                            <i class="fas fa-book-open text-5xl text-rose-600 mb-3"></i>
+                            <div class="text-slate-600 font-bold text-2xl mb-1">أرباع</div>
+                            <div class="text-5xl font-black text-rose-800" id="eqTotalQuarters">0</div>
                         </div>
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-2 border-blue-300 shadow-sm flex flex-col items-center text-center transform hover:scale-105 transition">
                             <i class="fas fa-bookmark text-5xl text-blue-600 mb-3"></i>
@@ -3910,21 +3915,170 @@
             return cells.findIndex(c => contains.some(k => c.includes(k)) && !(exclude || []).some(k => c.includes(k)));
         }
 
-        let pendingImport = null; // { rows: [{ name, mem, status, reason }], fileName }
+        // مفتاح مقارنة فقط؛ يظل النص المنظف الأصلي هو المعروض والمحفوظ.
+        function normalizeArabicKey(value) {
+            return cleanCellText(value).replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06edـ]/g, '')
+                .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\s+/g, ' ').trim();
+        }
+        // نقية: لا globals ولا تعديل للصفوف أو الإعدادات أو الطلاب الحاليين.
+        function analyzeGeneralImportRows(rows, settings, currentStudents) {
+            const candidates = list => {
+                const map = new Map();
+                for (const item of list || []) {
+                    const key = normalizeArabicKey(item.name);
+                    if (!map.has(key)) map.set(key, new Set());
+                    map.get(key).add(item.id);
+                }
+                return map;
+            };
+            const teachers = candidates(settings.teachers), stages = candidates(settings.stages);
+            const existing = new Set(currentStudents.map(s => normalizeArabicKey(s.name)));
+            const seen = new Set();
+            return rows.filter(row => [row.name, row.teacher, row.stage, row.phone].some(v => cleanCellText(v))).map(row => {
+                const name = cleanCellText(row.name), teacher = cleanCellText(row.teacher);
+                const stageName = cleanCellText(row.stage), phoneRaw = cleanCellText(row.phone);
+                const nameKey = normalizeArabicKey(name), teacherIds = teachers.get(normalizeArabicKey(teacher));
+                const stageIds = stages.get(normalizeArabicKey(stageName));
+                const phone = phoneRaw ? normalizeSaudiPhone(phoneRaw) : null;
+                const reasons = [];
+                if (!nameKey) reasons.push('الاسم فارغ');
+                const resolve = (ids, label, text) => {
+                    if (ids?.size > 1) { reasons.push(label + ' «' + text + '» ملتبس؛ احسم الأسماء المتشابهة في الإعدادات'); return null; }
+                    const id = ids?.size === 1 ? [...ids][0] : null;
+                    if (typeof id !== 'string' || !id.trim()) { reasons.push(label + ' «' + (text || 'فارغ') + '» غير موجود؛ أضفه في الإعدادات أولاً'); return null; }
+                    return id;
+                };
+                const teacherId = resolve(teacherIds, 'المعلم', teacher), stage = resolve(stageIds, 'المرحلة', stageName);
+                if (phoneRaw && !phone) reasons.push('جوال ولي الأمر غير صالح');
+                const duplicate = nameKey && (existing.has(nameKey) || seen.has(nameKey));
+                const status = reasons.length ? 'error' : duplicate ? 'duplicate' : 'new';
+                if (status === 'new') seen.add(nameKey);
+                return { line: row.line, name, teacher, stageName, teacherId, stage, phone, status,
+                    reason: reasons.length ? reasons.join('؛ ') : duplicate ? 'مكرر محتمل: الاسم موجود في الموسم أو مكرر داخل الملف' : '' };
+            });
+        }
+        function generalImportColumns(header) {
+            const cells = header.map(normalizeArabicKey);
+            const find = aliases => cells.findIndex(c => aliases.map(normalizeArabicKey).includes(c));
+            return { name: find(['الاسم', 'اسم', 'اسم الطالب']),
+                teacher: find(['المعلم', 'معلم', 'اسم المعلم']),
+                stage: find(['المرحلة', 'مرحلة', 'اسم المرحلة']),
+                phone: find(['الجوال', 'جوال', 'رقم الجوال', 'رقم جوال', 'جوال ولي الأمر', 'رقم جوال ولي الأمر']) };
+        }
+        function generalImportTable(json) {
+            for (let i = 0; i < Math.min(10, json.length); i++) {
+                const cols = generalImportColumns(json[i] || []);
+                if (Object.values(cols).every(col => col >= 0)) {
+                    return json.slice(i + 1).map((row, offset) => ({ line: i + offset + 2,
+                        name: row?.[cols.name], teacher: row?.[cols.teacher], stage: row?.[cols.stage], phone: row?.[cols.phone] }))
+                        .filter(row => [row.name, row.teacher, row.stage, row.phone].some(v => cleanCellText(v)));
+                }
+            }
+            return null;
+        }
+        function selectGeneralImportSheet(workbook) {
+            for (const sheetName of workbook.SheetNames) {
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: '', blankrows: true, range: 0});
+                const rawRows = generalImportTable(json);
+                if (rawRows !== null) return { sheetName, rawRows };
+            }
+            return null;
+        }
+
+        let pendingImport = null; // general يحتفظ بصفوف المصدر ونجاحات العملية حتى مع تأخر المزامنة.
+        let generalImportEpoch = 0, generalImportInFlight = null;
+        function generalImportContextValid(operation) {
+            const data = window.almahraData;
+            return !!operation?.general && !operation.invalidated && operation.epoch === generalImportEpoch &&
+                operation.programId === 'general' && isGeneralProgram() &&
+                operation.seasonId === window.almahraPrograms?.getCurrentSeasonId() &&
+                data?.getActiveProgramId() === 'general' && data.getActiveSeasonId() === operation.seasonId &&
+                data.isReady() && !data.isReadOnly();
+        }
+        function invalidateGeneralImport() {
+            if (!pendingImport?.general) return;
+            pendingImport.invalidated = true;
+            pendingImport = null;
+            document.getElementById('importPreviewConfirmBtn').disabled = true;
+            document.getElementById('importPreviewModal').classList.replace('flex', 'hidden');
+        }
+        window.addEventListener('almahra-program-changed', () => {
+            generalImportEpoch++;
+            invalidateGeneralImport();
+        });
+        function generalImportCanConfirm(operation) {
+            const count = operation?.rows.filter(row => row.status === 'new').length || 0;
+            return generalImportContextValid(operation) && !operation.saving && !generalImportInFlight && count >= 1 && count <= 450;
+        }
+        function buildGeneralImportPreview(workbook, fileName, context) {
+            if (!generalImportContextValid(context)) { showToast('تغيّر سياق قراءة الملف؛ افتحه مجدداً', 'error'); return; }
+            const selected = selectGeneralImportSheet(workbook);
+            if (!selected) {
+                invalidateGeneralImport();
+                showToast('لم توجد ورقة ذات رؤوس مكتملة ضمن أول ١٠ صفوف: الاسم، المعلم، المرحلة، جوال ولي الأمر', 'error');
+                return;
+            }
+            pendingImport = { ...context, ...selected, fileName, savedStudents: [],
+                rows: analyzeGeneralImportRows(selected.rawRows, getProgramSettings(), students) };
+            renderGeneralImportPreview();
+        }
+        function renderGeneralImportPreview() {
+            if (!pendingImport?.general) return;
+            const { rows, fileName, sheetName } = pendingImport;
+            const counts = { new: 0, duplicate: 0, error: 0 };
+            rows.forEach(r => counts[r.status]++);
+            document.getElementById('importPreviewSummary').innerHTML =
+                `<div>الملف: ${escapeHTML(fileName)} · الورقة: ${escapeHTML(sheetName)} · الصفوف: ${rows.length}</div>` +
+                `<div>جديد: ${counts.new} · مكرر محتمل: ${counts.duplicate} · خطأ: ${counts.error}</div>` +
+                `<div class="text-slate-700">أضف أي معلم أو مرحلة ناقصة واحسم الأسماء الملتبسة في الإعدادات أولاً، ثم أعد فتح الملف. لن يُحفظ شيء قبل التأكيد.</div>` +
+                (counts.new > 450 ? '<div class="text-red-700">عدد عمليات الإضافة يتجاوز ٤٥٠؛ قسّم الملف.</div>' : '');
+            document.getElementById('importPreviewList').innerHTML = rows.map(r =>
+                `<div class="bg-white p-3 rounded-xl border ${r.status === 'error' ? 'border-red-300' : r.status === 'duplicate' ? 'border-slate-300' : 'border-emerald-300'}">` +
+                `<span class="font-black">صف ${r.line}: ${escapeHTML(r.name || '(بلا اسم)')}</span> · ` +
+                `${escapeHTML(r.teacher || '(بلا معلم)')} / ${escapeHTML(r.stageName || '(بلا مرحلة)')} · ` +
+                `${escapeHTML(r.phone || 'بلا جوال')} · ` +
+                `<span class="font-black">${r.status === 'new' ? 'جديد' : r.status === 'duplicate' ? 'مكرر محتمل' : 'خطأ'}</span>` +
+                `${r.reason ? ` · ${escapeHTML(r.reason)}` : ''}</div>`).join('') ||
+                '<div class="text-center text-slate-500">لا توجد صفوف في الملف</div>';
+            const btn = document.getElementById('importPreviewConfirmBtn');
+            btn.disabled = !generalImportCanConfirm(pendingImport);
+            btn.textContent = counts.new > 450 ? 'قسّم الملف إلى ٤٥٠ طالباً جديداً أو أقل' : `استيراد ${counts.new} طالب جديد`;
+            document.getElementById('importPreviewModal').classList.replace('hidden', 'flex');
+        }
 
         function startExcelImport() {
-            if (isGeneralProgram()) { showToast('استيراد إكسل للبرنامج العام يُجهّز لاحقاً؛ أضف الطلاب يدوياً الآن', 'error'); return; }
+            if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
             document.getElementById('excelFileInput').click();
         }
 
         function handleExcelImport(event) {
-            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+            const file = event.target.files[0]; if (!file) return;
+            if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
+            if (isGeneralProgram()) generalImportEpoch++; // القراءة الأحدث تبطل أي قراءة أقدم.
+            // تثبيت السياق عند بدء القراءة؛ الحدث يبطل النتيجة حتى بعد العودة إلى الموسم الأول.
+            const context = { general: isGeneralProgram(), programId: window.almahraPrograms?.getCurrentProgramId(),
+                seasonId: window.almahraPrograms?.getCurrentSeasonId(), epoch: generalImportEpoch };
+            if (context.general) {
+                invalidateGeneralImport();
+                if (!generalImportContextValid(context)) { showToast('بيانات الموسم غير جاهزة للاستيراد', 'error'); return; }
+            }
+            const reader = new FileReader();
             reader.onload = function(e) {
                 try {
+                    if (context.general && !generalImportContextValid(context)) { showToast('تغيّر سياق قراءة الملف؛ افتحه مجدداً', 'error'); return; }
+                    if (!context.general && isGeneralProgram()) { showToast('افتح الملف مجدداً في البرنامج العام', 'error'); return; }
                     const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-                    buildImportPreview(json, file.name);
-                } catch(error) { showToast("تعذّرت قراءة ملف الإكسل — تأكّد أنه بصيغة .xlsx", "error"); } finally { document.getElementById('excelFileInput').value = ""; }
+                    if (context.general) buildGeneralImportPreview(workbook, file.name, context);
+                    else {
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+                        buildImportPreview(json, file.name);
+                    }
+                } catch(error) {
+                    if (context.general) invalidateGeneralImport();
+                    showToast("تعذّرت قراءة ملف الإكسل — تأكّد أنه بصيغة .xlsx", "error");
+                } finally { document.getElementById('excelFileInput').value = ""; }
             };
             reader.readAsArrayBuffer(file);
         }
@@ -4013,12 +4167,18 @@
         }
 
         function closeImportPreview() {
+            if (pendingImport?.saving) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
             document.getElementById('importPreviewModal').classList.replace('flex', 'hidden');
             pendingImport = null;
         }
 
-        function confirmExcelImport() {
-            if (isGeneralProgram()) { showToast('استيراد إكسل للبرنامج العام يُجهّز لاحقاً', 'error'); return; }
+        async function confirmExcelImport() {
+            // حراسة معاينة general قبل اختيار أي مسار؛ لا تسقط أبداً إلى الحفظ القديم.
+            if (pendingImport?.general) {
+                if (!generalImportContextValid(pendingImport)) { invalidateGeneralImport(); showToast('تغيّر سياق المعاينة؛ افتح الملف مجدداً', 'error'); return; }
+                await confirmGeneralExcelImport(); return;
+            }
+            if (isGeneralProgram()) { showToast('افتح ملفاً ومعاينة جديدة للبرنامج العام', 'error'); return; }
             if (!pendingImport) { closeImportPreview(); return; }
             // نعيد فحص المكرر لحظة التأكيد: قائمة الطلاب قد تتغيّر من السحابة أثناء فتح المعاينة
             const existing = new Set(students.map(s => cleanCellText(s.name)));
@@ -4036,6 +4196,70 @@
             if (!added) { showToast('لم يُضف أحد — كل الأسماء موجودة مسبقاً', 'error'); return; }
             saveData(); updateAllUIs();
             showToast(`✅ استُورد ${added} طالب بمستوياتهم${withPhone ? `، منهم ${withPhone} بجوال ولي الأمر` : ''}`);
+        }
+
+        async function confirmGeneralExcelImport() {
+            const operation = pendingImport;
+            if (!generalImportContextValid(operation) || operation.saving || generalImportInFlight || !canWriteCloud()) return;
+            const latest = analyzeGeneralImportRows(operation.rawRows, getProgramSettings(), [...students, ...operation.savedStudents]);
+            if (JSON.stringify(latest) !== JSON.stringify(operation.rows)) {
+                operation.rows = latest;
+                renderGeneralImportPreview();
+                showToast('تغيّر الطلاب أو الإعدادات؛ راجع المعاينة المحدّثة ثم أكّد مجدداً', 'error');
+                return;
+            }
+            if (!generalImportCanConfirm(operation)) { showToast('عدد عمليات الإضافة غير صالح؛ الحد ٤٥٠', 'error'); return; }
+            const fresh = latest.filter(r => r.status === 'new');
+            const btn = document.getElementById('importPreviewConfirmBtn');
+            operation.saving = true;
+            generalImportInFlight = operation;
+            btn.disabled = true;
+            let nextId = Math.max(0, ...operation.savedStudents.map(s => Number(s.id) || 0)) + 1, saved = 0;
+            try {
+                for (const row of fresh) {
+                    const sid = crypto.randomUUID(); // مرة واحدة للصف، ولو تعارضت أرقام متتالية.
+                    for (let attempt = 0; attempt < 10; attempt++) {
+                        if (!generalImportContextValid(operation) || pendingImport !== operation || !canWriteCloud()) throw new Error('تغيّر سياق الحفظ أو توقفت صلاحية الكتابة');
+                        const key = normalizeArabicKey(row.name);
+                        if ([...students, ...operation.savedStudents].some(s => normalizeArabicKey(s.name) === key)) break;
+                        // تصل تحديثات السحابة بين الصفوف وبين محاولات تعارض الرقم.
+                        const checked = analyzeGeneralImportRows([operation.rawRows.find(r => r.line === row.line)], getProgramSettings(), [])[0];
+                        if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');
+                        nextId = Math.max(nextId, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);
+                        const doc = { id: nextId, sid, name: row.name, teacherId: row.teacherId,
+                            stage: row.stage, parentPhone: row.phone, history: {}, memorizedJuz: null,
+                            frontierBase: null, lastDailyBase: null };
+                        const result = await window.almahraData.createGeneralStudentIfAbsent(doc, operation.seasonId);
+                        if (result?.success) {
+                            saved++;
+                            operation.savedStudents.push(doc);
+                            nextId = doc.id + 1;
+                            // إبطال المعاينة لا يلغي معاملة أُرسلت. لا تُضف نجاحها إلى موسم آخر.
+                            if (!generalImportContextValid(operation) || pendingImport !== operation) throw new Error('تغيّر سياق الحفظ بعد معاملة ناجحة في الموسم الأصلي');
+                            if (!students.some(s => s.sid === doc.sid)) students.push(doc);
+                            break;
+                        }
+                        if (result?.code !== 'STUDENT_ID_CONFLICT') throw new Error(result?.error || 'فشل الحفظ السحابي');
+                        nextId = doc.id + 1;
+                        if (attempt === 9) throw new Error('تكرر تعارض رقم الطالب ١٠ مرات؛ توقف الاستيراد، حدّث البيانات ثم راجع الباقي');
+                    }
+                }
+                operation.saving = false;
+                if (pendingImport === operation) closeImportPreview();
+                updateAllUIs();
+                showToast(`تم حفظ ${saved} طالب في البرنامج العام`);
+            } catch (error) {
+                if (generalImportContextValid(operation) && pendingImport === operation) {
+                    operation.rows = analyzeGeneralImportRows(operation.rawRows, getProgramSettings(), [...students, ...operation.savedStudents]);
+                    renderGeneralImportPreview(); updateAllUIs();
+                }
+                showToast(`حُفظ ${saved} طالب في الموسم الأصلي، ثم توقف الاستيراد: ${error.message}`, 'error');
+            } finally {
+                operation.saving = false;
+                if (generalImportInFlight === operation) generalImportInFlight = null;
+                if (pendingImport === operation) btn.disabled = !generalImportCanConfirm(operation);
+                else if (pendingImport?.general) btn.disabled = !generalImportCanConfirm(pendingImport);
+            }
         }
 
         // خريطة المصحف من quran/quran-meta.js (طبعة المدينة 1441هـ) — بلا إنترنت، وهي نفسها التي يبني عليها محرك الاختبار.
@@ -4399,12 +4623,35 @@
             return fields;
         }
 
+        function generalRecitationTotals(student) {
+            const totals = { new: { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 },
+                review: { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 } };
+            for (const day of Object.values(student.history || {})) {
+                for (const entry of Object.values(day?.entries || {})) {
+                    if (!entry || !Object.hasOwn(totals, entry.kind)) continue;
+                    try {
+                        const m = measureEntry(entry), target = totals[entry.kind];
+                        for (const key of Object.keys(target)) target[key] += m[key];
+                    } catch (error) { /* dayStats also excludes malformed entries */ }
+                }
+            }
+            return totals;
+        }
+        function formatGeneralUnit(value) { return Number(value.toFixed(2)).toString(); }
+        function generalFiveUnits(m) {
+            return `${m.ayahs} آية · ${formatGeneralUnit(m.pages)} وجه · ${formatGeneralUnit(m.quarters)} ربع · ${formatGeneralUnit(m.hizb)} حزب · ${formatGeneralUnit(m.juz)} جزء`;
+        }
+        function generalRecitationHtml(student) {
+            const totals = generalRecitationTotals(student);
+            return `<div class="text-xs font-bold text-emerald-800">حفظ: ${generalFiveUnits(totals.new)}</div>` +
+                `<div class="text-xs font-bold text-blue-800">مراجعة: ${generalFiveUnits(totals.review)}</div>`;
+        }
         function getCumulativeStats(student) {
             let attendanceDays = 0, sardAyahs = 0, tripPoints = 0; let exactPages = 0, quartersCrossed = 0;
             let goldenAyahs = 0, goldenPages = 0, goldenQuartersCrossed = 0;
             const dens = densityFor(student);   // كثافة منطقة الطالب مرة واحدة (لا لكل يوم): تُشتق بها أرباع الأيام القديمة من الأوجه
             for (const date in student.history) {
-                let day = student.history[date]; const ds = dayStats(day, dens); if(day.attended) attendanceDays++; sardAyahs += ds.ayahs; tripPoints += dayPoints(day, ds);
+                let day = student.history[date]; if (isGeneralProgram() && !day) continue; const ds = dayStats(day, dens); if(day.attended) attendanceDays++; sardAyahs += ds.ayahs; tripPoints += dayPoints(day, ds);
                 exactPages += ds.pages; quartersCrossed += ds.quarters;
                 goldenAyahs += ds.golden.ayahs; goldenPages += ds.golden.pages; goldenQuartersCrossed += ds.golden.quarters;
             }
@@ -4433,12 +4680,20 @@
         function computeComplexStats() {
             const workingDaysList = getWorkingDaysList(students);
             let ayahs = 0, pages = 0, quarters = 0, points = 0;
+            let generalHizb = 0, generalJuz = 0;
             let expected = 0, actual = 0, activeExpected = 0, activeActual = 0, chronic = 0;
 
             students.forEach(st => {
                 const s = getCumulativeStats(st);
                 // totalAyahs/totalPages/totalRawQuarters تشمل المسار اليومي واللوحة الذهبية معاً
-                ayahs += s.totalAyahs; pages += s.totalPages; quarters += s.totalRawQuarters; points += s.tripPoints;
+                if (isGeneralProgram()) {
+                    const totals = generalRecitationTotals(st);
+                    for (const kind of ['new', 'review']) {
+                        ayahs += totals[kind].ayahs; pages += totals[kind].pages; quarters += totals[kind].quarters;
+                        generalHizb += totals[kind].hizb; generalJuz += totals[kind].juz;
+                    }
+                } else { ayahs += s.totalAyahs; pages += s.totalPages; quarters += s.totalRawQuarters; }
+                points += s.tripPoints;
 
                 const att = calculateStudentAttendance(st, workingDaysList);
                 expected += att.expectedDays; actual += att.actualDays;
@@ -4455,8 +4710,8 @@
                 workingDaysList,
                 studentCount: students.length,
                 ayahs, pages, points: roundPointTotal(points), quarters,
-                juzs: quarters / 8,
-                hizbs: quarters / 4,
+                juzs: isGeneralProgram() ? generalJuz : quarters / 8,
+                hizbs: isGeneralProgram() ? generalHizb : quarters / 4,
                 expected, actual, activeExpected, activeActual, chronic,
                 attendancePct: pct(actual, expected),
                 activePct: pct(activeActual, activeExpected),
@@ -4512,10 +4767,10 @@
                      `حضر ${num(c.presentToday)} · غاب ${num(c.absentToday)}`, "goHome('page-students')") +
                 card('', '<i class="fas fa-quran"></i> الآيات', num(c.ayahs),
                      'حفظاً ومراجعة', "goRecords('recPanelStats')") +
-                card('', '<i class="fas fa-file-alt"></i> الصفحات', num(c.pages),
-                     'صفحات دقيقة', "goRecords('recPanelStats')") +
-                card('', '<i class="fas fa-book-open"></i> الأجزاء', dec(c.juzs, 2),
-                     `${dec(c.hizbs, 1)} حزب`, "goRecords('recPanelStats')") +
+                card('', isGeneralProgram() ? '<i class="fas fa-file-alt"></i> الأوجه' : '<i class="fas fa-file-alt"></i> الصفحات', isGeneralProgram() ? formatGeneralUnit(c.pages) : num(c.pages),
+                     isGeneralProgram() ? formatGeneralUnit(c.quarters) + ' ربع' : 'صفحات دقيقة', "goRecords('recPanelStats')") +
+                card('', '<i class="fas fa-book-open"></i> الأجزاء', isGeneralProgram() ? formatGeneralUnit(c.juzs) : dec(c.juzs, 2),
+                     isGeneralProgram() ? formatGeneralUnit(c.hizbs) + ' حزب' : `${dec(c.hizbs, 1)} حزب`, "goRecords('recPanelStats')") +
                 card(c.chronic ? 'alert' : '', '<i class="fas fa-user-xmark"></i> المنقطعون', num(c.chronic),
                      c.chronic ? 'ثلاثة أيام فأكثر' : 'لا انقطاع ولله الحمد', "goRecords('recPanelAbsence')");
 
@@ -5064,7 +5319,7 @@
                         <div class="absolute -top-2 -right-2 bg-slate-700 text-white text-[11px] font-black px-2 py-1 rounded-full shadow-lg z-10" title="رقم الطالب">#${student.id}</div>
                         <div class="w-20 h-20 mb-3 cursor-pointer ${isPresent ? 'text-emerald-500':'text-slate-300'}" onclick="markPresent(${student.id})">${genericStudentIcon}</div>
                         <h3 class="text-xl font-black text-slate-800 mb-1 truncate w-full" title="${escapeHTML(student.name)}">${escapeHTML(student.name)}</h3>
-                        <div class="text-xs text-slate-500 mb-3 bg-slate-50 px-2 py-1 rounded w-full truncate border border-slate-100">إجمالي السرد: ${cStats.totalAyahs} آية</div>
+                        <div class="text-xs text-slate-500 mb-3 bg-slate-50 px-2 py-1 rounded w-full ${isGeneralProgram() ? '' : 'truncate'} border border-slate-100">${isGeneralProgram() ? generalRecitationHtml(student) : `إجمالي السرد: ${cStats.totalAyahs} آية`}</div>
                         <div class="flex w-full gap-2 mt-auto">
                             <button onclick="openSmartModal(${student.id})" class="flex-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white rounded-xl py-2 font-black text-lg transition-colors">إدخال إنجاز</button>
                             <button onclick="markPresent(${student.id})" class="w-10 rounded-xl flex items-center justify-center transition-colors ${isPresent?'bg-emerald-500 text-white':'bg-slate-100 text-slate-400 hover:bg-slate-200'}"><i class="fas fa-check"></i></button>
@@ -5215,7 +5470,7 @@
                 if (absenceStreak >= FOLLOWUP_MIN_STREAK) { absenceBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب ${absenceStreak} أيام</span>`; }
                 else if (absenceStreak === 1) { absenceBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded-lg text-xs font-black ml-2">⚠️ غاب آخر يوم</span>`; }
 
-                let quranStatsHtml = `
+                let quranStatsHtml = isGeneralProgram() ? generalRecitationHtml(s) : `
                     <div class="quran-stats-wrap flex flex-col items-center justify-center gap-2 w-full py-1">
                         <div class="flex flex-wrap justify-center gap-2 w-full">
                             <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-lg font-black text-sm border border-orange-200 shadow-sm flex items-center gap-1"><i class="fas fa-quran opacity-70"></i> ${s.sardAyahs} آية</span>
@@ -5292,7 +5547,16 @@
             let totalJuzs = globalQuarters / 8; let totalHizbs = globalQuarters / 4;
             let displayJuzs = (totalJuzs % 1 === 0) ? totalJuzs : totalJuzs.toFixed(2); let displayHizbs = (totalHizbs % 1 === 0) ? totalHizbs : totalHizbs.toFixed(1); let displayPages = Math.round(globalExactPages).toLocaleString('en-US'); 
             
-            let gText = `
+            const generalTotals = { new: { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 },
+                review: { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 } };
+            if (isGeneralProgram()) calcs.forEach(s => {
+                const t = generalRecitationTotals(s);
+                for (const kind of ['new', 'review']) for (const key of Object.keys(generalTotals[kind]))
+                    generalTotals[kind][key] += t[kind][key];
+            });
+            let gText = isGeneralProgram()
+                ? `<div class="text-sm font-bold">حفظ: ${generalFiveUnits(generalTotals.new)}</div><div class="text-sm font-bold">مراجعة: ${generalFiveUnits(generalTotals.review)}</div>`
+                : `
                 <div class="flex justify-center gap-2 mt-2">
                     <span class="bg-purple-900 text-purple-200 px-3 py-1 rounded text-base font-bold shadow print:bg-transparent print:text-black print:border-none print:shadow-none print:p-0">${displayPages} صفحة</span>
                     <span class="bg-blue-900 text-blue-200 px-3 py-1 rounded text-base font-bold shadow print:bg-transparent print:text-black print:border-none print:shadow-none print:p-0">${displayHizbs} حزب</span>
@@ -5306,7 +5570,7 @@
                         <td class="py-5 px-4 text-right print:border-slate-300">المجموع التراكمي العام للبرنامج</td>
                         <td class="py-5 px-4 text-center border-r border-slate-700 text-slate-400 print:text-slate-800 print:border-slate-300">-</td>
                         <td class="py-5 px-4 text-center border-r border-slate-700 bg-slate-900/40 print:bg-transparent print:border-slate-300">
-                            <div class="text-orange-400 print:text-black font-black text-3xl mb-1">${totalAyahsAll.toLocaleString('en-US')} آية</div>
+                            ${isGeneralProgram() ? '' : `<div class="text-orange-400 print:text-black font-black text-3xl mb-1">${totalAyahsAll.toLocaleString('en-US')} آية</div>`}
                             ${gText}
                         </td>
                         <td class="py-5 px-4 text-center border-r border-slate-700 text-blue-400 print:text-slate-800 print:border-slate-300">-</td>
@@ -5318,8 +5582,18 @@
             
             const eqDashboard = document.getElementById('overallEquivalencyDashboard');
             if (eqDashboard) {
-                if (students.length > 0 && totalAyahsAll > 0) {
-                    eqDashboard.classList.remove('hidden'); document.getElementById('eqTotalAyahs').innerText = totalAyahsAll.toLocaleString('en-US'); document.getElementById('eqTotalPages').innerText = displayPages; document.getElementById('eqTotalHizbs').innerText = displayHizbs; document.getElementById('eqTotalJuzs').innerText = displayJuzs;
+                const general = isGeneralProgram();
+                const combined = {};
+                if (general) for (const key of Object.keys(generalTotals.new)) combined[key] = generalTotals.new[key] + generalTotals.review[key];
+                document.getElementById('eqPagesLabel').innerText = general ? 'أوجه' : 'صفحات';
+                document.getElementById('eqGeneralQuartersCard').classList.toggle('hidden', !general);
+                if (students.length > 0 && (general ? combined.ayahs : totalAyahsAll) > 0) {
+                    eqDashboard.classList.remove('hidden');
+                    document.getElementById('eqTotalAyahs').innerText = general ? combined.ayahs.toLocaleString('en-US') : totalAyahsAll.toLocaleString('en-US');
+                    document.getElementById('eqTotalPages').innerText = general ? formatGeneralUnit(combined.pages) : displayPages;
+                    document.getElementById('eqTotalHizbs').innerText = general ? formatGeneralUnit(combined.hizb) : displayHizbs;
+                    document.getElementById('eqTotalJuzs').innerText = general ? formatGeneralUnit(combined.juz) : displayJuzs;
+                    if (general) document.getElementById('eqTotalQuarters').innerText = formatGeneralUnit(combined.quarters);
                 } else { eqDashboard.classList.add('hidden'); }
             }
             
@@ -5328,10 +5602,19 @@
                 dates.forEach(dStr => {
                     let dayData = s.history[dStr];
                     if(dayData) {
-                        const ds = dayStats(dayData, dens);   // الأساسي + الذهبي، لليوم القديم والجديد (يوم بلا كميات يضيف أصفاراً فيبقى صفّه)
-                        if(!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0, hijri: dayData.hijri || dStr };
-                        dailyProduction[dStr].ayahs += ds.ayahs + ds.golden.ayahs;
-                        dailyProduction[dStr].exactPages += ds.pages + ds.golden.pages; dailyProduction[dStr].quarters += ds.quarters + ds.golden.quarters;
+                        if (isGeneralProgram()) {
+                            const totals = generalRecitationTotals({ history: { day: dayData } });
+                            if (!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0,
+                                hijri: dayData.hijri || dStr, general: generalRecitationTotals({ history: {} }) };
+                            const target = dailyProduction[dStr];
+                            for (const kind of ['new', 'review']) for (const key of Object.keys(totals[kind])) target.general[kind][key] += totals[kind][key];
+                            target.ayahs += totals.new.ayahs + totals.review.ayahs;
+                        } else {
+                            const ds = dayStats(dayData, dens);   // الأساسي + الذهبي، لليوم القديم والجديد (يوم بلا كميات يضيف أصفاراً فيبقى صفّه)
+                            if(!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0, hijri: dayData.hijri || dStr };
+                            dailyProduction[dStr].ayahs += ds.ayahs + ds.golden.ayahs;
+                            dailyProduction[dStr].exactPages += ds.pages + ds.golden.pages; dailyProduction[dStr].quarters += ds.quarters + ds.golden.quarters;
+                        }
                     }
                 });
             });
@@ -5353,6 +5636,8 @@
                             <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg font-black text-sm border border-blue-200 shadow-sm flex items-center gap-1"><i class="fas fa-bookmark opacity-70"></i> ${dHizbs} حزب و ${dQuarters} ربع</span>
                             <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-black text-sm border border-emerald-200 shadow-sm flex items-center gap-1"><i class="fas fa-book-open opacity-70"></i> ${dJuzs} جزء</span>
                         </div>`;
+                    if (isGeneralProgram()) dParts = '<div class="text-sm font-bold">حفظ: ' + generalFiveUnits(dayObj.general.new) +
+                        '</div><div class="text-sm font-bold">مراجعة: ' + generalFiveUnits(dayObj.general.review) + '</div>';
                     dailyBody.innerHTML += `
                         <tr class="border-b border-slate-200 hover:bg-purple-50/40">
                             <td class="py-4 px-6 font-bold text-slate-700">${dayObj.hijri || dStr}</td>
@@ -6713,6 +6998,20 @@
             const calcs = students.map(s => { return {...s, ...getCumulativeStats(s)}; }).sort((a,b)=>b.tripPoints - a.tripPoints);
             const exp = calcs.map((s, idx) => { 
                 let attStats = calculateStudentAttendance(s, workingDaysList);
+                if (isGeneralProgram()) {
+                    const t = generalRecitationTotals(s);
+                    const fields = { "م": idx + 1, "اسم الطالب": s.name,
+                        "عدد أيام الحضور": attStats.actualDays, "عدد أيام الغياب": attStats.absences };
+                    for (const [kind, label] of [['new', 'الحفظ'], ['review', 'المراجعة']]) {
+                        fields[`${label} - الآيات`] = t[kind].ayahs;
+                        fields[`${label} - الأوجه`] = t[kind].pages;
+                        fields[`${label} - الأرباع`] = t[kind].quarters;
+                        fields[`${label} - الأحزاب`] = t[kind].hizb;
+                        fields[`${label} - الأجزاء`] = t[kind].juz;
+                    }
+                    fields['النقاط التراكمية'] = s.tripPoints;
+                    return fields;
+                }
                 return { 
                     "م": idx + 1,
                     "اسم الطالب": s.name, "عدد أيام الحضور": attStats.actualDays, "عدد أيام الغياب": attStats.absences, 
