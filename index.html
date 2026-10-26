@@ -1163,6 +1163,11 @@
                         <span class="pc-desc">حصر الغائبين والمنقطعين · واتساب</span>
                         <span class="pc-badge" id="rcBadgeAbsence">—</span>
                     </button>
+                    <button id="generalWeeklyCard" class="panel-card" style="--pc-accent:#16a34a; --pc-bg:#f0fdf4; display:none" onclick="openRecordsSection('recPanelAbsence')">
+                        <span class="pc-icon"><i class="fab fa-whatsapp"></i></span>
+                        <span class="pc-title">رسائل الأسبوع</span>
+                        <span class="pc-desc">رسالة جاهزة لولي أمر كل طالب</span>
+                    </button>
                     <button id="recordsExamCard" class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openRecordsSection('recPanelExam')">
                         <span class="pc-icon"><i class="fas fa-award"></i></span>
                         <span class="pc-title">نتائج الاختبار</span>
@@ -1250,6 +1255,18 @@
                                 <button onclick="copyFollowupList()" class="bg-red-50 hover:bg-red-100 text-red-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-red-300">
                                     <i class="fab fa-whatsapp text-red-600 text-2xl"></i> حصر من يحتاج متابعة (يومان فأكثر)
                                 </button>
+                            </div>
+                            <div id="generalWeeklyMessages" class="hidden bg-white rounded-2xl border-2 border-green-300 p-4 space-y-3">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <h3 class="text-xl font-black text-green-800">رسائل الأسبوع</h3>
+                                    <label for="generalMessageWeek" class="font-bold">الأسبوع:</label>
+                                    <select id="generalMessageWeek" onchange="renderGeneralWeeklyMessages()" class="border-2 border-green-300 rounded-xl p-2 font-bold">
+                                        <option value="previous">الماضي المكتمل</option>
+                                        <option value="current">الحالي حتى اليوم</option>
+                                    </select>
+                                    <span id="generalMessageWeekDates" class="text-slate-600 font-bold"></span>
+                                </div>
+                                <div id="generalWeeklyMessageList" class="space-y-2"></div>
                             </div>
                             <div id="absenceDetailList" class="space-y-2"></div>
                         </div>
@@ -4877,6 +4894,7 @@
             if (typeof updateRecordsBadges === 'function') updateRecordsBadges();
             if (typeof updateSettingsBadges === 'function') updateSettingsBadges();
             if (document.getElementById('recPanelAbsence')?.classList.contains('active')) renderAbsenceReport();
+            if (isGeneralProgram() && document.getElementById('recPanelAbsence')?.classList.contains('active')) renderGeneralWeeklyMessages();
             if (typeof scheduleNoLevelCheck === 'function') scheduleNoLevelCheck();
             // لوحة الرئيسية آخر شيء وفي حمايتها الخاصة: لو أخفقت لا تُسقط بقية الشاشات معها
             try { renderHomeDashboard(); } catch (e) { console.error('renderHomeDashboard error:', e); }
@@ -4908,9 +4926,9 @@
                 mode: document.getElementById('farsAutoMode')?.value || 'all', // كل الطلاب / معرّف شريحة / انضباط
                 savedAt: new Date().toISOString(),
                 fars: [
-                    { id: student1 ? student1.id : null, name: student1 ? student1.name : null, achievement: ach1 || "التميز في الحفظ والسرد التراكمي" },
-                    { id: student2 ? student2.id : null, name: student2 ? student2.name : null, achievement: ach2 || "التميز في الحفظ والسرد التراكمي" },
-                    { id: student3 ? student3.id : null, name: student3 ? student3.name : null, achievement: ach3 || "التميز في الحفظ والسرد التراكمي" }
+                    { id: student1 ? student1.id : null, ...(isGeneralProgram() ? { sid: student1?.sid || null } : {}), name: student1 ? student1.name : null, achievement: ach1 || "التميز في الحفظ والسرد التراكمي" },
+                    { id: student2 ? student2.id : null, ...(isGeneralProgram() ? { sid: student2?.sid || null } : {}), name: student2 ? student2.name : null, achievement: ach2 || "التميز في الحفظ والسرد التراكمي" },
+                    { id: student3 ? student3.id : null, ...(isGeneralProgram() ? { sid: student3?.sid || null } : {}), name: student3 ? student3.name : null, achievement: ach3 || "التميز في الحفظ والسرد التراكمي" }
                 ]
             });
 
@@ -6272,6 +6290,110 @@
             setTimeout(cleanup, 10000);
         }
 
+        // لا تقرأ هذه الدالة الواجهة أو الساعة أو السحابة؛ أدوات الميزان والنقاط وأسماء السور تُمرَّر في settings.
+        function buildGeneralWeeklyMessage(student, week, settings) {
+            const history = student.history || {};
+            const number = n => (Math.round(n * 10) / 10).toLocaleString('ar-EG', { maximumFractionDigits: 1 });
+            const date = ds => new Date(ds + 'T12:00:00');
+            const working = ds => settings.workingDays.includes(date(ds).getDay());
+            const weekStart = ds => {
+                const d = date(ds);
+                d.setDate(d.getDate() - d.getDay());
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            };
+            const pointsFor = day => Math.max(0, Number(settings.dayPoints(day)) || 0)
+                + (day.attended ? Number(settings.points.attendance) || 0 : 0);
+            const dates = [];
+            for (let d = date(week.startStr); d <= date(week.endStr); d.setDate(d.getDate() + 1)) {
+                const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                if (working(ds)) dates.push(ds);
+            }
+            const days = dates.map(ds => history[ds]).filter(Boolean);
+            const entries = dates.flatMap(ds => Object.values(history[ds]?.entries || {})
+                .filter(e => e && (e.kind === 'new' || e.kind === 'review'))
+                .map(e => ({ ...e, dateStr: ds })))
+                .sort((a, b) => a.dateStr.localeCompare(b.dateStr) || (a.at || 0) - (b.at || 0));
+            const newEntries = entries.filter(e => e.kind === 'new');
+            const reviewEntries = entries.filter(e => e.kind === 'review');
+            const quantity = list => {
+                let lines = 0, unavailable = false;
+                list.forEach(e => {
+                    try {
+                        const measuredLines = settings.measureEntry(e).lines;
+                        if (Number.isFinite(measuredLines)) lines += measuredLines;
+                        else unavailable = true;
+                    } catch (err) { unavailable = true; }
+                });
+                return unavailable ? 'تعذر قياس بعض التسجيلات' : number(lines) + ' سطر';
+            };
+            const range = e => {
+                const from = e.spec?.from, to = e.spec?.to;
+                return from && to
+                    ? `من ${settings.surahName(from[0])} (${from[1]}) إلى ${settings.surahName(to[0])} (${to[1]})`
+                    : 'مدى غير محدد في التسجيل';
+            };
+            const attended = days.filter(d => d.attended).length;
+            const excused = days.filter(d => d.attended === false && d.absence === 'excused').length;
+            const unexcused = days.filter(d => d.attended === false && d.absence === 'unexcused').length;
+            const unrecorded = dates.length - attended - excused - unexcused;
+            const currentPoints = dates.reduce((sum, ds) => sum + (history[ds] ? pointsFor(history[ds]) : 0), 0);
+            const past = new Map();
+            Object.keys(history).filter(ds => ds < week.startStr && /^\d{4}-\d{2}-\d{2}$/.test(ds) && working(ds)
+                && (history[ds]?.attended === true || history[ds]?.attended === false || Object.keys(history[ds]?.entries || {}).length > 0))
+                .forEach(ds => { const start = weekStart(ds); past.set(start, (past.get(start) || 0) + pointsFor(history[ds])); });
+            const average = past.size ? Array.from(past.values()).reduce((sum, p) => sum + p, 0) / past.size : null;
+            const hijri = days.map(d => d.hijri).filter(Boolean);
+            const hijriLabel = hijri.length ? ` (هجري: ${hijri[0]}${hijri.at(-1) === hijri[0] ? '' : ' إلى ' + hijri.at(-1)})` : '';
+            const newRanges = newEntries.length ? newEntries.map(range).join('؛ ') : 'لا تسجيل جديد';
+            return `السلام عليكم ورحمة الله وبركاته\n`
+                + `تقرير الطالب: ${student.name}\n`
+                + `الأسبوع: ${week.startStr} إلى ${week.endStr}${hijriLabel}\n\n`
+                + `الحفظ الجديد: ${newRanges} — ${quantity(newEntries)}\n`
+                + `المراجعة: ${quantity(reviewEntries)}\n`
+                + `الحضور: ${number(attended)} من ${number(dates.length)} أيام عمل؛ الغياب بعذر: ${number(excused)}؛ بغير عذر: ${number(unexcused)}`
+                + (unrecorded ? `؛ أيام بلا تسجيل: ${number(unrecorded)}` : '') + `\n`
+                + `نقاط هذا الأسبوع: ${number(currentPoints)}؛ ${average === null ? 'أول أسبوع' : `متوسط أسابيعه السابقة: ${number(average)}`}\n\n`
+                + settings.brandName;
+        }
+
+        function getGeneralMessageWeek(current) {
+            const now = new Date();
+            const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+            const start = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() - (current ? 0 : 7));
+            const end = current ? now : new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+            return { startStr: formatDateLocal(start), endStr: formatDateLocal(end) };
+        }
+
+        function renderGeneralWeeklyMessages() {
+            if (!isGeneralProgram()) return;
+            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
+            document.getElementById('generalMessageWeekDates').textContent = `${week.startStr} — ${week.endStr}`;
+            const list = document.getElementById('generalWeeklyMessageList');
+            list.innerHTML = students.length ? students.map((s, i) => `
+                <div class="flex items-center justify-between gap-3 border rounded-xl p-3 bg-green-50">
+                    <span class="font-bold">${escapeHTML(s.name)}</span>
+                    <button type="button" data-student-index="${i}" class="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2 font-black">إرسال</button>
+                </div>`).join('') : '<p class="text-slate-500">لا طلاب في هذا الموسم.</p>';
+            list.querySelectorAll('button[data-student-index]').forEach(button => {
+                button.addEventListener('click', () => sendGeneralWeeklyMessage(students[Number(button.dataset.studentIndex)]));
+            });
+        }
+
+        function sendGeneralWeeklyMessage(student) {
+            if (!isGeneralProgram() || !student) return;
+            if (!measureReady() || !quranMeta) { showToast('ميزان المصحف غير جاهز؛ افتح الرسائل بعد اكتمال تحميله', 'error'); return; }
+            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
+            const settings = { ...getProgramSettings(), measureEntry, dayPoints,
+                surahName: n => quranMeta.surahs?.references?.[n - 1]?.name?.replace('سُورَةُ ', '') || `سورة ${n}`,
+                brandName: programBrandName() };
+            const msg = buildGeneralWeeklyMessage(student, week, settings);
+            const phone = normalizeSaudiPhone(student.parentPhone);
+            window.location.href = phone
+                ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+                : `whatsapp://send?text=${encodeURIComponent(msg)}`;
+            showToast(phone ? 'جاري فتح محادثة ولي الأمر...' : 'جاري فتح واتساب؛ اختر ولي الأمر بنفسك');
+        }
+
         function copyAbsenteesList() {
             const absentees = students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
             if(absentees.length === 0) { showToast("لا يوجد غائبين اليوم ولله الحمد!", "success"); return; }
@@ -6754,6 +6876,9 @@
             if (!window.almahraPrograms) return;
             const general = isGeneralProgram();
             document.body.classList.toggle('program-general', general);
+            const weeklyCard = document.getElementById('generalWeeklyCard');
+            if (weeklyCard) weeklyCard.style.display = general ? '' : 'none';
+            document.getElementById('generalWeeklyMessages')?.classList.toggle('hidden', !general);
             if (general && document.getElementById('setPanelExam')?.classList.contains('active')) backToSettingsHome();
             if (general && document.getElementById('recPanelExam')?.classList.contains('active')) backToRecordsHome();
             ['settingsExamCard', 'recordsExamCard', 'setPanelExam', 'recPanelExam'].forEach(id => {
@@ -6893,6 +7018,7 @@
                 document.getElementById(panelId)?.classList.add('active');
             }
             if (panelId === 'recPanelAbsence') renderAbsenceReport();
+            if (panelId === 'recPanelAbsence' && isGeneralProgram()) renderGeneralWeeklyMessages();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
