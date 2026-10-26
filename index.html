@@ -1820,6 +1820,14 @@
                             </div>
                         </div>
                     </div>
+                    <div id="generalRecitationFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+                        <label class="font-bold text-slate-700">التقدير
+                            <select id="smartGrade" onchange="calculateQuran()" class="w-full p-3 mt-2 border-2 rounded-xl"><option value="">اختر التقدير</option></select>
+                        </label>
+                        <label class="font-bold text-slate-700">المعلم الذي سمّع
+                            <select id="smartHeardBy" class="w-full p-3 mt-2 border-2 rounded-xl"><option value="">اختر المعلم</option></select>
+                        </label>
+                    </div>
                     <!-- معايير الانضباط -->
                     <div id="criteriaSection" class="bg-amber-50 p-5 rounded-3xl border-2 border-amber-300">
                         <h3 class="text-xl md:text-2xl font-black text-amber-800 mb-3 flex items-center gap-2">
@@ -1842,7 +1850,7 @@
                 </div>
                 <div class="p-6 bg-slate-200 flex flex-wrap gap-4 border-t-2 border-slate-300 rounded-b-3xl">
                     <!-- حفظ المعايير وحدها بلا تسجيل سرد: خيار صريح لا يُخمَّن من «المدى لم يُلمس» -->
-                    <label for="disciplineOnlyCheck" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-amber-300 text-amber-800 font-black text-lg md:text-xl cursor-pointer select-none"><input type="checkbox" id="disciplineOnlyCheck" class="w-6 h-6 rounded accent-amber-600"> انضباط فقط — بلا سرد</label>
+                        <label for="disciplineOnlyCheck" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-amber-300 text-amber-800 font-black text-lg md:text-xl cursor-pointer select-none"><input type="checkbox" id="disciplineOnlyCheck" onchange="if (isGeneralProgram()) calculateQuran()" class="w-6 h-6 rounded accent-amber-600"> انضباط فقط — بلا سرد</label>
                     <button onclick="saveSmartProgress()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة الإنجاز اليومي وحفظ السجل</button>
                 </div>
             </div>
@@ -2013,6 +2021,14 @@
                         <button id="attEditPresentBtn" onclick="setAttendanceEditChoice(true)" class="py-3 rounded-xl font-black text-lg border-4 transition-all">حاضر</button>
                         <button id="attEditAbsentBtn" onclick="setAttendanceEditChoice(false)" class="py-3 rounded-xl font-black text-lg border-4 transition-all">غائب</button>
                     </div>
+                    <div id="generalAbsenceFields" class="hidden mt-4 space-y-3">
+                        <label class="block font-bold">سبب الغياب
+                            <select id="attEditAbsence" class="w-full p-3 mt-2 border-2 rounded-xl"><option value="">اختر السبب</option></select>
+                        </label>
+                        <label class="block font-bold">ملاحظة (اختيارية)
+                            <textarea id="attEditNote" class="w-full p-3 mt-2 border-2 rounded-xl"></textarea>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300">
@@ -2053,6 +2069,7 @@
     <script src="quran/quran-lines.js?v=75b8c03961"></script>
     <script src="quran/quran-words.js?v=c2a2af8c5b"></script>
     <script src="quran/quran-measure.js?v=30d5d31b16"></script>
+    <script src="general-points.js"></script>
     <script>
         let students = [];
         let todayStr = ""; 
@@ -2101,12 +2118,21 @@
                 criteria: Array.isArray(s?.criteria) ? s.criteria : [],
                 tiers: Array.isArray(s?.tiers) ? s.tiers : [],
                 stages: Array.isArray(s?.stages) ? s.stages : [],
-                teachers: Array.isArray(s?.teachers) ? s.teachers : []
+                teachers: Array.isArray(s?.teachers) ? s.teachers : [],
+                ...(isGeneralProgram() ? {
+                    grades: Array.isArray(s?.grades) ? s.grades : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.grades,
+                    kindMult: s?.kindMult || window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.kindMult,
+                    absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence
+                } : {})
             };
         }
 
         function isGeneralProgram() {
             return window.almahraPrograms?.getCurrentProgramId() === 'general';
+        }
+
+        function roundPointTotal(value) {
+            return isGeneralProgram() ? Math.round(value * 10) / 10 : value;
         }
 
         function programBrandName() {
@@ -3454,7 +3480,7 @@
             const ranked = students.map(s => {
                 let weeklyPoints = 0;
                 for (const d in s.history) { if (d >= range.startStr && d <= range.endStr) weeklyPoints += dayPoints(s.history[d]); }
-                return { id: s.id, name: s.name, weeklyPoints };
+                return { id: s.id, name: s.name, weeklyPoints: roundPointTotal(weeklyPoints) };
             }).filter(x => x.weeklyPoints > 0).sort((a,b) => b.weeklyPoints - a.weeklyPoints);
             return { range, top3: ranked.slice(0, 3) };
         }
@@ -3464,9 +3490,10 @@
             const modal = document.getElementById('royalCelebrationModal');
             document.getElementById('royalStudentName').innerText = name;
             document.getElementById('royalDesc').innerText = desc;
-            document.getElementById('royalPoints').innerText = `+ ${points} نقطة ذهبية`;
-            document.getElementById('royalTotal').innerText = `🏆 الرصيد: ${totalPts} نقطة`;
+            document.getElementById('royalPoints').innerText = `+ ${roundPointTotal(points)} نقطة ذهبية`;
+            document.getElementById('royalTotal').innerText = `🏆 الرصيد: ${roundPointTotal(totalPts)} نقطة`;
             document.getElementById('royalRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${rank}`;
+            document.getElementById('royalRank').classList.toggle('hidden', isGeneralProgram() && students.length > 1 && rank === students.length);
             
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -3593,9 +3620,47 @@
             return true;
         }
         function canWriteHistory(fields) {
-            if (isGeneralProgram() && Object.keys(fields).some(k => k === 'history' || k.startsWith('history.'))) {
-                showToast('التسميع في البرنامج العام يُفعَّل بعد إضافة التقدير', 'error');
-                return false;
+            if (!isGeneralProgram()) return true;
+            const keys = Object.keys(fields).filter(k => k === 'history' || k.startsWith('history.'));
+            for (const key of keys) {
+                const match = /^history\.[^.]+\.(.+)$/.exec(key);
+                const path = match?.[1];
+                const value = fields[key];
+                if (!path) { showToast('صيغة سجل الطالب غير مسموحة', 'error'); return false; }
+                if (path === 'attended') {
+                    if (typeof value !== 'boolean') { showToast('حالة الحضور غير صالحة', 'error'); return false; }
+                    if (value === false && (!keys.some(k => k === key.replace(/attended$/, 'absence') && ['excused', 'unexcused'].includes(fields[k])) ||
+                        typeof fields[key.replace(/attended$/, 'note')] !== 'string')) {
+                        showToast('اختر سبب الغياب وسجّل الملاحظة ولو فارغة', 'error'); return false;
+                    }
+                } else if (path === 'absence') {
+                    if (!['excused', 'unexcused'].includes(value) && value !== DEL_FIELD) { showToast('سبب الغياب غير صالح', 'error'); return false; }
+                    if (value === DEL_FIELD && fields[key.replace(/absence$/, 'attended')] !== true) { showToast('مسح الغياب يتطلب تسجيل الحضور لليوم نفسه', 'error'); return false; }
+                } else if (path === 'note') {
+                    if (typeof value !== 'string' && value !== DEL_FIELD) { showToast('ملاحظة الغياب غير صالحة', 'error'); return false; }
+                    if (value === DEL_FIELD && fields[key.replace(/note$/, 'attended')] !== true) { showToast('مسح الملاحظة يتطلب تسجيل الحضور لليوم نفسه', 'error'); return false; }
+                } else if (path === 'hijri' || path === 'criteria' || path === 'criteriaPoints' || path === 'sardAccreditation') {
+                    // حقول اليوم الموجودة مسبقاً، بما فيها تصفير السرد.
+                } else if (/^entries\.[^.]+$/.test(path)) {
+                    if (value === DEL_FIELD) continue;
+                    if (!value || !['new', 'review'].includes(value.kind) || (!value.iv && !value.spec)) {
+                        showToast('تسجيل التسميع يحتاج نوعاً ومقطعاً صالحين', 'error'); return false;
+                    }
+                    const settings = getProgramSettings();
+                    if (!settings.teachers.some(t => t.id === value.heardBy)) {
+                        showToast('المعلم الذي سمّع غير موجود في الإعدادات الحالية', 'error'); return false;
+                    }
+                    let measured;
+                    try { measured = measureEntry(value); }
+                    catch (err) { showToast('مقطع التسميع غير صالح أو خارج المصحف', 'error'); return false; }
+                    if (measured.ayahs === 0) { showToast('مقطع التسميع فارغ', 'error'); return false; }
+                    let expected;
+                    try { expected = generalEntryPoints({ lines: measured.lines, kind: value.kind, gradeId: value.grade, settings }); }
+                    catch (err) { showToast('تعذر حساب نقاط التسميع: ' + err.message, 'error'); return false; }
+                    if (value.points !== expected.points || value.mult !== expected.mult) {
+                        showToast('نقاط التسميع أو معامله لا يطابقان المقطع والإعدادات الحالية', 'error'); return false;
+                    }
+                } else { showToast('نوع التسجيل غير مسموح في البرنامج العام', 'error'); return false; }
             }
             return true;
         }
@@ -4120,7 +4185,7 @@
         // المقطع بتفسير المهرة نفسه (الصاعد عبر السور: سورة البداية من آيتها إلى آخرها + ما بينهما + سورة النهاية من أولها)؛
         // quartersCrossed صار كسراً دقيقاً (نسبة أسطر كل ربع) بدل عدّ بدايات الأرباع، وexactPages بالأسطر بدل كسر الآية
         function calculateRangeStats(s1, a1, s2, a2) {
-            const none = { totalAyahs: 0, exactPages: 0, quartersCrossed: 0, intervals: [] };
+            const none = { totalAyahs: 0, lines: 0, exactPages: 0, quartersCrossed: 0, intervals: [] };
             if (!quranMeta || !measureReady()) return none;
             s1 = parseInt(s1); s2 = parseInt(s2);   // حقل قديم قد يصل نصاً من السحابة («5»)
             const ref1 = quranMeta.surahs.references[s1 - 1], ref2 = quranMeta.surahs.references[s2 - 1];
@@ -4130,7 +4195,7 @@
             a1 = Math.min(Math.max(1, a1), ref1.numberOfAyahs); a2 = Math.min(Math.max(1, a2), ref2.numberOfAyahs);
             try {
                 const r = QuranMeasure.measure({ from: [s1, a1], to: [s2, a2] });
-                return { totalAyahs: r.ayahs, exactPages: r.pages, quartersCrossed: r.quarters, intervals: r.intervals };
+                return { totalAyahs: r.ayahs, lines: r.lines, exactPages: r.pages, quartersCrossed: r.quarters, intervals: r.intervals };
             } catch (e) { console.error('calculateRangeStats:', e); return none; }
         }
 
@@ -4190,7 +4255,7 @@
                 // تُحسَّن لاحقاً في الترحيل من نصوص المشرفين («من الناس إلى النبأ»…) — قرار مؤقت ينتظر المالك
                 else if ((day.sard || 0) > 0) { acc.ayahs = day.sard; acc.pages = day.sard / 18.3221567; acc.quarters = day.sard / 45.80539; acc.estimate = true; }
                 acc.golden = { ayahs: day.goldenSard || 0, pages: day.goldenPages || 0, quarters: day.goldenRubs || 0 };
-                acc.points = day.earnedPoints || 0;
+                acc.points = roundPointTotal(day.earnedPoints || 0);
                 return acc;
             }
             Object.values(day.entries || {}).forEach(e => {
@@ -4207,12 +4272,12 @@
                 const t = (e.kind === 'golden' || e.kind === 'legacy-golden') ? acc.golden : acc;
                 t.ayahs += m.ayahs; t.pages += m.pages; t.quarters += m.quarters;
             });
-            acc.points += (day.groupDisciplinePoints || 0);
+            acc.points = roundPointTotal(acc.points + (day.groupDisciplinePoints || 0));
             return acc;
         }
         // نقاط اليوم = نقاط التسجيلات (+ المجموعة) + الانضباط، بحد أدنى صفر — تحل محل getDayPoints عند الربط
         // stats اختياري: نتيجة dayStats المحسوبة للقارئ نفسه، فلا تُقاس مقاطع اليوم مرتين (Sol — النقاط لا تتوقف على الكثافة)
-        const dayPoints = (day, stats) => day ? Math.max(0, (stats || dayStats(day)).points + (day.criteriaPoints || 0)) : 0;
+        const dayPoints = (day, stats) => day ? Math.max(0, roundPointTotal((stats || dayStats(day)).points + (day.criteriaPoints || 0))) : 0;
         // تسجيل يُكتب إلى Firestore: لا مفتاح قيمته undefined (Firestore ترفضه)، وnull يبقى
         function makeEntry(fields) { const e = {}; Object.keys(fields).forEach(k => { if (fields[k] !== undefined) e[k] = fields[k]; }); return e; }
         // مفتاح التسجيل يمنع جهازين من طمس تسجيل بعضهما: الوقت بالمللي ثانية + ٨ أحرف عشوائية (٣٦^٨ ≈ ٢٫٨ تريليون)
@@ -4307,6 +4372,7 @@
             // ويُكتب بمسارات منفردة (ق٩): مفاتيحه حتمية فجهازان يحوّلانه معاً يكتبان القيم نفسها، ولا يطمس أحدهما تسجيل الآخر
             const p = `history.${dateStr}.`, day = (student.history || {})[dateStr];
             const fields = Object.assign(pinBaseFields(student), { [p + 'attended']: true, [p + 'hijri']: hijriDateStr });
+            if (isGeneralProgram()) { fields[p + 'absence'] = DEL_FIELD; fields[p + 'note'] = DEL_FIELD; }
             if (day && !('entries' in day)) {
                 const legacy = legacyEntriesOf(day, densityFor(student), dateStr);
                 Object.keys(legacy).forEach(k => { fields[p + 'entries.' + k] = legacy[k]; });
@@ -4325,7 +4391,7 @@
                 exactPages += ds.pages; quartersCrossed += ds.quarters;
                 goldenAyahs += ds.golden.ayahs; goldenPages += ds.golden.pages; goldenQuartersCrossed += ds.golden.quarters;
             }
-            tripPoints += (attendanceDays * getProgramSettings().points.attendance);
+            tripPoints = roundPointTotal(tripPoints + attendanceDays * getProgramSettings().points.attendance);
             quartersCrossed = snapQuarters(quartersCrossed); goldenQuartersCrossed = snapQuarters(goldenQuartersCrossed);
 
             let rawQuarters = quartersCrossed; let juzs = Math.floor(quartersCrossed / 8); let hizbs = Math.floor((quartersCrossed % 8) / 4); let quarters = Math.floor(quartersCrossed % 4);
@@ -4371,7 +4437,7 @@
             return {
                 workingDaysList,
                 studentCount: students.length,
-                ayahs, pages, points, quarters,
+                ayahs, pages, points: roundPointTotal(points), quarters,
                 juzs: quarters / 8,
                 hizbs: quarters / 4,
                 expected, actual, activeExpected, activeActual, chronic,
@@ -4544,7 +4610,7 @@
                 calcs.slice(0, 3).forEach((s, i) => {
                     rows += `
                         <div class="hs-row lead">
-                            <span class="hs-rank ${i === 1 ? 's2' : i === 2 ? 's3' : ''}">${i + 1}</span>
+                            ${isGeneralProgram() && calcs.length > 1 && i === calcs.length - 1 ? '' : `<span class="hs-rank ${i === 1 ? 's2' : i === 2 ? 's3' : ''}">${i + 1}</span>`}
                             <span class="hs-name" title="${escapeHTML(s.name)}">${escapeHTML(s.name)}</span>
                             <span class="hs-pts">${s.tripPoints.toLocaleString('en-US')}</span>
                         </div>`;
@@ -4600,17 +4666,18 @@
             // لضمان تطابق تام بين مجموع البنود والإجمالي الحقيقي، بدل استخدام دالة مختلفة الغرض (calculateStudentAttendance مخصصة لحساب نسبة الحضور لا نقاطه)
             let attendanceDays = 0;
             for (const d in student.history) { if (student.history[d].attended) attendanceDays++; }
-            const attendanceBonus = attendanceDays * getProgramSettings().points.attendance;
+            const attendanceBonus = roundPointTotal(attendanceDays * getProgramSettings().points.attendance);
 
             let groupBonus = 0;
             for (const d in student.history) { groupBonus += (student.history[d].groupDisciplinePoints || 0); }
+            groupBonus = roundPointTotal(groupBonus);
 
             const stats = getCumulativeStats(student);
-            const remainingPoints = stats.tripPoints - attendanceBonus - groupBonus;
+            const remainingPoints = roundPointTotal(stats.tripPoints - attendanceBonus - groupBonus);
 
             return {
                 attendanceDays, attendanceBonus, groupBonus, remainingPoints,
-                goldenAyahs: stats.goldenAyahs, goldenRawQuarters: stats.goldenRawQuarters, totalPoints: stats.tripPoints
+                goldenAyahs: stats.goldenAyahs, goldenRawQuarters: stats.goldenRawQuarters, totalPoints: roundPointTotal(stats.tripPoints)
             };
         }
         function openPointsBreakdownModal(studentId) {
@@ -4697,9 +4764,19 @@
 
             let stats = calculateRangeStats(s1, a1, s2, a2); document.getElementById('resAyahs').innerText = stats.totalAyahs;
             showRangePreview('res', stats);
-            const pts = getProgramSettings().points;
-            const multiplier = currentSardType === 'new' ? pts.newMemorization : pts.review;
-            document.getElementById('resWeightedPoints').innerText = stats.totalAyahs * multiplier;
+            if (isGeneralProgram()) {
+                const gradeId = document.getElementById('smartGrade').value;
+                let points = 0;
+                if (gradeId && !document.getElementById('disciplineOnlyCheck').checked) {
+                    try { points = generalEntryPoints({ lines: stats.lines, kind: currentSardType, gradeId, settings: getProgramSettings() }).points; }
+                    catch (e) { showToast(e.message, 'error'); }
+                }
+                document.getElementById('resWeightedPoints').innerText = points;
+            } else {
+                const pts = getProgramSettings().points;
+                const multiplier = currentSardType === 'new' ? pts.newMemorization : pts.review;
+                document.getElementById('resWeightedPoints').innerText = stats.totalAyahs * multiplier;
+            }
             if (typeof updateGrandTotal === 'function') updateGrandTotal();
         }
 
@@ -4755,7 +4832,7 @@
             const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
             const celModal = document.getElementById('knightCelebrationModal');
             document.getElementById('celebrationTitle').innerText = "تم تسجيل مراجعة الاستعداد للاختبار بنجاح! ✨"; document.getElementById('celebrationName').innerText = escapeHTML(student.name); document.getElementById('celebrationPoints').innerText = `+ ${weightedPoints} نقطة جديدة مضافة للسباق 🎁`;
-            const totalEl = document.getElementById('celebrationTotalPointsContainer'); if(totalEl) { document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`; document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`; totalEl.classList.remove('hidden'); }
+            const totalEl = document.getElementById('celebrationTotalPointsContainer'); if(totalEl) { document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`; document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`; document.getElementById('celebrationRank').classList.toggle('hidden', isGeneralProgram() && students.length > 1 && currentRank === students.length); totalEl.classList.remove('hidden'); }
             celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
             const canvasEl = document.getElementById('celebrationCanvas'); if (!window.localConfettiInstance) { window.localConfettiInstance = confetti.create(canvasEl, { resize: true }); }
             window.localConfettiInstance({ particleCount: 150, spread: 85, origin: { y: 0.5 } }); setTimeout(() => { closeKnightCelebration(); }, 7000);
@@ -4853,7 +4930,7 @@
         function closeThreeKnights() { document.getElementById('threeKnightsModal').classList.remove('flex'); document.getElementById('threeKnightsModal').classList.add('hidden'); }
         
         // بطاقة طالب واحدة في لوحة السباق
-        function tripCardHtml(s, idx, highest) {
+        function tripCardHtml(s, idx, highest, count) {
             const prog = (s.tripPoints / highest) * 100;
             const displayName = s.name.split(' ').slice(0, 3).join(' ');
             let rankClass = "rank-other", cardClass = "";
@@ -4864,7 +4941,7 @@
 
             return `
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-col gap-2 relative ${cardClass}">
-                    <div class="rank-badge ${rankClass}">${idx + 1}</div>
+                    ${isGeneralProgram() && count > 1 && idx === count - 1 ? '' : `<div class="rank-badge ${rankClass}">${idx + 1}</div>`}
                     <div class="flex justify-between items-center gap-3">
                         <span class="font-bold text-lg text-slate-700 flex items-center gap-1.5 min-w-0 flex-1 pl-2">
                             <div class="w-5 h-5 text-slate-400 shrink-0">${genericStudentIcon}</div>
@@ -4893,7 +4970,7 @@
             if (!tiersOn) {
                 grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pt-2 pb-6';
                 const highest = calcs[0]?.tripPoints > 0 ? calcs[0].tripPoints : 1;
-                grid.innerHTML = calcs.map((s, i) => tripCardHtml(s, i, highest)).join('');
+                grid.innerHTML = calcs.map((s, i) => tripCardHtml(s, i, highest, calcs.length)).join('');
                 return;
             }
 
@@ -4915,7 +4992,7 @@
                             <span class="bg-white/25 px-3 py-0.5 rounded-full text-sm font-black">${members.length} طالب</span>
                         </div>
                         <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                            ${members.map((s, i) => tripCardHtml(s, i, highest)).join('')}
+                            ${members.map((s, i) => tripCardHtml(s, i, highest, members.length)).join('')}
                         </div>
                     </div>`;
             });
@@ -4936,7 +5013,7 @@
                             ${isGeneralProgram() ? '' : '<button onclick="openBulkTierAssign()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg font-black text-sm">أدخل مقاديرهم</button>'}
                         </div>
                         <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                            ${noTier.map((s, i) => tripCardHtml(s, i, highest)).join('')}
+                            ${noTier.map((s, i) => tripCardHtml(s, i, highest, noTier.length)).join('')}
                         </div>
                     </div>`;
             }
@@ -5142,7 +5219,7 @@
                 
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-200 hover:bg-blue-50/50">
-                        <td class="py-3 px-2 text-center border-r border-slate-200 font-black text-slate-500 bg-slate-100/50">${idx + 1}</td>
+                        <td class="py-3 px-2 text-center border-r border-slate-200 font-black text-slate-500 bg-slate-100/50">${isGeneralProgram() && calcs.length > 1 && idx === calcs.length - 1 ? '' : idx + 1}</td>
                         <td class="py-3 px-4 font-bold text-slate-800 text-lg">${escapeHTML(s.name)}${absenceBadge}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 bg-slate-50"><div class="flex flex-col md:flex-row justify-center items-center gap-2"><span class="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-1.5 rounded shadow-sm border border-emerald-200 whitespace-nowrap"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> ${attStats.actualDays} يوم</span><span class="text-red-600 font-bold bg-red-50/80 px-2 py-1.5 rounded shadow-sm border border-red-200 whitespace-nowrap"><i class="fas fa-times-circle mr-1 text-red-400"></i> ${attStats.absences} يوم</span></div></td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 bg-orange-50/10 min-w-[280px]">${quranStatsHtml}</td>
@@ -5535,7 +5612,7 @@
                 // هل استوفى شروط الانضباط في هذا اليوم؟ (كل الشروط المؤشَّرة، أو تقييم إيجابي واحد إن لم يُؤشَّر شيء)
                 if (dayMeetsDisciplineCriteria(d)) disciplineDays++;
             });
-            return { points, sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };
+            return { points: roundPointTotal(points), sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };
         }
 
         // فرسان الأسبوع لشريحة (أو للكل) — مع شرط الحضور ومنع المخالفة الحاجبة
@@ -5837,15 +5914,26 @@
         }
 
         function updateGrandTotal() {
-            const sard = parseInt(document.getElementById('resWeightedPoints')?.innerText) || 0;
+            const sard = (isGeneralProgram() ? Number : parseInt)(document.getElementById('resWeightedPoints')?.innerText) || 0;
             const crit = parseInt(document.getElementById('criteriaTotal')?.innerText) || 0;
             const el = document.getElementById('resGrandTotal');
             if (!el) return;
-            const total = Math.max(0, sard + crit); // لا هبوط تحت الصفر
+            const total = Math.max(0, roundPointTotal(sard + crit)); // لا هبوط تحت الصفر
             el.textContent = total;
             // تنبيه بصري لو الخصم ابتلع النقاط
             const wrap = el.parentElement;
             if (wrap) wrap.classList.toggle('border-red-400', (sard + crit) < 0);
+        }
+
+        function refreshGeneralRecitationFields(student, settings, reset = false) {
+            const grade = document.getElementById('smartGrade');
+            const heard = document.getElementById('smartHeardBy');
+            const gradeId = reset ? '' : grade.value;
+            const heardBy = reset ? student.teacherId : heard.value;
+            grade.innerHTML = '<option value="">اختر التقدير</option>' + settings.grades.map(g => `<option value="${escapeHTML(g.id)}">${escapeHTML(g.name)} (${g.percent}٪)</option>`).join('');
+            grade.value = gradeId;
+            heard.innerHTML = '<option value="">اختر المعلم</option>' + settings.teachers.map(t => `<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`).join('');
+            heard.value = settings.teachers.some(t => t.id === heardBy) ? heardBy : '';
         }
 
         function openSmartModal(id) {
@@ -5877,12 +5965,15 @@
             } else { document.getElementById('startSurah').value = 114; document.getElementById('startAyah').value = 1; document.getElementById('endSurah').value = 114; document.getElementById('endAyah').value = 1; }
             endAyahTouched.end = false; endAyahTouched.examEnd = false;   // نافذة جديدة: آية النهاية لم يلمسها المشرف بعد
             document.getElementById('disciplineOnlyCheck').checked = false;   // «انضباط فقط» قرار لكل حفظ، لا يبقى من فتح سابق
-            updateAyahMax('start'); updateAyahMax('end'); setSardType('review'); calculateQuran();
-
             // تحديث مضاعفات النقاط من الإعدادات + عرض معايير الانضباط
-            const _pts = getProgramSettings().points;
+            const _settings = getProgramSettings();
+            const _pts = isGeneralProgram() ? _settings.kindMult : _settings.points;
             const _lblR = document.getElementById('lblReviewMult'); if (_lblR) _lblR.textContent = `(×${_pts.review})`;
             const _lblN = document.getElementById('lblNewMult'); if (_lblN) _lblN.textContent = `(×${_pts.newMemorization})`;
+            const generalFields = document.getElementById('generalRecitationFields');
+            generalFields.classList.toggle('hidden', !isGeneralProgram());
+            if (isGeneralProgram()) refreshGeneralRecitationFields(student, _settings, true);
+            updateAyahMax('start'); updateAyahMax('end'); setSardType('review');
             renderCriteriaList(student);
             criteriaAtOpen.sel = getCriteriaSelection();   // ما رسمته النافذة من السجل؛ الحفظ يقارن به
 
@@ -5907,9 +5998,27 @@
             const s1 = parseInt(startSurahSelect.value); const s2 = parseInt(endSurahSelect.value);
             const startAyahVal = parseInt(document.getElementById('startAyah').value) || 1; const endAyahVal = parseInt(document.getElementById('endAyah').value) || 1;
             const rangeStr = `من ${startSurahName} (${startAyahVal}) إلى ${endSurahName} (${endAyahVal})`;
-            const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal); const weightedPoints = parseInt(document.getElementById('resWeightedPoints').innerText) || 0;
+            const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal);
+            if (isGeneralProgram() && noLevelReason(student)) { showToast('أكمل بيانات الطالب: ' + noLevelReason(student), 'error'); return; }
+            const previewPoints = Number(document.getElementById('resWeightedPoints').innerText);
+            let weightedPoints = isGeneralProgram() ? previewPoints : parseInt(document.getElementById('resWeightedPoints').innerText) || 0;
+            let generalPoints = null, gradeId = '', heardBy = '';
+            if (isGeneralProgram() && !document.getElementById('disciplineOnlyCheck').checked) {
+                gradeId = document.getElementById('smartGrade').value;
+                heardBy = document.getElementById('smartHeardBy').value;
+                const settings = getProgramSettings();
+                if (!gradeId || !settings.teachers.some(t => t.id === heardBy)) { showToast('اختر التقدير والمعلم الذي سمّع', 'error'); return; }
+                try { generalPoints = generalEntryPoints({ lines: stats.lines, kind: currentSardType, gradeId, settings }); }
+                catch (e) { showToast(e.message, 'error'); return; }
+                weightedPoints = generalPoints.points;
+            }
             // «انضباط فقط» خيار صريح: لا تخمين بأن المدى لم يُلمس (آية الدَّين وحدها ٢:٢٨٢→٢:٢٨٢ تسميع صحيح)
             const disciplineOnly = document.getElementById('disciplineOnlyCheck').checked;
+            if (isGeneralProgram() && (disciplineOnly ? 0 : weightedPoints) !== previewPoints) {
+                calculateQuran();
+                showToast('تغيّرت الإعدادات؛ راجع النقاط ثم احفظ', 'error');
+                return;
+            }
             if (!disciplineOnly && stats.totalAyahs === 0) { showToast('اختر نطاقاً صحيحاً، أو أشّر انضباط فقط', 'error'); return; }
 
             // معايير الانضباط - تُستبدل كاملة (حالة اليوم، لا تراكم) وتُخزَّن منفصلة عن السرد
@@ -5918,8 +6027,8 @@
             const newCritPts = Object.values(critSel).reduce((a, b) => a + b, 0);
             const p = `history.${todayStr}.`;
             const fields = disciplineOnly
-                ? { [p + 'attended']: true, [p + 'hijri']: hijriDateStr }
-                : Object.assign(buildEntryPatch(student, todayStr, { kind: currentSardType, spec: { from: [s1, startAyahVal], to: [s2, endAyahVal] }, iv: stats.intervals, rep: 1, points: weightedPoints }),
+                ? { [p + 'attended']: true, [p + 'hijri']: hijriDateStr, ...(isGeneralProgram() ? { [p + 'absence']: DEL_FIELD, [p + 'note']: DEL_FIELD } : {}) }
+                : Object.assign(buildEntryPatch(student, todayStr, { kind: currentSardType, spec: { from: [s1, startAyahVal], to: [s2, endAyahVal] }, iv: stats.intervals, rep: 1, points: weightedPoints, ...(isGeneralProgram() ? { grade: gradeId, mult: generalPoints.mult, heardBy } : {}) }),
                     { lastDailySurah: s2, lastDailyAyah: endAyahVal, lastDailySardRange: rangeStr });
             // المعايير تُكتب إن أُشّر «انضباط فقط» (غرضه) أو غيّرها المشرف منذ فتح النافذة؛ وإلا لا تُرسل،
             // فلا يطمس حفظُ السرد معاييرَ سجّلها جهاز آخر بعد الفتح (اللقطة null = لم تُفتح النافذة: تُكتب كما كانت)
@@ -5930,16 +6039,16 @@
                 fields[p + 'criteriaPoints'] = newCritPts;
             }
 
-            const totalAdded = (disciplineOnly ? 0 : weightedPoints) + (writeCrit ? newCritPts - oldCritPts : 0);
+            const totalAdded = roundPointTotal((disciplineOnly ? 0 : weightedPoints) + (writeCrit ? newCritPts - oldCritPts : 0));
             if (!commitStudentPatch(student, fields)) return;
             updateAllUIs(); closeSmartModal();
 
             if (totalAdded > 0) {
-                var weightedPointsDisplay = totalAdded;
+                var weightedPointsDisplay = roundPointTotal(totalAdded);
                 const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
                 const celModal = document.getElementById('knightCelebrationModal');
                 document.getElementById('celebrationTitle').innerText = "تم تسجيل الإنجاز والتحصيل بنجاح! ✨"; document.getElementById('celebrationName').innerText = escapeHTML(student.name); document.getElementById('celebrationPoints').innerText = `+ ${weightedPointsDisplay} نقطة جديدة مضافة للسباق 🎁`;
-                const totalEl = document.getElementById('celebrationTotalPointsContainer'); if(totalEl) { document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`; document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`; totalEl.classList.remove('hidden'); }
+                const totalEl = document.getElementById('celebrationTotalPointsContainer'); if(totalEl) { document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`; document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`; document.getElementById('celebrationRank').classList.toggle('hidden', isGeneralProgram() && students.length > 1 && currentRank === students.length); totalEl.classList.remove('hidden'); }
                 celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
                 const canvasEl = document.getElementById('celebrationCanvas'); if (!window.localConfettiInstance) { window.localConfettiInstance = confetti.create(canvasEl, { resize: true }); }
                 window.localConfettiInstance({ particleCount: 150, spread: 85, origin: { y: 0.5 } }); setTimeout(() => { closeKnightCelebration(); }, 7000);
@@ -6200,7 +6309,7 @@
                 const m = `${p}entries.m_${todayStr}_`;
                 fields[m + 'daily'] = DEL_FIELD;
                 fields[m + 'golden'] = DEL_FIELD;
-                fields[m + 'points'] = { kind: 'legacy-points', points: 0 };
+                if (!isGeneralProgram()) fields[m + 'points'] = { kind: 'legacy-points', points: 0 };
             }
             // نص المحطات القديم يُحذف كذلك، وإلا بقيت المحطة الممسوحة في رسالة واتساب
             if (day.sardAccreditation !== undefined) fields[p + 'sardAccreditation'] = DEL_FIELD;
@@ -6211,10 +6320,14 @@
             if (!commitStudentPatch(student, fields)) return;
             updateAllUIs(); closeSmartModal(); showToast("تم تصفير إنجاز ونقاط اليوم بنجاح", "success");
         }
-        function markPresent(id) { const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended; if (!commitStudentPatch(student, { [`history.${todayStr}.attended`]: !curr, [`history.${todayStr}.hijri`]: hijriDateStr })) return; updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
+        function markPresent(id) { const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended;
+            if (isGeneralProgram() && curr) { openAttendanceEditModal(id, true); return; }
+            const fields = { [`history.${todayStr}.attended`]: !curr, [`history.${todayStr}.hijri`]: hijriDateStr };
+            if (isGeneralProgram() && !curr) { fields[`history.${todayStr}.absence`] = DEL_FIELD; fields[`history.${todayStr}.note`] = DEL_FIELD; }
+            if (!commitStudentPatch(student, fields)) return; updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
 
         let attEditStudentId = null; let attEditChoice = null;
-        function openAttendanceEditModal(id) {
+        function openAttendanceEditModal(id, chooseAbsent = false) {
             const student = students.find(s => s.id === id); if (!student) return;
             attEditStudentId = id; attEditChoice = null;
             document.getElementById('attEditStudentName').innerText = student.name;
@@ -6222,6 +6335,7 @@
             dateInput.max = todayStr; dateInput.value = todayStr;
             document.getElementById('attEditStatusDisplay').classList.add('hidden');
             loadAttendanceForDate();
+            if (isGeneralProgram() && chooseAbsent) setAttendanceEditChoice(false);
             const modal = document.getElementById('attendanceEditModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
@@ -6233,12 +6347,19 @@
             const student = students.find(s => s.id === attEditStudentId); if (!student) return;
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             attEditChoice = !!(student.history[dateStr] && student.history[dateStr].attended);
+            const absenceSelect = document.getElementById('attEditAbsence');
+            if (isGeneralProgram()) {
+                absenceSelect.innerHTML = '<option value="">اختر السبب</option>' + getProgramSettings().absence.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)}</option>`).join('');
+                absenceSelect.value = student.history[dateStr]?.absence || '';
+                document.getElementById('attEditNote').value = student.history[dateStr]?.note || '';
+            }
             document.getElementById('attEditStatusDisplay').classList.remove('hidden');
             updateAttendanceEditButtons();
         }
         function setAttendanceEditChoice(val) { attEditChoice = val; updateAttendanceEditButtons(); }
         function updateAttendanceEditButtons() {
             const presentBtn = document.getElementById('attEditPresentBtn'); const absentBtn = document.getElementById('attEditAbsentBtn');
+            document.getElementById('generalAbsenceFields').classList.toggle('hidden', !isGeneralProgram() || attEditChoice);
             if (attEditChoice) {
                 presentBtn.className = "py-3 rounded-xl font-black text-lg border-4 border-emerald-500 bg-emerald-500 text-white transition-all";
                 absentBtn.className = "py-3 rounded-xl font-black text-lg border-4 border-slate-300 bg-white text-slate-600 transition-all";
@@ -6252,6 +6373,17 @@
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
             const fields = { [`history.${dateStr}.attended`]: attEditChoice };
+            if (isGeneralProgram()) {
+                if (attEditChoice) {
+                    fields[`history.${dateStr}.absence`] = DEL_FIELD;
+                    fields[`history.${dateStr}.note`] = DEL_FIELD;
+                } else {
+                    const absence = document.getElementById('attEditAbsence').value;
+                    if (!['excused', 'unexcused'].includes(absence)) { showToast('اختر سبب الغياب', 'error'); return; }
+                    fields[`history.${dateStr}.absence`] = absence;
+                    fields[`history.${dateStr}.note`] = document.getElementById('attEditNote').value.trim();
+                }
+            }
             if (!student.history[dateStr]) {   // الهجري يُكتب لليوم الجديد فقط؛ الموجود يبقى نصّه
                 let hijriForDate;
                 try { hijriForDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(new Date(dateStr + 'T12:00:00')); }
@@ -6960,11 +7092,17 @@
             box.insertAdjacentHTML('beforeend', generalSettingRow({ id: `${kind}_${crypto.randomUUID()}`, name: '' }, kind));
         }
 
+        function generalTeacherIsUsed(student, teacherId) {
+            return student.teacherId === teacherId || Object.values(student.history || {}).some(day =>
+                Object.values(day?.entries || {}).some(entry => entry?.heardBy === teacherId));
+        }
+
         async function removeGeneralSettingRow(button, kind) {
             const row = button.closest('.general-setting-row');
             try {
                 const allStudents = await window.almahraPrograms.getAllStudents('general');
-                const used = [...allStudents, ...students].some(s => s[kind === 'stage' ? 'stage' : 'teacherId'] === row.dataset.id);
+                const used = [...allStudents, ...students].some(s => kind === 'stage'
+                    ? s.stage === row.dataset.id : generalTeacherIsUsed(s, row.dataset.id));
                 if (used) { showToast('انقل الطلاب المرتبطين بهذا العنصر قبل حذفه', 'error'); return; }
                 row.remove();
             } catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); }
@@ -7012,11 +7150,22 @@
                         <div class="grid grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-600 mb-1">الحضور</label>
-                                <input type="number" id="psPtAtt" value="${(s.points?.attendance ?? 10)}" min="0"
+                                <input type="number" id="psPtAtt" value="${(s.points?.attendance ?? (isGeneralProgram() ? def.defaultSettings.points.attendance : 10))}" min="0"
                                        class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">حفظ جديد</label>
+                            ${isGeneralProgram() ? `
+                             <div>
+                                 <label class="block text-xs font-bold text-slate-600 mb-1">معامل الجديد</label>
+                                 <input type="number" id="psMultNew" value="${s.kindMult?.newMemorization ?? def.defaultSettings.kindMult.newMemorization}" min="0" step="any"
+                                        class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
+                             </div>
+                             <div>
+                                 <label class="block text-xs font-bold text-slate-600 mb-1">معامل المراجعة</label>
+                                 <input type="number" id="psMultRev" value="${s.kindMult?.review ?? def.defaultSettings.kindMult.review}" min="0" step="any"
+                                        class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
+                             </div>` : `
+                             <div>
+                                 <label class="block text-xs font-bold text-slate-600 mb-1">حفظ جديد</label>
                                 <input type="number" id="psPtNew" value="${(s.points?.newMemorization ?? 3)}" min="0"
                                        class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
                             </div>
@@ -7024,9 +7173,9 @@
                                 <label class="block text-xs font-bold text-slate-600 mb-1">مراجعة</label>
                                 <input type="number" id="psPtRev" value="${(s.points?.review ?? 1)}" min="0"
                                        class="w-full p-2.5 border-2 border-slate-300 rounded-xl font-black text-center text-lg focus:border-yellow-500 outline-none">
-                            </div>
+                            </div>`}
                         </div>
-                        <p class="text-xs text-slate-400 font-bold mt-3">النقطة تُضرب في عدد الآيات المسردة.</p>
+                        <p class="text-xs text-slate-400 font-bold mt-3">${isGeneralProgram() ? 'النقاط = الأسطر × معامل النوع × نسبة التقدير.' : 'النقطة تُضرب في عدد الآيات المسردة.'}</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
@@ -7125,6 +7274,10 @@
                         <button type="button" onclick="addGeneralSettingRow('stage')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة مرحلة</button></div>
                     <div><h3 class="font-black mb-2">المعلمون</h3><div id="psTeachersList">${(s.teachers || []).map(t => generalSettingRow(t, 'teacher')).join('')}</div>
                         <button type="button" onclick="addGeneralSettingRow('teacher')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة معلم</button></div>
+                    <div><h3 class="font-black mb-2">نسب التقدير</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        ${(s.grades || def.defaultSettings.grades).map(g => `<label class="font-bold text-sm">${escapeHTML(g.name)}
+                            <input type="number" id="psGrade_${escapeHTML(g.id)}" class="ps-grade w-full p-2 mt-1 border-2 rounded-lg" data-grade="${escapeHTML(g.id)}" value="${g.percent}" min="0" max="100" step="1"></label>`).join('')}
+                    </div></div>
                 </div>${saveBarHtml(isArchivedView)}` : `
                 ${archivedBannerHtml(isArchivedView, season)}
                 <div class="bg-white p-5 rounded-2xl border-2 border-indigo-300">
@@ -7549,15 +7702,36 @@
                 if (!confirm(msg)) return;
             }
 
+            const general = isGeneralProgram();
+            const readGeneralNumber = (id, label, integer, max) => {
+                const raw = document.getElementById(id)?.value.trim();
+                const value = Number(raw);
+                if (raw === '' || raw === undefined || !Number.isFinite(value) || value < 0 || (integer && !Number.isInteger(value)) || (max !== undefined && value > max))
+                    throw new Error(label + ' غير صالح');
+                return value;
+            };
+            let kindMult, grades, attendancePoints;
+            if (general) {
+                try {
+                    attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);
+                    kindMult = {
+                        newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),
+                        review: readGeneralNumber('psMultRev', 'معامل المراجعة', false)
+                    };
+                    grades = (prog.settings.grades || window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.grades).map(g => ({ ...g, percent: readGeneralNumber(
+                        'psGrade_' + g.id, 'نسبة ' + g.name, true, 100) }));
+                } catch (e) { showToast(e.message, 'error'); return; }
+            }
             const settings = {
-                ...(isGeneralProgram() ? prog.settings : {}),
+                ...(general ? prog.settings : {}),
                 raceName: document.getElementById('psRaceName').value.trim(),
                 raceSubtitle: document.getElementById('psRaceSub').value.trim(),
-                points: {
+                points: general ? { ...prog.settings.points, attendance: attendancePoints } : {
                     attendance: parseInt(document.getElementById('psPtAtt').value) || 0,
                     newMemorization: parseInt(document.getElementById('psPtNew').value) || 0,
                     review: parseInt(document.getElementById('psPtRev').value) || 0
                 },
+                ...(general ? { kindMult, grades } : {}),
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
                 criteria: collectCriteriaFromRows(),
                 ...(isGeneralProgram() ? {} : { tiers: newTiers }),
@@ -7578,7 +7752,10 @@
                 let allStudents;
                 try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
                 catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); return; }
-                if ([...allStudents, ...students].some(st => (st.stage && !stages.some(t => t.id === st.stage)) || (st.teacherId && !teachers.some(t => t.id === st.teacherId)))) {
+                const removedTeacherIds = (prog.settings.teachers || []).filter(t => !teachers.some(kept => kept.id === t.id)).map(t => t.id);
+                if ([...allStudents, ...students].some(st => (st.stage && !stages.some(t => t.id === st.stage)) ||
+                    (st.teacherId && !teachers.some(t => t.id === st.teacherId)) ||
+                    removedTeacherIds.some(id => generalTeacherIsUsed(st, id)))) {
                     showToast('لا يمكن حذف مرحلة أو معلم مرتبط بطالب', 'error'); return;
                 }
                 Object.assign(settings, { stages, teachers });
@@ -7984,6 +8161,17 @@
                 updateCurrentEventBadge();
                 applyArchivedMode();
                 applyProgramFeatures();
+                const smartModal = document.getElementById('smartModal');
+                if (isGeneralProgram() && smartModal?.classList.contains('flex')) {
+                    const student = students.find(s => s.id === currentEditingStudentId);
+                    if (student) {
+                        const settings = getProgramSettings();
+                        refreshGeneralRecitationFields(student, settings);
+                        document.getElementById('lblReviewMult').textContent = `(×${settings.kindMult.review})`;
+                        document.getElementById('lblNewMult').textContent = `(×${settings.kindMult.newMemorization})`;
+                        calculateQuran();
+                    }
+                }
                 if (typeof loadCurrentThreeKnights === 'function') loadCurrentThreeKnights();
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
                 // تحديث لوحة الشرف إن كانت معروضة
