@@ -1,7 +1,7 @@
 // ================================================================
 // طبقة البرامج والمواسم — Programs & Seasons Store
 // ================================================================
-// برنامجان ثابتان (الصيفي + اليوم القرآني)، كل واحد له مواسم متعددة
+// ثلاثة برامج ثابتة، لكل واحد مواسم متعددة
 // البنية: programs/{programId}/seasons/{seasonId}/students/{studentId}
 // ================================================================
 
@@ -31,7 +31,7 @@ const SEASONS = 'seasons';
 const CURRENT_PROGRAM_KEY = 'almahra_current_program_id';
 
 // ================================================================
-// تعريف البرنامجين الثابتين
+// تعريف البرامج الثابتة
 // ================================================================
 export const PROGRAM_DEFS = {
     summer: {
@@ -79,6 +79,53 @@ export const PROGRAM_DEFS = {
                 groups: false,
                 pomodoro: true,
                 tiers: true
+            }
+        }
+    },
+    general: {
+        id: 'general',
+        name: 'البرنامج العام',
+        icon: '📖',
+        shortDesc: 'حفظ ومراجعة · حلقات ومعلمون',
+        color: 'emerald',
+        defaultSettings: {
+            raceName: 'سباق البرنامج العام',
+            raceSubtitle: 'الحضور والحفظ الجديد والمراجعة والإنجاز',
+            points: { attendance: 10, newMemorization: 3, review: 1 },
+            workingDays: [0, 1, 2, 3],
+            stages: [
+                { id: 'primary', name: 'ابتدائي', order: 1 },
+                { id: 'middle', name: 'متوسط', order: 2 }
+            ],
+            teachers: [],
+            grades: [
+                { id: 'excellent', name: 'ممتاز', percent: 100 },
+                { id: 'very-good', name: 'جيد جداً', percent: 75 },
+                { id: 'good', name: 'جيد', percent: 50 },
+                { id: 'repeat', name: 'يُعاد', percent: 0, fullPointsOnSuccessfulRepeat: true }
+            ],
+            kindMult: { newMemorization: 3, review: 1 },
+            absence: [
+                { id: 'excused', name: 'بعذر' },
+                { id: 'unexcused', name: 'بغير عذر' }
+            ],
+            knightsRules: { disciplinePct: 70, achievementPct: 30 },
+            featuredHalaqa: { weeklyAttendancePct: 75 },
+            criteria: [
+                { id: 'early', name: 'الحضور المبكر', points: 5, enabled: true },
+                { id: 'manners', name: 'حسن الخلق والأدب', points: 5, enabled: true },
+                { id: 'uniform', name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },
+                { id: 'engage', name: 'المشاركة والتفاعل', points: 3, enabled: true },
+                { id: 'neat', name: 'النظافة والمظهر', points: 2, enabled: true },
+                { id: 'late', name: 'تأخر بغير عذر', points: -5, enabled: true, blocksTitles: false },
+                { id: 'misbehave', name: 'مخالفة الأدب في الحلقة', points: -10, enabled: true, blocksTitles: true },
+                { id: 'disturb', name: 'إزعاج أو تشويش', points: -5, enabled: true, blocksTitles: false }
+            ],
+            titleRules: { requireSard: true, weeklyAttendancePct: 75, disciplineRequiresFullWeek: true },
+            features: {
+                newMemorization: true, review: true, goldenBoard: true, attendance: true,
+                knights: true, honorBoard: true, finalExam: false, examPrep: false,
+                groups: false, pomodoro: true, tiers: false
             }
         }
     },
@@ -135,6 +182,8 @@ let seasonsCache = {};         // { summer: [...], 'review-day': [...] }
 let currentProgramId = null;
 let currentSeasonId = null;
 let programsReady = false;
+const programsSettled = new Set();
+let initializationErrors = [];
 let subscribers = [];
 let programUnsubscribes = {};
 
@@ -178,6 +227,24 @@ function migrateSettings(programId, settings) {
 
     const s = settings ? JSON.parse(JSON.stringify(settings)) : {};
     let changed = false;
+
+    if (programId === 'general') {
+        // مفاتيح البرنامج العام وحده؛ لا شرائح ولا minJuz ولا رفع لإصدار البرنامجين السابقين.
+        for (const key of Object.keys(defaults)) {
+            if (s[key] === undefined) {
+                s[key] = JSON.parse(JSON.stringify(defaults[key]));
+                changed = true;
+            }
+        }
+        for (const key of Object.keys(defaults.features || {})) {
+            if (s.features?.[key] === undefined) {
+                if (!s.features) s.features = {};
+                s.features[key] = defaults.features[key];
+                changed = true;
+            }
+        }
+        return { settings: s, changed };
+    }
 
     // الشرائح: تُضاف إن لم تكن معرّفة إطلاقاً (undefined ≠ مصفوفة فارغة متعمّدة)
     if (s.tiers === undefined) {
@@ -224,10 +291,12 @@ function migrateSettings(programId, settings) {
     }
 
     // الميزات: نضم أي ميزة جديدة بقيمتها الافتراضية دون المساس بما ضبطه المستخدم
-    const mergedFeatures = { ...(defaults.features || {}), ...(s.features || {}) };
-    if (JSON.stringify(mergedFeatures) !== JSON.stringify(s.features || {})) {
-        s.features = mergedFeatures;
-        changed = true;
+    for (const key of Object.keys(defaults.features || {})) {
+        if (s.features?.[key] === undefined) {
+            if (!s.features) s.features = {};
+            s.features[key] = defaults.features[key];
+            changed = true;
+        }
     }
 
     // بقية الحقول الأساسية
@@ -247,10 +316,11 @@ function migrateSettings(programId, settings) {
 }
 
 // ================================================================
-// التهيئة: إنشاء البرنامجين + الموسم الأول + ترقية الإعدادات
+// التهيئة: إنشاء البرامج + الموسم الأول + ترقية الإعدادات
 // ================================================================
 async function ensureProgramsExist() {
     for (const key of Object.keys(PROGRAM_DEFS)) {
+        try {
         const def = PROGRAM_DEFS[key];
         const progRef = doc(db, PROGRAMS, def.id);
         const snap = await getDoc(progRef);
@@ -259,6 +329,21 @@ async function ensureProgramsExist() {
             console.log(`🆕 إنشاء البرنامج: ${def.name}`);
             const fresh = JSON.parse(JSON.stringify(def.defaultSettings));
             fresh.settingsVersion = SETTINGS_VERSION;
+            if (def.id === 'general') {
+                const seasonRef = doc(db, PROGRAMS, def.id, SEASONS, `s_${Date.now()}`);
+                const batch = writeBatch(db);
+                batch.set(progRef, {
+                    name: def.name, type: def.id, settings: fresh,
+                    activeSeasonId: seasonRef.id, createdAt: serverTimestamp()
+                });
+                batch.set(seasonRef, {
+                    name: defaultSeasonName(def.id), status: 'active',
+                    startedAt: serverTimestamp(), startDate: new Date().toISOString().slice(0, 10),
+                    archivedAt: null, endDate: null, measure: '1441'
+                });
+                await batch.commit();
+                continue;
+            }
             await setDoc(progRef, {
                 name: def.name,
                 type: def.id,
@@ -279,8 +364,28 @@ async function ensureProgramsExist() {
         // تأكد من وجود موسم نشط
         const progData = (await getDoc(progRef)).data();
         if (!progData.activeSeasonId) {
-            const seasonId = await createSeasonInternal(def.id, defaultSeasonName(def.id));
-            await updateDoc(progRef, { activeSeasonId: seasonId });
+            if (def.id === 'general') {
+                const seasonRef = doc(db, PROGRAMS, def.id, SEASONS, `s_${Date.now()}`);
+                const batch = writeBatch(db);
+                batch.set(seasonRef, {
+                    name: defaultSeasonName(def.id), status: 'active',
+                    startedAt: serverTimestamp(), startDate: new Date().toISOString().slice(0, 10),
+                    archivedAt: null, endDate: null, measure: '1441'
+                });
+                batch.update(progRef, { activeSeasonId: seasonRef.id });
+                await batch.commit();
+            } else {
+                const seasonId = await createSeasonInternal(def.id, defaultSeasonName(def.id));
+                await updateDoc(progRef, { activeSeasonId: seasonId });
+            }
+        }
+        } catch (err) {
+            console.error(`❌ تعذّر تهيئة البرنامج ${key}:`, err);
+            initializationErrors.push({ programId: key, name: PROGRAM_DEFS[key].name });
+            window.dispatchEvent(new CustomEvent('almahra-program-init-error', {
+                detail: { programId: key, name: PROGRAM_DEFS[key].name }
+            }));
+            if (key !== 'general') throw err;
         }
     }
 }
@@ -290,6 +395,7 @@ function defaultSeasonName(programId) {
     if (programId === 'summer') {
         return `موسم ${now.getFullYear()}`;
     }
+    if (programId === 'general') return `موسم ${now.getFullYear()}`;
     return `مراجعة ${now.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}`;
 }
 
@@ -301,7 +407,8 @@ async function createSeasonInternal(programId, name) {
         startedAt: serverTimestamp(),
         startDate: new Date().toISOString().slice(0, 10),
         archivedAt: null,
-        endDate: null
+        endDate: null,
+        ...(programId === 'general' ? { measure: '1441' } : {})
     });
     return seasonId;
 }
@@ -320,10 +427,20 @@ function startListeners() {
                 if (currentProgramId === programId) {
                     currentSeasonId = programsCache[programId].activeSeasonId;
                 }
-                programsReady = Object.keys(programsCache).length === Object.keys(PROGRAM_DEFS).length;
-                notify();
             }
-        }, (err) => console.error('❌ program listener:', err.code, err.message));
+            programsSettled.add(programId);
+            programsReady = programsSettled.size === Object.keys(PROGRAM_DEFS).length;
+            notify();
+        }, (err) => {
+            console.error('❌ program listener:', err.code, err.message);
+            initializationErrors.push({ programId, name: PROGRAM_DEFS[programId].name });
+            window.dispatchEvent(new CustomEvent('almahra-program-init-error', {
+                detail: { programId, name: PROGRAM_DEFS[programId].name }
+            }));
+            programsSettled.add(programId);
+            programsReady = programsSettled.size === Object.keys(PROGRAM_DEFS).length;
+            notify();
+        });
 
         // مستمع مواسم البرنامج
         const seasonsQ = query(collection(db, PROGRAMS, programId, SEASONS), orderBy('startedAt', 'desc'));
@@ -351,6 +468,15 @@ async function countStudents(programId, seasonId) {
     }
 }
 
+async function getAllStudents(programId) {
+    const seasons = await getDocs(collection(db, PROGRAMS, programId, SEASONS));
+    const students = await Promise.all(seasons.docs.map(async season => {
+        const snap = await getDocs(collection(db, PROGRAMS, programId, SEASONS, season.id, 'students'));
+        return snap.docs.map(d => d.data());
+    }));
+    return students.flat();
+}
+
 // ================================================================
 // الواجهة العامة
 // ================================================================
@@ -359,6 +485,7 @@ window.almahraPrograms = {
     PROGRAM_DEFS,
 
     isReady: () => programsReady,
+    getInitializationErrors: () => [...initializationErrors],
     getPrograms: () => ({ ...programsCache }),
     getProgram: (id) => programsCache[id] || null,
     getSeasons: (programId) => [...(seasonsCache[programId] || [])],
@@ -441,6 +568,9 @@ window.almahraPrograms = {
             if (!def) return { success: false, error: 'برنامج غير معروف' };
             const fresh = JSON.parse(JSON.stringify(def.defaultSettings));
             fresh.settingsVersion = SETTINGS_VERSION;
+            if (programId === 'general') {
+                fresh.teachers = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.teachers || []));
+            }
             await updateDoc(doc(db, PROGRAMS, programId), { settings: fresh });
             return { success: true };
         } catch (err) {
@@ -557,6 +687,7 @@ window.almahraPrograms = {
     },
 
     countStudents,
+    getAllStudents,
 
     subscribe: (callback) => {
         subscribers.push(callback);

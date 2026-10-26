@@ -26,7 +26,7 @@
         /* حماية: إخفاء البرنامج قبل التحقق من تسجيل الدخول */
         body.auth-not-ready > *:not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
         /* إخفاء البرنامج قبل اختيار الحدث */
-        body.event-not-selected > *:not(#eventPickerOverlay):not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
+        body.event-not-selected > *:not(#eventPickerOverlay):not(#loginOverlay):not(#loadingOverlay):not(#toastMessage) { visibility: hidden !important; }
 
         /* شاشة اختيار الحدث */
         #eventPickerOverlay {
@@ -582,6 +582,7 @@
             @page { size: landscape; margin: 10mm; }
             /* عند الطباعة: أظهر كل أقسام السجل بغض النظر عن التبويب المفتوح */
             .rec-panel { display: flex !important; flex-direction: column !important; }
+            body.program-general #recPanelExam { display: none !important; }
             #recordsHome, #recordsBackBar { display: none !important; }
             html, body { height: auto !important; min-height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; background-color: white !important; background: white !important; display: block !important; font-family: 'Cairo', sans-serif !important; }
             body > *:not(#page-records), header, nav, #knightCelebrationModal, #royalCelebrationModal, #threeKnightsModal, #winningGroupModal, .tab-content:not(.active) { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
@@ -649,7 +650,7 @@
         <div class="login-card">
             <div class="text-center mb-6">
                 <div class="text-6xl mb-3">🕌</div>
-                <h1 class="text-3xl font-black text-slate-800">برنامج المهرة</h1>
+                <h1 data-program-brand class="text-3xl font-black text-slate-800">برنامج المهرة</h1>
                 <p class="text-slate-500 font-bold mt-2">نظام إدارة الحلقات القرآنية</p>
             </div>
 
@@ -711,7 +712,7 @@
 
     <div id="loadingOverlay" class="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
         <i class="fas fa-quran text-9xl text-emerald-500 animate-bounce mb-6"></i>
-        <h1 class="text-6xl font-black text-slate-700 mb-4">برنامج المهرة</h1>
+        <h1 data-program-brand class="text-6xl font-black text-slate-700 mb-4">برنامج المهرة</h1>
         <p class="text-3xl text-slate-500 font-bold">تهيئة اللوحة الذهبية والمحرك المكاني V25...</p>
     </div>
 
@@ -720,7 +721,7 @@
         <img class="ah-logo" src="https://i.postimg.cc/HWJkgtqG/shʿar-afdlkm-akhdr.png"
              alt="شعار جمعية أفضلكم لتعليم القرآن الكريم وعلومه">
         <div class="ah-mid">
-            <span class="ah-title">برنامج المهرة</span>
+            <span data-program-brand class="ah-title">برنامج المهرة</span>
             <span class="ah-date">
                 <i class="fas fa-calendar-alt"></i>
                 <span id="hijriDateDisplay">جاري الحساب هجرياً...</span>
@@ -761,7 +762,7 @@
                      alt="قال النبي صلى الله عليه وسلم: الماهر بالقرآن مع السفرة الكرام البررة">
                 <div class="hv-src">متفق عليه · عن عائشة رضي الله عنها</div>
                 <div class="hv-brand">
-                    <span id="hvProgName">برنامج المهرة</span>
+                        <span id="hvProgName">برنامج المهرة</span>
                     <span class="hv-dot"></span>
                     <span id="hvSeason">—</span>
                 </div>
@@ -862,8 +863,8 @@
                     </button>
                     <button class="panel-card" style="--pc-accent:#6366f1; --pc-bg:#eef2ff" onclick="openSettingsSection('setPanelTiers')">
                         <span class="pc-icon"><i class="fas fa-layer-group"></i></span>
-                        <span class="pc-title">الشرائح</span>
-                        <span class="pc-desc">المستويات وإسناد الطلاب</span>
+                        <span id="settingsLevelTitle" class="pc-title">الشرائح</span>
+                        <span id="settingsLevelDesc" class="pc-desc">المستويات وإسناد الطلاب</span>
                         <span class="pc-badge" id="scBadgeTiers">—</span>
                     </button>
                     <button class="panel-card" style="--pc-accent:#0ea5e9; --pc-bg:#f0f9ff" onclick="openSettingsSection('setPanelStudents')">
@@ -877,7 +878,7 @@
                         <span class="pc-title">الفرسان</span>
                         <span class="pc-desc">الاختيار الآلي وشاشة التكريم</span>
                     </button>
-                    <button class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelExam')">
+                    <button id="settingsExamCard" class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelExam')">
                         <span class="pc-icon"><i class="fas fa-graduation-cap"></i></span>
                         <span class="pc-title">الاختبار النهائي</span>
                         <span class="pc-desc">إدخال الدرجات وطباعة البطاقات</span>
@@ -946,7 +947,7 @@
             <div id="setPanelTiers" class="set-panel w-full">
                 <div class="panel-back-bar no-print">
                     <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
-                    <span class="panel-back-title"><i class="fas fa-layer-group text-indigo-500 ml-1"></i> الشرائح (المستويات)</span>
+                    <span class="panel-back-title"><i class="fas fa-layer-group text-indigo-500 ml-1"></i> <span id="settingsLevelHeading">الشرائح (المستويات)</span></span>
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-200 p-5" id="psPanelTiersBody">
                     <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
@@ -1162,7 +1163,7 @@
                         <span class="pc-desc">حصر الغائبين والمنقطعين · واتساب</span>
                         <span class="pc-badge" id="rcBadgeAbsence">—</span>
                     </button>
-                    <button class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openRecordsSection('recPanelExam')">
+                    <button id="recordsExamCard" class="panel-card" style="--pc-accent:#059669; --pc-bg:#ecfdf5" onclick="openRecordsSection('recPanelExam')">
                         <span class="pc-icon"><i class="fas fa-award"></i></span>
                         <span class="pc-title">نتائج الاختبار</span>
                         <span class="pc-desc">مرتبة تنازلياً لحفل الختام</span>
@@ -1468,17 +1469,16 @@
     <div id="noLevelModal" class="fixed inset-0 z-[6600] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border-4 border-amber-500 flex flex-col max-h-[90vh]">
             <div class="bg-amber-500 text-white p-5 flex justify-between items-center shrink-0">
-                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-exclamation-triangle"></i> طلاب بلا مستوى</h3>
+                <h3 class="text-xl md:text-2xl font-black flex items-center gap-3"><i class="fas fa-exclamation-triangle"></i> <span id="noLevelTitle">طلاب بلا مستوى</span></h3>
                 <button onclick="closeNoLevelModal()" class="text-white hover:text-red-200 text-4xl leading-none">&times;</button>
             </div>
             <div class="p-4 bg-amber-50 text-amber-900 font-bold border-b border-amber-200 text-sm shrink-0 leading-relaxed">
-                <span id="noLevelCount"></span> لا شريحة لهم،
-                <span class="text-red-700">فلن يدخلوا ترشيح فرسان اليوم ولا فرسان الأسبوع</span> حتى تُضبط مقادير حفظهم.
+                <span id="noLevelCount"></span> <span id="noLevelDescription">لا شريحة لهم، <span class="text-red-700">فلن يدخلوا ترشيح فرسان اليوم ولا فرسان الأسبوع</span> حتى تُضبط مقادير حفظهم.</span>
             </div>
             <div id="noLevelList" class="p-4 bg-slate-50 flex-grow overflow-y-auto custom-scroll space-y-2"></div>
             <div class="p-4 bg-slate-100 border-t-2 border-slate-200 shrink-0 flex flex-col sm:flex-row gap-3">
                 <button onclick="fixNoLevelNow()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black text-lg py-3 rounded-2xl shadow">
-                    <i class="fas fa-user-check ml-2"></i> أدخل مقاديرهم الآن
+                    <i class="fas fa-user-check ml-2"></i> <span id="noLevelFixLabel">أدخل مقاديرهم الآن</span>
                 </button>
                 <button onclick="closeNoLevelModal()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-black text-lg py-3 rounded-2xl">لاحقاً</button>
             </div>
@@ -1623,7 +1623,7 @@
         <div class="max-w-7xl mx-auto w-full flex flex-col gap-6 relative z-10 my-auto">
             <div class="bg-white rounded-2xl p-3 border-4 border-amber-400 shadow-2xl flex flex-col items-center gap-2">
                 <h4 class="text-slate-800 text-xl md:text-2xl font-black tracking-wide bg-slate-100 px-6 py-2 rounded-full border border-slate-200 flex items-center gap-2">
-                    <i class="fas fa-handshake text-emerald-600"></i> شركاء النجاح والجهات المانحة لجوائز برنامج المهرة ٢ اليومية
+                    <i class="fas fa-handshake text-emerald-600"></i> شركاء النجاح والجهات المانحة لجوائز <span data-program-brand>برنامج المهرة</span> ٢ اليومية
                 </h4>
                 <div class="flex flex-wrap justify-center items-center gap-6 md:gap-10 w-full py-2">
                     <img src="https://i.postimg.cc/vH2MTSbq/Screenshot-20260708-023017-Adobe-Acrobat.jpg" alt="شاورما مكس" class="h-24 md:h-28 lg:h-32 object-contain rounded-xl shadow-md border border-slate-200 transition-transform hover:scale-105">
@@ -1959,6 +1959,14 @@
                     <div id="studentTierDisplay" class="w-full p-3 border-4 border-slate-200 bg-slate-50 rounded-2xl text-xl font-black text-center text-indigo-700"></div>
                     <p class="text-xs text-slate-400 font-bold text-center mt-2">تُحسب تلقائياً من مقدار الحفظ — لتغييرها عدّل الرقم أعلاه</p>
                 </div>
+                <div id="studentGeneralFields" class="mt-5 space-y-4" style="display:none">
+                    <label class="block font-bold text-slate-700">المرحلة <span class="text-red-600">*</span>
+                        <select id="studentStageInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
+                    </label>
+                    <label class="block font-bold text-slate-700">المعلم <span class="text-red-600">*</span>
+                        <select id="studentTeacherInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
+                    </label>
+                </div>
                 <div class="mt-5">
                     <label class="block text-xl font-bold text-slate-700 mb-2 text-center">جوال ولي الأمر <span class="text-slate-400 text-base">(اختياري)</span></label>
                     <input type="tel" id="studentPhoneInput" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" oninput="onStudentPhoneInput()"
@@ -2091,8 +2099,25 @@
                 },
                 workingDays: (s?.workingDays && s.workingDays.length) ? s.workingDays : [0, 1, 2, 3],
                 criteria: Array.isArray(s?.criteria) ? s.criteria : [],
-                tiers: Array.isArray(s?.tiers) ? s.tiers : []
+                tiers: Array.isArray(s?.tiers) ? s.tiers : [],
+                stages: Array.isArray(s?.stages) ? s.stages : [],
+                teachers: Array.isArray(s?.teachers) ? s.teachers : []
             };
+        }
+
+        function isGeneralProgram() {
+            return window.almahraPrograms?.getCurrentProgramId() === 'general';
+        }
+
+        function programBrandName() {
+            return (window.almahraPrograms?.getCurrentProgramId() || window.almahraPrograms?.getSavedProgramId()) === 'general'
+                ? 'البرنامج العام' : 'برنامج المهرة';
+        }
+
+        function updateProgramBrand() {
+            const name = programBrandName();
+            document.querySelectorAll('[data-program-brand]').forEach(el => { el.textContent = name; });
+            document.title = name === 'البرنامج العام' ? name : 'برنامج المهرة القرآني المتكامل - V25 الذهبي';
         }
 
         // المعايير المفعّلة فقط
@@ -2102,7 +2127,8 @@
 
         // الشرائح مرتّبة
         function getTiers() {
-            return [...getProgramSettings().tiers].sort((a, b) => (a.order || 0) - (b.order || 0));
+            const s = getProgramSettings();
+            return [...(isGeneralProgram() ? s.stages : s.tiers)].sort((a, b) => (a.order || 0) - (b.order || 0));
         }
 
         function getTierById(tierId) {
@@ -2113,6 +2139,7 @@
         // لا نقرأ tierId المحفوظ أبداً — قد يكون قديماً (نسخة احتياطية، جهاز بنسخة قديمة، تغيير التعريفات)،
         // فيستحيل بهذا أن تخالف الشريحة المعروضة مقدارَ الحفظ الفعلي. ('' = بلا مستوى)
         function studentTierId(student) {
+            if (isGeneralProgram()) return noLevelReason(student) ? '' : getTierById(student?.stage)?.id || '';
             return autoTierIdFor(student?.memorizedJuz);
         }
 
@@ -2125,6 +2152,11 @@
         // الشرط هو نفسه الذي تعرضه لوحة السباق ووسم البطاقة، فلا تختلف الشاشات:
         // يشمل من بلا مقدار حفظ، ومن مقدار حفظه لا تُطابقه أي شريحة معرَّفة
         function studentsWithoutLevel() {
+            if (isGeneralProgram()) {
+                const settings = getProgramSettings();
+                return students.filter(s => !settings.stages.some(t => t.id === s.stage)
+                    || !settings.teachers.some(t => t.id === s.teacherId));
+            }
             if (!tiersFeatureOn()) return [];
             return students.filter(s => !studentTierId(s));
         }
@@ -2140,6 +2172,12 @@
 
         // سبب بقاء الطالب بلا شريحة — يُعرض في التنبيه ليعرف المشرف ما يصلحه
         function noLevelReason(student) {
+            if (isGeneralProgram()) {
+                const settings = getProgramSettings();
+                const missingStage = !settings.stages.some(t => t.id === student.stage);
+                const missingTeacher = !settings.teachers.some(t => t.id === student.teacherId);
+                return missingStage && missingTeacher ? 'بلا مرحلة أو معلم' : missingStage ? 'بلا مرحلة' : missingTeacher ? 'بلا معلم' : '';
+            }
             const n = student?.memorizedJuz;
             if (!Number.isInteger(n)) return 'بلا مقدار حفظ';
             if (n === 0) return 'لم يُتمّ جزءاً — لا شريحة تُطابقه';
@@ -2159,11 +2197,11 @@
 
         // وسم شريحة الطالب: لونه واسمه — أو null إن لم تكن هناك شرائح (فلا يظهر وسم)
         function getTierBadge(student) {
-            const enabled = window.almahraPrograms?.isFeatureEnabled('tiers') !== false;
+            const enabled = isGeneralProgram() || window.almahraPrograms?.isFeatureEnabled('tiers') !== false;
             const tiers = getTiers();
             if (!enabled || tiers.length === 0) return null;
             const i = tiers.findIndex(t => t.id === studentTierId(student));
-            if (i < 0) return { name: 'بلا مستوى', border: '#cbd5e1', head: '#64748b', unassigned: true };
+            if (i < 0) return { name: isGeneralProgram() ? 'بلا مرحلة' : 'بلا مستوى', border: '#cbd5e1', head: '#64748b', unassigned: true };
             return { name: tiers[i].name, ...TIER_STYLES[i % TIER_STYLES.length] };
         }
 
@@ -2516,8 +2554,10 @@
             const trimmedName = name.trim();
             const existing = students.find(s => s.name.trim() === trimmedName);
             if (existing) { stats.matched++; return existing.id; }
+            if (isGeneralProgram()) { importBlockedByLevelRule(); return null; }
             const nid = students.length ? Math.max(...students.map(s => s.id)) + 1 : 1;
-            const doc = { id: nid, name: trimmedName, history: {}, memorizedJuz: null, parentPhone: null, frontierBase: null, lastDailyBase: null };
+            const doc = { id: nid, name: trimmedName, history: {}, memorizedJuz: null, parentPhone: null, frontierBase: null, lastDailyBase: null,
+                ...(isGeneralProgram() ? { sid: crypto.randomUUID(), teacherId: null, stage: null } : {}) };
             students.push(doc); created.push(doc);
             stats.created++;
             return nid;
@@ -3147,7 +3187,7 @@
 
         function renderHonorBoard() {
             const tiers = getTiers();
-            const tiersOn = (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && tiers.length > 0;
+            const tiersOn = tiersFeatureOn() && tiers.length > 0;
             const isReviewDay = window.almahraPrograms?.getCurrentProgramId() === 'review-day';
             const winCounts = getKnightWinCounts();
 
@@ -3314,7 +3354,7 @@
                 wkContainer.innerHTML = wkHtml || hbEmpty('لا مرشحين هذا الأسبوع', `الشرط: حضور ${hbN(getTitleRules().weeklyAttendancePct)}٪ · بلا مخالفة أدب`);
                 hbSetCard('hbCardWeekly', {
                     theme: 'week', ico: '⭐', cover: 'فرسان الأسبوع', title: 'فرسان الأسبوع',
-                    tease: !wkHtml ? 'لا مرشحين هذا الأسبوع' : tiersOn ? 'لكل شريحة فارس' : 'أبرز الأسبوع'
+                    tease: !wkHtml ? 'لا مرشحين هذا الأسبوع' : tiersOn ? (isGeneralProgram() ? 'لكل مرحلة فارس' : 'لكل شريحة فارس') : 'أبرز الأسبوع'
                 });
             }
 
@@ -3552,9 +3592,17 @@
             if (window.almahraData.isReadOnly()) { showToast('📦 هذا موسم مؤرشف — للعرض فقط، لا يمكن التعديل', 'error'); return false; }
             return true;
         }
+        function canWriteHistory(fields) {
+            if (isGeneralProgram() && Object.keys(fields).some(k => k === 'history' || k.startsWith('history.'))) {
+                showToast('التسميع في البرنامج العام يُفعَّل بعد إضافة التقدير', 'error');
+                return false;
+            }
+            return true;
+        }
         function commitStudentPatch(student, fields) {
             // طالب واحد: المحلي يُحدَّث فوراً ثم يُرسل الطلب (بلا تأخير التجميع — لم يعد هناك «الكل» ليُجمَّع). يُرجع false إن منعه الحارس
             // عند الفشل يعود الطالب محلياً كما كان، فلا يُرى إنجاز لم يصل إلى السحابة
+            if (!canWriteHistory(fields)) return false;
             if (!canWriteCloud()) return false;
             const backup = structuredClone(student);
             applyFieldsLocally(student, fields);
@@ -3567,6 +3615,7 @@
         }
         function commitPatches(list) {
             // عدة طلاب ([{ student, fields }]) في commitBatch واحدة — للمجموعات والتوزيع الجماعي
+            if (list.some(p => !canWriteHistory(p.fields))) return false;
             if (!canWriteCloud()) return false;
             if (!list.length) return true;
             const backups = list.map(p => structuredClone(p.student));
@@ -3609,18 +3658,57 @@
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
+                document.getElementById('importBackupFile').value = "";
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (isValidStudentBackup(importedData)) {
+                        const currentById = isGeneralProgram() ? new Map(students.map(s => [String(s.id), s])) : null;
+                        if (isGeneralProgram()) {
+                            const fileIds = new Set(importedData.map(s => String(s.id)));
+                            const operationCount = importedData.length + students.filter(s => !fileIds.has(String(s.id))).length;
+                            if (operationCount > 450) {
+                                showToast(`استعادة البرنامج العام مرفوضة: ${operationCount} عملية حفظ وحذف تتجاوز حد ٤٥٠`, 'error'); return;
+                            }
+                            if (fileIds.size !== importedData.length) {
+                                showToast('استعادة البرنامج العام مرفوضة: تكرر معرّف الطالب في الملف', 'error'); return;
+                            }
+                            if (importedData.some(s => Object.keys(s.history).length > 0)) {
+                                showToast('استعادة السجلات في البرنامج العام تُفعَّل بعد إضافة التقدير', 'error'); return;
+                            }
+                            const settings = getProgramSettings();
+                            const affected = importedData.filter(s => s.teacherId == null || s.teacherId === ''
+                                || s.stage == null || s.stage === ''
+                                || !settings.teachers.some(t => t.id === s.teacherId)
+                                || !settings.stages.some(t => t.id === s.stage)).length;
+                            if (affected) {
+                                showToast(`استعادة مرفوضة: ${affected} طالب بلا معلم أو مرحلة صالحة في القائمتين`, 'error'); return;
+                            }
+                            if (importedData.some(s => {
+                                const currentSid = currentById.get(String(s.id))?.sid;
+                                const fileSid = typeof s.sid === 'string' && s.sid.trim() ? s.sid : null;
+                                return currentSid && fileSid && currentSid !== fileSid;
+                            })) {
+                                showToast('استعادة البرنامج العام مرفوضة: معرّف sid مختلف لطالب موجود', 'error'); return;
+                            }
+                        }
                         // الشريحة لا تُخزَّن بل تُحسب: نُسقط أي tierId قديم في الملف حتى لا يبقى أثر مخالف
                         // لمقدار الحفظ، ونُثبّت مقدار الحفظ رقماً صحيحاً أو null (Firestore ترفض undefined)
                         const clean = importedData.map(s => {
                             const { tierId, tierManual, ...rest } = s;
-                            return { ...rest, memorizedJuz: Number.isInteger(s.memorizedJuz) ? s.memorizedJuz : null };
+                            return { ...rest, memorizedJuz: Number.isInteger(s.memorizedJuz) ? s.memorizedJuz : null,
+                                ...(isGeneralProgram() ? { sid: currentById.get(String(s.id))?.sid
+                                    || (typeof s.sid === 'string' && s.sid.trim() ? s.sid : crypto.randomUUID()),
+                                    teacherId: s.teacherId, stage: s.stage } : {}) };
                         });
+                        if (isGeneralProgram()) {
+                            const sids = clean.map(s => s.sid);
+                            if (new Set(sids).size !== sids.length) {
+                                showToast('استعادة البرنامج العام مرفوضة: تكرر معرّف sid بعد مطابقة الطلاب الحاليين', 'error'); return;
+                            }
+                        }
                         // لا نرفض الملف بسبب نقص المستوى — النسخة الاحتياطية أداة طوارئ، ورفضها يضيّع بيانات
                         // حقيقية. نوضّح الأثر قبل الاستبدال، ثم يظهر تنبيه «بلا مستوى» بعد الاستيراد
-                        const noLevel = tiersFeatureOn() ? clean.filter(s => !Number.isInteger(s.memorizedJuz)).length : 0;
+                        const noLevel = !isGeneralProgram() && tiersFeatureOn() ? clean.filter(s => !Number.isInteger(s.memorizedJuz)).length : 0;
                         const warn = noLevel
                             ? `\n\n⚠️ ${noLevel} من ${clean.length} في الملف بلا مقدار حفظ، فلا شريحة لهم ولن يدخلوا ترشيح الفرسان. سيطلب البرنامج إدخال مقاديرهم بعد الاستيراد.`
                             : '';
@@ -3640,6 +3728,10 @@
         // ⛔ قاعدة «لا دخول للبرنامج إلا بمستوى»: «استيراد المجموعات الجاهزة» يُدخل الأسماء وحدها (بلا مستوى)،
         // فيُوقَف ما دامت هناك شرائح. (استيراد الإكسل يحترم القاعدة: يقرأ مقدار الحفظ ويرفض الصف الناقص)
         function importBlockedByLevelRule() {
+            if (isGeneralProgram()) {
+                showToast('أضف طلاب البرنامج العام يدوياً مع المعلم والمرحلة؛ استيرادهم يُجهّز لاحقاً', 'error');
+                return true;
+            }
             if (!tiersFeatureOn()) return false;
             showToast('هذا الاستيراد يُدخل الأسماء بلا مستوى، والقاعدة: لا يدخل طالب بلا مستوى. أضف الطلاب من «استيراد إكسل» أو «طالب يدوياً».', 'error');
             return true;
@@ -3739,6 +3831,7 @@
         let pendingImport = null; // { rows: [{ name, mem, status, reason }], fileName }
 
         function startExcelImport() {
+            if (isGeneralProgram()) { showToast('استيراد إكسل للبرنامج العام يُجهّز لاحقاً؛ أضف الطلاب يدوياً الآن', 'error'); return; }
             document.getElementById('excelFileInput').click();
         }
 
@@ -3843,6 +3936,7 @@
         }
 
         function confirmExcelImport() {
+            if (isGeneralProgram()) { showToast('استيراد إكسل للبرنامج العام يُجهّز لاحقاً', 'error'); return; }
             if (!pendingImport) { closeImportPreview(); return; }
             // نعيد فحص المكرر لحظة التأكيد: قائمة الطلاب قد تتغيّر من السحابة أثناء فتح المعاينة
             const existing = new Set(students.map(s => cleanCellText(s.name)));
@@ -3850,7 +3944,8 @@
             let added = 0, withPhone = 0;
             pendingImport.rows.filter(r => r.status === 'new').forEach(r => {
                 if (existing.has(r.name)) return;
-                students.push({ id: nid++, name: r.name, history: {}, memorizedJuz: r.mem, parentPhone: r.phone ?? null });
+                students.push({ id: nid++, name: r.name, history: {}, memorizedJuz: r.mem, parentPhone: r.phone ?? null,
+                    ...(isGeneralProgram() ? { sid: crypto.randomUUID(), teacherId: null, stage: null } : {}) });
                 existing.add(r.name);
                 if (r.phone) withPhone++;
                 added++;
@@ -4302,7 +4397,7 @@
             const season = window.almahraPrograms?.getCurrentSeason();
             const pn = document.getElementById('hvProgName');
             const sn = document.getElementById('hvSeason');
-            if (pn) pn.textContent = prog?.name || 'برنامج المهرة';
+            if (pn) pn.textContent = isGeneralProgram() ? programBrandName() : (prog?.name || 'برنامج المهرة');
             if (sn) sn.textContent = season?.name || '—';
 
             const extras = document.getElementById('homeExtras');
@@ -4429,7 +4524,7 @@
             const head = `
                 <div class="hs-head">
                     <span class="hs-title"><i class="fas fa-trophy" style="color:#eab308"></i> المتصدّرون</span>
-                    <span class="hs-note">${tiersOn ? 'متصدّر كل شريحة' : 'الأعلى نقاطاً'}</span>
+                    <span class="hs-note">${tiersOn ? (isGeneralProgram() ? 'متصدّر كل مرحلة' : 'متصدّر كل شريحة') : 'الأعلى نقاطاً'}</span>
                 </div>`;
 
             let rows = '';
@@ -4792,7 +4887,7 @@
 
             const calcs = students.map(s => ({ ...s, ...getCumulativeStats(s) })).sort((a, b) => b.tripPoints - a.tripPoints);
             const tiers = getTiers();
-            const tiersOn = (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && tiers.length > 0;
+            const tiersOn = tiersFeatureOn() && tiers.length > 0;
 
             // بلا شرائح: القائمة الموحّدة كما كانت
             if (!tiersOn) {
@@ -4807,7 +4902,7 @@
             let html = '';
 
             tiers.forEach((t, ti) => {
-                const members = calcs.filter(s => studentTierId(s) === t.id);
+                const members = calcs.filter(s => studentTierId(s) === t.id && (!isGeneralProgram() || !noLevelReason(s)));
                 if (members.length === 0) return;
                 const highest = members[0]?.tripPoints > 0 ? members[0].tripPoints : 1;
                 const st = TIER_STYLES[ti % TIER_STYLES.length];
@@ -4827,18 +4922,18 @@
 
             // شبكة الأمان: طلاب بلا مستوى (لا يُفترض وجودهم، لأن الإضافة تشترط مقدار الحفظ).
             // لا نتركهم صامتين: هم خارج ترشيح فرسان الشرائح حتى يُدخَل مقدار حفظهم
-            const noTier = calcs.filter(s => !studentTierId(s));
+            const noTier = isGeneralProgram() ? calcs.filter(s => noLevelReason(s) !== '') : calcs.filter(s => !studentTierId(s));
             if (noTier.length) {
                 const highest = noTier[0]?.tripPoints > 0 ? noTier[0].tripPoints : 1;
                 html += `
                     <div class="bg-white/70 rounded-2xl border-2 border-amber-400 overflow-hidden shadow-sm">
                         <div class="bg-amber-500 text-white px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> بلا مستوى — لا شريحة لهم</h3>
+                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> ${isGeneralProgram() ? 'بلا مرحلة أو معلم' : 'بلا مستوى — لا شريحة لهم'}</h3>
                             <span class="bg-white/25 px-3 py-0.5 rounded-full text-sm font-black">${noTier.length} طالب</span>
                         </div>
                         <div class="px-5 py-2 bg-amber-50 text-amber-800 text-sm font-bold flex flex-wrap items-center justify-between gap-2 no-print">
-                            <span>لن يدخلوا ترشيح فرسان الشرائح حتى تُضبط مقادير حفظهم.</span>
-                            <button onclick="openBulkTierAssign()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg font-black text-sm">أدخل مقاديرهم</button>
+                            <span>${isGeneralProgram() ? 'أسند لهم مرحلة ومعلماً من بيانات الطلاب.' : 'لن يدخلوا ترشيح فرسان الشرائح حتى تُضبط مقادير حفظهم.'}</span>
+                            ${isGeneralProgram() ? '' : '<button onclick="openBulkTierAssign()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg font-black text-sm">أدخل مقاديرهم</button>'}
                         </div>
                         <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             ${noTier.map((s, i) => tripCardHtml(s, i, highest)).join('')}
@@ -4896,14 +4991,19 @@
             students.forEach(student => {
                 if (query && !student.name.toLowerCase().includes(query)) return;
                 const tier = getStudentTier(student);
-                const tierBadge = tier
+                const displayTier = isGeneralProgram() ? getTierById(student.stage) : tier;
+                const tierBadge = isGeneralProgram() && noLevelReason(student)
+                    ? `<span class="text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">⚠️ ${noLevelReason(student)}</span>${displayTier ? `<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(displayTier.name)}</span>` : ''}`
+                    : tier
                     ? `<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(tier.name)}</span>`
-                    : (getTiers().length ? `<span class="text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">⚠️ بلا مستوى</span>` : '');
+                    : (getTiers().length ? `<span class="text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">⚠️ ${isGeneralProgram() ? noLevelReason(student) : 'بلا مستوى'}</span>` : '');
+                const teacher = isGeneralProgram() ? getProgramSettings().teachers.find(t => t.id === student.teacherId) : null;
+                const halaqa = teacher && displayTier ? ` · حلقة ${escapeHTML(teacher.name)} / ${escapeHTML(displayTier.name)}` : '';
                 container.innerHTML += `
                     <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
                         <div class="min-w-0 flex-1">
                             <div class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black">#${student.id}</span> ${escapeHTML(student.name)}</div>
-                            <div class="mt-1">${tierBadge}</div>
+                            <div class="mt-1">${tierBadge}<span class="text-xs text-slate-500">${halaqa}</span></div>
                         </div>
                         <div class="flex gap-1 shrink-0">
                             <button onclick="openStudentModal(${student.id})" class="text-blue-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-pen"></i></button>
@@ -5611,7 +5711,7 @@
             if (!sel) return;
             const prev = sel.value;
             const tiers = getTiers();
-            const tiersOn = window.almahraPrograms?.isFeatureEnabled('tiers') !== false;
+            const tiersOn = tiersFeatureOn();
             let html = '<option value="all">🏅 فارس الإنجاز (كل الطلاب)</option>';
             if (tiersOn && tiers.length) {
                 tiers.forEach(t => { html += `<option value="${t.id}">🏅 فارس ${escapeHTML(t.name)}</option>`; });
@@ -6066,7 +6166,7 @@
         function copyAbsenteesList() {
             const absentees = students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
             if(absentees.length === 0) { showToast("لا يوجد غائبين اليوم ولله الحمد!", "success"); return; }
-            let msg = `📋 *إشعار غياب - برنامج المهرة*\n🗓️ اليوم: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\n\n`;
+            let msg = `📋 *إشعار غياب - ${programBrandName()}*\n🗓️ اليوم: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\n\n`;
             absentees.forEach((s, idx) => { msg += `${idx + 1}. ${s.name}\n`; }); msg += `\nشاكرين ومقدرين حرصكم وتعاونكم 🌹`;
             if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(msg).catch(err => console.log(err)); } else { let textArea = document.createElement("textarea"); textArea.value = msg; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(textArea); }
             const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast("جاري فتح الواتساب وتجهيز الرسالة...");
@@ -6075,7 +6175,7 @@
         function copyFollowupList() {
             const chronic = getFollowupAbsentees();
             if (chronic.length === 0) { showToast("لا يوجد طلاب غابوا يومين متتاليين فأكثر حالياً، ولله الحمد!", "success"); return; }
-            let msg = `📋 *تنبيه انقطاع متكرر - برنامج المهرة*\n🗓️ بتاريخ: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\n\n`;
+            let msg = `📋 *تنبيه انقطاع متكرر - ${programBrandName()}*\n🗓️ بتاريخ: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\n\n`;
             chronic.forEach((x, idx) => { msg += `${idx + 1}. ${x.student.name} - غاب ${x.streak} أيام متتالية\n`; });
             msg += `\nنأمل التواصل معهم لمعرفة السبب ومتابعة الحضور 🌹`;
             if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(msg).catch(err => console.log(err)); } else { let textArea = document.createElement("textarea"); textArea.value = msg; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(textArea); }
@@ -6169,7 +6269,7 @@
         //  • tierId يُشتقّ من memorizedJuz دائماً؛ لا قائمة اختيار للشريحة ولا حالة "منقول يدوياً"
         // ================================================================
         function tiersFeatureOn() {
-            return window.almahraPrograms?.isFeatureEnabled('tiers') !== false && getTiers().length > 0;
+            return (isGeneralProgram() || window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && getTiers().length > 0;
         }
 
         // الشريحة التي يقع فيها مقدار حفظ معيّن حسب تعريفات الإعدادات (أو null)
@@ -6211,13 +6311,29 @@
             }
             // علامة الإجبار (*) تظهر فقط حين يكون الحقل إجبارياً فعلاً، أي حين توجد شرائح
             const mark = document.getElementById('studentMemRequiredMark');
-            if (mark) mark.style.display = tiersFeatureOn() ? '' : 'none';
+            if (mark) mark.style.display = !isGeneralProgram() && tiersFeatureOn() ? '' : 'none';
             const wrap = document.getElementById('studentTierWrap');
             if (!wrap) return;
-            if (!tiersFeatureOn()) { wrap.style.display = 'none'; wrap.dataset.active = '0'; return; }
+            if (isGeneralProgram() || !tiersFeatureOn()) { wrap.style.display = 'none'; wrap.dataset.active = '0'; return; }
             wrap.style.display = '';
             wrap.dataset.active = '1';
             updateStudentTierDisplay();
+        }
+
+        function fillStudentGeneralFields(student) {
+            const wrap = document.getElementById('studentGeneralFields');
+            wrap.style.display = isGeneralProgram() ? '' : 'none';
+            if (!isGeneralProgram()) return;
+            const s = getProgramSettings();
+            const fill = (id, list, label, value) => {
+                const select = document.getElementById(id);
+                select.innerHTML = `<option value="">— اختر ${label} —</option>` + list.map(item =>
+                    `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name)}</option>`).join('');
+                select.value = value || '';
+                select.classList.remove('border-red-500');
+            };
+            fill('studentStageInput', s.stages, 'المرحلة', student?.stage);
+            fill('studentTeacherInput', s.teachers, 'المعلم', student?.teacherId);
         }
 
         // تعبئة حقل جوال ولي الأمر (اختياري) — يُعرض بالصيغة المحلية ٠٥…
@@ -6249,8 +6365,8 @@
         let delId = null;
         function openStudentModal(id=null) {
             const m = document.getElementById('studentModal'); const n = document.getElementById('studentNameInput'); const i = document.getElementById('studentIdInput');
-            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); fillStudentPhoneField(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
-            else { n.value=""; i.value=""; fillStudentTierFields(null); fillStudentPhoneField(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
+            if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); fillStudentGeneralFields(s); fillStudentPhoneField(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
+            else { n.value=""; i.value=""; fillStudentTierFields(null); fillStudentGeneralFields(null); fillStudentPhoneField(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
             m.classList.replace('hidden','flex'); n.focus();
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
@@ -6260,8 +6376,16 @@
             if(!n) { showToast('اكتب اسم الطالب أولاً', 'error'); return; }
             const memSel = document.getElementById('studentMemorizedInput');
             const memorizedJuz = parseTierMin(memSel?.value);
+            const stage = document.getElementById('studentStageInput').value;
+            const teacherId = document.getElementById('studentTeacherInput').value;
+            if (isGeneralProgram()) {
+                const s = getProgramSettings();
+                if (!s.stages.some(x => x.id === stage) || !s.teachers.some(x => x.id === teacherId)) {
+                    showToast('اختر مرحلة ومعلماً من القائمتين أولاً', 'error'); return;
+                }
+            }
             // ⛔ البوابة: لا يدخل طالب البرنامج بلا مستوى — مقدار الحفظ إجباري ما دامت هناك شرائح
-            if (tiersFeatureOn() && memorizedJuz === null) {
+            if (!isGeneralProgram() && tiersFeatureOn() && memorizedJuz === null) {
                 // حلقة حمراء خارجية: لون الخانة النشطة (الأخضر) يغطي لون الإطار، ولا يغطي الحلقة
                 memSel?.classList.add('border-red-500', 'ring-4', 'ring-red-400');
                 memSel?.focus();
@@ -6283,14 +6407,17 @@
             // ونحذف بقايا النسخ السابقة (tierId, tierManual) حتى لا يبقى مصدر ثانٍ للحقيقة
             if(i){
                 const st = students.find(s => s.id == i); if (!st) return;
-                if (!commitStudentPatch(st, { name: n, memorizedJuz, parentPhone, tierId: DEL_FIELD, tierManual: DEL_FIELD })) return;
+                const fields = { name: n, memorizedJuz, parentPhone, tierId: DEL_FIELD, tierManual: DEL_FIELD };
+                if (isGeneralProgram()) Object.assign(fields, { stage, teacherId });
+                if (!commitStudentPatch(st, fields)) return;
             }
             else{
                 if (!canWriteCloud()) return;
                 const nid=students.length?Math.max(...students.map(s=>s.id))+1:1;
                 // الجديد بلا أساس سابق (null صريح لا غياب: الغياب يعني «طالب قديم» عند computeFrontier)؛
                 // يُضاف محلياً فوراً فلا يأخذ طالب ثانٍ الرقم نفسه على هذا الجهاز، ويُزال إن رفضته السحابة
-                const doc = { id: nid, name: n, history: {}, memorizedJuz, parentPhone, frontierBase: null, lastDailyBase: null };
+                const doc = { id: nid, name: n, history: {}, memorizedJuz, parentPhone, frontierBase: null, lastDailyBase: null,
+                    ...(isGeneralProgram() ? { sid: crypto.randomUUID(), teacherId, stage } : {}) };
                 students.push(doc);
                 window.almahraData.upsertStudent(doc).then(r => {
                     if (r.success) return;
@@ -6342,7 +6469,9 @@
                 }; 
             });
             const ws = XLSX.utils.json_to_sheet(exp); if(!ws['!views']) ws['!views']=[]; ws['!views'].push({rightToLeft:true}); ws['!cols']=[{wch:5},{wch:30},{wch:12},{wch:12},{wch:15},{wch:20},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:30},{wch:20},{wch:20}];
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "سجل المهرة الشامل"); XLSX.writeFile(wb, "التقرير_النهائي_لبرنامج_المهرة.xlsx");
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, isGeneralProgram() ? 'سجل البرنامج العام' : 'سجل المهرة الشامل');
+            XLSX.writeFile(wb, isGeneralProgram() ? 'التقرير_النهائي_للبرنامج_العام.xlsx' : 'التقرير_النهائي_لبرنامج_المهرة.xlsx');
         }
         
         // ================================================================
@@ -6429,6 +6558,7 @@
 
         function updateCurrentEventBadge() {
             if (!window.almahraPrograms) return;
+            updateProgramBrand();
             const prog = window.almahraPrograms.getCurrentProgram();
             const season = window.almahraPrograms.getCurrentSeason();
             const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
@@ -6489,12 +6619,30 @@
 
         // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
         function applyProgramFeatures() {
+            if (!window.almahraPrograms) return;
+            const general = isGeneralProgram();
+            document.body.classList.toggle('program-general', general);
+            if (general && document.getElementById('setPanelExam')?.classList.contains('active')) backToSettingsHome();
+            if (general && document.getElementById('recPanelExam')?.classList.contains('active')) backToRecordsHome();
+            ['settingsExamCard', 'recordsExamCard', 'setPanelExam', 'recPanelExam'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = general ? 'none' : '';
+            });
+            const levelTitle = document.getElementById('settingsLevelTitle');
+            if (levelTitle) levelTitle.textContent = general ? 'المراحل والمعلمون' : 'الشرائح';
+            const levelDesc = document.getElementById('settingsLevelDesc');
+            if (levelDesc) levelDesc.textContent = general ? 'تحديد المراحل والمعلمين' : 'المستويات وإسناد الطلاب';
+            const levelHeading = document.getElementById('settingsLevelHeading');
+            if (levelHeading) levelHeading.textContent = general ? 'المراحل والمعلمون' : 'الشرائح (المستويات)';
+            const settings = window.almahraPrograms.getSettings();
+            const f = settings?.features;
+            const tabExamPrep = document.getElementById('tabExamPrepBtn');
+            if (tabExamPrep) tabExamPrep.style.display = (general || f?.examPrep === false) ? 'none' : '';
+            document.querySelectorAll('[onclick*="printExamCards"], #examEntryContainer')
+                .forEach(el => { const card = el.closest('.rounded-3xl'); if (card) card.style.display = (general || f?.finalExam === false) ? 'none' : ''; });
             // في وضع الأرشيف لا نغيّر شيئاً — applyArchivedMode هي المسؤولة
             if (window.almahraPrograms?.isCurrentSeasonArchived()) return;
-            if (!window.almahraPrograms) return;
-            const settings = window.almahraPrograms.getSettings();
-            if (!settings || !settings.features) return;
-            const f = settings.features;
+            if (!f) return;
 
             // زر الحفظ الجديد في النافذة الذكية
             const btnNew = document.getElementById('btnTypeNew');
@@ -6507,10 +6655,6 @@
                     setSardType('review');
                 }
             }
-
-            // تبويب الاستعداد للاختبار
-            const tabExamPrep = document.getElementById('tabExamPrepBtn');
-            if (tabExamPrep) tabExamPrep.style.display = f.examPrep === false ? 'none' : '';
 
             // تبويب البومودورو في الشريط السفلي
             const navBtns = document.querySelectorAll('nav .nav-btn');
@@ -6538,10 +6682,6 @@
                     b.style.display = (f.groups === true) ? '' : 'none';
                 });
             });
-
-            // الاختبار النهائي والاستعداد
-            document.querySelectorAll('[onclick*="printExamCards"], #examEntryContainer')
-                .forEach(el => { const card = el.closest('.rounded-3xl'); if (card) card.style.display = (f.finalExam === false) ? 'none' : ''; });
 
             // لوحة الفرسان
             const knightsPanel = document.getElementById('supervisorPanel');
@@ -6580,6 +6720,7 @@
         // التنقّل في صفحة الإعدادات (شبكة أيقونات ← قسم)
         // ================================================================
         function openSettingsSection(panelId) {
+            if (panelId === 'setPanelExam' && isGeneralProgram()) return;
             const home = document.getElementById('settingsHome');
             if (home) home.style.display = 'none';
             document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
@@ -6607,13 +6748,14 @@
         };
 
         function openRecordsSection(panelId) {
+            if (panelId === 'recPanelExam' && isGeneralProgram()) return;
             document.getElementById('recordsHome').style.display = 'none';
             document.getElementById('recordsBackBar').style.display = 'flex';
             document.getElementById('recordsBackTitle').innerHTML = RECORDS_TITLES[panelId] || '';
 
             const panels = document.querySelectorAll('.rec-panel');
             if (panelId === 'recPanelAll') {
-                panels.forEach(p => p.classList.add('active')); // الكل للطباعة
+                panels.forEach(p => p.classList.toggle('active', !isGeneralProgram() || p.id !== 'recPanelExam')); // الكل للطباعة
             } else {
                 panels.forEach(p => p.classList.remove('active'));
                 document.getElementById(panelId)?.classList.add('active');
@@ -6770,7 +6912,7 @@
 
             const tiers = getTiers();
             const noLevel = studentsWithoutLevel().length;
-            set('scBadgeTiers', !tiers.length ? 'لا شرائح'
+            set('scBadgeTiers', isGeneralProgram() ? `${tiers.length} مراحل · ${getProgramSettings().teachers.length} معلمين${noLevel ? ` · ⚠️ ${noLevel} بلا مرحلة أو معلم` : ''}` : !tiers.length ? 'لا شرائح'
                 : noLevel ? `${tiers.length} شرائح · ⚠️ ${noLevel} بلا مستوى`
                 : `${tiers.length} شرائح · الكل مُصنَّف`);
 
@@ -6804,6 +6946,33 @@
                         <i class="fas fa-arrow-right-to-bracket"></i> العودة للموسم النشط
                     </button>
                 </div>`;
+        }
+
+        function generalSettingRow(item, kind) {
+            return `<div class="general-setting-row flex gap-2 items-center mb-2" data-id="${escapeHTML(item.id)}">
+                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
+                <button type="button" onclick="removeGeneralSettingRow(this, '${kind}')" class="text-red-600 p-2" title="حذف"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }
+
+        function addGeneralSettingRow(kind) {
+            const box = document.getElementById(kind === 'stage' ? 'psStagesList' : 'psTeachersList');
+            box.insertAdjacentHTML('beforeend', generalSettingRow({ id: `${kind}_${crypto.randomUUID()}`, name: '' }, kind));
+        }
+
+        async function removeGeneralSettingRow(button, kind) {
+            const row = button.closest('.general-setting-row');
+            try {
+                const allStudents = await window.almahraPrograms.getAllStudents('general');
+                const used = [...allStudents, ...students].some(s => s[kind === 'stage' ? 'stage' : 'teacherId'] === row.dataset.id);
+                if (used) { showToast('انقل الطلاب المرتبطين بهذا العنصر قبل حذفه', 'error'); return; }
+                row.remove();
+            } catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); }
+        }
+
+        function collectGeneralSettingRows(kind) {
+            return [...document.querySelectorAll(`#${kind === 'stage' ? 'psStagesList' : 'psTeachersList'} .general-setting-row`)]
+                .map((row, i) => ({ id: row.dataset.id, name: row.querySelector('input').value.trim(), ...(kind === 'stage' ? { order: i + 1 } : {}) }));
         }
 
         function renderProgramSettings() {
@@ -6948,7 +7117,15 @@
                 ${saveBarHtml(isArchivedView)}`;
 
             // ══════════ تبويب: الشرائح ══════════
-            if (tiersBox) tiersBox.innerHTML = `
+            if (tiersBox) tiersBox.innerHTML = isGeneralProgram() ? `
+                ${archivedBannerHtml(isArchivedView, season)}
+                <div class="bg-white p-5 rounded-2xl border-2 border-indigo-300 space-y-5">
+                    <p class="font-bold text-slate-600">المرحلة تُسند للطالب يدوياً، والحلقة تُشتق من المعلم والمرحلة.</p>
+                    <div><h3 class="font-black mb-2">المراحل</h3><div id="psStagesList">${(s.stages || []).map(t => generalSettingRow(t, 'stage')).join('')}</div>
+                        <button type="button" onclick="addGeneralSettingRow('stage')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة مرحلة</button></div>
+                    <div><h3 class="font-black mb-2">المعلمون</h3><div id="psTeachersList">${(s.teachers || []).map(t => generalSettingRow(t, 'teacher')).join('')}</div>
+                        <button type="button" onclick="addGeneralSettingRow('teacher')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة معلم</button></div>
+                </div>${saveBarHtml(isArchivedView)}` : `
                 ${archivedBannerHtml(isArchivedView, season)}
                 <div class="bg-white p-5 rounded-2xl border-2 border-indigo-300">
                     <p class="text-sm text-slate-500 font-bold mb-2">
@@ -7013,7 +7190,7 @@
                             <i class="fas fa-toggle-on text-emerald-500"></i> الميزات المفعّلة
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            ${Object.keys(FEATURE_LABELS).map(k => `
+                            ${Object.keys(FEATURE_LABELS).filter(k => !isGeneralProgram() || !['tiers', 'finalExam', 'examPrep'].includes(k)).map(k => `
                                 <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition">
                                     <input type="checkbox" class="ps-feat w-5 h-5 rounded accent-emerald-600" data-feat="${k}" ${feats[k] !== false ? 'checked' : ''}>
                                     <span class="font-bold text-slate-700 text-sm">${FEATURE_LABELS[k]}</span>
@@ -7351,7 +7528,7 @@
             if (!prog) return;
 
             // تعريفات الشرائح يجب أن تكون سليمة قبل أي حفظ (بلا تكرار، والأولى من الصفر)
-            const tierError = validateTierRows();
+            const tierError = isGeneralProgram() ? null : validateTierRows();
             if (tierError) { showToast(tierError, 'error'); return; }
 
             const newName = document.getElementById('psProgName').value.trim();
@@ -7360,10 +7537,10 @@
             const workingDays = Array.from(document.querySelectorAll('.ps-day:checked')).map(c => parseInt(c.value));
             const features = {};
             document.querySelectorAll('.ps-feat').forEach(c => { features[c.dataset.feat] = c.checked; });
-            const newTiers = collectTiersFromRows();
+            const newTiers = isGeneralProgram() ? [] : collectTiersFromRows();
 
             // حذف كل الشرائح يوقف نظام المستويات كله — نوضّح الأثر قبل الحفظ، فلا يمرّ صامتاً
-            if (getTiers().length > 0 && newTiers.length === 0) {
+            if (!isGeneralProgram() && getTiers().length > 0 && newTiers.length === 0) {
                 const msg = 'ستُحذف كل الشرائح، فيتوقف نظام المستويات في هذا البرنامج:\n\n'
                     + '• لن تُقسَّم لوحة السباق بالشرائح، ولا فرسان لكل شريحة.\n'
                     + '• لن يُطلب مقدار الحفظ عند إضافة طالب جديد، فقد يدخل طلاب بلا مستوى.\n'
@@ -7373,6 +7550,7 @@
             }
 
             const settings = {
+                ...(isGeneralProgram() ? prog.settings : {}),
                 raceName: document.getElementById('psRaceName').value.trim(),
                 raceSubtitle: document.getElementById('psRaceSub').value.trim(),
                 points: {
@@ -7382,17 +7560,32 @@
                 },
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
                 criteria: collectCriteriaFromRows(),
-                tiers: newTiers,
+                ...(isGeneralProgram() ? {} : { tiers: newTiers }),
                 titleRules: {
                     requireSard: !!document.getElementById('psTrRequireSard')?.checked,
                     weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),
                     disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked
                 },
-                features
+                features: isGeneralProgram() ? { ...prog.settings.features, ...features, tiers: false, finalExam: false, examPrep: false } : features
             };
 
+            if (isGeneralProgram()) {
+                const stages = collectGeneralSettingRows('stage');
+                const teachers = collectGeneralSettingRows('teacher');
+                if (!stages.length || stages.some(t => !t.name) || teachers.some(t => !t.name)) {
+                    showToast('أدخل اسم كل مرحلة ومعلم، وأبقِ مرحلة واحدة على الأقل', 'error'); return;
+                }
+                let allStudents;
+                try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
+                catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); return; }
+                if ([...allStudents, ...students].some(st => (st.stage && !stages.some(t => t.id === st.stage)) || (st.teacherId && !teachers.some(t => t.id === st.teacherId)))) {
+                    showToast('لا يمكن حذف مرحلة أو معلم مرتبط بطالب', 'error'); return;
+                }
+                Object.assign(settings, { stages, teachers });
+            }
+
             const commit = { settings, newName, seasonName, prog, season: window.almahraPrograms.getCurrentSeason() };
-            const tiersActive = (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && newTiers.length > 0;
+            const tiersActive = !isGeneralProgram() && (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && newTiers.length > 0;
             const changes = tiersActive ? computeTierChanges(newTiers) : [];
 
             if (changes.length > 0) {
@@ -7565,6 +7758,11 @@
             const modal = document.getElementById('noLevelModal');
             if (!box || !cnt || !modal) return;
             cnt.textContent = studentsCountLabel(list.length);
+            document.getElementById('noLevelTitle').textContent = isGeneralProgram() ? 'طلاب بلا مرحلة أو معلم' : 'طلاب بلا مستوى';
+            document.getElementById('noLevelDescription').innerHTML = isGeneralProgram()
+                ? 'بلا مرحلة أو معلم صالح. أسند لهم القيمتين من بيانات الطلاب.'
+                : 'لا شريحة لهم، <span class="text-red-700">فلن يدخلوا ترشيح فرسان اليوم ولا فرسان الأسبوع</span> حتى تُضبط مقادير حفظهم.';
+            document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';
             box.innerHTML = list.map(s => `
                 <div class="bg-white p-3 rounded-xl border-2 border-amber-200 flex items-center gap-2">
                     <span class="text-slate-400 font-black shrink-0">#${escapeHTML(String(s.id))}</span>
@@ -7581,6 +7779,11 @@
         // من التنبيه إلى شاشة الإدخال مباشرة، مقصورة على من بلا مستوى
         function fixNoLevelNow() {
             closeNoLevelModal();
+            if (isGeneralProgram()) {
+                switchTab('page-settings', document.querySelector('nav [onclick*="page-settings"]'));
+                openSettingsSection('setPanelStudents');
+                return;
+            }
             openBulkTierAssign(true);
         }
 
@@ -7652,10 +7855,22 @@
         async function resetProgramSettings() {
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
+            if (isGeneralProgram()) {
+                if (window.almahraPrograms.isCurrentSeasonArchived()) {
+                    showToast('لا يمكن استعادة الافتراضي أثناء عرض موسم مؤرشف', 'error'); return;
+                }
+                let allStudents;
+                try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
+                catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); return; }
+                const defaults = window.almahraPrograms.getDefaultSettings(prog.id);
+                if ([...allStudents, ...students].some(s => s.stage && !defaults.stages.some(t => t.id === s.stage))) {
+                    showToast('انقل الطلاب من المراحل المخصّصة قبل استعادة الافتراضي', 'error'); return;
+                }
+            }
             // عدد من سينتقل بالتعريفات الافتراضية — يُحسب قبل الاستعادة (بعدها لا يظهر فرق)
             const defaultTiers = window.almahraPrograms.getDefaultSettings(prog.id).tiers || [];
-            const moved = computeTierChanges(defaultTiers).length;
-            if (!confirm('استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(الشرائح، المعايير، النقاط، أيام العمل، الميزات)\n\nسجلات الطلاب ونقاطهم لن تتأثر.'
+            const moved = isGeneralProgram() ? 0 : computeTierChanges(defaultTiers).length;
+            if (!confirm(`استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(${isGeneralProgram() ? 'المراحل والتقدير' : 'الشرائح'}، المعايير، النقاط، أيام العمل، الميزات)\n\n${isGeneralProgram() ? 'قائمة المعلمين الحالية ستبقى كما هي.\n' : ''}سجلات الطلاب ونقاطهم لن تتأثر.`
                 + (moved ? `\nلكن الشرائح ستعود إلى (٠ / ٢ / ٣ أجزاء)، فينتقل ${moved} طالب حسب مقدار حفظه.` : ''))) return;
             const r = await window.almahraPrograms.resetSettings(prog.id);
             if (r.success) {
@@ -7713,8 +7928,18 @@
             else showToast('فشل الحذف: ' + result.error, 'error');
         }
 
+        const shownProgramInitErrors = new Set();
+        function showProgramInitError({ programId, name }) {
+            if (shownProgramInitErrors.has(programId)) return;
+            shownProgramInitErrors.add(programId);
+            showToast(`تعذّرت تهيئة ${name || programId}. بقية البرامج المتاحة قابلة للاستخدام.`, 'error');
+        }
+        window.addEventListener('almahra-program-init-error', e => showProgramInitError(e.detail));
+        window.almahraPrograms?.getInitializationErrors().forEach(showProgramInitError);
+
         // بعد اكتمال المصادقة: جهّز البرامج
         window.addEventListener('almahra-auth-ready', () => {
+            window.almahraPrograms?.getInitializationErrors().forEach(showProgramInitError);
             document.body.classList.add('event-not-selected');
 
             let waitTicks = 0;
@@ -7769,6 +7994,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // الرأس وحركة الخط لا تنتظران وصول بيانات السحابة
+            updateProgramBrand();
             initHeaderScroll(); initHadithTilt();
             setupDatesAndTimezone(); loadData(); initQuranEngine();
             loadPomoConfig(); loadPomoRuntime();
