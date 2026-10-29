@@ -26,7 +26,7 @@
         /* حماية: إخفاء البرنامج قبل التحقق من تسجيل الدخول */
         body.auth-not-ready > *:not(#loginOverlay):not(#loadingOverlay) { visibility: hidden !important; }
         /* إخفاء البرنامج قبل اختيار الحدث */
-        body.event-not-selected > *:not(#eventPickerOverlay):not(#loginOverlay):not(#loadingOverlay):not(#toastMessage) { visibility: hidden !important; }
+        body.event-not-selected > *:not(#eventPickerOverlay):not(#loginOverlay):not(#loadingOverlay):not(#toastMessage):not(#pendingSaveWarning) { visibility: hidden !important; }
 
         /* شاشة اختيار الحدث */
         #eventPickerOverlay {
@@ -742,13 +742,13 @@
     <!-- شريط تنبيه الموسم المؤرشف -->
     <div id="archivedBanner" style="display:none;" class="bg-gradient-to-r from-slate-700 to-slate-800 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 no-print shadow-lg">
         <div class="flex items-center gap-3">
-            <span style="font-size:24px;">📦</span>
+            <span id="archivedBannerIcon" style="font-size:24px;">📦</span>
             <div>
-                <div class="font-black text-base">أنت تعرض موسماً مؤرشفاً</div>
+                <div id="archivedBannerTitle" class="font-black text-base">أنت تعرض موسماً مؤرشفاً</div>
                 <div class="text-xs text-slate-300 font-bold" id="archivedBannerName"></div>
             </div>
         </div>
-        <button onclick="backToActiveSeason()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-5 rounded-xl text-sm shadow shrink-0">
+        <button id="archivedBannerBack" onclick="backToActiveSeason()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-5 rounded-xl text-sm shadow shrink-0">
             <i class="fas fa-arrow-right-to-bracket"></i> العودة للموسم النشط
         </button>
     </div>
@@ -2078,6 +2078,11 @@
         </div>
     </div>
 
+    <div id="pendingSaveWarning" dir="rtl" role="alert" class="hidden fixed left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-2xl shadow-2xl font-bold flex items-center gap-3" style="bottom:24px; z-index:5100; width:max-content; max-width:calc(100% - 32px); font-family:'Cairo',sans-serif;">
+        <span>⚠️ لم يُحفظ آخر تعديل لأن البرنامج تغيّر قبل الحفظ. أعد إدخاله</span>
+        <button type="button" onclick="hidePendingSaveWarning()" aria-label="إغلاق تحذير عدم الحفظ" class="text-2xl px-2 shrink-0">×</button>
+    </div>
+
     <div id="toastMessage" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[5000] bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl text-xl font-bold hidden opacity-0 transition-all duration-300 flex items-center gap-2">
         <i class="fas fa-info-circle"></i>
         <span id="toastText"></span>
@@ -2598,6 +2603,7 @@
             { name: "المجموعة 10", leader: "عبد الرحمن صفر الحجاجي", deputy: "امين سويلم معيصب الحسناني", members: ["عمر إيهاب"] }
         ];
         function resolveOrCreateStudentByName(name, stats, created) {
+            if (!canWriteCloud()) return null;
             // الجديد يُضاف إلى students فوراً (فيُطابَق الاسم المكرر ولا يتكرر الرقم)، وإلى created ليُرسَل وحده ويُزال إن فشل
             const trimmedName = name.trim();
             const existing = students.find(s => s.name.trim() === trimmedName);
@@ -2611,6 +2617,7 @@
             return nid;
         }
         function importPresetGroups() {
+            if (!canWriteCloud()) return;
             if (importBlockedByLevelRule()) return; // تُنشئ طلاباً بأسمائهم فقط، أي بلا مستوى
             if (!confirm('سيتم استيراد 10 مجموعات جاهزة بأسمائها. أي اسم غير موجود حالياً في قائمة طلابك سيُنشأ كطالب جديد تلقائياً ويمكنك تعديله لاحقاً. هل تريد المتابعة؟')) return;
             if (!canWriteCloud()) return;
@@ -2634,6 +2641,7 @@
                     return;
                 }
                 // المجموعات لا تُحفظ إلا بعد نجاح إنشاء أعضائها، فلا تشير مجموعة إلى طالب ليس في السحابة
+                if (!canWriteView()) return;
                 groups.push(...newGroups); groupIdCounter = nextGroupId;
                 saveGroupsData();
                 updateAllUIs();
@@ -2653,7 +2661,10 @@
                 groupIdCounter = groups.reduce((max, g) => Math.max(max, g.id), 0) + 1;
             } catch(e) { groups = []; }
         }
-        function saveGroupsData() { try { localStorage.setItem('almahara_groups_v1', JSON.stringify(groups)); } catch(e) {} }
+        function saveGroupsData() {
+            if (!canWriteView()) return;
+            try { localStorage.setItem('almahara_groups_v1', JSON.stringify(groups)); } catch(e) {}
+        }
         function getStudentName(id) { const s = students.find(x => x.id == id); return s ? s.name : null; }
 
         function renderGroupsList() {
@@ -2706,6 +2717,7 @@
             document.getElementById('groupEditModal').classList.remove('flex'); document.getElementById('groupEditModal').classList.add('hidden');
         }
         function saveGroupEdit() {
+            if (!canWriteView()) return;
             const name = document.getElementById('grpNameInput').value.trim();
             if (!name) { showToast('اكتب اسم المجموعة', 'error'); return; }
             const leaderVal = document.getElementById('grpLeaderSelect').value;
@@ -2730,6 +2742,7 @@
             showToast('تم حفظ المجموعة بنجاح!');
         }
         function deleteGroupConfirm(groupId) {
+            if (!canWriteView()) return;
             const g = groups.find(x => x.id === groupId);
             if (!g) return;
             if (confirm(`هل أنت متأكد من حذف "${g.name}"؟`)) {
@@ -2772,6 +2785,7 @@
         }
 
         function saveWinningGroup() {
+            if (!canWriteView()) return;
             const name = document.getElementById('wgNameInput').value.trim();
             const day = document.getElementById('wgDayInput').value;
             const selects = document.querySelectorAll('.wg-select');
@@ -2818,9 +2832,13 @@
             try { const saved = localStorage.getItem('almahara_weekly_group_log_v1'); weeklyGroupLog = saved ? JSON.parse(saved) : []; }
             catch(e) { weeklyGroupLog = []; }
         }
-        function saveWeeklyGroupLogData() { try { localStorage.setItem('almahara_weekly_group_log_v1', JSON.stringify(weeklyGroupLog)); } catch(e) {} }
+        function saveWeeklyGroupLogData() {
+            if (!canWriteView()) return;
+            try { localStorage.setItem('almahara_weekly_group_log_v1', JSON.stringify(weeklyGroupLog)); } catch(e) {}
+        }
 
         function upsertWeeklyGroupLogEntry(dateStr, day, name, members, score) {
+            if (!canWriteView()) return;
             const weekStart = getWeekStartDate(dateStr);
             const idx = weeklyGroupLog.findIndex(e => e.weekStart === weekStart && e.day === day);
             const entry = { weekStart, day, name, members: [...members], dateStr };
@@ -2829,6 +2847,7 @@
             saveWeeklyGroupLogData();
         }
         function removeWeeklyGroupLogEntry(weekStart, day) {
+            if (!canWriteView()) return;
             weeklyGroupLog = weeklyGroupLog.filter(e => !(e.weekStart === weekStart && e.day === day));
             saveWeeklyGroupLogData();
         }
@@ -2844,7 +2863,10 @@
             try { const saved = localStorage.getItem('almahara_group_daily_scores_v1'); groupDailyScores = saved ? JSON.parse(saved) : {}; }
             catch(e) { groupDailyScores = {}; }
         }
-        function saveGroupDailyScoresData() { try { localStorage.setItem('almahara_group_daily_scores_v1', JSON.stringify(groupDailyScores)); } catch(e) {} }
+        function saveGroupDailyScoresData() {
+            if (!canWriteView()) return;
+            try { localStorage.setItem('almahara_group_daily_scores_v1', JSON.stringify(groupDailyScores)); } catch(e) {}
+        }
 
         // آخر تاريخ يمكن اختياره لتقييم المجموعات: يبقى "أمس" حتى تبدأ حصة اليوم الساعة 4:30 عصراً، فيصبح اليوم نفسه متاحاً
         // (تمنع تكرار خطأ اختيار تاريخ اليوم قبل أن تبدأ حصته فعلياً)
@@ -2892,6 +2914,7 @@
             return fields;
         }
         function commitGroupPoints(dateStr, targets) {
+            if (!canWriteCloud()) return false;
             // targets: طالب ← نقاط المجموعة المطلوبة له في التاريخ (بعد التصفير والفوز معاً) ← عملية واحدة لكل عضو تغيّرت نقاطه، في دفعة واحدة
             return commitPatches([...targets].filter(([s, pts]) => pts !== (s.history[dateStr].groupDisciplinePoints || 0))
                 .map(([s, pts]) => ({ student: s, fields: groupPointsFields(s, dateStr, pts) })));
@@ -2906,6 +2929,7 @@
         }
 
         function applyGroupWinnerForDate(dateStr, groupId, targets) {
+            if (!canWriteView()) return;
             const dayScores = groupDailyScores[dateStr] || {};
             const score = dayScores[groupId];
             if (score === undefined) return;
@@ -2932,6 +2956,7 @@
 
         // يُرجع {tie:false} لو تم حسم الفائز تلقائياً، أو {tie:true, candidates, bestScore} لو تعادلت أكثر من مجموعة على الدرجة الأعلى
         function applyAutoDailyGroupWinner(dateStr) {
+            if (!canWriteView()) return { tie: false };
             const targets = new Map();
             clearGroupDisciplinePointsForDate(dateStr, targets);
             const dayScores = groupDailyScores[dateStr] || {};
@@ -3024,7 +3049,10 @@
             try { const saved = localStorage.getItem('almahara_weekly_champion_group_v1'); weeklyChampionGroup = saved ? JSON.parse(saved) : null; }
             catch(e) { weeklyChampionGroup = null; }
         }
-        function saveWeeklyChampionGroupData() { try { localStorage.setItem('almahara_weekly_champion_group_v1', JSON.stringify(weeklyChampionGroup)); } catch(e) {} }
+        function saveWeeklyChampionGroupData() {
+            if (!canWriteView()) return;
+            try { localStorage.setItem('almahara_weekly_champion_group_v1', JSON.stringify(weeklyChampionGroup)); } catch(e) {}
+        }
         function getCurrentWeeklyChampionGroup() {
             const range = getLastCompletedWeekRange();
             if (weeklyChampionGroup && weeklyChampionGroup.weekStart === range.startStr) return weeklyChampionGroup; // تصحيح يدوي له الأولوية
@@ -3046,6 +3074,7 @@
             document.getElementById('weeklyChampionModal').classList.remove('flex'); document.getElementById('weeklyChampionModal').classList.add('hidden');
         }
         function saveWeeklyChampionGroup() {
+            if (!canWriteView()) return;
             const name = document.getElementById('wcNameInput').value.trim();
             const selects = document.querySelectorAll('.wc-select');
             let members = [];
@@ -3057,6 +3086,7 @@
             showToast("تم حفظ نجوم الانضباط والتميز للأسبوع بنجاح!");
         }
         function clearWeeklyChampionOverride() {
+            if (!canWriteView()) return;
             weeklyChampionGroup = null;
             saveWeeklyChampionGroupData();
             closeWeeklyChampionModal();
@@ -3087,16 +3117,16 @@
             }
 
             // تنظيف المفتاح المحلي القديم الذي كان مشتركاً بين البرامج
-            try { localStorage.removeItem('almahara_current_knights_v1'); } catch(e) {}
+            if (!isWriteLockedView()) { try { localStorage.removeItem('almahara_current_knights_v1'); } catch(e) {} }
         }
 
         async function saveCurrentThreeKnights(data) {
+            if (!canWriteView()) return;
             currentThreeKnights = data;
 
             const programId = window.almahraPrograms?.getCurrentProgramId();
             const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
             if (!programId || !seasonId) return;
-            if (window.almahraPrograms?.isCurrentSeasonArchived?.()) return; // موسم مؤرشف: لا كتابة
 
             const res = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, data);
             if (!res.success) showToast('تعذّر حفظ الفرسان سحابياً: ' + res.error, 'error');
@@ -3478,6 +3508,7 @@
             openWinningGroupModal(todayStr, { name: "", members: [], day });
         }
         function deleteWeeklyGroupLogEntry(weekStart, day) {
+            if (!canWriteView()) return;
             removeWeeklyGroupLogEntry(weekStart, day);
             renderWeeklyGroupLogManagerList();
             renderHonorBoard();
@@ -3551,6 +3582,24 @@
         // ================================================================
 
         let _cloudSaveTimeout = null;
+        let _pendingSaveWarningTimeout = null;
+        function hidePendingSaveWarning() {
+            clearTimeout(_pendingSaveWarningTimeout);
+            _pendingSaveWarningTimeout = null;
+            document.getElementById('pendingSaveWarning').classList.add('hidden');
+        }
+        function showPendingSaveWarning() {
+            clearTimeout(_pendingSaveWarningTimeout);
+            document.getElementById('pendingSaveWarning').classList.remove('hidden');
+            _pendingSaveWarningTimeout = setTimeout(hidePendingSaveWarning, 6000);
+        }
+        window.addEventListener('almahra-program-changed', () => {
+            if (_cloudSaveTimeout !== null) {
+                clearTimeout(_cloudSaveTimeout);
+                _cloudSaveTimeout = null;
+                showPendingSaveWarning();
+            }
+        });
         let _lastCloudSyncFromMe = 0;
 
         function loadData() {
@@ -3574,6 +3623,7 @@
         }
 
         function saveData() {
+            if (!canWriteView()) return;
             if (!window.almahraData) {
                 console.warn('⚠️ almahraData not ready, save skipped');
                 return;
@@ -3593,6 +3643,7 @@
             // مثلاً: إدخال ٥ طلاب متتالية = طلب واحد بدل ٥
             if (_cloudSaveTimeout) clearTimeout(_cloudSaveTimeout);
             _cloudSaveTimeout = setTimeout(() => {
+                _cloudSaveTimeout = null;
                 _lastCloudSyncFromMe = Date.now();
                 window.almahraData.saveAllStudents(students).then(result => {
                     if (!result.success) {
@@ -3630,7 +3681,29 @@
                 cur[last] = copy(val);
             });
         }
+        // يطابق `canWrite` في firestore.rules؛ إعادة فتح برنامج تكون بتعديلهما معاً
+        const WRITABLE_PROGRAMS = ['general'];
+        function isWriteLockedView() {
+            const programs = window.almahraPrograms;
+            const programId = programs?.getCurrentProgramId();
+            return !!(programs?.isCurrentSeasonArchived() || (programId && !WRITABLE_PROGRAMS.includes(programId)));
+        }
+        function writeLockedMessage(programId = window.almahraPrograms?.getCurrentProgramId()) {
+            if (window.almahraPrograms?.isCurrentSeasonArchived() && programId === window.almahraPrograms.getCurrentProgramId()) {
+                return '📦 هذا موسم مؤرشف — للعرض فقط، لا يمكن التعديل';
+            }
+            const prog = window.almahraPrograms?.getPrograms()?.[programId];
+            return '🔒 ' + (prog?.name || programId || 'البرنامج') + ' مقفل للكتابة · عرض التقارير فقط';
+        }
+        function canWriteView(programId = window.almahraPrograms?.getCurrentProgramId()) {
+            if (isWriteLockedView() || (programId && !WRITABLE_PROGRAMS.includes(programId))) {
+                showToast(writeLockedMessage(programId && !WRITABLE_PROGRAMS.includes(programId) ? programId : undefined), 'error');
+                return false;
+            }
+            return true;
+        }
         function canWriteCloud() {
+            if (!canWriteView()) return false;
             // حارسا saveData نفسهما؛ عند المنع لا يُعدَّل شيء محلياً ولا يُرسل شيء
             if (!window.almahraData) { console.warn('⚠️ almahraData not ready, save skipped'); return false; }
             if (!window.almahraData.getActiveSeasonId()) {
@@ -3687,10 +3760,10 @@
             return true;
         }
         function commitStudentPatch(student, fields) {
+            if (!canWriteCloud()) return false;
             // طالب واحد: المحلي يُحدَّث فوراً ثم يُرسل الطلب (بلا تأخير التجميع — لم يعد هناك «الكل» ليُجمَّع). يُرجع false إن منعه الحارس
             // عند الفشل يعود الطالب محلياً كما كان، فلا يُرى إنجاز لم يصل إلى السحابة
             if (!canWriteHistory(fields)) return false;
-            if (!canWriteCloud()) return false;
             const backup = structuredClone(student);
             applyFieldsLocally(student, fields);
             window.almahraData.patchStudent(student.id, fields).then(r => {
@@ -3701,9 +3774,9 @@
             return true;
         }
         function commitPatches(list) {
+            if (!canWriteCloud()) return false;
             // عدة طلاب ([{ student, fields }]) في commitBatch واحدة — للمجموعات والتوزيع الجماعي
             if (list.some(p => !canWriteHistory(p.fields))) return false;
-            if (!canWriteCloud()) return false;
             if (!list.length) return true;
             const backups = list.map(p => structuredClone(p.student));
             list.forEach(p => applyFieldsLocally(p.student, p.fields));
@@ -3742,9 +3815,11 @@
                 && item.history !== null && typeof item.history === 'object' && !Array.isArray(item.history));
         }
         function importNuclearBackup(event) {
+            if (!canWriteCloud()) return;
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
+                if (!canWriteCloud()) return;
                 document.getElementById('importBackupFile').value = "";
                 try {
                     const importedData = JSON.parse(e.target.result);
@@ -4049,11 +4124,13 @@
         }
 
         function startExcelImport() {
+            if (!canWriteCloud()) return;
             if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
             document.getElementById('excelFileInput').click();
         }
 
         function handleExcelImport(event) {
+            if (!canWriteCloud()) return;
             const file = event.target.files[0]; if (!file) return;
             if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
             if (isGeneralProgram()) generalImportEpoch++; // القراءة الأحدث تبطل أي قراءة أقدم.
@@ -4173,6 +4250,7 @@
         }
 
         async function confirmExcelImport() {
+            if (!canWriteCloud()) return;
             // حراسة معاينة general قبل اختيار أي مسار؛ لا تسقط أبداً إلى الحفظ القديم.
             if (pendingImport?.general) {
                 if (!generalImportContextValid(pendingImport)) { invalidateGeneralImport(); showToast('تغيّر سياق المعاينة؛ افتح الملف مجدداً', 'error'); return; }
@@ -4379,6 +4457,7 @@
         function activateButton(btn, colorClass, hoverClass) { btn.disabled = false; btn.className = `w-full py-5 ${colorClass} ${hoverClass} text-white font-black text-2xl rounded-2xl shadow-lg transition-all transform hover:scale-[1.01]`; }
         
         function saveSmartMastery() {
+            if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId);
             if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
             if (!requireQuranMeasure()) return;
@@ -5081,6 +5160,7 @@
             document.getElementById('examResWeightedPoints').innerText = totalAyahs * getProgramSettings().points.review;
         }
         function saveExamPrepProgress() {
+            if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
             if (!requireQuranMeasure()) return;
             const startSurahSelect = document.getElementById('examStartSurah'); const endSurahSelect = document.getElementById('examEndSurah');
@@ -5164,6 +5244,7 @@
         }
         
         function launchThreeKnights() {
+            if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
             const student1 = students.find(s => s.id == s1); const student2 = students.find(s => s.id == s2); const student3 = students.find(s => s.id == s3);
@@ -6241,10 +6322,7 @@
 
         function openSmartModal(id) {
             // حماية: لا إدخال في موسم مؤرشف
-            if (window.almahraPrograms?.isCurrentSeasonArchived()) {
-                showToast('📦 موسم مؤرشف — للعرض فقط، لا يمكن التعديل', 'error');
-                return;
-            }
+            if (!canWriteView()) return;
             currentEditingStudentId = id; const student = students.find(s => s.id === id); if(!student) return;
             document.getElementById('smartStudentName').innerText = escapeHTML(student.name);
             // وسم الشريحة بجانب الاسم (يختفي حين تُطفأ ميزة الشرائح)
@@ -6294,6 +6372,7 @@
         function closeSmartModal() { document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
         
         function saveSmartProgress() {
+            if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
             if (!requireQuranMeasure()) return;
             const startSurahSelect = document.getElementById('startSurah'); const endSurahSelect = document.getElementById('endSurah');
@@ -6423,6 +6502,7 @@
         }
 
         function saveExamScore(studentId) {
+            if (!canWriteCloud()) return;
             const student = students.find(s => s.id === studentId); if (!student) return;
             const hifzInput = document.getElementById(`examHifz_${studentId}`); const tarteelInput = document.getElementById(`examTarteel_${studentId}`);
             if (hifzInput.value === '' && tarteelInput.value === '') { showToast("أدخل درجة الحفظ أو الترتيل أولاً", "error"); return; }
@@ -6699,6 +6779,7 @@
         }
         
         function resetStudentToday() {
+            if (!canWriteCloud()) return;
             // التصفير يفرغ تسجيلات اليوم فتصير كمياته وذهبيته ونقاطه صفراً عند القراءة، حتى في اليوم القديم؛
             // ويبقي الحضور والمعايير ونقاط المجموعة. ثم يُعاد اشتقاق «آخر نشاط» من الطالب كما سيكون بعد التصفير
             // بلا الميزان يُرجع computeLastDaily null فيُحذف المؤشر ويُثبَّت الحدّ ناقصاً — فلا تصفير قبله
@@ -6727,7 +6808,7 @@
             if (!commitStudentPatch(student, fields)) return;
             updateAllUIs(); closeSmartModal(); showToast("تم تصفير إنجاز ونقاط اليوم بنجاح", "success");
         }
-        function markPresent(id) { const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended;
+        function markPresent(id) { if (!canWriteCloud()) return; const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended;
             if (isGeneralProgram() && curr) { openAttendanceEditModal(id, true); return; }
             const fields = { [`history.${todayStr}.attended`]: !curr, [`history.${todayStr}.hijri`]: hijriDateStr };
             if (isGeneralProgram() && !curr) { fields[`history.${todayStr}.absence`] = DEL_FIELD; fields[`history.${todayStr}.note`] = DEL_FIELD; }
@@ -6776,6 +6857,7 @@
             }
         }
         function saveAttendanceEdit() {
+            if (!canWriteCloud()) return;
             const student = students.find(s => s.id === attEditStudentId); if (!student) return;
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
@@ -6910,6 +6992,7 @@
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
         function saveStudent() {
+            if (!canWriteCloud()) return;
             const n=document.getElementById('studentNameInput').value.trim();
             const i=document.getElementById('studentIdInput').value;
             if(!n) { showToast('اكتب اسم الطالب أولاً', 'error'); return; }
@@ -7139,11 +7222,12 @@
         function applyArchivedMode() {
             if (!window.almahraPrograms) return;
             const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
+            const isLocked = isWriteLockedView();
             const navBtns = document.querySelectorAll('nav .nav-btn');
             const banner = document.getElementById('archivedBanner');
             const season = window.almahraPrograms.getCurrentSeason();
 
-            if (isArchived) {
+            if (isLocked) {
                 // إظهار تبويب السجل فقط (فهرس 3)
                 navBtns.forEach((btn, i) => { btn.style.display = (i === 3) ? '' : 'none'; });
 
@@ -7156,9 +7240,13 @@
                 // شريط التنبيه
                 if (banner) {
                     banner.style.display = 'flex';
+                    document.getElementById('archivedBannerIcon').textContent = isArchived ? '📦' : '🔒';
+                    document.getElementById('archivedBannerTitle').textContent = isArchived ? 'أنت تعرض موسماً مؤرشفاً' : 'البرنامج مقفل للكتابة';
+                    document.getElementById('archivedBannerBack').style.display = isArchived ? '' : 'none';
                     const nameEl = document.getElementById('archivedBannerName');
-                    if (nameEl) nameEl.textContent =
-                        `${season?.name || ''} · ${season?.startDate || ''} ← ${season?.endDate || ''} · عرض التقارير فقط`;
+                    if (nameEl) nameEl.textContent = isArchived
+                        ? `${season?.name || ''} · ${season?.startDate || ''} ← ${season?.endDate || ''} · عرض التقارير فقط`
+                        : writeLockedMessage();
                 }
 
                 document.body.classList.add('archived-mode');
@@ -7197,7 +7285,7 @@
             document.querySelectorAll('[onclick*="printExamCards"], #examEntryContainer')
                 .forEach(el => { const card = el.closest('.rounded-3xl'); if (card) card.style.display = (general || f?.finalExam === false) ? 'none' : ''; });
             // في وضع الأرشيف لا نغيّر شيئاً — applyArchivedMode هي المسؤولة
-            if (window.almahraPrograms?.isCurrentSeasonArchived()) return;
+            if (isWriteLockedView()) return;
             if (!f) return;
 
             // زر الحفظ الجديد في النافذة الذكية
@@ -7495,6 +7583,7 @@
 
         function archivedBannerHtml(isArchivedView, season) {
             if (!isArchivedView) return '';
+            if (!window.almahraPrograms.isCurrentSeasonArchived()) return `<div class="bg-slate-200 border-2 border-slate-400 rounded-2xl p-4 mb-5 text-center font-black">${escapeHTML(writeLockedMessage())}</div>`;
             return `
                 <div class="bg-slate-200 border-2 border-slate-400 rounded-2xl p-4 mb-5 text-center">
                     <div class="font-black text-slate-700 text-lg">📦 أنت تعرض موسماً مؤرشفاً</div>
@@ -7513,6 +7602,7 @@
         }
 
         function addGeneralSettingRow(kind) {
+            if (!canWriteView()) return;
             const box = document.getElementById(kind === 'stage' ? 'psStagesList' : 'psTeachersList');
             box.insertAdjacentHTML('beforeend', generalSettingRow({ id: `${kind}_${crypto.randomUUID()}`, name: '' }, kind));
         }
@@ -7523,6 +7613,7 @@
         }
 
         async function removeGeneralSettingRow(button, kind) {
+            if (!canWriteView()) return;
             const row = button.closest('.general-setting-row');
             try {
                 const allStudents = await window.almahraPrograms.getAllStudents('general');
@@ -7558,7 +7649,7 @@
             const season = window.almahraPrograms.getCurrentSeason();
             const seasons = window.almahraPrograms.getSeasons(prog.id);
             const archived = seasons.filter(x => x.status === 'archived');
-            const isArchivedView = window.almahraPrograms.isCurrentSeasonArchived();
+            const isArchivedView = isWriteLockedView();
 
             const wd = s.workingDays || [0, 1, 2, 3];
             const feats = s.features || {};
@@ -7818,7 +7909,7 @@
                                     <button onclick="viewArchivedSeason('${prog.id}','${sn.id}')" class="bg-blue-50 text-blue-700 border border-blue-300 hover:bg-blue-100 font-bold py-2 px-4 rounded-lg text-sm">
                                         <i class="fas fa-eye"></i> عرض
                                     </button>
-                                    <button onclick="deleteArchivedSeason('${prog.id}','${sn.id}','${escapeHTML(sn.name)}')" class="bg-red-50 text-red-700 border border-red-300 hover:bg-red-100 font-bold py-2 px-4 rounded-lg text-sm">
+                                    <button ${isArchivedView ? 'disabled' : ''} onclick="deleteArchivedSeason('${prog.id}','${sn.id}','${escapeHTML(sn.name)}')" class="bg-red-50 text-red-700 border border-red-300 hover:bg-red-100 font-bold py-2 px-4 rounded-lg text-sm">
                                         <i class="fas fa-trash"></i> حذف
                                     </button>
                                 </div>
@@ -7872,6 +7963,7 @@
         }
 
         function addTierRow() {
+            if (!canWriteView()) return;
             const box = document.getElementById('psTiersList');
             if (!box) return;
             if (box.querySelector('.text-slate-400')) box.innerHTML = '';
@@ -7885,6 +7977,7 @@
         }
 
         function removeTierRow(btn, tierId, count) {
+            if (!canWriteView()) return;
             if (count > 0 && !confirm(`هذه الشريحة فيها ${count} طالب.\nعند حفظ الإعدادات سينتقلون إلى الشريحة المناسبة لمقدار حفظهم، وتُعرض عليك معاينة قبل التطبيق.\n\nهل تتابع؟`)) return;
             btn.closest('.tier-row')?.remove();
             refreshTierHints();
@@ -8065,7 +8158,7 @@
                         <input type="checkbox" class="crit-disc w-5 h-5 rounded accent-teal-600" ${c.disciplineCriterion === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-teal-700">شرطٌ للانضباط</span>
                     </label>`}
-                    <button type="button" onclick="this.closest('.crit-row').remove()"
+                    <button type="button" onclick="if (canWriteView()) this.closest('.crit-row').remove()"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
                     </button>
@@ -8073,6 +8166,7 @@
         }
 
         function addCriterionRow(kind) {
+            if (!canWriteView()) return;
             const box = document.getElementById(kind === 'negative' ? 'psCriteriaNegative' : 'psCriteriaPositive');
             if (!box) return;
             box.querySelector('.crit-empty')?.remove();
@@ -8102,6 +8196,7 @@
         }
 
         async function saveProgramSettings() {
+            if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
 
@@ -8186,6 +8281,7 @@
                 Object.assign(settings, { stages, teachers });
             }
 
+            if (!canWriteView(prog.id)) return;
             const commit = { settings, newName, seasonName, prog, season: window.almahraPrograms.getCurrentSeason() };
             const tiersActive = !isGeneralProgram() && (window.almahraPrograms?.isFeatureEnabled('tiers') !== false) && newTiers.length > 0;
             const changes = tiersActive ? computeTierChanges(newTiers) : [];
@@ -8202,13 +8298,16 @@
 
         // الكتابة الفعلية لإعدادات البرنامج (تُستدعى مباشرة، أو بعد تأكيد معاينة إعادة التصنيف)
         async function commitProgramSettings({ settings, newName, seasonName, prog, season }, silent = false) {
+            if (!canWriteView(prog.id)) return false;
             const r1 = await window.almahraPrograms.updateSettings(prog.id, settings);
             if (!r1.success) { showToast('فشل حفظ الإعدادات: ' + r1.error, 'error'); return false; }
 
             if (newName && newName !== prog.name) {
+                if (!canWriteView(prog.id)) return false;
                 await window.almahraPrograms.updateProgramName(prog.id, newName);
             }
             if (seasonName && season && seasonName !== season.name) {
+                if (!canWriteView(prog.id)) return false;
                 await window.almahraPrograms.updateSeasonName(prog.id, season.id, seasonName);
             }
 
@@ -8278,6 +8377,7 @@
         }
 
         function saveBulkTierAssign() {
+            if (!canWriteCloud()) return;
             const rows = [...document.querySelectorAll('#bulkTierList .bulk-row')];
             // ⛔ البوابة: لا يُسحب مستوى طالب له مستوى (لا يُترك طالب بلا مستوى)
             const cleared = rows.filter(row => {
@@ -8336,7 +8436,7 @@
 
         function maybeWarnNoLevel() {
             // الموسم المؤرشف للعرض فقط، فلا يُطلب من المشرف إصلاحه
-            if (window.almahraData?.isReadOnly()) return;
+            if (isWriteLockedView() || window.almahraData?.isReadOnly()) return;
 
             const key = noLevelContextKey();
             const list = studentsWithoutLevel();
@@ -8443,6 +8543,7 @@
         }
 
         async function applyReclassify() {
+            if (!canWriteView()) return;
             if (!pendingSettingsCommit) { closeReclassifyModal(); return; }
             const commit = pendingSettingsCommit;
             closeReclassifyModal();
@@ -8455,6 +8556,7 @@
         }
 
         async function resetProgramSettings() {
+            if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
             if (isGeneralProgram()) {
@@ -8474,6 +8576,7 @@
             const moved = isGeneralProgram() ? 0 : computeTierChanges(defaultTiers).length;
             if (!confirm(`استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(${isGeneralProgram() ? 'المراحل والتقدير' : 'الشرائح'}، المعايير، النقاط، أيام العمل، الميزات)\n\n${isGeneralProgram() ? 'قائمة المعلمين الحالية ستبقى كما هي.\n' : ''}سجلات الطلاب ونقاطهم لن تتأثر.`
                 + (moved ? `\nلكن الشرائح ستعود إلى (٠ / ٢ / ٣ أجزاء)، فينتقل ${moved} طالب حسب مقدار حفظه.` : ''))) return;
+            if (!canWriteView(prog.id)) return;
             const r = await window.almahraPrograms.resetSettings(prog.id);
             if (r.success) {
                 // لا كتابة على الطلاب: شرائحهم تُحسب من مقدار حفظهم بالتعريفات الجديدة تلقائياً
@@ -8485,6 +8588,7 @@
         }
 
         async function startNewSeasonFlow() {
+            if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
 
@@ -8524,6 +8628,7 @@
         }
 
         async function deleteArchivedSeason(programId, seasonId, name) {
+            if (!canWriteView(programId)) return;
             if (!confirm(`حذف الموسم «${name}» نهائياً مع كل طلابه؟\n\n⚠️ لا يمكن التراجع عن هذا.`)) return;
             const result = await window.almahraPrograms.deleteSeason(programId, seasonId);
             if (result.success) { showToast('🗑️ حُذف الموسم'); renderProgramSettings(); }
@@ -8572,8 +8677,8 @@
                 const savedId = window.almahraPrograms.getSavedProgramId();
                 const programs = window.almahraPrograms.getPrograms();
 
-                if (savedId && programs[savedId]) {
-                    openProgram(savedId); // استئناف آخر برنامج
+                if (savedId === 'general' && programs[savedId]) {
+                    openProgram(savedId); // استئناف البرنامج العام فقط
                 } else {
                     openEventPicker();
                 }

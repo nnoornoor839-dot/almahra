@@ -9,6 +9,11 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // قرار المالك ٢٠٢٦-١٠-٢٩: الكتابة للعام فقط؛ إعادة فتح review-day أو summer بتعديل هذا الشرط في المستودع ثم الرفع بالـCLI.
+    function canWrite(programId) {
+      return isAdmin() && programId == 'general';
+    }
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -21,13 +26,16 @@ service cloud.firestore {
 
     // البرامج والمواسم والطلاب
     match /programs/{programId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
+      allow write: if canWrite(programId);
 
       match /seasons/{seasonId} {
-        allow read, write: if isAdmin();
+        allow read: if isAdmin();
+        allow write: if canWrite(programId);
 
         match /students/{studentId} {
-          allow read, write: if isAdmin();
+          allow read: if isAdmin();
+          allow write: if canWrite(programId);
         }
       }
     }
