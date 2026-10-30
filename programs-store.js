@@ -573,6 +573,7 @@ window.almahraPrograms = {
             fresh.settingsVersion = SETTINGS_VERSION;
             if (programId === 'general') {
                 fresh.teachers = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.teachers || []));
+                fresh.halaqas = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.halaqas || []));
             }
             await updateDoc(doc(db, PROGRAMS, programId), { settings: fresh });
             return { success: true };

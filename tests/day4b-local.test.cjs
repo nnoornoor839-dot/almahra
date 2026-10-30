@@ -20,7 +20,8 @@ const importSource = between(html, '        // مفتاح مقارنة فقط', 
 const totalsSource = between(html, '        function generalRecitationTotals(', '        function getCumulativeStats(');
 const createSource = between(store, 'async function createGeneralStudentIfAbsent(', '// ================================================================');
 const hasUndefinedSource = between(store, 'function hasUndefined(', 'function toFirestoreFields(');
-const settings = { teachers: [{ id: 't1', name: 'أمين' }], stages: [{ id: 'g1', name: 'المرحلة الأولى' }] };
+const settings = { teachers: [{ id: 't1', name: 'أمين' }], stages: [{ id: 'g1', name: 'المرحلة الأولى' }],
+    halaqas: [{ id: 'halaqa-one', name: 'حلقة وهمية', teacherId: 't1', stageId: 'g1', active: true }] };
 const row = (name = 'طالب وهمي 1', line = 2, fields = {}) => ({ name, line, teacher: 'أمين', stage: 'المرحلة الأولى', phone: '', ...fields });
 const headers = ['اسم الطالب', 'المعلم', 'المرحله', 'جوال ولى الامر'];
 const sheet = (...rows) => ({ SheetNames: ['بيانات'], Sheets: { بيانات: [headers, ...rows.map(r => [r.name, r.teacher, r.stage, r.phone])] } });
@@ -100,7 +101,7 @@ function transactionHarness() {
         create(student = validStudent(), season = 'season-one') { ctx.inputStudent = student; ctx.expectedSeason = season; return vm.runInContext('createGeneralStudentIfAbsent(inputStudent, expectedSeason)', ctx); } };
 }
 function validStudent(id = 1, name = 'طالب وهمي') {
-    return { id, sid: `sid-${id}`, name, teacherId: 't1', stage: 'g1', parentPhone: null,
+    return { id, sid: `sid-${id}`, name, teacherId: 't1', stage: 'g1', halaqaId: 'halaqa-one', parentPhone: null,
         history: {}, memorizedJuz: null, frontierBase: null, lastDailyBase: null };
 }
 
@@ -463,12 +464,10 @@ test('documented protection boundary: two devices can create the same normalized
     assert.equal(ui.run('normalizeArabicKey(a) === normalizeArabicKey(b)'), true);
 });
 
-test('data-store exception: existing functions and all other bytes remain unchanged', () => {
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:data-store.js'], { cwd: root, encoding: 'utf8' }).replace(/\r\n/g, '\n');
+test('data-store exception: only the step2 halaqaId guard changes from the approved baseline', () => {
+    const baseline = cp.execFileSync('git', ['show', '9628c9c:data-store.js'], { cwd: root, encoding: 'utf8' }).replace(/\r\n/g, '\n');
     let restored = store.replace(/\r\n/g, '\n');
-    const newFunction = between(restored, '// إنشاء general فقط:', '// ================================================================');
-    restored = restored.replace(newFunction, '').replace('    getDocs,\n    runTransaction\n', '    getDocs\n')
-        .replace('\n    createGeneralStudentIfAbsent,\n', '');
+    restored = restored.replace(' || !validId(student.halaqaId)', '');
     assert.equal(restored, baseline);
 });
 

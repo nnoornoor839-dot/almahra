@@ -201,7 +201,8 @@ test('season management hides new-season/settings writes and disables deletion, 
         Object.assign(h.ctx, { getTitleRules: () => ({ blockedByCriteriaIds: [] }),
             renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });
         h.run("const DAY_NAMES = ['يوم وهمي']; const FEATURE_LABELS = {};");
-        h.install('renderProgramSettings', 'archivedBannerHtml', 'saveBarHtml');
+        h.install('renderProgramSettings', 'archivedBannerHtml', 'saveBarHtml', 'generalHalaqaRow',
+            'refreshGeneralHalaqaOptions', 'collectGeneralSettingRows');
         h.run('renderProgramSettings()');
         const output = h.element('psPanelProgramBody').innerHTML;
         assert.match(output, /onclick="viewArchivedSeason/);

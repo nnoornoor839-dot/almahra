@@ -1846,7 +1846,7 @@
                         <label class="font-bold text-slate-700">التقدير
                             <select id="smartGrade" onchange="calculateQuran()" class="w-full p-3 mt-2 border-2 rounded-xl"><option value="">اختر التقدير</option></select>
                         </label>
-                        <label class="font-bold text-slate-700">المعلم الذي سمّع
+                        <label id="smartHeardByWrap" class="font-bold text-slate-700">المعلم الذي سمّع
                             <select id="smartHeardBy" class="w-full p-3 mt-2 border-2 rounded-xl"><option value="">اختر المعلم</option></select>
                         </label>
                     </div>
@@ -1990,12 +1990,10 @@
                     <p class="text-xs text-slate-400 font-bold text-center mt-2">تُحسب تلقائياً من مقدار الحفظ — لتغييرها عدّل الرقم أعلاه</p>
                 </div>
                 <div id="studentGeneralFields" class="mt-5 space-y-4" style="display:none">
-                    <label class="block font-bold text-slate-700">المرحلة <span class="text-red-600">*</span>
-                        <select id="studentStageInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
+                    <label class="block font-bold text-slate-700">الحلقة <span class="text-red-600">*</span>
+                        <select id="studentHalaqaInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
                     </label>
-                    <label class="block font-bold text-slate-700">المعلم <span class="text-red-600">*</span>
-                        <select id="studentTeacherInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
-                    </label>
+                    <p id="studentHalaqaNote" class="text-sm font-bold text-slate-500"></p>
                 </div>
                 <div class="mt-5">
                     <label class="block text-xl font-bold text-slate-700 mb-2 text-center">جوال ولي الأمر <span class="text-slate-400 text-base">(اختياري)</span></label>
@@ -2005,7 +2003,7 @@
                 </div>
             </div>
             <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 shrink-0">
-                <button onclick="saveStudent()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-2xl font-bold py-4 rounded-2xl shadow-lg"><i class="fas fa-check mr-2"></i> حفظ واعتماد البيانات</button>
+                <button id="studentSaveButton" onclick="saveStudent()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-2xl font-bold py-4 rounded-2xl shadow-lg"><i class="fas fa-check mr-2"></i> حفظ واعتماد البيانات</button>
             </div>
         </div>
     </div>
@@ -2147,6 +2145,7 @@
                 stages: Array.isArray(s?.stages) ? s.stages : [],
                 teachers: Array.isArray(s?.teachers) ? s.teachers : [],
                 ...(isGeneralProgram() ? {
+                    halaqas: Array.isArray(s?.halaqas) ? s.halaqas : [],
                     grades: Array.isArray(s?.grades) ? s.grades : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.grades,
                     kindMult: s?.kindMult || window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.kindMult,
                     absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence
@@ -2156,6 +2155,43 @@
 
         function isGeneralProgram() {
             return window.almahraPrograms?.getCurrentProgramId() === 'general';
+        }
+
+        // العلاقة الحالية تُقرأ من الحلقة، لا من نسختَي الطالب.
+        function getStudentHalaqa(student, settings = getProgramSettings()) {
+            if (!student?.halaqaId) return null;
+            return (settings.halaqas || []).find(h => h.id === student?.halaqaId) || null;
+        }
+
+        function generalHalaqaLabel(halaqa, settings = getProgramSettings()) {
+            const teacher = settings.teachers.find(t => t.id === halaqa.teacherId);
+            const stage = settings.stages.find(t => t.id === halaqa.stageId);
+            return `${halaqa.name} — ${teacher?.name || 'معلم غير موجود'} / ${stage?.name || 'مرحلة غير موجودة'}`;
+        }
+
+        function generalStudentHalaqaHtml(student) {
+            const settings = getProgramSettings(), halaqa = getStudentHalaqa(student, settings);
+            const badge = !halaqa || halaqa.active !== true
+                ? '<span class="font-black bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full">بلا حلقة</span> ' : '';
+            return badge + (halaqa ? `<span>${escapeHTML(generalHalaqaLabel(halaqa, settings))}${halaqa.active !== true ? ' (موقوفة)' : ''}</span>` : '');
+        }
+
+        function generalRecitationTeacher(student, settings = getProgramSettings()) {
+            const halaqa = getStudentHalaqa(student, settings);
+            if (!halaqa || halaqa.active !== true || !settings.teachers.some(t => t.id === halaqa.teacherId))
+                throw new Error('اربط الطالب بحلقة فعّالة أولاً');
+            return halaqa.teacherId;
+        }
+
+        function generalStudentMembership(student, selectedId, settings = getProgramSettings()) {
+            // تعديل البيانات وحدها لا يغيّر العضوية، حتى لو توقفت الحلقة أو فُقدت.
+            if (student?.halaqaId && student.halaqaId === selectedId) return {};
+            if (getStudentHalaqa(student, settings))
+                throw new Error('النقل بين الحلقات يأتي بإجراء خاص لاحقاً');
+            const halaqa = getStudentHalaqa({ halaqaId: selectedId }, settings);
+            generalRecitationTeacher({ halaqaId: selectedId }, settings);
+            if (!settings.stages.some(t => t.id === halaqa.stageId)) throw new Error('مرحلة الحلقة غير موجودة في الإعدادات');
+            return { halaqaId: halaqa.id, teacherId: halaqa.teacherId, stage: halaqa.stageId };
         }
 
         function roundPointTotal(value) {
@@ -2192,7 +2228,7 @@
         // لا نقرأ tierId المحفوظ أبداً — قد يكون قديماً (نسخة احتياطية، جهاز بنسخة قديمة، تغيير التعريفات)،
         // فيستحيل بهذا أن تخالف الشريحة المعروضة مقدارَ الحفظ الفعلي. ('' = بلا مستوى)
         function studentTierId(student) {
-            if (isGeneralProgram()) return noLevelReason(student) ? '' : getTierById(student?.stage)?.id || '';
+            if (isGeneralProgram()) return noLevelReason(student) ? '' : getTierById(getStudentHalaqa(student)?.stageId)?.id || '';
             return autoTierIdFor(student?.memorizedJuz);
         }
 
@@ -2206,9 +2242,7 @@
         // يشمل من بلا مقدار حفظ، ومن مقدار حفظه لا تُطابقه أي شريحة معرَّفة
         function studentsWithoutLevel() {
             if (isGeneralProgram()) {
-                const settings = getProgramSettings();
-                return students.filter(s => !settings.stages.some(t => t.id === s.stage)
-                    || !settings.teachers.some(t => t.id === s.teacherId));
+                return students.filter(s => noLevelReason(s));
             }
             if (!tiersFeatureOn()) return [];
             return students.filter(s => !studentTierId(s));
@@ -2226,10 +2260,8 @@
         // سبب بقاء الطالب بلا شريحة — يُعرض في التنبيه ليعرف المشرف ما يصلحه
         function noLevelReason(student) {
             if (isGeneralProgram()) {
-                const settings = getProgramSettings();
-                const missingStage = !settings.stages.some(t => t.id === student.stage);
-                const missingTeacher = !settings.teachers.some(t => t.id === student.teacherId);
-                return missingStage && missingTeacher ? 'بلا مرحلة أو معلم' : missingStage ? 'بلا مرحلة' : missingTeacher ? 'بلا معلم' : '';
+                const halaqa = getStudentHalaqa(student);
+                return !halaqa || halaqa.active !== true ? 'بلا حلقة' : '';
             }
             const n = student?.memorizedJuz;
             if (!Number.isInteger(n)) return 'بلا مقدار حفظ';
@@ -2254,7 +2286,7 @@
             const tiers = getTiers();
             if (!enabled || tiers.length === 0) return null;
             const i = tiers.findIndex(t => t.id === studentTierId(student));
-            if (i < 0) return { name: isGeneralProgram() ? 'بلا مرحلة' : 'بلا مستوى', border: '#cbd5e1', head: '#64748b', unassigned: true };
+            if (i < 0) return { name: isGeneralProgram() ? 'بلا حلقة' : 'بلا مستوى', border: '#cbd5e1', head: '#64748b', unassigned: true };
             return { name: tiers[i].name, ...TIER_STYLES[i % TIER_STYLES.length] };
         }
 
@@ -3773,6 +3805,20 @@
             });
             return true;
         }
+
+        // نافذة بيانات الطالب في العام تنتظر تأكيد السحابة قبل عرض النجاح.
+        async function commitGeneralStudentPatch(student, fields) {
+            if (!isGeneralProgram() || !canWriteCloud() || !canWriteHistory(fields)) return false;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            try {
+                const result = await window.almahraData.patchStudent(student.id, fields);
+                if (!result?.success) throw new Error(result?.error || 'خطأ غير معروف');
+            } catch (err) { showToast('فشل الحفظ السحابي: ' + err.message, 'error'); return false; }
+            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return false;
+            const current = students.find(s => s.id === student.id);
+            if (current) applyFieldsLocally(current, fields);
+            return true;
+        }
         function commitPatches(list) {
             if (!canWriteCloud()) return false;
             // عدة طلاب ([{ student, fields }]) في commitBatch واحدة — للمجموعات والتوزيع الجماعي
@@ -4026,11 +4072,17 @@
                     return id;
                 };
                 const teacherId = resolve(teacherIds, 'المعلم', teacher), stage = resolve(stageIds, 'المرحلة', stageName);
+                const matches = (settings.halaqas || []).filter(h => h.active === true && h.teacherId === teacherId && h.stageId === stage);
+                if (teacherId && stage) {
+                    if (!matches.length) reasons.push('لا توجد حلقة فعّالة لهذا المعلم في هذه المرحلة؛ أنشئها في إدارة الحلقات');
+                    else if (matches.length > 1) reasons.push('توجد أكثر من حلقة فعّالة لهذا المعلم في هذه المرحلة؛ احسم التعارض في إدارة الحلقات');
+                }
+                const halaqa = teacherId && stage && matches.length === 1 ? matches[0] : null;
                 if (phoneRaw && !phone) reasons.push('جوال ولي الأمر غير صالح');
                 const duplicate = nameKey && (existing.has(nameKey) || seen.has(nameKey));
                 const status = reasons.length ? 'error' : duplicate ? 'duplicate' : 'new';
                 if (status === 'new') seen.add(nameKey);
-                return { line: row.line, name, teacher, stageName, teacherId, stage, phone, status,
+                return { line: row.line, name, teacher, stageName, teacherId, stage, halaqaId: halaqa?.id || null, halaqaName: halaqa?.name || '', phone, status,
                     reason: reasons.length ? reasons.join('؛ ') : duplicate ? 'مكرر محتمل: الاسم موجود في الموسم أو مكرر داخل الملف' : '' };
             });
         }
@@ -4107,16 +4159,17 @@
             document.getElementById('importPreviewSummary').innerHTML =
                 `<div>الملف: ${escapeHTML(fileName)} · الورقة: ${escapeHTML(sheetName)} · الصفوف: ${rows.length}</div>` +
                 `<div>جديد: ${counts.new} · مكرر محتمل: ${counts.duplicate} · خطأ: ${counts.error}</div>` +
-                `<div class="text-slate-700">أضف أي معلم أو مرحلة ناقصة واحسم الأسماء الملتبسة في الإعدادات أولاً، ثم أعد فتح الملف. لن يُحفظ شيء قبل التأكيد.</div>` +
+                `<div class="text-slate-700">أضف أي معلم أو مرحلة أو حلقة ناقصة واحسم الأسماء الملتبسة في الإعدادات أولاً، ثم أعد فتح الملف. لن يُحفظ شيء قبل التأكيد.</div>` +
                 (counts.new > 450 ? '<div class="text-red-700">عدد عمليات الإضافة يتجاوز ٤٥٠؛ قسّم الملف.</div>' : '');
-            document.getElementById('importPreviewList').innerHTML = rows.map(r =>
-                `<div class="bg-white p-3 rounded-xl border ${r.status === 'error' ? 'border-red-300' : r.status === 'duplicate' ? 'border-slate-300' : 'border-emerald-300'}">` +
-                `<span class="font-black">صف ${r.line}: ${escapeHTML(r.name || '(بلا اسم)')}</span> · ` +
-                `${escapeHTML(r.teacher || '(بلا معلم)')} / ${escapeHTML(r.stageName || '(بلا مرحلة)')} · ` +
-                `${escapeHTML(r.phone || 'بلا جوال')} · ` +
-                `<span class="font-black">${r.status === 'new' ? 'جديد' : r.status === 'duplicate' ? 'مكرر محتمل' : 'خطأ'}</span>` +
-                `${r.reason ? ` · ${escapeHTML(r.reason)}` : ''}</div>`).join('') ||
-                '<div class="text-center text-slate-500">لا توجد صفوف في الملف</div>';
+            document.getElementById('importPreviewList').innerHTML = rows.length
+                ? '<div class="overflow-x-auto"><table class="w-full text-sm text-right bg-white"><thead class="bg-slate-100"><tr>' +
+                    ['الصف', 'اسم الطالب', 'المعلم', 'المرحلة', 'الحلقة', 'الجوال', 'الحالة', 'الملاحظات'].map(label => `<th scope="col" class="p-2">${label}</th>`).join('') +
+                    '</tr></thead><tbody>' + rows.map(r =>
+                        `<tr class="border-b ${r.status === 'error' ? 'bg-red-50' : r.status === 'duplicate' ? 'bg-slate-50' : 'bg-emerald-50'}">` +
+                        [r.line, r.name || '(بلا اسم)', r.teacher || '(بلا معلم)', r.stageName || '(بلا مرحلة)', r.halaqaName || 'بلا حلقة', r.phone || 'بلا جوال',
+                            r.status === 'new' ? 'جديد' : r.status === 'duplicate' ? 'مكرر محتمل' : 'خطأ', r.reason || '']
+                            .map(value => `<td class="p-2">${escapeHTML(String(value))}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>'
+                : '<div class="text-center text-slate-500">لا توجد صفوف في الملف</div>';
             const btn = document.getElementById('importPreviewConfirmBtn');
             btn.disabled = !generalImportCanConfirm(pendingImport);
             btn.textContent = counts.new > 450 ? 'قسّم الملف إلى ٤٥٠ طالباً جديداً أو أقل' : `استيراد ${counts.new} طالب جديد`;
@@ -4302,10 +4355,10 @@
                         if ([...students, ...operation.savedStudents].some(s => normalizeArabicKey(s.name) === key)) break;
                         // تصل تحديثات السحابة بين الصفوف وبين محاولات تعارض الرقم.
                         const checked = analyzeGeneralImportRows([operation.rawRows.find(r => r.line === row.line)], getProgramSettings(), [])[0];
-                        if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');
+                        if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage || checked.halaqaId !== row.halaqaId) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');
                         nextId = Math.max(nextId, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);
-                        const doc = { id: nextId, sid, name: row.name, teacherId: row.teacherId,
-                            stage: row.stage, parentPhone: row.phone, history: {}, memorizedJuz: null,
+                        const doc = { id: nextId, sid, name: row.name, teacherId: checked.teacherId,
+                            stage: checked.stage, halaqaId: checked.halaqaId, parentPhone: row.phone, history: {}, memorizedJuz: null,
                             frontierBase: null, lastDailyBase: null };
                         const result = await window.almahraData.createGeneralStudentIfAbsent(doc, operation.seasonId);
                         if (result?.success) {
@@ -5303,6 +5356,7 @@
                         </span>
                         <span class="text-xl font-black text-emerald-600 shrink-0">${s.tripPoints}</span>
                     </div>
+                    ${isGeneralProgram() ? `<div class="text-xs text-slate-600">${generalStudentHalaqaHtml(s)}</div>` : ''}
                     <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden" dir="ltr">
                         <div class="bg-emerald-500 h-full rounded-full" style="width: ${prog}%"></div>
                     </div>
@@ -5359,11 +5413,11 @@
                 html += `
                     <div class="bg-white/70 rounded-2xl border-2 border-amber-400 overflow-hidden shadow-sm">
                         <div class="bg-amber-500 text-white px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> ${isGeneralProgram() ? 'بلا مرحلة أو معلم' : 'بلا مستوى — لا شريحة لهم'}</h3>
+                            <h3 class="font-black text-lg flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> ${isGeneralProgram() ? 'بلا حلقة' : 'بلا مستوى — لا شريحة لهم'}</h3>
                             <span class="bg-white/25 px-3 py-0.5 rounded-full text-sm font-black">${noTier.length} طالب</span>
                         </div>
                         <div class="px-5 py-2 bg-amber-50 text-amber-800 text-sm font-bold flex flex-wrap items-center justify-between gap-2 no-print">
-                            <span>${isGeneralProgram() ? 'أسند لهم مرحلة ومعلماً من بيانات الطلاب.' : 'لن يدخلوا ترشيح فرسان الشرائح حتى تُضبط مقادير حفظهم.'}</span>
+                            <span>${isGeneralProgram() ? 'اربطهم بحلقة فعّالة من بيانات الطلاب.' : 'لن يدخلوا ترشيح فرسان الشرائح حتى تُضبط مقادير حفظهم.'}</span>
                             ${isGeneralProgram() ? '' : '<button onclick="openBulkTierAssign()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg font-black text-sm">أدخل مقاديرهم</button>'}
                         </div>
                         <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -5400,6 +5454,7 @@
                         <div class="absolute -top-2 -right-2 bg-slate-700 text-white text-[11px] font-black px-2 py-1 rounded-full shadow-lg z-10" title="رقم الطالب">#${student.id}</div>
                         <div class="w-20 h-20 mb-3 cursor-pointer ${isPresent ? 'text-emerald-500':'text-slate-300'}" onclick="markPresent(${student.id})">${genericStudentIcon}</div>
                         <h3 class="text-xl font-black text-slate-800 mb-1 truncate w-full" title="${escapeHTML(student.name)}">${escapeHTML(student.name)}</h3>
+                        ${isGeneralProgram() ? `<div class="text-xs text-slate-600 mb-2">${generalStudentHalaqaHtml(student)}</div>` : ''}
                         <div class="text-xs text-slate-500 mb-3 bg-slate-50 px-2 py-1 rounded w-full ${isGeneralProgram() ? '' : 'truncate'} border border-slate-100">${isGeneralProgram() ? generalRecitationHtml(student) : `إجمالي السرد: ${cStats.totalAyahs} آية`}</div>
                         <div class="flex w-full gap-2 mt-auto">
                             <button onclick="openSmartModal(${student.id})" class="flex-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white rounded-xl py-2 font-black text-lg transition-colors">إدخال إنجاز</button>
@@ -5422,19 +5477,18 @@
             students.forEach(student => {
                 if (query && !student.name.toLowerCase().includes(query)) return;
                 const tier = getStudentTier(student);
-                const displayTier = isGeneralProgram() ? getTierById(student.stage) : tier;
+                const displayTier = isGeneralProgram() ? getTierById(getStudentHalaqa(student)?.stageId) : tier;
                 const tierBadge = isGeneralProgram() && noLevelReason(student)
                     ? `<span class="text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">⚠️ ${noLevelReason(student)}</span>${displayTier ? `<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(displayTier.name)}</span>` : ''}`
                     : tier
                     ? `<span class="text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(tier.name)}</span>`
                     : (getTiers().length ? `<span class="text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">⚠️ ${isGeneralProgram() ? noLevelReason(student) : 'بلا مستوى'}</span>` : '');
-                const teacher = isGeneralProgram() ? getProgramSettings().teachers.find(t => t.id === student.teacherId) : null;
-                const halaqa = teacher && displayTier ? ` · حلقة ${escapeHTML(teacher.name)} / ${escapeHTML(displayTier.name)}` : '';
+                const halaqa = isGeneralProgram() ? generalStudentHalaqaHtml(student) : '';
                 container.innerHTML += `
                     <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
                         <div class="min-w-0 flex-1">
                             <div class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black">#${student.id}</span> ${escapeHTML(student.name)}</div>
-                            <div class="mt-1">${tierBadge}<span class="text-xs text-slate-500">${halaqa}</span></div>
+                            <div class="mt-1">${isGeneralProgram() ? '' : tierBadge}<span class="text-xs text-slate-500">${halaqa}</span></div>
                         </div>
                         <div class="flex gap-1 shrink-0">
                             <button onclick="openStudentModal(${student.id})" class="text-blue-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-pen"></i></button>
@@ -6313,7 +6367,8 @@
             const grade = document.getElementById('smartGrade');
             const heard = document.getElementById('smartHeardBy');
             const gradeId = reset ? '' : grade.value;
-            const heardBy = reset ? student.teacherId : heard.value;
+            document.getElementById('smartHeardByWrap').classList.toggle('hidden', isGeneralProgram());
+            const heardBy = isGeneralProgram() ? getStudentHalaqa(student, settings)?.teacherId : reset ? student.teacherId : heard.value;
             grade.innerHTML = '<option value="">اختر التقدير</option>' + settings.grades.map(g => `<option value="${escapeHTML(g.id)}">${escapeHTML(g.name)} (${g.percent}٪)</option>`).join('');
             grade.value = gradeId;
             heard.innerHTML = '<option value="">اختر المعلم</option>' + settings.teachers.map(t => `<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`).join('');
@@ -6332,7 +6387,7 @@
                 if (_badge) {
                     _tierEl.style.display = '';
                     _tierEl.style.background = _badge.head;
-                    _tierEl.innerHTML = `<i class="fas fa-layer-group"></i> ${escapeHTML(_badge.name)}`;
+                    _tierEl.innerHTML = isGeneralProgram() ? generalStudentHalaqaHtml(student) : `<i class="fas fa-layer-group"></i> ${escapeHTML(_badge.name)}`;
                 } else {
                     _tierEl.style.display = 'none';
                     _tierEl.innerHTML = '';
@@ -6374,6 +6429,11 @@
         function saveSmartProgress() {
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
+            let halaqaTeacher = '';
+            if (isGeneralProgram()) {
+                try { halaqaTeacher = generalRecitationTeacher(student); }
+                catch (err) { showToast(err.message, 'error'); return; }
+            }
             if (!requireQuranMeasure()) return;
             const startSurahSelect = document.getElementById('startSurah'); const endSurahSelect = document.getElementById('endSurah');
             const startSurahName = startSurahSelect.options[startSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, ''); const endSurahName = endSurahSelect.options[endSurahSelect.selectedIndex].text.replace(/^\d+\.\s*/, '');
@@ -6381,15 +6441,14 @@
             const startAyahVal = parseInt(document.getElementById('startAyah').value) || 1; const endAyahVal = parseInt(document.getElementById('endAyah').value) || 1;
             const rangeStr = `من ${startSurahName} (${startAyahVal}) إلى ${endSurahName} (${endAyahVal})`;
             const stats = calculateRangeStats(s1, startAyahVal, s2, endAyahVal);
-            if (isGeneralProgram() && noLevelReason(student)) { showToast('أكمل بيانات الطالب: ' + noLevelReason(student), 'error'); return; }
             const previewPoints = Number(document.getElementById('resWeightedPoints').innerText);
             let weightedPoints = isGeneralProgram() ? previewPoints : parseInt(document.getElementById('resWeightedPoints').innerText) || 0;
             let generalPoints = null, gradeId = '', heardBy = '';
             if (isGeneralProgram() && !document.getElementById('disciplineOnlyCheck').checked) {
                 gradeId = document.getElementById('smartGrade').value;
-                heardBy = document.getElementById('smartHeardBy').value;
+                heardBy = halaqaTeacher;
                 const settings = getProgramSettings();
-                if (!gradeId || !settings.teachers.some(t => t.id === heardBy)) { showToast('اختر التقدير والمعلم الذي سمّع', 'error'); return; }
+                if (!gradeId) { showToast('اختر التقدير', 'error'); return; }
                 try { generalPoints = generalEntryPoints({ lines: stats.lines, kind: currentSardType, gradeId, settings }); }
                 catch (e) { showToast(e.message, 'error'); return; }
                 weightedPoints = generalPoints.points;
@@ -6945,16 +7004,23 @@
             const wrap = document.getElementById('studentGeneralFields');
             wrap.style.display = isGeneralProgram() ? '' : 'none';
             if (!isGeneralProgram()) return;
-            const s = getProgramSettings();
-            const fill = (id, list, label, value) => {
-                const select = document.getElementById(id);
-                select.innerHTML = `<option value="">— اختر ${label} —</option>` + list.map(item =>
-                    `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name)}</option>`).join('');
-                select.value = value || '';
-                select.classList.remove('border-red-500');
-            };
-            fill('studentStageInput', s.stages, 'المرحلة', student?.stage);
-            fill('studentTeacherInput', s.teachers, 'المعلم', student?.teacherId);
+            const settings = getProgramSettings(), select = document.getElementById('studentHalaqaInput');
+            const currentHalaqa = getStudentHalaqa(student, settings);
+            const assigned = !!currentHalaqa;
+            const missing = !!student?.halaqaId && !assigned;
+            const list = assigned ? (settings.halaqas || []).filter(h => h.id === student.halaqaId)
+                : (settings.halaqas || []).filter(h => h.active === true);
+            select.innerHTML = (missing ? `<option value="${escapeHTML(student.halaqaId)}">إبقاء حلقته السابقة (غير موجودة)</option>`
+                : '<option value="">— اختر الحلقة —</option>') + list.map(h =>
+                `<option value="${escapeHTML(h.id)}">${escapeHTML(generalHalaqaLabel(h, settings))}${h.active !== true ? ' (موقوفة)' : ''}</option>`).join('');
+            const suggested = !assigned && !missing ? list.filter(h => h.teacherId === student?.teacherId && h.stageId === student?.stage) : [];
+            select.value = assigned || missing ? student.halaqaId : suggested.length === 1 ? suggested[0].id : '';
+            select.disabled = assigned;
+            document.getElementById('studentHalaqaNote').textContent = assigned
+                ? (currentHalaqa.active !== true ? 'حلقته موقوفة؛ ' : '') + 'النقل بين الحلقات يأتي بإجراء خاص لاحقاً'
+                : (student?.halaqaId ? 'حلقته السابقة غير موجودة؛ ' : '') +
+                    (suggested.length === 1 ? 'حلقة مقترحة من المعلم والمرحلة؛ لا يتم الربط إلا بالحفظ.' : 'اختر حلقة فعّالة؛ معلم الطالب ومرحلته يُملآن منها.');
+            select.classList.remove('border-red-500');
         }
 
         // تعبئة حقل جوال ولي الأمر (اختياري) — يُعرض بالصيغة المحلية ٠٥…
@@ -6991,20 +7057,21 @@
             m.classList.replace('hidden','flex'); n.focus();
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
-        function saveStudent() {
+        let generalStudentSaveInFlight = false;
+        async function saveStudent() {
+            if (isGeneralProgram() && generalStudentSaveInFlight) return;
             if (!canWriteCloud()) return;
             const n=document.getElementById('studentNameInput').value.trim();
             const i=document.getElementById('studentIdInput').value;
             if(!n) { showToast('اكتب اسم الطالب أولاً', 'error'); return; }
             const memSel = document.getElementById('studentMemorizedInput');
             const memorizedJuz = parseTierMin(memSel?.value);
-            const stage = document.getElementById('studentStageInput').value;
-            const teacherId = document.getElementById('studentTeacherInput').value;
+            let membership = null;
             if (isGeneralProgram()) {
-                const s = getProgramSettings();
-                if (!s.stages.some(x => x.id === stage) || !s.teachers.some(x => x.id === teacherId)) {
-                    showToast('اختر مرحلة ومعلماً من القائمتين أولاً', 'error'); return;
-                }
+                const student = i ? students.find(s => s.id == i) : null;
+                if (i && !student) return;
+                try { membership = generalStudentMembership(student, document.getElementById('studentHalaqaInput').value); }
+                catch (err) { showToast(err.message, 'error'); return; }
             }
             // ⛔ البوابة: لا يدخل طالب البرنامج بلا مستوى — مقدار الحفظ إجباري ما دامت هناك شرائح
             if (!isGeneralProgram() && tiersFeatureOn() && memorizedJuz === null) {
@@ -7025,12 +7092,57 @@
                 showToast('رقم الجوال غير صحيح — اكتبه هكذا 05xxxxxxxx، أو اترك الحقل فارغاً', 'error');
                 return;
             }
+            if (isGeneralProgram()) {
+                generalStudentSaveInFlight = true;
+                const saveButton = document.getElementById('studentSaveButton');
+                if (saveButton) saveButton.disabled = true;
+                try {
+                    if (i) {
+                        const st = students.find(s => s.id == i);
+                        if (!st || !await commitGeneralStudentPatch(st, { name: n, memorizedJuz, parentPhone,
+                            tierId: DEL_FIELD, tierManual: DEL_FIELD, ...membership })) return;
+                    } else {
+                        if (!canWriteCloud()) return;
+                        const seasonId = window.almahraPrograms.getCurrentSeasonId();
+                        let nid = 1;
+                        const doc = { id: nid, sid: crypto.randomUUID(), name: n, history: {}, memorizedJuz, parentPhone,
+                            frontierBase: null, lastDailyBase: null, ...membership };
+                        let firstMembership = null;
+                        for (let attempt = 0; attempt < 3; attempt++) {
+                            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId || !canWriteCloud()) return;
+                            let currentMembership;
+                            try { currentMembership = generalStudentMembership(null, document.getElementById('studentHalaqaInput').value); }
+                            catch (err) { showToast('تغيّرت الحلقة أثناء الحفظ؛ راجع ثم احفظ', 'error'); return; }
+                            if (firstMembership && (currentMembership.teacherId !== firstMembership.teacherId || currentMembership.stage !== firstMembership.stage)) {
+                                showToast('تغيّرت الحلقة أثناء الحفظ؛ راجع ثم احفظ', 'error'); return;
+                            }
+                            if (!firstMembership) firstMembership = currentMembership;
+                            Object.assign(doc, currentMembership);
+                            // أعد قراءة آخر لقطة، وتجاوز الرقم المتعارض ولو لم تصل اللقطة بعد.
+                            nid = Math.max(nid, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);
+                            doc.id = nid;
+                            const result = await window.almahraData.createGeneralStudentIfAbsent(doc, seasonId);
+                            if (result?.success) break;
+                            if (result?.code !== 'STUDENT_ID_CONFLICT') throw new Error(result?.error || 'خطأ غير معروف');
+                            if (attempt === 2) throw new Error('تكرر تعارض رقم الطالب ٣ مرات؛ حدّث البيانات ثم أعد المحاولة');
+                            nid = doc.id + 1;
+                        }
+                        if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return;
+                        if (!students.some(s => s.sid === doc.sid)) students.push(doc);
+                    }
+                    updateAllUIs(); closeStudentModal(); showToast('تم حفظ بيانات الطالب');
+                } catch (err) { showToast('فشل الحفظ السحابي: ' + err.message, 'error'); }
+                finally {
+                    generalStudentSaveInFlight = false;
+                    if (saveButton) saveButton.disabled = false;
+                }
+                return;
+            }
             // الشريحة لا تُحفظ: تُحسب من مقدار الحفظ عند العرض (studentTierId).
             // ونحذف بقايا النسخ السابقة (tierId, tierManual) حتى لا يبقى مصدر ثانٍ للحقيقة
             if(i){
                 const st = students.find(s => s.id == i); if (!st) return;
                 const fields = { name: n, memorizedJuz, parentPhone, tierId: DEL_FIELD, tierManual: DEL_FIELD };
-                if (isGeneralProgram()) Object.assign(fields, { stage, teacherId });
                 if (!commitStudentPatch(st, fields)) return;
             }
             else{
@@ -7038,8 +7150,7 @@
                 const nid=students.length?Math.max(...students.map(s=>s.id))+1:1;
                 // الجديد بلا أساس سابق (null صريح لا غياب: الغياب يعني «طالب قديم» عند computeFrontier)؛
                 // يُضاف محلياً فوراً فلا يأخذ طالب ثانٍ الرقم نفسه على هذا الجهاز، ويُزال إن رفضته السحابة
-                const doc = { id: nid, name: n, history: {}, memorizedJuz, parentPhone, frontierBase: null, lastDailyBase: null,
-                    ...(isGeneralProgram() ? { sid: crypto.randomUUID(), teacherId, stage } : {}) };
+                const doc = { id: nid, name: n, history: {}, memorizedJuz, parentPhone, frontierBase: null, lastDailyBase: null };
                 students.push(doc);
                 window.almahraData.upsertStudent(doc).then(r => {
                     if (r.success) return;
@@ -7557,7 +7668,7 @@
 
             const tiers = getTiers();
             const noLevel = studentsWithoutLevel().length;
-            set('scBadgeTiers', isGeneralProgram() ? `${tiers.length} مراحل · ${getProgramSettings().teachers.length} معلمين${noLevel ? ` · ⚠️ ${noLevel} بلا مرحلة أو معلم` : ''}` : !tiers.length ? 'لا شرائح'
+            set('scBadgeTiers', isGeneralProgram() ? `${tiers.length} مراحل · ${getProgramSettings().teachers.length} معلمين${noLevel ? ` · ⚠️ ${noLevel} بلا حلقة` : ''}` : !tiers.length ? 'لا شرائح'
                 : noLevel ? `${tiers.length} شرائح · ⚠️ ${noLevel} بلا مستوى`
                 : `${tiers.length} شرائح · الكل مُصنَّف`);
 
@@ -7596,7 +7707,7 @@
 
         function generalSettingRow(item, kind) {
             return `<div class="general-setting-row flex gap-2 items-center mb-2" data-id="${escapeHTML(item.id)}">
-                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
+                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" oninput="refreshGeneralHalaqaOptions()" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
                 <button type="button" onclick="removeGeneralSettingRow(this, '${kind}')" class="text-red-600 p-2" title="حذف"><i class="fas fa-trash"></i></button>
             </div>`;
         }
@@ -7605,6 +7716,7 @@
             if (!canWriteView()) return;
             const box = document.getElementById(kind === 'stage' ? 'psStagesList' : 'psTeachersList');
             box.insertAdjacentHTML('beforeend', generalSettingRow({ id: `${kind}_${crypto.randomUUID()}`, name: '' }, kind));
+            refreshGeneralHalaqaOptions();
         }
 
         function generalTeacherIsUsed(student, teacherId) {
@@ -7615,12 +7727,18 @@
         async function removeGeneralSettingRow(button, kind) {
             if (!canWriteView()) return;
             const row = button.closest('.general-setting-row');
+            const currentHalaqas = collectGeneralHalaqaRows();
+            const halaqas = [...currentHalaqas, ...(getProgramSettings().halaqas || []).filter(h => !currentHalaqas.some(row => row.id === h.id))];
+            if (halaqas.some(h => (kind === 'stage' ? h.stageId : h.teacherId) === row.dataset.id)) {
+                showToast('لا يمكن حذف مرحلة أو معلم مرتبط بحلقة، ولو كانت موقوفة', 'error'); return;
+            }
             try {
                 const allStudents = await window.almahraPrograms.getAllStudents('general');
                 const used = [...allStudents, ...students].some(s => kind === 'stage'
                     ? s.stage === row.dataset.id : generalTeacherIsUsed(s, row.dataset.id));
                 if (used) { showToast('انقل الطلاب المرتبطين بهذا العنصر قبل حذفه', 'error'); return; }
                 row.remove();
+                refreshGeneralHalaqaOptions();
             } catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); }
         }
 
@@ -7629,7 +7747,73 @@
                 .map((row, i) => ({ id: row.dataset.id, name: row.querySelector('input').value.trim(), ...(kind === 'stage' ? { order: i + 1 } : {}) }));
         }
 
+        function generalHalaqaRow(halaqa) {
+            return `<div class="general-halaqa-row grid grid-cols-1 md:grid-cols-4 gap-2 items-center mb-3" data-id="${escapeHTML(halaqa.id)}">
+                <label class="font-bold text-sm">اسم الحلقة<input class="halaqa-name w-full p-2 border-2 rounded-lg" value="${escapeHTML(halaqa.name || '')}"></label>
+                <label class="font-bold text-sm">المعلم<select class="halaqa-teacher w-full p-2 border-2 rounded-lg" data-selected="${escapeHTML(halaqa.teacherId || '')}"></select></label>
+                <label class="font-bold text-sm">المرحلة<select class="halaqa-stage w-full p-2 border-2 rounded-lg" data-selected="${escapeHTML(halaqa.stageId || '')}"></select></label>
+                <label class="font-bold text-sm flex gap-2 items-center"><input type="checkbox" class="halaqa-active" ${halaqa.active === true ? 'checked' : ''}>فعّالة</label>
+            </div>`;
+        }
+
+        function refreshGeneralHalaqaOptions() {
+            if (!isGeneralProgram()) return;
+            for (const kind of ['teacher', 'stage']) {
+                const list = collectGeneralSettingRows(kind);
+                document.querySelectorAll(`#psHalaqasList .halaqa-${kind}`).forEach(select => {
+                    const value = select.dataset.selected ?? select.value;
+                    delete select.dataset.selected;
+                    select.innerHTML = '<option value="">— اختر —</option>' + list.map(item =>
+                        `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name || '(بلا اسم)')}</option>`).join('');
+                    select.value = value;
+                });
+            }
+        }
+
+        function addGeneralHalaqaRow() {
+            if (!isGeneralProgram() || !canWriteView()) return;
+            document.getElementById('psHalaqasList').insertAdjacentHTML('beforeend', generalHalaqaRow({
+                id: `halaqa_${crypto.randomUUID()}`, name: '', teacherId: '', stageId: '', active: true }));
+            refreshGeneralHalaqaOptions();
+        }
+
+        function collectGeneralHalaqaRows() {
+            return [...document.querySelectorAll('#psHalaqasList .general-halaqa-row')].map(row => ({
+                id: row.dataset.id, name: row.querySelector('.halaqa-name').value.trim(),
+                teacherId: row.querySelector('.halaqa-teacher').value, stageId: row.querySelector('.halaqa-stage').value,
+                active: row.querySelector('.halaqa-active').checked
+            }));
+        }
+
+        function validateGeneralHalaqas(halaqas, teachers, stages, previous, allStudents, currentStudents) {
+            const ids = new Set(), names = new Set(), pairs = new Set();
+            if (previous.some(h => !halaqas.some(next => next.id === h.id))) return 'لا يمكن حذف حلقة؛ أوقفها بدلاً من الحذف';
+            for (const h of halaqas) {
+                if (typeof h.id !== 'string' || !h.id.trim() || ids.has(h.id)) return 'معرّف الحلقة غير صالح أو مكرر';
+                ids.add(h.id);
+                const key = normalizeArabicKey(h.name);
+                if (!key) return 'اسم الحلقة مطلوب';
+                if (names.has(key)) return 'اسم الحلقة مكرر';
+                names.add(key);
+                const old = previous.find(p => p.id === h.id);
+                if (old && (old.teacherId !== h.teacherId || old.stageId !== h.stageId) &&
+                    [...allStudents, ...currentStudents].some(s => s.halaqaId === h.id))
+                    return 'تغيير معلم الحلقة يأتي بإسناد مؤرّخ (الخطوة ٤)';
+                if (!teachers.some(t => t.id === h.teacherId) || !stages.some(t => t.id === h.stageId))
+                    return 'معلم الحلقة أو مرحلتها غير موجود في القائمتين';
+                const pair = JSON.stringify([h.teacherId, h.stageId]);
+                if (h.active === true && pairs.has(pair)) return 'لا يمكن إسناد حلقتين فعّالتين لنفس المعلم والمرحلة';
+                if (h.active === true) pairs.add(pair);
+                if (old?.active === true && h.active === false && currentStudents.some(s => s.halaqaId === h.id))
+                    return 'لا يمكن إيقاف حلقة عليها طالب في الموسم الجاري';
+            }
+            return null;
+        }
+
+        let generalSettingsHalaqaBaseline = null;
+
         function renderProgramSettings() {
+            generalSettingsHalaqaBaseline = null;
             const progBox  = document.getElementById('psPanelProgramBody');
             const ptsBox   = document.getElementById('psPanelPointsBody');
             const tiersBox = document.getElementById('psPanelTiersBody');
@@ -7646,6 +7830,24 @@
 
             const def = window.almahraPrograms.PROGRAM_DEFS[prog.id];
             const s = prog.settings || {};
+            if (isGeneralProgram()) {
+                const ids = new Set((s.halaqas || []).map(h => h.id));
+                const baseline = generalSettingsHalaqaBaseline = {
+                    programId: prog.id, seasonId: window.almahraPrograms.getCurrentSeasonId(), settings: s,
+                    ids, missingIds: new Set(students.filter(st => st.halaqaId && !ids.has(st.halaqaId)).map(st => st.halaqaId)),
+                    allSeasonMissingIds: new Set(), complete: false
+                };
+                // قراءة الفتح لا تعطل العرض، ولا تُضاف نتيجتها إلى لقطة عرض أحدث.
+                (async () => {
+                    try {
+                        const allStudents = await window.almahraPrograms.getAllStudents('general');
+                        if (generalSettingsHalaqaBaseline !== baseline || !isGeneralProgram() ||
+                            window.almahraPrograms.getCurrentSeasonId() !== baseline.seasonId) return;
+                        baseline.allSeasonMissingIds = new Set(allStudents.filter(st => st.halaqaId && !ids.has(st.halaqaId)).map(st => st.halaqaId));
+                        baseline.complete = true;
+                    } catch (_) { /* عند تعذّر القراءة يبقى الاستثناء للمراجع المحلية فقط. */ }
+                })();
+            }
             const season = window.almahraPrograms.getCurrentSeason();
             const seasons = window.almahraPrograms.getSeasons(prog.id);
             const archived = seasons.filter(x => x.status === 'archived');
@@ -7785,11 +7987,14 @@
             if (tiersBox) tiersBox.innerHTML = isGeneralProgram() ? `
                 ${archivedBannerHtml(isArchivedView, season)}
                 <div class="bg-white p-5 rounded-2xl border-2 border-indigo-300 space-y-5">
-                    <p class="font-bold text-slate-600">المرحلة تُسند للطالب يدوياً، والحلقة تُشتق من المعلم والمرحلة.</p>
+                    <p class="font-bold text-slate-600">اختر الحلقة للطالب؛ معلمه ومرحلته يُملآن من إعدادات الحلقة.</p>
                     <div><h3 class="font-black mb-2">المراحل</h3><div id="psStagesList">${(s.stages || []).map(t => generalSettingRow(t, 'stage')).join('')}</div>
                         <button type="button" onclick="addGeneralSettingRow('stage')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة مرحلة</button></div>
                     <div><h3 class="font-black mb-2">المعلمون</h3><div id="psTeachersList">${(s.teachers || []).map(t => generalSettingRow(t, 'teacher')).join('')}</div>
                         <button type="button" onclick="addGeneralSettingRow('teacher')" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة معلم</button></div>
+                    <div><h3 class="font-black mb-2">إدارة الحلقات</h3><div id="psHalaqasList">${(s.halaqas || []).map(generalHalaqaRow).join('')}</div>
+                        <button type="button" onclick="addGeneralHalaqaRow()" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-bold">إضافة حلقة</button>
+                        <p class="text-sm text-slate-500 mt-2">لا تُحذف الحلقة؛ يمكن إيقافها إذا خلت من طلاب الموسم الجاري.</p></div>
                     <div><h3 class="font-black mb-2">نسب التقدير</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         ${(s.grades || def.defaultSettings.grades).map(g => `<label class="font-bold text-sm">${escapeHTML(g.name)}
                             <input type="number" id="psGrade_${escapeHTML(g.id)}" class="ps-grade w-full p-2 mt-1 border-2 rounded-lg" data-grade="${escapeHTML(g.id)}" value="${g.percent}" min="0" max="100" step="1"></label>`).join('')}
@@ -7919,6 +8124,7 @@
             `;
 
             renderCriteriaRows(s.criteria || []);
+            if (isGeneralProgram()) refreshGeneralHalaqaOptions();
             renderTierRows(s.tiers || []);
             fillFarsModeSelect();
             updateSettingsBadges();
@@ -8199,6 +8405,7 @@
             if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
             if (!prog) return;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
 
             // تعريفات الشرائح يجب أن تكون سليمة قبل أي حفظ (بلا تكرار، والأولى من الصفر)
             const tierError = isGeneralProgram() ? null : validateTierRows();
@@ -8266,19 +8473,45 @@
             if (isGeneralProgram()) {
                 const stages = collectGeneralSettingRows('stage');
                 const teachers = collectGeneralSettingRows('teacher');
+                const halaqas = collectGeneralHalaqaRows();
                 if (!stages.length || stages.some(t => !t.name) || teachers.some(t => !t.name)) {
                     showToast('أدخل اسم كل مرحلة ومعلم، وأبقِ مرحلة واحدة على الأقل', 'error'); return;
                 }
+                const baseline = generalSettingsHalaqaBaseline;
                 let allStudents;
                 try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
                 catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); return; }
-                const removedTeacherIds = (prog.settings.teachers || []).filter(t => !teachers.some(kept => kept.id === t.id)).map(t => t.id);
+                if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId || !canWriteView(prog.id)) return;
+                const latestSettings = window.almahraPrograms.getCurrentProgram()?.settings || {};
+                if (baseline !== generalSettingsHalaqaBaseline || (baseline &&
+                    (baseline.programId !== prog.id || baseline.seasonId !== seasonId))) {
+                    showToast('تغيّرت الحلقات من جهاز آخر؛ أعد فتح الإعدادات', 'error'); return;
+                }
+                // الاستثناء محصور في المراجع المفقودة في لقطة الفتح المكتملة أو المحلية.
+                const missingIds = new Set([
+                    ...(baseline?.missingIds || []),
+                    ...(baseline?.complete ? baseline.allSeasonMissingIds : [])
+                ]);
+                if ([...allStudents, ...students].some(st => st.halaqaId && !halaqas.some(h => h.id === st.halaqaId) &&
+                    !missingIds.has(st.halaqaId))) {
+                    showToast('تغيّرت الحلقات من جهاز آخر؛ أعد فتح الإعدادات', 'error'); return;
+                }
+                if ((latestSettings.halaqas || []).some(h => !halaqas.some(row => row.id === h.id))) {
+                    showToast('تغيّرت الحلقات من جهاز آخر؛ أعد فتح الإعدادات', 'error'); return;
+                }
+                const halaqaError = validateGeneralHalaqas(halaqas, teachers, stages, latestSettings.halaqas || [], allStudents, students);
+                if (halaqaError) { showToast(halaqaError, 'error'); return; }
+                const currentHalaqas = [...halaqas, ...(latestSettings.halaqas || []).filter(h => !halaqas.some(row => row.id === h.id))];
+                if (currentHalaqas.some(h => !teachers.some(t => t.id === h.teacherId) || !stages.some(t => t.id === h.stageId))) {
+                    showToast('لا يمكن حذف مرحلة أو معلم مرتبط بحلقة، ولو كانت موقوفة', 'error'); return;
+                }
+                const removedTeacherIds = (latestSettings.teachers || []).filter(t => !teachers.some(kept => kept.id === t.id)).map(t => t.id);
                 if ([...allStudents, ...students].some(st => (st.stage && !stages.some(t => t.id === st.stage)) ||
                     (st.teacherId && !teachers.some(t => t.id === st.teacherId)) ||
                     removedTeacherIds.some(id => generalTeacherIsUsed(st, id)))) {
                     showToast('لا يمكن حذف مرحلة أو معلم مرتبط بطالب', 'error'); return;
                 }
-                Object.assign(settings, { stages, teachers });
+                Object.assign(settings, { stages, teachers, halaqas });
             }
 
             if (!canWriteView(prog.id)) return;
@@ -8304,11 +8537,13 @@
 
             if (newName && newName !== prog.name) {
                 if (!canWriteView(prog.id)) return false;
-                await window.almahraPrograms.updateProgramName(prog.id, newName);
+                const result = await window.almahraPrograms.updateProgramName(prog.id, newName);
+                if (prog.id === 'general' && !result?.success) { showToast('فشل حفظ اسم البرنامج: ' + (result?.error || 'خطأ غير معروف'), 'error'); return false; }
             }
             if (seasonName && season && seasonName !== season.name) {
                 if (!canWriteView(prog.id)) return false;
-                await window.almahraPrograms.updateSeasonName(prog.id, season.id, seasonName);
+                const result = await window.almahraPrograms.updateSeasonName(prog.id, season.id, seasonName);
+                if (prog.id === 'general' && !result?.success) { showToast('فشل حفظ اسم الموسم: ' + (result?.error || 'خطأ غير معروف'), 'error'); return false; }
             }
 
             if (!silent) showToast('✅ حُفظت الإعدادات');
@@ -8460,9 +8695,9 @@
             const modal = document.getElementById('noLevelModal');
             if (!box || !cnt || !modal) return;
             cnt.textContent = studentsCountLabel(list.length);
-            document.getElementById('noLevelTitle').textContent = isGeneralProgram() ? 'طلاب بلا مرحلة أو معلم' : 'طلاب بلا مستوى';
+            document.getElementById('noLevelTitle').textContent = isGeneralProgram() ? 'طلاب بلا حلقة' : 'طلاب بلا مستوى';
             document.getElementById('noLevelDescription').innerHTML = isGeneralProgram()
-                ? 'بلا مرحلة أو معلم صالح. أسند لهم القيمتين من بيانات الطلاب.'
+                ? 'بلا حلقة فعّالة. اربط كل طالب بحلقة من بيانات الطلاب.'
                 : 'لا شريحة لهم، <span class="text-red-700">فلن يدخلوا ترشيح فرسان اليوم ولا فرسان الأسبوع</span> حتى تُضبط مقادير حفظهم.';
             document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';
             box.innerHTML = list.map(s => `
@@ -8567,6 +8802,9 @@
                 try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
                 catch (err) { showToast('تعذّر فحص طلاب كل المواسم: ' + err.message, 'error'); return; }
                 const defaults = window.almahraPrograms.getDefaultSettings(prog.id);
+                if ((prog.settings.halaqas || []).some(h => !defaults.stages.some(t => t.id === h.stageId))) {
+                    showToast('لا يمكن استعادة الافتراضي: توجد حلقة مرتبطة بمرحلة غير افتراضية', 'error'); return;
+                }
                 if ([...allStudents, ...students].some(s => s.stage && !defaults.stages.some(t => t.id === s.stage))) {
                     showToast('انقل الطلاب من المراحل المخصّصة قبل استعادة الافتراضي', 'error'); return;
                 }
@@ -8574,7 +8812,7 @@
             // عدد من سينتقل بالتعريفات الافتراضية — يُحسب قبل الاستعادة (بعدها لا يظهر فرق)
             const defaultTiers = window.almahraPrograms.getDefaultSettings(prog.id).tiers || [];
             const moved = isGeneralProgram() ? 0 : computeTierChanges(defaultTiers).length;
-            if (!confirm(`استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(${isGeneralProgram() ? 'المراحل والتقدير' : 'الشرائح'}، المعايير، النقاط، أيام العمل، الميزات)\n\n${isGeneralProgram() ? 'قائمة المعلمين الحالية ستبقى كما هي.\n' : ''}سجلات الطلاب ونقاطهم لن تتأثر.`
+            if (!confirm(`استعادة كل الإعدادات الافتراضية لهذا البرنامج؟\n\n(${isGeneralProgram() ? 'المراحل والتقدير' : 'الشرائح'}، المعايير، النقاط، أيام العمل، الميزات)\n\n${isGeneralProgram() ? 'قائمة المعلمين والحلقات ستبقى كما هي.\n' : ''}سجلات الطلاب ونقاطهم لن تتأثر.`
                 + (moved ? `\nلكن الشرائح ستعود إلى (٠ / ٢ / ٣ أجزاء)، فينتقل ${moved} طالب حسب مقدار حفظه.` : ''))) return;
             if (!canWriteView(prog.id)) return;
             const r = await window.almahraPrograms.resetSettings(prog.id);

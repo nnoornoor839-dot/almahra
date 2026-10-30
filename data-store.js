@@ -86,7 +86,7 @@ async function createGeneralStudentIfAbsent(student, expectedSeasonId) {
     if (!student || typeof student !== 'object' || Array.isArray(student) || hasUndefined(student) ||
         !['number', 'string'].includes(typeof student.id) ||
         !/^[1-9]\d*$/.test(String(student.id)) || !Number.isSafeInteger(Number(student.id)) ||
-        !validId(student.sid) || !validId(student.teacherId) || !validId(student.stage))
+        !validId(student.sid) || !validId(student.teacherId) || !validId(student.stage) || !validId(student.halaqaId))
         return { success: false, code: 'INVALID_STUDENT', error: 'معرّفات الطالب غير صالحة أو توجد قيمة undefined' };
     try {
         const { id, ...data } = structuredClone(student);
