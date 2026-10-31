@@ -3900,12 +3900,13 @@
                                 showToast('استعادة السجلات في البرنامج العام تُفعَّل بعد إضافة التقدير', 'error'); return;
                             }
                             const settings = getProgramSettings();
-                            const affected = importedData.filter(s => s.teacherId == null || s.teacherId === ''
-                                || s.stage == null || s.stage === ''
-                                || !settings.teachers.some(t => t.id === s.teacherId)
-                                || !settings.stages.some(t => t.id === s.stage)).length;
+                            // الاستعادة تفحص عضوية جديدة، بلا تجاوز إبقاء عضوية الطالب الحالي.
+                            const affected = importedData.filter(s => {
+                                try { generalStudentMembership(null, s.halaqaId, settings); return false; }
+                                catch { return true; }
+                            }).length;
                             if (affected) {
-                                showToast(`استعادة مرفوضة: ${affected} طالب بلا معلم أو مرحلة صالحة في القائمتين`, 'error'); return;
+                                showToast(`استعادة مرفوضة: ${studentsCountLabel(affected)} بلا حلقة فعّالة؛ اربطهم بحلقة أو أنشئها ثم أعد المحاولة`, 'error'); return;
                             }
                             if (importedData.some(s => {
                                 const currentSid = currentById.get(String(s.id))?.sid;
@@ -3922,7 +3923,7 @@
                             return { ...rest, memorizedJuz: Number.isInteger(s.memorizedJuz) ? s.memorizedJuz : null,
                                 ...(isGeneralProgram() ? { sid: currentById.get(String(s.id))?.sid
                                     || (typeof s.sid === 'string' && s.sid.trim() ? s.sid : crypto.randomUUID()),
-                                    teacherId: s.teacherId, stage: s.stage } : {}) };
+                                    ...generalStudentMembership(null, s.halaqaId) } : {}) };
                         });
                         if (isGeneralProgram()) {
                             const sids = clean.map(s => s.sid);
