@@ -620,6 +620,7 @@
             .no-print, .no-print * { display: none !important; }
         }
         #examCardsPrintArea { display: none; }
+        #generalWeeklySheetPrintArea { display: none; }
         select { background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: left 1rem center; background-repeat: no-repeat; background-size: 2em 2em; padding-left: 3rem; appearance: none; }
         
         .rank-badge { position: absolute; top: -10px; right: -10px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 10; border: 2px solid white; }
@@ -967,6 +968,7 @@
                         <i class="fas fa-users-cog ml-2 text-slate-300"></i> إدارة بيانات الطلاب والحلقات
                     </h2>
                     <div class="flex flex-wrap justify-center gap-3 w-full xl:w-auto">
+                        <button id="generalWeeklySheetButton" type="button" onclick="openGeneralWeeklySheetModal()" style="display:none" class="bg-white text-slate-700 hover:bg-slate-100 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md"><i class="fas fa-print"></i> طباعة الأوراق الأسبوعية</button>
                         <button onclick="exportNuclearBackup()" class="bg-amber-500 hover:bg-amber-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md border-2 border-amber-300 text-white"><i class="fas fa-download"></i> تصدير للكمبيوتر</button>
                         <input type="file" id="importBackupFile" accept=".json" class="hidden" onchange="importNuclearBackup(event)">
                         <button onclick="document.getElementById('importBackupFile').click()" class="bg-indigo-500 hover:bg-indigo-600 py-3 px-6 rounded-xl font-bold text-lg flex justify-center items-center gap-2 shadow-md border-2 border-indigo-300 text-white"><i class="fas fa-upload"></i> استيراد ملف</button>
@@ -2087,6 +2089,20 @@
     </div>
 
     <div id="examCardsPrintArea"></div>
+    <div id="generalWeeklySheetPrintArea" dir="rtl"></div>
+
+    <div id="generalWeeklySheetModal" role="dialog" aria-modal="true" aria-labelledby="generalWeeklySheetTitle" class="hidden fixed inset-0 z-[2000] bg-slate-900/70 items-center justify-center p-4" dir="rtl">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 space-y-4">
+            <div class="flex items-center justify-between gap-3">
+                <h2 id="generalWeeklySheetTitle" class="text-xl font-black text-slate-700">طباعة الأوراق الأسبوعية</h2>
+                <button type="button" onclick="closeGeneralWeeklySheetModal()" aria-label="إغلاق" class="text-slate-500 text-3xl px-2">&times;</button>
+            </div>
+            <label class="block font-bold text-slate-700" for="generalWeeklySheetWeek">الأسبوع الذي يبدأ بالأحد</label>
+            <input id="generalWeeklySheetWeek" type="date" onchange="normalizeGeneralWeeklySheetWeek()" class="w-full border-2 border-slate-300 rounded-xl p-3 font-bold">
+            <div id="generalWeeklySheetStages" class="space-y-2"></div>
+            <p id="generalWeeklySheetUnassigned" class="text-sm font-bold text-amber-800"></p>
+        </div>
+    </div>
 
     <!-- خريطة مصحف المدينة (طبعة 1441هـ): السور والصفحات والأجزاء والأرباع — ملف محلي، المصدر الوحيد للبرنامج ومحرك الاختبار -->
     <script src="quran/quran-meta.js?v=6201413ae7"></script>
@@ -5491,11 +5507,13 @@
                             <div class="mt-1">${isGeneralProgram() ? '' : tierBadge}<span class="text-xs text-slate-500">${halaqa}</span></div>
                         </div>
                         <div class="flex gap-1 shrink-0">
+                            ${isGeneralProgram() ? `<button type="button" onclick="printGeneralStudentWeeklySheet(${student.id})" class="text-slate-600 px-2 h-8 rounded hover:bg-slate-100 text-xs font-bold"><i class="fas fa-print ml-1"></i>ورقته</button>` : ''}
                             <button onclick="openStudentModal(${student.id})" class="text-blue-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-pen"></i></button>
                             <button onclick="confirmDelete(${student.id})" class="text-red-600 w-8 h-8 rounded hover:bg-slate-100"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
+            if (isGeneralProgram() && !document.getElementById('generalWeeklySheetModal').classList.contains('hidden')) renderGeneralWeeklySheetOptions();
         }
 
         // --- فحص الأسماء المتشابهة (تكرار محتمل، خصوصاً بعد استيراد المجموعات) ---
@@ -6714,6 +6732,207 @@
             setTimeout(cleanup, 10000);
         }
 
+        // الإجازات تُستثنى هنا في الخطوة ٥ (التقويم).
+        function generalWeeklySheetDays(weekStartStr, settings) {
+            if (Number.isNaN(new Date(weekStartStr + 'T12:00:00').getTime())) return [];
+            const start = new Date(getWeekStartDate(weekStartStr) + 'T12:00:00');
+            return [...new Set(settings.workingDays || [])]
+                .filter(day => Number.isInteger(day) && day >= 0 && day <= 6)
+                .sort((a, b) => a - b).map(day => {
+                    const date = new Date(start);
+                    date.setDate(start.getDate() + day);
+                    return { dateStr: formatDateLocal(date), dayName: ALL_DAY_NAMES[day] };
+                });
+        }
+
+        function generalWeeklySheetDefaultWeek(dateStr, settings) {
+            const startStr = getWeekStartDate(dateStr);
+            if (generalWeeklySheetDays(startStr, settings).some(day => day.dateStr >= dateStr)) return startStr;
+            const next = new Date(startStr + 'T12:00:00');
+            next.setDate(next.getDate() + 7);
+            return formatDateLocal(next);
+        }
+
+        function generalWeeklySheetStudents(studentList, stageId, settings) {
+            return studentList.filter(student => {
+                const halaqa = getStudentHalaqa(student, settings);
+                return halaqa?.active === true && halaqa.stageId === stageId;
+            }).sort((a, b) => {
+                const first = getStudentHalaqa(a, settings), second = getStudentHalaqa(b, settings);
+                return first.name.localeCompare(second.name, 'ar') || first.id.localeCompare(second.id, 'ar')
+                    || a.name.localeCompare(b.name, 'ar') || Number(a.id) - Number(b.id);
+            });
+        }
+
+        // ورقة فارغة للتعبئة اليدوية؛ كل بياناتها من المعطيات فقط.
+        function buildGeneralWeeklySheetHtml(student, week, settings, meta) {
+            const e = value => escapeHTML(String(value ?? ''));
+            const halaqa = getStudentHalaqa(student, settings);
+            const teacher = (settings.teachers || []).find(t => t.id === halaqa?.teacherId);
+            const stage = (settings.stages || []).find(t => t.id === halaqa?.stageId);
+            const dateLabel = dateStr => {
+                const parts = dateStr.split('-');
+                return `${Number(parts[2])} / ${Number(parts[1])}`;
+            };
+            const days = week.days;
+            const first = days[0], last = days[days.length - 1];
+            const weekLabel = first ? `${first.dayName} ${dateLabel(first.dateStr)} ← ${last.dayName} ${dateLabel(last.dateStr)}` : '';
+            const newOn = settings.features?.newMemorization !== false, reviewOn = settings.features?.review !== false;
+            const grades = `<div class="gws-options">${(settings.grades || []).map(g => `<span>${e(g.name)}</span>`).join('')}</div>`;
+            const criteria = (settings.criteria || []).filter(c => c.enabled !== false);
+            const criteriaLine = (label, list) => list.length
+                ? `<div class="gws-criteria"><b>${label}</b> ${list.map(c => `<span>${e(c.name)}</span>`).join(' · ')}</div>` : '';
+            const discipline = `<div class="gws-rule"><span class="gws-box"></span> استوفى كل المعايير</div>`
+                + criteriaLine('فاته:', criteria.filter(c => Number(c.points) > 0))
+                + criteriaLine('وقع منه:', criteria.filter(c => Number(c.points) < 0));
+            const absence = (settings.absence || []).map(a => `«${e('غائب ' + a.name)}»`).join(' / ');
+            return `<section class="general-weekly-sheet" dir="rtl">
+                <div class="gws-head">
+                    <div><h1>ورقة الطالب الأسبوعية · البرنامج العام</h1><div>جمعية أفضلكم · ${e(meta.seasonName)} · لا تخرج الورقة من المسجد</div></div>
+                    <div class="gws-number"><small>رقم الطالب</small><strong>${e(student.id)}</strong></div>
+                </div>
+                <div class="gws-info">
+                    <div>الاسم: <b>${e(student.name)}</b></div><div>الحلقة: <b>${e(halaqa?.name)}</b></div>
+                    <div>المعلم: <b>${e(teacher?.name)}</b></div><div>المرحلة: <b>${e(stage?.name)}</b></div>
+                    <div>الأسبوع: <b>${e(weekLabel)}</b></div>
+                </div>
+                <div class="gws-table-wrap"><table>
+                    <colgroup><col style="width:8%">${newOn ? '<col><col style="width:14%">' : ''}${reviewOn ? '<col><col style="width:14%">' : ''}<col style="width:25%"><col style="width:7%"></colgroup>
+                    <thead><tr><th>اليوم</th>
+                        ${newOn ? '<th>الحفظ الجديد<small>اكتب النهاية فقط: السورة والآية</small></th><th>تقدير الجديد<small>ضع دائرة</small></th>' : ''}
+                        ${reviewOn ? '<th>المراجعة<small>من ... إلى ...</small></th><th>تقدير المراجعة<small>ضع دائرة</small></th>' : ''}
+                        <th>الانضباط</th><th>أُدخل<small>للمشرف</small></th></tr></thead>
+                    <tbody>${days.map(day => `<tr><td class="gws-day">${e(day.dayName)}<small>${e(dateLabel(day.dateStr))}</small></td>
+                        ${newOn ? `<td></td><td>${grades}</td>` : ''}${reviewOn ? `<td></td><td>${grades}</td>` : ''}
+                        <td>${discipline}</td><td class="gws-entered"><span class="gws-box"></span></td></tr>`).join('')}</tbody>
+                </table></div>
+                <div class="gws-legend"><span><b>غاب؟</b> اكتب في خانة الحفظ: ${absence}</span><span><b>لم يسمّع؟</b> اترك خانته فارغة</span><span><b>المشرف:</b> يضع ✓ في "أُدخل" بعد ظهور "تم الحفظ"</span></div>
+                <div class="gws-sign"><span>توقيع المعلم آخر الأسبوع: ................................</span><span>ملاحظة المعلم للأسبوع: ...................................................................</span></div>
+            </section>`;
+        }
+
+        // قراءة فقط؛ أيام الدراسة من إعدادات الموقع، وميزات الأعمدة وحدها من الإعدادات الخام.
+        function generalWeeklySheetSettings() {
+            const settings = getProgramSettings(), raw = window.almahraPrograms?.getSettings();
+            return { ...settings, features: raw?.features || {} };
+        }
+
+        function openGeneralWeeklySheetModal() {
+            if (!isGeneralProgram()) return;
+            const settings = generalWeeklySheetSettings(), dateStr = formatDateLocal(new Date());
+            if (!generalWeeklySheetDays(getWeekStartDate(dateStr), settings).length) {
+                showToast('أيام الدراسة فارغة؛ لا يمكن طباعة الأوراق', 'error'); return;
+            }
+            document.getElementById('generalWeeklySheetWeek').value = generalWeeklySheetDefaultWeek(dateStr, settings);
+            renderGeneralWeeklySheetOptions();
+            document.getElementById('generalWeeklySheetModal').classList.replace('hidden', 'flex');
+        }
+
+        function closeGeneralWeeklySheetModal() {
+            document.getElementById('generalWeeklySheetModal').classList.replace('flex', 'hidden');
+        }
+
+        function normalizeGeneralWeeklySheetWeek() {
+            if (!isGeneralProgram()) return '';
+            const input = document.getElementById('generalWeeklySheetWeek');
+            if (!input.value || Number.isNaN(new Date(input.value + 'T12:00:00').getTime())) {
+                showToast('اختر تاريخ الأسبوع أولاً', 'error'); return '';
+            }
+            input.value = getWeekStartDate(input.value);
+            return input.value;
+        }
+
+        function renderGeneralWeeklySheetOptions() {
+            if (!isGeneralProgram()) return;
+            const settings = generalWeeklySheetSettings();
+            document.getElementById('generalWeeklySheetStages').innerHTML = getTiers().map((stage, index) => {
+                const count = generalWeeklySheetStudents(students, stage.id, settings).length;
+                return `<button type="button" onclick="printGeneralWeeklyStage(${index})" ${count ? '' : 'disabled'} class="w-full rounded-xl bg-slate-700 text-white font-bold p-3 disabled:opacity-40 disabled:cursor-not-allowed"><i class="fas fa-print ml-2"></i>${escapeHTML(stage.name)} — ${studentsCountLabel(count)}</button>`;
+            }).join('');
+            const unassigned = students.filter(student => getStudentHalaqa(student, settings)?.active !== true).length;
+            document.getElementById('generalWeeklySheetUnassigned').textContent = unassigned
+                ? `${studentsCountLabel(unassigned)} بلا حلقة: لا تُطبع أوراقهم حتى يُربطوا بحلقة` : '';
+        }
+
+        function printGeneralWeeklyStage(index) {
+            if (!isGeneralProgram()) return;
+            const stage = getTiers()[index], startStr = normalizeGeneralWeeklySheetWeek();
+            if (!stage || !startStr) return;
+            const settings = generalWeeklySheetSettings();
+            printGeneralWeeklySheets(generalWeeklySheetStudents(students, stage.id, settings), startStr, settings);
+        }
+
+        function printGeneralStudentWeeklySheet(studentId) {
+            if (!isGeneralProgram()) return;
+            const student = students.find(s => s.id === studentId), settings = generalWeeklySheetSettings();
+            if (!student) return;
+            if (getStudentHalaqa(student, settings)?.active !== true) {
+                showToast('اربط الطالب بحلقة فعّالة أولاً', 'error'); return;
+            }
+            printGeneralWeeklySheets([student], getWeekStartDate(formatDateLocal(new Date())), settings);
+        }
+
+        let isPrintingGeneralWeeklySheets = false;
+        function printGeneralWeeklySheets(studentList, weekStartStr, settings) {
+            if (!isGeneralProgram() || isPrintingGeneralWeeklySheets || isPrintingExamCards) return;
+            const days = generalWeeklySheetDays(weekStartStr, settings);
+            if (!days.length) { showToast('أيام الدراسة فارغة؛ لا يمكن طباعة الأوراق', 'error'); return; }
+            if (!studentList.length) { showToast('لا يوجد طلاب لطباعة أوراقهم', 'error'); return; }
+            const container = document.getElementById('generalWeeklySheetPrintArea');
+            const meta = { seasonName: window.almahraPrograms?.getCurrentSeason()?.name || '' };
+            const styleTag = document.createElement('style');
+            let timeout;
+            const cleanup = () => {
+                clearTimeout(timeout);
+                document.body.classList.remove('printing-general-weekly-sheets');
+                container.innerHTML = '';
+                styleTag.remove();
+                window.removeEventListener('afterprint', cleanup);
+                isPrintingGeneralWeeklySheets = false;
+            };
+            isPrintingGeneralWeeklySheets = true;
+            try {
+                container.innerHTML = studentList.map(student => buildGeneralWeeklySheetHtml(student, { days }, settings, meta)).join('');
+                styleTag.id = 'generalWeeklySheetDynamicPrintStyle';
+                styleTag.textContent = `
+                    @media print {
+                        @page { size: A4 landscape; margin: 8mm; }
+                        body.printing-general-weekly-sheets > *:not(#generalWeeklySheetPrintArea) { display: none !important; }
+                        body.printing-general-weekly-sheets #generalWeeklySheetPrintArea { display: block !important; width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
+                        #generalWeeklySheetPrintArea * { box-sizing: border-box; color: #000 !important; background: #fff !important; }
+                        #generalWeeklySheetPrintArea .general-weekly-sheet { width: 100%; height: 192mm; display: flex; flex-direction: column; break-after: page !important; page-break-after: always !important; break-inside: avoid; font-size: 11px; line-height: 1.5; }
+                        #generalWeeklySheetPrintArea .general-weekly-sheet:last-child { break-after: auto !important; page-break-after: auto !important; }
+                        #generalWeeklySheetPrintArea .gws-head { display: flex; justify-content: space-between; align-items: center; gap: 4mm; border-bottom: 2px solid #666; padding-bottom: 2mm; }
+                        #generalWeeklySheetPrintArea h1 { margin: 0; font-size: 21px; font-weight: 900; }
+                        #generalWeeklySheetPrintArea .gws-number { border: 2px solid #666; min-width: 26mm; padding: 1mm 4mm; text-align: center; }
+                        #generalWeeklySheetPrintArea .gws-number small { display: block; font-size: 11px; }
+                        #generalWeeklySheetPrintArea .gws-number strong { display: block; font-size: 30px; line-height: 1.2; }
+                        #generalWeeklySheetPrintArea .gws-info { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1mm 4mm; padding: 3mm 0; font-size: 12px; }
+                        #generalWeeklySheetPrintArea .gws-table-wrap { flex: 1; min-height: 0; }
+                        #generalWeeklySheetPrintArea table { width: 100%; height: 100%; table-layout: fixed; border-collapse: collapse; }
+                        #generalWeeklySheetPrintArea th, #generalWeeklySheetPrintArea td { border: 1px solid #999 !important; padding: 1.5mm !important; font-size: 11px !important; overflow-wrap: anywhere; }
+                        #generalWeeklySheetPrintArea thead tr { height: 14mm; }
+                        #generalWeeklySheetPrintArea th small, #generalWeeklySheetPrintArea .gws-day small { display: block; font-size: 9px; font-weight: 400; }
+                        #generalWeeklySheetPrintArea .gws-day, #generalWeeklySheetPrintArea .gws-entered { text-align: center; font-weight: 700; }
+                        #generalWeeklySheetPrintArea .gws-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 1mm 2mm; }
+                        #generalWeeklySheetPrintArea .gws-options span { white-space: nowrap; }
+                        #generalWeeklySheetPrintArea .gws-box { display: inline-block; width: 5mm; height: 5mm; border: 1.5px solid #666; vertical-align: middle; margin-left: 1mm; flex-shrink: 0; }
+                        #generalWeeklySheetPrintArea .gws-rule { font-weight: 700; }
+                        #generalWeeklySheetPrintArea .gws-criteria { font-size: 9px; margin-top: 1mm; overflow-wrap: anywhere; }
+                        #generalWeeklySheetPrintArea .gws-legend { display: flex; flex-wrap: wrap; gap: 1mm 5mm; padding-top: 3mm; font-size: 10px; }
+                        #generalWeeklySheetPrintArea .gws-sign { display: flex; justify-content: space-between; gap: 4mm; padding-top: 3mm; font-size: 11px; }
+                    }`;
+                document.head.appendChild(styleTag);
+                document.body.classList.add('printing-general-weekly-sheets');
+                window.addEventListener('afterprint', cleanup);
+                timeout = setTimeout(cleanup, 60000);
+                window.print();
+            } catch (error) {
+                cleanup();
+                showToast('تعذّرت طباعة الأوراق؛ أعد المحاولة', 'error');
+            }
+        }
+
         // لا تقرأ هذه الدالة الواجهة أو الساعة أو السحابة؛ أدوات الميزان والنقاط وأسماء السور تُمرَّر في settings.
         function buildGeneralWeeklyMessage(student, week, settings) {
             const history = student.history || {};
@@ -7374,6 +7593,8 @@
             if (!window.almahraPrograms) return;
             const general = isGeneralProgram();
             document.body.classList.toggle('program-general', general);
+            document.getElementById('generalWeeklySheetButton').style.display = general ? '' : 'none';
+            if (!general) closeGeneralWeeklySheetModal();
             const weeklyCard = document.getElementById('generalWeeklyCard');
             if (weeklyCard) weeklyCard.style.display = general ? '' : 'none';
             document.getElementById('generalWeeklyMessages')?.classList.toggle('hidden', !general);
