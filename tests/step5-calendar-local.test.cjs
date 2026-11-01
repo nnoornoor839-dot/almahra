@@ -62,6 +62,7 @@ function harness() {
         setTimeout() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
+    require('./helpers/tv-harness.cjs').installTv(run, install);
     run(`let students = [{ id: 1, sid: 'synthetic-student', name: 'طالب وهمي', history: {} }];
         let todayStr = '', hijriDateStr = '', gregorianDateStr = '', currentEditingStudentId = 1;
         let attEditStudentId = 1, attEditChoice = true, attendanceDateFollowsToday = true;

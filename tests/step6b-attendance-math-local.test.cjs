@@ -56,6 +56,7 @@ function harness(list = [], text = html, program = 'general') {
         const CHRONIC_MIN_STREAK = 3, FOLLOWUP_MIN_STREAK = 2;
         const ALL_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];`);
     const install = (...names) => names.forEach(name => run(source(name, text)));
+    if (text === html) require('./helpers/tv-harness.cjs').installTv(run, install);
     install('isGeneralProgram', 'isWorkingDay', 'schoolCivilDate', 'isSeasonCalendarComplete', 'getSchoolDayInfo',
         'getAttendanceState', 'generalAttendanceStart', 'formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr',
         'getWorkingDaysList', 'calculateStudentAttendance', 'getConsecutiveAbsenceStreak', 'getPreviousWorkingDayInfo',
@@ -129,7 +130,8 @@ test('streak skips only current unrecorded day; yesterday unrecorded stops; holi
 test('knights: incomplete never eligible or excluded for attendance; complete 75% qualifies; daily holiday yields no candidates', () => {
     const history = { '2026-11-01': { ...present(), earnedPoints: 20 }, '2026-11-02': present(),
         '2026-11-03': present(), '2026-11-04': absent() };
-    const h = harness([student(1, history), student(2, { ...history, '2026-11-04': { hijri: 'وهمي' } })]);
+    const h = harness([student(1, history), student(2, { ...history, '2026-11-04': { hijri: 'وهمي' } }),
+        student(3, { '2026-11-04': { attended: true } })]); // ينقل اللوحة لليوم، ولو كانت نقاطه صفراً.
     h.today('2026-11-04');
     assert.equal(h.run("getGeneralAttendanceEligibility(students[0], getWorkingDaysList(students), 75).status"), 'eligible');
     assert.equal(h.run("getGeneralAttendanceEligibility(students[1], getWorkingDaysList(students), 75).status"), 'incomplete');
@@ -156,10 +158,12 @@ test('discipline and improvement do not award incomplete periods; enrollment tri
     assert.deepEqual(copy(h.run('getMostImproved()')), []);
 });
 
-test('last school day and board week cross a holiday longer than two weeks, independent of presence', () => {
+test('last school day crosses long holidays; board requires a recorded presence on a school day', () => {
     const h = harness([student(1, { '2026-11-09': present() })]);
     h.holiday('2026-11-02', '2026-11-19'); h.today('2026-11-19');
     assert.equal(h.run('getPreviousWorkingDayInfo().dateStr'), '2026-11-01');
+    assert.equal(h.run('getBoardDate()'), null);
+    h.list[0].history['2026-11-01'] = present();
     assert.equal(h.run('getBoardDate()'), '2026-11-01');
     assert.deepEqual(copy(h.run('getBoardWeekRange()')), { startStr: '2026-11-01', endStr: '2026-11-01', inProgress: false });
     h.state.season.termStart = '2026-11-02';

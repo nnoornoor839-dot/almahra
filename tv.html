@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>البرنامج العام — شاشة العرض</title>
+    <style>
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        body { margin: 0; background: #0b2e26; color: #f3f7f5; font-family: system-ui, Tahoma, sans-serif; }
+        #content { height: 100vh; padding: 4vh 5vw; display: flex; flex-direction: column; }
+        header { display: flex; align-items: center; justify-content: space-between; font-size: 2vw; gap: 2vw; }
+        #clock, .points, #celeAdded { color: #f5c542; }
+        #slides { position: relative; flex: 1; min-height: 0; margin: 2vh 0; }
+        .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .8s ease, visibility .8s; display: flex; flex-direction: column; }
+        .slide.active { opacity: 1; visibility: visible; }
+        h2 { font-size: 3vw; text-align: center; margin: 1vh 0 3vh; }
+        .board { display: grid; grid-auto-flow: column; grid-template-columns: 1fr 1fr; gap: 1.2vh 2vw; flex: 1; }
+        .leader { display: grid; grid-template-columns: 1.5em 1fr auto; align-items: center; gap: .4em; background: #12403a; border-radius: .5em; padding: .35em .6em; font-size: 2.1vw; }
+        .rank { color: #a9c7bf; }
+        .cards { display: flex; justify-content: center; gap: 2vw; flex: 1; min-height: 0; }
+        .card { flex: 1; background: #12403a; border: 1px solid #1f5a50; border-radius: 1em; padding: 2vh 1.5vw; text-align: center; overflow: auto; align-content: center; }
+        .card h3 { font-size: 2.8vw; margin: 1vh 0; overflow-wrap: anywhere; }
+        .muted { color: #a9c7bf; font-size: 1.8vw; }
+        footer { text-align: center; min-height: 6vh; }
+        #resultsDate { font-size: 1.3vw; min-height: 1.5em; }
+        #dots { display: flex; justify-content: center; gap: .7em; margin: 1vh; }
+        .dot { width: .7em; height: .7em; background: #1f5a50; border-radius: 50%; }
+        .dot.on { background: #f5c542; }
+        #neutral, .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5vh 5vw; background: #0b2e26; }
+        #neutral { font-size: 5vw; }
+        .overlay { z-index: 2; gap: 2vh; }
+        #prayer { background: #071a16; font-size: 4vw; }
+        #celeName { font-size: 5vw; }
+        #celeAdded { font-size: 5vw; }
+        #celeTotal, #celeRank { font-size: 2.7vw; }
+        #fullscreen { position: fixed; bottom: 1vh; left: 1vw; z-index: 3; font: inherit; padding: .6em 1em; border: 1px solid #a9c7bf; border-radius: .6em; background: #12403a; color: white; cursor: pointer; }
+        @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+    </style>
+</head>
+<body>
+    <main id="content">
+        <header><strong>البرنامج العام — مجمع الحلقات</strong><time id="clock"></time></header>
+        <div id="slides"></div>
+        <footer><div id="resultsDate"></div><div id="dots" aria-label="تقدّم الشرائح"></div></footer>
+        <div id="neutral">البرنامج العام</div>
+    </main>
+    <section id="celebration" class="overlay" hidden><div>🎉</div><strong id="celeName"></strong><strong id="celeAdded"></strong><div id="celeTotal"></div><div id="celeRank"></div></section>
+    <section id="prayer" class="overlay" hidden><div>🕌</div><strong id="prayerText"></strong></section>
+    <button id="fullscreen" type="button">ملء الشاشة</button>
+    <script src="vendor/adhan-4.4.3.umd.js"></script>
+    <script src="tv.js"></script>
+</body>
+</html>

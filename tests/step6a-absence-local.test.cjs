@@ -62,6 +62,7 @@ function harness(list = [student(1, 'طالب وهمي')]) {
         processRealClockPomodoro() {}, updateThreeKnightsSelects() {}, renderExamEntryList() {}, renderExamResultsReport() {}, renderHomeDashboard() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
+    require('./helpers/tv-harness.cjs').installTv(run, install);
     ctx.fixtures = list;
     run(`let students = fixtures, todayStr = '', hijriDateStr = '', gregorianDateStr = '';
         let generalAbsenceDraft = null, attEditStudentId = null, attEditChoice = null, attendanceDateFollowsToday = true;

@@ -714,7 +714,7 @@
                     <button id="epCancelBtn" onclick="closeEventPicker()" style="display:none; background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
                         <i class="fas fa-times"></i> إلغاء
                     </button>
-                    <button onclick="almahraLogout()" style="background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
+                    <button onclick="logoutWithGeneralTv()" style="background:rgba(255,255,255,.2); color:white; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; cursor:pointer;">
                         <i class="fas fa-sign-out-alt"></i> خروج
                     </button>
                 </div>
@@ -748,7 +748,7 @@
         <div id="authUserBar">
             <button id="currentEventBadge" onclick="openEventPicker()" title="تبديل البرنامج"></button>
             <span id="authUserInfo" class="hidden"></span>
-            <button id="authLogoutBtn" class="hidden" onclick="almahraLogout()" title="تسجيل الخروج">
+            <button id="authLogoutBtn" class="hidden" onclick="logoutWithGeneralTv()" title="تسجيل الخروج">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="ah-logout-txt">خروج</span>
             </button>
@@ -764,6 +764,7 @@
                 <div class="text-xs text-slate-300 font-bold" id="archivedBannerName"></div>
             </div>
         </div>
+        <button id="generalArchivedHonorButton" onclick="openHonorBoard()" class="hidden bg-slate-600 text-white font-bold py-2 px-5 rounded-xl text-sm">🏆 لوحة الشرف</button>
         <button id="archivedBannerBack" onclick="backToActiveSeason()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-5 rounded-xl text-sm shadow shrink-0">
             <i class="fas fa-arrow-right-to-bracket"></i> العودة للموسم النشط
         </button>
@@ -1740,6 +1741,7 @@
                     <h1>لوحة الشرف</h1>
                     <small id="hbSub"></small>
                 </div>
+                <button id="generalTvButton" type="button" onclick="openGeneralTv()" class="hidden no-print bg-emerald-700 text-white rounded-xl px-4 py-2 font-bold">📺 شاشة العرض</button>
             </div>
             <div id="hbBoard" class="hb-board">
                 <!-- ١) فرسان اليوم (لكل شريحة) -->
@@ -3728,7 +3730,128 @@
             return `<div class="hb-duo"><span>🥈 ${escapeHTML(second)}</span>${third ? `<span>🥉 ${escapeHTML(third)}</span>` : ''}</div>`;
         }
 
+        // شاشة التلفاز: لا تخرج من هذه النافذة إلا حقول العرض المسموحة.
+        function tvNameWords(fullName) {
+            const words = String(fullName || '').trim().split(/\s+/).filter(Boolean), result = [];
+            for (let i = 0; i < words.length; i++) result.push(words[i] === 'عبد' && words[i + 1] ? words[i] + ' ' + words[++i] : words[i]);
+            return result;
+        }
+        function tvDisplayName(fullName, allNames) {
+            const words = tvNameWords(fullName), name = words.slice(0, 3).join(' ');
+            if (words.length < 3) return name;
+            const matches = allNames.filter(n => tvNameWords(n).slice(0, 3).join(' ') === name);
+            const fourth = words[3]?.startsWith('ال') && words[3].length > 2 ? words[3].slice(2) : words[3];
+            return matches.length > 1 && fourth ? name + ' ' + Array.from(fourth)[0] + '.' : name;
+        }
+        function getGeneralTvLeaders() {
+            const list = students.map(student => ({ student, points: getCumulativeStats(student).tripPoints }))
+                .filter(e => e.points > 0).sort((a, b) => b.points - a.points);
+            let rank = 0;
+            return list.map((e, i) => {
+                if (i === 0 || e.points !== list[i - 1].points) rank = i + 1;
+                return { ...e, rank };
+            }).filter(e => e.rank <= 10);
+        }
+        function getGeneralCelebrationRank(student) {
+            const points = getCumulativeStats(student).tripPoints;
+            return students.length > 1 && students.every(s => getCumulativeStats(s).tripPoints >= points) ? null : getStudentRank(student.id);
+        }
+        function getGeneralTvSnapshot() {
+            if (!isGeneralProgram()) return null;
+            const boardDate = getBoardDate(), date = boardDate || todayStr;
+            const tiers = getTiers(), tiersOn = tiersFeatureOn() && tiers.length > 0;
+            const allNames = students.map(s => s.name), nameOf = name => tvDisplayName(name, allNames);
+            const approvedAll = getApprovedKnightsForMode(date, 'all');
+            const tierApprovals = tiersOn ? tiers.map(t => ({ tier: t, appr: getApprovedKnightsForMode(date, t.id) })) : [];
+            const automatic = tier => ({ stage: tier?.name || 'كل الطلاب', names: topTied(getDayTitleCandidates(date, tier?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) });
+            // الاعتماد يتوّج الأول فقط؛ الباقون وصيفان كما في لوحة الشرف.
+            const approved = (entry, stage) => ({ stage, names: (entry.fars || []).filter(f => f && f.name).slice(0, 1).map(f => nameOf(f.name)) });
+            let dayKnights;
+            if (tiersOn && tierApprovals.some(x => x.appr)) dayKnights = tierApprovals.map(({ tier, appr }) => appr ? approved(appr, tier.name) : automatic(tier));
+            else if (approvedAll) dayKnights = [approved(approvedAll, 'كل الطلاب')];
+            else dayKnights = tiersOn ? tiers.map(automatic) : [automatic(null)];
+            const weekKnights = (tiersOn ? tiers : [null]).map(t => ({ stage: t?.name || 'كل الطلاب',
+                names: topTied(getWeekTitleCandidates(t?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) }));
+            const prayer = window.almahraPrograms.getSettings()?.tvPrayer;
+            return {
+                type: 'snapshot', boardDate,
+                prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30 },
+                leaders: getGeneralTvLeaders().map(e => ({ name: nameOf(e.student.name), points: e.points, rank: e.rank })),
+                dayKnights: dayKnights.filter(e => e.names.length), weekKnights: weekKnights.filter(e => e.names.length),
+                risingStars: getMostImproved(3).map(e => ({ name: nameOf(e.student.name) }))
+            };
+        }
+        const generalTv = { channel: null, window: null, enabled: false, heartbeat: null, lastHello: 0, dataContext: null, events: new Map(), serial: 0 };
+        function generalTvContext() {
+            return window.almahraPrograms?.getCurrentProgramId() + ':' + window.almahraPrograms?.getCurrentSeasonId();
+        }
+        function generalTvReady() {
+            const data = window.almahraData;
+            return isGeneralProgram() && !!window.almahraAuth?.currentUser && data?.isReady() &&
+                data.getActiveProgramId() === 'general' && data.getActiveSeasonId() === window.almahraPrograms.getCurrentSeasonId() &&
+                generalTv.dataContext === generalTvContext();
+        }
+        function postGeneralTv(message) {
+            if (!generalTv.enabled || !generalTv.channel) return false;
+            try { generalTv.channel.postMessage(message); return true; } catch (_) { return false; }
+        }
+        function sendGeneralTvSnapshot() {
+            if (!generalTv.enabled || !generalTvReady()) return;
+            postGeneralTv(getGeneralTvSnapshot());
+        }
+        function clearGeneralTv(disconnect = false) {
+            postGeneralTv({ type: 'clear' });
+            generalTv.events.clear();
+            if (!disconnect) return;
+            generalTv.enabled = false;
+            if (generalTv.heartbeat !== null) clearInterval(generalTv.heartbeat);
+            generalTv.heartbeat = null;
+        }
+        function enableGeneralTv() {
+            generalTv.enabled = true; generalTv.lastHello = Date.now();
+            if (generalTv.heartbeat === null) generalTv.heartbeat = setInterval(() => {
+                if (!window.almahraAuth?.currentUser || generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000) { clearGeneralTv(true); return; }
+                sendGeneralTvSnapshot();
+            }, 30000);
+        }
+        function initGeneralTv() {
+            if (generalTv.channel || typeof BroadcastChannel === 'undefined') return;
+            generalTv.channel = new BroadcastChannel('almahra-tv');
+            generalTv.channel.onmessage = ({ data }) => {
+                if (data?.type !== 'hello' || !isGeneralProgram() || !window.almahraAuth?.currentUser) return;
+                if (generalTv.window?.closed) generalTv.window = null;
+                enableGeneralTv(); sendGeneralTvSnapshot();
+            };
+        }
+        function openGeneralTv() {
+            if (!isGeneralProgram()) return;
+            const opened = window.open('tv.html', 'almahra-tv');
+            if (!opened) { showToast('اسمح بالنوافذ المنبثقة لهذا الموقع'); return; }
+            generalTv.window = opened;
+            initGeneralTv(); enableGeneralTv(); sendGeneralTvSnapshot();
+        }
+        function sendGeneralTvCelebration(student, added) {
+            if (!generalTv.enabled || !generalTvReady() || added <= 0) return;
+            const id = window.crypto?.randomUUID?.() || 'tv-' + Date.now() + '-' + (++generalTv.serial);
+            const message = { type: 'celebrate', id, name: tvDisplayName(student.name, students.map(s => s.name)),
+                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student) };
+            if (postGeneralTv(message)) generalTv.events.set(student.id, id);
+        }
+        function cancelGeneralTvCelebration(student) {
+            if (!student) return;
+            const id = generalTv.events.get(student.id);
+            if (id) { postGeneralTv({ type: 'cancel', id }); generalTv.events.delete(student.id); }
+        }
+        async function logoutWithGeneralTv() {
+            await almahraLogout();
+            if (!window.almahraAuth?.currentUser) clearGeneralTv(true);
+        }
+        window.addEventListener('pagehide', () => { postGeneralTv({ type: 'bye' }); });
+        window.addEventListener('almahra-program-changed', () => { clearGeneralTv(); generalTv.dataContext = null; });
+        document.addEventListener('DOMContentLoaded', initGeneralTv);
+
         function renderHonorBoard() {
+            document.getElementById('generalTvButton')?.classList.toggle('hidden', !isGeneralProgram());
             const tiers = getTiers();
             const tiersOn = tiersFeatureOn() && tiers.length > 0;
             const isReviewDay = window.almahraPrograms?.getCurrentProgramId() === 'review-day';
@@ -3911,7 +4034,7 @@
             if (isReviewDay) return; // اليوم المكثف: البطاقة مخفية
 
             const prContainer = document.getElementById('hbProgress');
-            const improved = getMostImproved(5);
+            const improved = getMostImproved(isGeneralProgram() ? 3 : 5);
 
             if (improved.length > 0) {
                 prContainer.innerHTML = improved.map((m, i) => hbWinnerRow(
@@ -3919,9 +4042,12 @@
                     { medal: ['🚀','📈','📈','📈','📈'][i], big: i === 0 }
                 )).join('');
                 hbSetCard('hbCardProgress', {
-                    theme: 'prog', ico: '🚀', cover: 'الأكثر تقدّماً', title: 'الأكثر تقدّماً',
+                    theme: 'prog', ico: '🚀', cover: isGeneralProgram() ? 'النجم الصاعد' : 'الأكثر تقدّماً', title: isGeneralProgram() ? 'النجم الصاعد' : 'الأكثر تقدّماً',
                     tease: `أبرز المتقدّمين: ${hbCount(improved.length, 'student')}`
                 });
+            } else if (isGeneralProgram()) {
+                prContainer.innerHTML = hbEmpty('لا متقدّمين هذا الأسبوع', 'يظهر هنا من يتقدّم على نفسه هذا الأسبوع');
+                hbSetCard('hbCardProgress', { theme: 'prog', ico: '🚀', cover: 'النجم الصاعد', title: 'النجم الصاعد', tease: 'لا متقدّمين هذا الأسبوع' });
             } else {
                 const leaders = getSeasonLeaders(5);
                 prContainer.innerHTML = leaders.length
@@ -4085,6 +4211,7 @@
                 // نشترك في المزامنة اللحظية - كل تحديث يصل هنا
                 window.almahraData.subscribeStudents((newStudents) => {
                     students = newStudents;
+                    generalTv.dataContext = generalTvContext();
                     if (typeof updateAllUIs === 'function') {
                         try { updateAllUIs(); } catch (e) { console.error('updateAllUIs error:', e); }
                     }
@@ -5539,6 +5666,12 @@
         }
 
         function getStudentRank(studentId) {
+            if (isGeneralProgram()) {
+                const student = students.find(s => s.id === studentId);
+                if (!student) return 0;
+                const points = getCumulativeStats(student).tripPoints;
+                return 1 + students.filter(s => getCumulativeStats(s).tripPoints > points).length;
+            }
             const calcs = students.map(s => { return {id: s.id, tripPoints: getCumulativeStats(s).tripPoints}; }).sort((a,b)=>b.tripPoints - a.tripPoints);
             const idx = calcs.findIndex(s => s.id === studentId); return idx !== -1 ? idx + 1 : 0;
         }
@@ -5854,6 +5987,7 @@
         }
         
         function updateAllUIs() {
+            if (isGeneralProgram()) sendGeneralTvSnapshot();
             if (typeof updateGeneralUndoButton === 'function') updateGeneralUndoButton();
             updateSchoolCalendarAlert();
             updateGeneralAttendanceUI();
@@ -6584,7 +6718,7 @@
         //  • الأسبوع هو أسبوع ذلك اليوم، فلا يفرغ صباح الأحد وفيه نتائج الأسبوع الماضي
         // ================================================================
         function getBoardDate() {
-            if (isGeneralProgram()) return getGeneralSchoolDates().at(-1) || null;
+            if (isGeneralProgram()) return getGeneralSchoolDates().filter(ds => ds <= todayStr && students.some(s => s.history?.[ds]?.attended)).at(-1) || null;
             let latest = null;
             students.forEach(s => {
                 for (const ds in (s.history || {})) {
@@ -6771,6 +6905,8 @@
             const pastDates = isGeneralProgram() ? getGeneralSchoolDates(undefined, addDaysToDateStr(startStr, -1)) : Array.from(pastSet).sort();
             if (pastDates.length === 0) return []; // لا سابقة للمقارنة
 
+            const excluded = isGeneralProgram() ? new Set(getGeneralTvLeaders().map(e => e.student.id)) : null;
+
             return students.map(s => {
                 const now = summarizeRange(s, thisWeek);
                 const past = summarizeRange(s, pastDates);
@@ -6782,7 +6918,7 @@
                 const growth = ((nowAvg - pastAvg) / pastAvg) * 100;
                 if (growth <= 0) return null;
                 return { student: s, growth: Math.round(growth), nowAvg: Math.round(nowAvg), pastAvg: Math.round(pastAvg) };
-            }).filter(Boolean).sort((a, b) => b.growth - a.growth).slice(0, limit);
+            }).filter(e => e && (!excluded || !excluded.has(e.student.id))).sort((a, b) => b.growth - a.growth).slice(0, isGeneralProgram() ? Math.min(limit, 3) : limit);
         }
 
         // صدارة الموسم (بديل "الأكثر تقدّماً" حين لا توجد بيانات سابقة)
@@ -7352,6 +7488,7 @@
                 closeSmartModal();
                 if (missed) showToast(`✅ حُفظ على يوم ${dayName}`, 'success');
                 else celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total);
+                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);
             } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }
         }
         function celebrateGeneralQuickEntry(student, totalAdded) {
@@ -7365,7 +7502,7 @@
             if (totalEl) {
                 document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`;
                 document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`;
-                document.getElementById('celebrationRank').classList.toggle('hidden', students.length > 1 && currentRank === students.length);
+                document.getElementById('celebrationRank').classList.toggle('hidden', getGeneralCelebrationRank(student) === null);
                 totalEl.classList.remove('hidden');
             }
             celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
@@ -8126,6 +8263,7 @@
                 if (!await commitGeneralStudentPatch(student, fields)) return;
                 if (!generalQuickContextMatches(context)) return;
                 const current = students.find(s => s.id === context.studentId && s.sid === context.sid);
+                cancelGeneralTvCelebration(current);
                 if (document.getElementById('generalQuickSection')?.dataset?.ready === 'true') initGeneralQuickEntry(current);
                 updateAllUIs(); showToast('تم التراجع عن: ' + label, 'success');
             } finally {
@@ -8650,6 +8788,7 @@
             const prog = window.almahraPrograms.getCurrentProgram();
             const season = window.almahraPrograms.getCurrentSeason();
             const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
+            document.getElementById('generalArchivedHonorButton')?.classList.toggle('hidden', !isGeneralProgram() || !isArchived);
             // الرأس صار واحداً لكل المقاسات، فلم يعد هناك وسم منفصل للجوال
             const badges = [document.getElementById('currentEventBadge')];
 
@@ -8713,6 +8852,7 @@
 
         // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
         function applyProgramFeatures() {
+            document.getElementById('generalTvButton')?.classList.toggle('hidden', !isGeneralProgram());
             if (!window.almahraPrograms) return;
             updateFrontierFixVisibility();
             const general = isGeneralProgram();
@@ -9517,6 +9657,16 @@
 
                     ${renderSeasonCalendar(season, isArchivedView)}
 
+                    ${isGeneralProgram() ? `<div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                        <h3 class="font-black text-lg mb-4">📺 شاشة العرض</h3>
+                        <label class="block text-sm font-bold mb-2">توقف شاشة العرض: المغرب (دقيقة)
+                            <input type="number" id="psTvMaghrib" min="5" max="90" step="1" value="${s.tvPrayer?.maghribMinutes ?? 20}" ${isArchivedView ? 'disabled' : ''} class="w-20 p-2 border rounded-xl text-center">
+                        </label>
+                        <label class="block text-sm font-bold">العشاء (دقيقة)
+                            <input type="number" id="psTvIsha" min="5" max="90" step="1" value="${s.tvPrayer?.ishaMinutes ?? 30}" ${isArchivedView ? 'disabled' : ''} class="w-20 p-2 border rounded-xl text-center">
+                        </label>
+                    </div>` : ''}
+
                     <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
                         <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
                             <i class="fas fa-flag-checkered text-amber-500"></i> السباق التحفيزي
@@ -9872,6 +10022,14 @@
             return out;
         }
 
+        function readGeneralTvPrayer() {
+            const read = id => {
+                const raw = document.getElementById(id)?.value.trim(), value = Number(raw);
+                if (!raw || !Number.isInteger(value) || value < 5 || value > 90) throw new Error('مدة توقف شاشة العرض: عدد صحيح من ٥ إلى ٩٠ دقيقة');
+                return value;
+            };
+            return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };
+        }
         async function saveProgramSettings() {
             if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
@@ -9908,9 +10066,10 @@
                     throw new Error(label + ' غير صالح');
                 return value;
             };
-            let kindMult, grades, attendancePoints;
+            let kindMult, grades, attendancePoints, tvPrayer;
             if (general) {
                 try {
+                    tvPrayer = readGeneralTvPrayer();
                     attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);
                     kindMult = {
                         newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),
@@ -9929,7 +10088,7 @@
                     newMemorization: parseInt(document.getElementById('psPtNew').value) || 0,
                     review: parseInt(document.getElementById('psPtRev').value) || 0
                 },
-                ...(general ? { kindMult, grades } : {}),
+                ...(general ? { kindMult, grades, tvPrayer } : {}),
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
                 criteria: collectCriteriaFromRows(),
                 ...(isGeneralProgram() ? {} : { tiers: newTiers }),
@@ -10501,6 +10660,7 @@
                 if (typeof loadCurrentThreeKnights === 'function') loadCurrentThreeKnights();
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
                 // تحديث لوحة الشرف إن كانت معروضة
+                if (isGeneralProgram()) sendGeneralTvSnapshot();
                 const hb = document.getElementById('honorBoardModal');
                 if (hb && hb.classList.contains('flex') && typeof renderHonorBoard === 'function') renderHonorBoard();
             });

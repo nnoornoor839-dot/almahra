@@ -71,6 +71,7 @@ function harness(list = [student()]) {
         densityFor: () => null, roundPointTotal: n => n, collectCriteriaFromRows: () => [] });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
+    require('./helpers/tv-harness.cjs').installTv(run, install);
     ctx.fixture = list;
     run(`let students = fixture, currentEditingStudentId = 1, todayStr = '${today}';
         const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
@@ -386,6 +387,7 @@ test('golden messages and today harvest respect general switch; points readers a
 test('t17 rejects all three cases with precise message, red field, scroll and focus before any settings write', async () => {
     for (const [kind, names, message] of [['teacher', [''], 'معلم بلا اسم'], ['stage', [''], 'مرحلة بلا اسم'], ['stage', [], 'أبقِ مرحلة واحدة على الأقل']]) {
         const h = harness(); h.state.settings.grades = [];
+        h.element('psTvMaghrib').value = '20'; h.element('psTvIsha').value = '30';
         for (const id of ['psPtAtt', 'psMultNew', 'psMultRev']) h.element(id).value = '0';
         h.ctx.collectGeneralSettingRows = k => (k === kind ? names : ['اسم وهمي']).map((name, i) => ({ id: k + i, name }));
         h.ctx.collectGeneralHalaqaRows = () => [];

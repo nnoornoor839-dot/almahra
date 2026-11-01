@@ -95,6 +95,7 @@ function harness(s = student()) {
         confetti: { create: () => () => state.confetti++ }, setTimeout() {}, closeKnightCelebration() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
+    require('./tv-harness.cjs').installTv(run, install);
     ctx.fixture = s;
     run(`let students = [fixture], currentEditingStudentId = 1, todayStr = '${today}', hijriDateStr = 'وهمي', currentSardType = 'review';
         let selectedMinor = null, selectedJuzs = []; const endAyahTouched = { end: false, examEnd: false };
