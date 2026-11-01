@@ -40,7 +40,9 @@ function harness() {
         isReady: () => state.ready, isReadOnly: () => state.readOnly,
         async createGeneralStudentIfAbsent(student, seasonId) { state.calls.push(copy(student)); return state.save ? state.save(student, seasonId) : { success: true }; },
         upsertStudent() { throw Error('legacy upsert must not be used'); } };
-    const ctx = vm.createContext({ console, TextEncoder, structuredClone, document,
+    const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        requireSchoolCalendar: () => true, console, TextEncoder, structuredClone, document,
         window: { almahraData: data, almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season },
             addEventListener: (type, fn) => listeners.set(type, fn) },
         crypto: { randomUUID: () => `fake-sid-${++state.uuids}` },

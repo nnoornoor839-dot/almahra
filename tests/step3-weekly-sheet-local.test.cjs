@@ -61,7 +61,9 @@ function harness() {
         head: { appendChild: node => state.styles.push(node) },
         createElement: () => { const node = { textContent: '', remove() { state.styles = state.styles.filter(s => s !== node); } }; return node; } };
     class Clock extends Date { constructor(...args) { super(...(args.length ? args : [state.date + 'T12:00:00'])); } }
-    const ctx = vm.createContext({ Date: Clock, document, localStorage: { setItem: noWrite, removeItem: noWrite, clear: noWrite },
+    const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        getSchoolDayInfo: () => ({ isSchoolDay: true }), Date: Clock, document, localStorage: { setItem: noWrite, removeItem: noWrite, clear: noWrite },
         setTimeout: (fn, ms) => { state.timers.set(++timerId, { fn, ms }); return timerId; },
         clearTimeout: id => state.timers.delete(id),
         showToast: (message, type) => state.messages.push({ message, type }),

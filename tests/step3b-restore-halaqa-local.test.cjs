@@ -32,6 +32,8 @@ function harness(program = 'general') {
         } };
     const original = [student(), student(90)], input = { value: 'synthetic.json' };
     const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        requireSchoolCalendar: () => true,
         FileReader: class { readAsText(file) { state.reader = this; state.file = file; } },
         document: { getElementById(id) { assert.equal(id, 'importBackupFile'); return input; } },
         canWriteCloud: () => true, isGeneralProgram: () => state.program === 'general',

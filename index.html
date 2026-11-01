@@ -770,6 +770,7 @@
             </div>
 
             <!-- لوحة معلومات المجمع -->
+            <div id="schoolCalendarAlert" class="hidden p-4 mb-4 rounded-xl bg-amber-100 text-amber-900 font-bold" role="alert"></div>
             <div id="homeDashboard" class="home-dash"></div>
 
             <!-- المتابعة والمتصدّرون: يظهران فقط إذا كان في الموسم طلاب -->
@@ -2402,14 +2403,195 @@
         const genericStudentIcon = `<svg viewBox="0 0 24 24" class="w-full h-full" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM12 14c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z" /></svg>`;
         document.getElementById('modalStudentIconContainer').innerHTML = genericStudentIcon;
         
-        function setupDatesAndTimezone() {
-            const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); todayStr = d.toISOString().slice(0, 10);
+        function setupDatesAndTimezone(now = new Date()) {
+            todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
             try {
-                const today = new Date();
-                hijriDateStr = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(today);
-                gregorianDateStr = new Intl.DateTimeFormat('ar-SA', {day: 'numeric', month: 'long', year: 'numeric'}).format(today);
+                hijriDateStr = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
+                gregorianDateStr = new Intl.DateTimeFormat('ar-SA', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
                 document.getElementById('hijriDateDisplay').innerText = hijriDateStr; document.getElementById('headerGregorian').innerText = gregorianDateStr + " م";
             } catch(e) { hijriDateStr = "غير متوفر"; document.getElementById('hijriDateDisplay').innerText = hijriDateStr; }
+        }
+        function refreshToday() {
+            const previous = todayStr;
+            setupDatesAndTimezone();
+            if (previous && previous !== todayStr) {
+                const input = document.getElementById('attEditDateInput');
+                if (input) {
+                    input.max = todayStr;
+                    if (attendanceDateFollowsToday && input.value === previous) {
+                        input.value = todayStr;
+                        if (document.getElementById('attendanceEditModal')?.classList.contains('flex')) loadAttendanceForDate();
+                    }
+                }
+                updateAllUIs();
+            }
+        }
+
+        // تواريخ مدنية؛ منتصف النهار المحلي يمنع تفسير النص كتوقيت UTC.
+        function schoolCivilDate(value) {
+            if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+            const [year, month, day] = value.split('-').map(Number);
+            const date = new Date(0); date.setFullYear(year, month - 1, day); date.setHours(12, 0, 0, 0);
+            return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+        }
+        function isSeasonCalendarComplete(season = window.almahraPrograms?.getCurrentSeason()) {
+            return !!(season?.termStart && season?.termEnd && Array.isArray(season.calendar));
+        }
+        function requireSchoolCalendar() {
+            if (!isGeneralProgram() || isSeasonCalendarComplete()) return true;
+            showToast('أكمل التقويم الدراسي أولاً (الإعدادات ← التقويم الدراسي)', 'error');
+            return false;
+        }
+        function getSchoolDayInfo(dateStr) {
+            if (!isGeneralProgram()) return { isSchoolDay: true, reason: null, name: '' };
+            const season = window.almahraPrograms?.getCurrentSeason();
+            const blocked = reason => ({ isSchoolDay: false, reason, name: '' });
+            if (!isSeasonCalendarComplete(season)) return blocked('no-calendar');
+            if (dateStr < season.termStart) return blocked('before-term');
+            if (dateStr > season.termEnd) return blocked('after-term');
+            // الإجازة تُسمّى حتى لو وافقت عطلة أسبوعية.
+            const holiday = season.calendar.find(row => dateStr >= row.from && dateStr <= row.to);
+            if (holiday) return { isSchoolDay: false, reason: 'holiday', name: holiday.name, kind: holiday.kind };
+            const date = schoolCivilDate(dateStr);
+            if (!date || !isWorkingDay(date.getDay())) return blocked('not-working-day');
+            return { isSchoolDay: true, reason: null, name: '' };
+        }
+        function requireSchoolDay(dateStr = todayStr, dated = false) {
+            if (!isGeneralProgram()) return true;
+            const info = getSchoolDayInfo(dateStr);
+            if (info.isSchoolDay) return true;
+            if (info.reason === 'no-calendar') return requireSchoolCalendar();
+            const season = window.almahraPrograms.getCurrentSeason();
+            const message = info.reason === 'holiday' ? `${dated && dateStr !== todayStr ? dateStr : 'اليوم'} إجازة: ${info.name}`
+                : info.reason === 'not-working-day' ? 'ليس يوم دراسة'
+                : `خارج الفصل الدراسي (${season.termStart} – ${season.termEnd})`;
+            showToast(message, 'error'); return false;
+        }
+        function prepareSchoolDay() {
+            refreshToday();
+            return requireSchoolDay();
+        }
+        function updateSchoolCalendarAlert() {
+            const bar = document.getElementById('schoolCalendarAlert');
+            if (!bar) return;
+            const visible = isGeneralProgram() && !window.almahraPrograms.isCurrentSeasonArchived() && !isSeasonCalendarComplete();
+            bar.classList.toggle('hidden', !visible);
+            bar.innerHTML = visible ? 'أكمل التقويم الدراسي أولاً (الإعدادات ← التقويم الدراسي) <button class="underline mr-3" onclick="openSchoolCalendar()">فتح التقويم الدراسي</button>' : '';
+        }
+        function openSchoolCalendar() {
+            seasonCalendarDraft = null;
+            switchTab('page-settings', document.querySelector('[onclick*="page-settings"]'));
+            openSettingsSection('setPanelProgram'); renderProgramSettings();
+            document.getElementById('schoolCalendarSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        let seasonCalendarDraft = null;
+        function validateSeasonCalendar(next) {
+            if (!schoolCivilDate(next.termStart) || !schoolCivilDate(next.termEnd)) return { error: 'أدخل تاريخ بداية الفصل ونهايته بشكل صحيح' };
+            if (next.termStart > next.termEnd) return { error: 'بداية الفصل بعد نهايته' };
+            if (!Array.isArray(next.calendar)) return { error: 'أدخل الإجازات أو اختر لا توجد إجازات' };
+            for (let i = 0; i < next.calendar.length; i++) {
+                const row = next.calendar[i], prefix = `السطر ${i + 1}: `;
+                if (!row.name.trim()) return { error: prefix + 'اسم الإجازة مطلوب' };
+                if (!schoolCivilDate(row.from) || !schoolCivilDate(row.to)) return { error: prefix + 'تاريخ غير صحيح' };
+                if (row.from > row.to) return { error: prefix + 'البداية بعد النهاية' };
+                if (!['official', 'exams', 'emergency'].includes(row.kind)) return { error: prefix + 'نوع الإجازة غير صحيح' };
+                if (row.from < next.termStart || row.to > next.termEnd) return { error: prefix + 'الإجازة خارج الفصل' };
+            }
+            const overlaps = [];
+            next.calendar.forEach((a, i) => next.calendar.slice(i + 1).forEach((b, j) => {
+                if (a.from <= b.to && b.from <= a.to) overlaps.push(`${i + 1} و${i + j + 2}`);
+            }));
+            return { error: null, overlaps };
+        }
+        function collectSeasonCalendar() {
+            return { termStart: document.getElementById('calendarTermStart').value, termEnd: document.getElementById('calendarTermEnd').value,
+                calendar: [...document.querySelectorAll('.school-calendar-row')].map(row => ({ id: row.dataset.id,
+                    name: row.querySelector('.calendar-name').value.trim(), from: row.querySelector('.calendar-from').value,
+                    to: row.querySelector('.calendar-to').value, kind: row.querySelector('.calendar-kind').value })) };
+        }
+        function calendarExcludedDays(row) {
+            const from = schoolCivilDate(row.from), to = schoolCivilDate(row.to);
+            if (!from || !to || from > to) return 0;
+            let count = 0;
+            for (const date = from; date <= to; date.setDate(date.getDate() + 1)) if (isWorkingDay(date.getDay())) count++;
+            return count;
+        }
+        function renderSeasonCalendar(season, readOnly) {
+            if (!isGeneralProgram()) { seasonCalendarDraft = null; return ''; }
+            if (!seasonCalendarDraft || seasonCalendarDraft.seasonId !== season?.id) {
+                const expected = structuredClone({ termStart: season?.termStart, termEnd: season?.termEnd, calendar: season?.calendar });
+                seasonCalendarDraft = { seasonId: season?.id, expected, next: { termStart: season?.termStart || '', termEnd: season?.termEnd || '', calendar: structuredClone(season?.calendar || []) }, saving: false };
+            }
+            const next = seasonCalendarDraft.next, disabled = readOnly ? 'disabled' : '';
+            const inputClass = 'p-2 border-2 rounded-lg w-full';
+            return `<section id="schoolCalendarSection" class="bg-white p-5 rounded-2xl border-2 border-amber-300 lg:col-span-2">
+                <h3 class="font-black text-lg mb-3">التقويم الدراسي${readOnly ? ' — للعرض فقط' : ''}</h3>
+                <fieldset ${disabled}><div class="grid grid-cols-2 gap-3 mb-4"><label>بداية الفصل<input id="calendarTermStart" type="date" class="${inputClass}" value="${escapeHTML(next.termStart)}"></label>
+                <label>نهاية الفصل<input id="calendarTermEnd" type="date" class="${inputClass}" value="${escapeHTML(next.termEnd)}"></label></div>
+                <div id="schoolCalendarRows">${[...next.calendar].sort((a, b) => Number(!a.from) - Number(!b.from) || (a.from || '').localeCompare(b.from || '')).map(row => `<div class="school-calendar-row border rounded-xl p-3 mb-3" data-id="${escapeHTML(row.id)}">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2"><label>الاسم<input class="calendar-name ${inputClass}" value="${escapeHTML(row.name)}"></label>
+                    <label>من<input type="date" class="calendar-from ${inputClass}" value="${escapeHTML(row.from)}" onchange="updateCalendarPreview(this)"></label>
+                    <label>إلى<input type="date" class="calendar-to ${inputClass}" value="${escapeHTML(row.to)}" onchange="updateCalendarPreview(this)"></label>
+                    <label>النوع<select class="calendar-kind ${inputClass}">${Object.entries({official: 'إجازة رسمية', exams: 'توقف الاختبارات', emergency: 'طارئ'}).map(([id, name]) => `<option value="${id}" ${row.kind === id ? 'selected' : ''}>${name}</option>`).join('')}</select></label></div>
+                    <button type="button" class="underline m-2" onclick="calendarSingleDay(this)">يوم واحد</button><button type="button" class="text-red-700 underline m-2" onclick="deleteCalendarRow(this)">حذف السطر</button>
+                    <p class="calendar-preview text-sm text-slate-500">يستثني ${calendarExcludedDays(row)} من أيام الدراسة</p></div>`).join('')}</div>
+                ${!readOnly ? `<button type="button" class="underline m-2" onclick="addCalendarRow()">إضافة إجازة</button>
+                    ${!next.calendar.length ? '<button type="button" class="underline m-2" onclick="saveSeasonCalendar(true)">لا توجد إجازات</button>' : ''}
+                    <button type="button" class="bg-amber-600 text-white rounded-xl p-3 m-2" onclick="saveSeasonCalendar()">حفظ التقويم</button>` : ''}</fieldset></section>`;
+        }
+        function redrawSeasonCalendar() {
+            document.getElementById('schoolCalendarSection').outerHTML = renderSeasonCalendar(window.almahraPrograms.getCurrentSeason(), window.almahraPrograms.isCurrentSeasonArchived());
+        }
+        function addCalendarRow() {
+            if (!canWriteCloud() || seasonCalendarDraft?.saving) return;
+            seasonCalendarDraft.next = collectSeasonCalendar();
+            seasonCalendarDraft.next.calendar.push({ id: crypto.randomUUID(), name: '', from: '', to: '', kind: 'official' });
+            redrawSeasonCalendar();
+        }
+        function deleteCalendarRow(button) {
+            if (!canWriteCloud() || seasonCalendarDraft?.saving || !confirm('حذف سطر الإجازة؟')) return;
+            const id = button.closest('.school-calendar-row').dataset.id;
+            seasonCalendarDraft.next = collectSeasonCalendar();
+            seasonCalendarDraft.next.calendar = seasonCalendarDraft.next.calendar.filter(row => row.id !== id);
+            redrawSeasonCalendar();
+        }
+        function updateCalendarPreview(input) {
+            const row = input.closest('.school-calendar-row');
+            row.querySelector('.calendar-preview').textContent = `يستثني ${calendarExcludedDays({ from: row.querySelector('.calendar-from').value, to: row.querySelector('.calendar-to').value })} من أيام الدراسة`;
+        }
+        function calendarSingleDay(button) {
+            const row = button.closest('.school-calendar-row');
+            row.querySelector('.calendar-to').value = row.querySelector('.calendar-from').value;
+            updateCalendarPreview(button);
+        }
+        async function saveSeasonCalendar(noHolidays = false) {
+            if (!canWriteCloud() || !isGeneralProgram() || !seasonCalendarDraft || seasonCalendarDraft.saving) return;
+            const draft = seasonCalendarDraft;
+            if (draft.seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const next = collectSeasonCalendar();
+            if (noHolidays && next.calendar.length) return;
+            const validation = validateSeasonCalendar(next);
+            if (validation.error) { showToast(validation.error, 'error'); return; }
+            if (validation.overlaps.length && !confirm(`تداخل أو تكرار بين السطور ${validation.overlaps.join('، ')}. هل تحفظ؟`)) return;
+            const uid = window.almahraAuth?.currentUser?.uid;
+            if (!uid) { showToast('سجّل الدخول لحفظ التقويم', 'error'); return; }
+            next.calendar = next.calendar.map(row => {
+                const old = draft.expected.calendar?.find(item => item.id === row.id);
+                const unchanged = old && Number.isFinite(old.at) && typeof old.by === 'string' && ['name', 'from', 'to', 'kind'].every(key => old[key] === row[key]);
+                return { ...row, at: unchanged ? old.at : Date.now(), by: unchanged ? old.by : uid };
+            }).sort((a, b) => a.from.localeCompare(b.from));
+            draft.saving = true;
+            try {
+                const result = await window.almahraPrograms.updateSeasonCalendar('general', draft.seasonId, draft.expected, next);
+                if (!result.success) { showToast(result.error, 'error'); return; }
+                if (seasonCalendarDraft !== draft || !isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== draft.seasonId) return;
+                // لقطة محلية بعد تأكيد المعاملة، حتى وصول اشتراك الموسم.
+                Object.assign(window.almahraPrograms.getCurrentSeason(), structuredClone(next));
+                draft.expected = structuredClone(next); draft.next = structuredClone(next);
+                redrawSeasonCalendar(); updateSchoolCalendarAlert(); updateAllUIs(); showToast('تم حفظ التقويم الدراسي');
+            } catch (err) { showToast('فشل حفظ التقويم: ' + err.message, 'error'); }
+            finally { draft.saving = false; }
         }
         function timeToMinutes(timeStr) { const [hrs, mins] = timeStr.split(':').map(Number); return hrs * 60 + mins; }
         
@@ -3671,6 +3853,7 @@
         }
 
         function saveData() {
+            if (!requireSchoolCalendar()) return;
             if (!canWriteView()) return;
             if (!window.almahraData) {
                 console.warn('⚠️ almahraData not ready, save skipped');
@@ -3692,6 +3875,8 @@
             if (_cloudSaveTimeout) clearTimeout(_cloudSaveTimeout);
             _cloudSaveTimeout = setTimeout(() => {
                 _cloudSaveTimeout = null;
+                if (!requireSchoolCalendar()) return;
+                refreshToday();
                 _lastCloudSyncFromMe = Date.now();
                 window.almahraData.saveAllStudents(students).then(result => {
                     if (!result.success) {
@@ -3763,8 +3948,14 @@
             return true;
         }
         function canWriteHistory(fields) {
+            if (Object.keys(fields).some(key => key === 'history' || key.startsWith('history.'))) refreshToday();
             if (!isGeneralProgram()) return true;
             const keys = Object.keys(fields).filter(k => k === 'history' || k.startsWith('history.'));
+            if (keys.length) {
+                for (const date of new Set(keys.map(key => key.split('.')[1]))) {
+                    if (!requireSchoolDay(date, true)) return false;
+                }
+            }
             for (const key of keys) {
                 const match = /^history\.[^.]+\.(.+)$/.exec(key);
                 const path = match?.[1];
@@ -3880,10 +4071,12 @@
                 && item.history !== null && typeof item.history === 'object' && !Array.isArray(item.history));
         }
         function importNuclearBackup(event) {
+            if (!requireSchoolCalendar()) return;
             if (!canWriteCloud()) return;
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
+                if (!requireSchoolCalendar()) return;
                 if (!canWriteCloud()) return;
                 document.getElementById('importBackupFile').value = "";
                 try {
@@ -3941,6 +4134,7 @@
                             ? `\n\n⚠️ ${noLevel} من ${clean.length} في الملف بلا مقدار حفظ، فلا شريحة لهم ولن يدخلوا ترشيح الفرسان. سيطلب البرنامج إدخال مقاديرهم بعد الاستيراد.`
                             : '';
                         if(confirm(`تنبيه هام ⚠️: استيراد هذا الملف سيمسح البيانات الحالية (${studentsCountLabel(students.length)}) ويضع بيانات الملف (${studentsCountLabel(clean.length)}) مكانها.${warn}\n\nهل أنت متأكد؟`)) {
+                            if (!requireSchoolCalendar()) return;
                             students = clean;
                             _noLevelWarned = { key: '', ids: [] }; // استبدال كامل للبيانات: يستحق تنبيهاً جديداً
                             saveData(); updateAllUIs(); showToast("🎉 تم استعادة البيانات من الملف بنجاح!", "success");
@@ -4197,12 +4391,14 @@
         }
 
         function startExcelImport() {
+            if (!requireSchoolCalendar()) return;
             if (!canWriteCloud()) return;
             if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
             document.getElementById('excelFileInput').click();
         }
 
         function handleExcelImport(event) {
+            if (!requireSchoolCalendar()) return;
             if (!canWriteCloud()) return;
             const file = event.target.files[0]; if (!file) return;
             if (isGeneralProgram() && generalImportInFlight) { showToast('انتظر انتهاء حفظ الطلاب', 'error'); return; }
@@ -4323,6 +4519,7 @@
         }
 
         async function confirmExcelImport() {
+            if (!requireSchoolCalendar()) return;
             if (!canWriteCloud()) return;
             // حراسة معاينة general قبل اختيار أي مسار؛ لا تسقط أبداً إلى الحفظ القديم.
             if (pendingImport?.general) {
@@ -4350,6 +4547,7 @@
         }
 
         async function confirmGeneralExcelImport() {
+            if (!requireSchoolCalendar()) return;
             const operation = pendingImport;
             if (!generalImportContextValid(operation) || operation.saving || generalImportInFlight || !canWriteCloud()) return;
             const latest = analyzeGeneralImportRows(operation.rawRows, getProgramSettings(), [...students, ...operation.savedStudents]);
@@ -4370,6 +4568,7 @@
                 for (const row of fresh) {
                     const sid = crypto.randomUUID(); // مرة واحدة للصف، ولو تعارضت أرقام متتالية.
                     for (let attempt = 0; attempt < 10; attempt++) {
+                        if (!requireSchoolCalendar()) return;
                         if (!generalImportContextValid(operation) || pendingImport !== operation || !canWriteCloud()) throw new Error('تغيّر سياق الحفظ أو توقفت صلاحية الكتابة');
                         const key = normalizeArabicKey(row.name);
                         if ([...students, ...operation.savedStudents].some(s => normalizeArabicKey(s.name) === key)) break;
@@ -4530,6 +4729,7 @@
         function activateButton(btn, colorClass, hoverClass) { btn.disabled = false; btn.className = `w-full py-5 ${colorClass} ${hoverClass} text-white font-black text-2xl rounded-2xl shadow-lg transition-all transform hover:scale-[1.01]`; }
         
         function saveSmartMastery() {
+            if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId);
             if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
@@ -4565,6 +4765,7 @@
 
             const confirmMsg = `تأكيد الاعتماد لـ (${student.name}):\n${logText}\nالآيات: ${addedAyats} — الأوجه: ${fmtQty(addedPages)} — الأرباع: ${fmtQty(addedRubs)} — النقاط: +${addedPts}\n\nهل تريد اعتماد هذا الآن؟`;
             if (!confirm(confirmMsg)) return;
+            if (!prepareSchoolDay()) return;
 
             // اعتماد الذهبية يمنح الطالب نقاطاً رمزية فقط (مكافأة إتقان) ولا يُضاف لسرده الشخصي في تقريره الفردي:
             // التسجيل من نوع golden تعدّه dayStats في الزيادة الذهبية المنفصلة، وlabel نصّه الذي تقرؤه رسالة واتساب
@@ -5236,6 +5437,7 @@
             document.getElementById('examResWeightedPoints').innerText = totalAyahs * getProgramSettings().points.review;
         }
         function saveExamPrepProgress() {
+            if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
             if (!requireQuranMeasure()) return;
@@ -5299,6 +5501,7 @@
         }
         
         function updateAllUIs() {
+            updateSchoolCalendarAlert();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
             processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
             if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
@@ -6401,6 +6604,7 @@
         }
 
         function openSmartModal(id) {
+            if (!prepareSchoolDay()) return;
             // حماية: لا إدخال في موسم مؤرشف
             if (!canWriteView()) return;
             currentEditingStudentId = id; const student = students.find(s => s.id === id); if(!student) return;
@@ -6452,6 +6656,7 @@
         function closeSmartModal() { document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
         
         function saveSmartProgress() {
+            if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
             const settings = isGeneralProgram() ? getProgramSettings() : null;
@@ -6809,9 +7014,18 @@
                         ${newOn ? '<th>الحفظ الجديد<small>اكتب النهاية فقط: السورة والآية</small></th><th>تقدير الجديد<small>ضع دائرة</small></th>' : ''}
                         ${reviewOn ? '<th>المراجعة<small>من ... إلى ...</small></th><th>تقدير المراجعة<small>ضع دائرة</small></th>' : ''}
                         <th>الانضباط</th><th>أُدخل<small>للمشرف</small></th></tr></thead>
-                    <tbody>${days.map(day => `<tr><td class="gws-day">${e(day.dayName)}<small>${e(dateLabel(day.dateStr))}</small></td>
+                    <tbody>${days.map(day => {
+                        const info = getSchoolDayInfo(day.dateStr);
+                        if (!info.isSchoolDay) {
+                            const label = info.reason === 'holiday' ? `إجازة: ${info.name}`
+                                : ['before-term', 'after-term'].includes(info.reason) ? 'خارج الفصل'
+                                : info.reason === 'no-calendar' ? 'أكمل التقويم الدراسي أولاً' : 'ليس يوم دراسة';
+                            return `<tr style="background:#e2e8f0;print-color-adjust:exact"><td class="gws-day">${e(day.dayName)}<small>${e(dateLabel(day.dateStr))}</small></td><td colspan="${(newOn ? 2 : 0) + (reviewOn ? 2 : 0) + 2}">${e(label)}</td></tr>`;
+                        }
+                        return `<tr><td class="gws-day">${e(day.dayName)}<small>${e(dateLabel(day.dateStr))}</small></td>
                         ${newOn ? `<td></td><td>${grades}</td>` : ''}${reviewOn ? `<td></td><td>${grades}</td>` : ''}
-                        <td>${discipline}</td><td class="gws-entered"><span class="gws-box"></span></td></tr>`).join('')}</tbody>
+                        <td>${discipline}</td><td class="gws-entered"><span class="gws-box"></span></td></tr>`;
+                    }).join('')}</tbody>
                 </table></div>
                 <div class="gws-legend"><span><b>غاب؟</b> اكتب في خانة الحفظ: ${absence}</span><span><b>لم يسمّع؟</b> اترك خانته فارغة</span><span><b>المشرف:</b> يضع ✓ في "أُدخل" بعد ظهور "تم الحفظ"</span></div>
                 <div class="gws-sign"><span>توقيع المعلم آخر الأسبوع: ................................</span><span>ملاحظة المعلم للأسبوع: ...................................................................</span></div>
@@ -7064,6 +7278,7 @@
         }
         
         function resetStudentToday() {
+            if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             // التصفير يفرغ تسجيلات اليوم فتصير كمياته وذهبيته ونقاطه صفراً عند القراءة، حتى في اليوم القديم؛
             // ويبقي الحضور والمعايير ونقاط المجموعة. ثم يُعاد اشتقاق «آخر نشاط» من الطالب كما سيكون بعد التصفير
@@ -7093,21 +7308,24 @@
             if (!commitStudentPatch(student, fields)) return;
             updateAllUIs(); closeSmartModal(); showToast("تم تصفير إنجاز ونقاط اليوم بنجاح", "success");
         }
-        function markPresent(id) { if (!canWriteCloud()) return; const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended;
+        function markPresent(id) { if (!prepareSchoolDay()) return; if (!canWriteCloud()) return; const student = students.find(s => s.id === id); if(!student) return; const curr = (student.history[todayStr] || {}).attended;
             if (isGeneralProgram() && curr) { openAttendanceEditModal(id, true); return; }
             const fields = { [`history.${todayStr}.attended`]: !curr, [`history.${todayStr}.hijri`]: hijriDateStr };
             if (isGeneralProgram() && !curr) { fields[`history.${todayStr}.absence`] = DEL_FIELD; fields[`history.${todayStr}.note`] = DEL_FIELD; }
             if (!commitStudentPatch(student, fields)) return; updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
 
-        let attEditStudentId = null; let attEditChoice = null;
+        let attEditStudentId = null; let attEditChoice = null; let attendanceDateFollowsToday = true;
         function openAttendanceEditModal(id, chooseAbsent = false) {
+            refreshToday();
+            if (!requireSchoolCalendar()) return;
             const student = students.find(s => s.id === id); if (!student) return;
             attEditStudentId = id; attEditChoice = null;
             document.getElementById('attEditStudentName').innerText = student.name;
             const dateInput = document.getElementById('attEditDateInput');
             dateInput.max = todayStr; dateInput.value = todayStr;
             document.getElementById('attEditStatusDisplay').classList.add('hidden');
-            loadAttendanceForDate();
+            attendanceDateFollowsToday = true;
+            if (loadAttendanceForDate() === false) return;
             if (isGeneralProgram() && chooseAbsent) setAttendanceEditChoice(false);
             const modal = document.getElementById('attendanceEditModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -7117,8 +7335,15 @@
             document.getElementById('attendanceEditModal').classList.add('hidden');
         }
         function loadAttendanceForDate() {
+            refreshToday();
             const student = students.find(s => s.id === attEditStudentId); if (!student) return;
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
+            attendanceDateFollowsToday = dateStr === todayStr;
+            if (!requireSchoolDay(dateStr, true)) {
+                attEditChoice = null;
+                document.getElementById('attEditStatusDisplay').classList.add('hidden');
+                return false;
+            }
             attEditChoice = !!(student.history[dateStr] && student.history[dateStr].attended);
             const absenceSelect = document.getElementById('attEditAbsence');
             if (isGeneralProgram()) {
@@ -7142,9 +7367,11 @@
             }
         }
         function saveAttendanceEdit() {
+            refreshToday();
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === attEditStudentId); if (!student) return;
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
+            if (!requireSchoolDay(dateStr, true)) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
             const fields = { [`history.${dateStr}.attended`]: attEditChoice };
             if (isGeneralProgram()) {
@@ -7277,6 +7504,7 @@
 
         let delId = null;
         function openStudentModal(id=null) {
+            if (!id && !requireSchoolCalendar()) return;
             const m = document.getElementById('studentModal'); const n = document.getElementById('studentNameInput'); const i = document.getElementById('studentIdInput');
             if(id){ const s = students.find(x=>x.id===id); if(!s) return; n.value=s.name; i.value=s.id; fillStudentTierFields(s); fillStudentGeneralFields(s); fillStudentPhoneField(s); document.getElementById('studentModalTitle').innerText="تعديل بيانات الطالب"; }
             else { n.value=""; i.value=""; fillStudentTierFields(null); fillStudentGeneralFields(null); fillStudentPhoneField(null); document.getElementById('studentModalTitle').innerText="إضافة طالب جديد"; }
@@ -7289,6 +7517,7 @@
             if (!canWriteCloud()) return;
             const n=document.getElementById('studentNameInput').value.trim();
             const i=document.getElementById('studentIdInput').value;
+            if (!i && !requireSchoolCalendar()) return;
             if(!n) { showToast('اكتب اسم الطالب أولاً', 'error'); return; }
             const memSel = document.getElementById('studentMemorizedInput');
             const memorizedJuz = parseTierMin(memSel?.value);
@@ -7335,6 +7564,7 @@
                             frontierBase: null, lastDailyBase: null, ...membership };
                         let firstMembership = null;
                         for (let attempt = 0; attempt < 3; attempt++) {
+                            if (!requireSchoolCalendar()) return;
                             if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId || !canWriteCloud()) return;
                             let currentMembership;
                             try { currentMembership = generalStudentMembership(null, document.getElementById('studentHalaqaInput').value); }
@@ -7406,6 +7636,7 @@
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0);
             if (id === 'page-settings') {
+                if (isGeneralProgram()) seasonCalendarDraft = null; // فتح صريح جديد بعد التعارض.
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
                 if (typeof backToSettingsHome === 'function') backToSettingsHome();
             }
@@ -7704,6 +7935,10 @@
         // ================================================================
         function openSettingsSection(panelId) {
             if (panelId === 'setPanelExam' && isGeneralProgram()) return;
+            if (panelId === 'setPanelProgram' && isGeneralProgram()) {
+                seasonCalendarDraft = null; // كل فتح صريح يبدأ من أحدث تقويم.
+                renderProgramSettings();
+            }
             const home = document.getElementById('settingsHome');
             if (home) home.style.display = 'none';
             document.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
@@ -8052,6 +8287,10 @@
         let generalSettingsHalaqaBaseline = null;
 
         function renderProgramSettings() {
+            // احتفظ بمسودة التقويم ولقطة الفتح عند وصول تحديث من جهاز آخر.
+            if (seasonCalendarDraft?.seasonId === window.almahraPrograms?.getCurrentSeasonId() && document.getElementById('schoolCalendarSection')) {
+                seasonCalendarDraft.next = collectSeasonCalendar();
+            }
             generalSettingsHalaqaBaseline = null;
             const progBox  = document.getElementById('psPanelProgramBody');
             const ptsBox   = document.getElementById('psPanelPointsBody');
@@ -8285,6 +8524,8 @@
                                class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold mb-2 focus:border-emerald-500 outline-none disabled:bg-slate-100">
                         <div class="text-xs text-slate-500 font-bold">بدأ في: ${season?.startDate || '—'}</div>
                     </div>
+
+                    ${renderSeasonCalendar(season, isArchivedView)}
 
                     <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
                         <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
@@ -9145,13 +9386,16 @@
             const msg = `سيُؤرشف الموسم الحالي (${studentCount} طالب) ويبدأ موسم جديد فارغ.\n\nالبيانات القديمة تبقى محفوظة للعرض والمقارنة.\n\nهل أنت متأكد؟`;
             if (!confirm(msg)) return;
 
-            const name = prompt('اسم الموسم الجديد:', prog.id === 'summer' ? `موسم ${new Date().getFullYear()}` : `مراجعة ${new Date().toLocaleDateString('ar-SA', { month: 'long' })}`);
+            const name = prompt('اسم الموسم الجديد:', ['summer', 'general'].includes(prog.id) ? `موسم ${new Date().getFullYear()}` : `مراجعة ${new Date().toLocaleDateString('ar-SA', { month: 'long' })}`);
             if (!name || !name.trim()) return;
 
             const result = await window.almahraPrograms.startNewSeason(prog.id, name.trim());
             if (result.success) {
                 showToast('✅ بدأ الموسم الجديد');
-                setTimeout(() => { renderProgramSettings(); }, 600);
+                setTimeout(() => {
+                    if (prog.id === 'general') { openSchoolCalendar(); showToast('أدخل التقويم الدراسي قبل إضافة الطلاب'); }
+                    else renderProgramSettings();
+                }, 600);
             } else {
                 showToast('فشل: ' + result.error, 'error');
             }
@@ -9235,6 +9479,7 @@
 
             // تحديث الواجهة كلما تغيّرت البرامج أو المواسم
             window.almahraPrograms.subscribe(() => {
+                updateSchoolCalendarAlert();
                 const overlay = document.getElementById('eventPickerOverlay');
                 if (overlay && overlay.classList.contains('flex')) renderEventsList();
                 updateCurrentEventBadge();
@@ -9264,6 +9509,7 @@
             updateProgramBrand();
             initHeaderScroll(); initHadithTilt();
             setupDatesAndTimezone(); loadData(); initQuranEngine();
+            setInterval(refreshToday, 60000);
             loadPomoConfig(); loadPomoRuntime();
             renderPomoTracksContainer();
             togglePomoSystemMode(isPomoAutoMode, true);

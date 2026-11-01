@@ -552,6 +552,34 @@ window.almahraPrograms = {
         try { return localStorage.getItem(CURRENT_PROGRAM_KEY) || null; } catch (e) { return null; }
     },
 
+    // التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة.
+    updateSeasonCalendar: async (programId, seasonId, expected, next) => {
+        try {
+            if (programId !== 'general') throw new Error('التقويم الدراسي للبرنامج العام فقط');
+            await runTransaction(db, async (transaction) => {
+                const programRef = doc(db, PROGRAMS, programId);
+                const seasonRef = doc(db, PROGRAMS, programId, SEASONS, seasonId);
+                const programSnap = await transaction.get(programRef);
+                const seasonSnap = await transaction.get(seasonRef);
+                if (programSnap.data()?.activeSeasonId !== seasonId) throw new Error('لا يمكن تعديل تقويم موسم غير نشط');
+                if (!seasonSnap.exists()) throw new Error('الموسم غير موجود');
+                // ترتيب مفاتيح السطر لا يغيّر قيمته، وغياب المصفوفة يختلف عن [].
+                const stable = value => JSON.stringify(value, function(key, item) {
+                    return item && typeof item === 'object' && !Array.isArray(item)
+                        ? Object.fromEntries(Object.keys(item).sort().map(k => [k, item[k]])) : item;
+                });
+                const current = seasonSnap.data();
+                if (['termStart', 'termEnd', 'calendar'].some(k => stable(current[k]) !== stable(expected[k]))) {
+                    throw new Error('تغيّر التقويم من جهاز آخر، أعد فتح الإعدادات');
+                }
+                transaction.update(seasonRef, { termStart: next.termStart, termEnd: next.termEnd, calendar: next.calendar });
+            });
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
     // تحديث إعدادات البرنامج
     updateSettings: async (programId, newSettings) => {
         try {

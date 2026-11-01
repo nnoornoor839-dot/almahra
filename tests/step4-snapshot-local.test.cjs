@@ -50,7 +50,9 @@ function harness() {
         getAllStudents: async () => copy(state.all), isCurrentSeasonArchived: () => false,
         PROGRAM_DEFS: { general: { defaultSettings: settings() } },
         updateSettings: (...args) => write('settings', ...args) };
-    const ctx = vm.createContext({ console, structuredClone, document: { getElementById: element, querySelectorAll: () => [] },
+    const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        prepareSchoolDay: () => true, requireSchoolDay: () => true, refreshToday() {}, console, structuredClone, document: { getElementById: element, querySelectorAll: () => [] },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } },
             almahraData: { getActiveProgramId: () => state.program, getActiveSeasonId: () => state.dataSeason || state.season,
                 isReady: () => state.ready, getStudents: () => [...state.dataStudents],

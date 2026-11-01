@@ -69,7 +69,11 @@ function harness(program = 'general', archived = false) {
         almahraData: { getActiveSeasonId: () => state.season, isReadOnly: () => state.archived,
             ...Object.fromEntries(['saveAllStudents', 'patchStudent', 'commitBatch', 'upsertStudent', 'removeStudent', 'createGeneralStudentIfAbsent'].map(n => [n, cloud(n)])) }
     };
-    const ctx = vm.createContext({ console, structuredClone, document, window, setTimeout,
+    const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        requireSchoolCalendar: () => true, prepareSchoolDay: () => true, requireSchoolDay: () => true,
+        refreshToday() {}, updateSchoolCalendarAlert() {}, seasonCalendarDraft: null, renderSeasonCalendar: () => '',
+        getSchoolDayInfo: () => ({ isSchoolDay: true }), console, structuredClone, document, window, setTimeout,
         clearTimeout: id => state.timers.delete(id),
         localStorage: { getItem: key => local.get(key) ?? null, setItem(key, value) { localWrites.push(['set', key]); local.set(key, value); },
             removeItem(key) { localWrites.push(['remove', key]); local.delete(key); } },

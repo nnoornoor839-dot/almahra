@@ -72,7 +72,11 @@ function harness() {
         getAllStudents: async () => copy(state.all), isCurrentSeasonArchived: () => state.archived,
         getDefaultSettings: () => settings(), PROGRAM_DEFS: { general: { defaultSettings: settings() } },
         updateSettings: (...args) => write('settings', ...args), resetSettings: (...args) => write('reset', ...args) };
-    const ctx = vm.createContext({ console, structuredClone, TextEncoder, document: { getElementById: element,
+    const ctx = vm.createContext({
+        // Calendar guards are covered in step5; isolate the earlier step here.
+        requireSchoolCalendar: () => true, prepareSchoolDay: () => true, requireSchoolDay: () => true,
+        refreshToday() {}, updateSchoolCalendarAlert() {}, seasonCalendarDraft: null, renderSeasonCalendar: () => '',
+        getSchoolDayInfo: () => ({ isSchoolDay: true }), console, structuredClone, TextEncoder, document: { getElementById: element,
         querySelectorAll: () => [] }, window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } }, almahraData: {
             getActiveProgramId: () => state.program, getActiveSeasonId: () => state.season,
             isReady: () => state.ready, getStudents: () => run('students.slice()'),
@@ -703,7 +707,10 @@ test('absent halaqas are read as empty without mutating settings or adding a def
         h.state.program = program; assert.equal(h.run("'halaqas' in getProgramSettings()"), false);
     }
     const baseline = cp.execFileSync('git', ['show', '9628c9c:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
-    const restored = programsStore.replaceAll('\r\n', '\n').replace('                fresh.halaqas = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.halaqas || []));\n', '');
+    // Step5 adds one independent season-calendar method; settings/defaults/migration stay identical.
+    const restored = programsStore.replaceAll('\r\n', '\n')
+        .replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '')
+        .replace('                fresh.halaqas = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.halaqas || []));\n', '');
     assert.equal(restored, baseline);
 });
 
