@@ -66,14 +66,17 @@ function harness() {
         return state.write ? state.write(name, ...args) : { success: true };
     };
     const programs = { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season,
-        getCurrentProgram: () => ({ id: state.program, name: 'برنامج وهمي', settings: state.settings }),
+        getCurrentProgram: () => ({ id: state.program, name: 'برنامج وهمي', get settings() { return state.settings; }, set settings(value) { state.settings = value; } }),
         getCurrentSeason: () => ({ id: state.season, name: 'موسم وهمي' }), getSettings: () => state.settings,
         getSeasons: () => [],
         getAllStudents: async () => copy(state.all), isCurrentSeasonArchived: () => state.archived,
         getDefaultSettings: () => settings(), PROGRAM_DEFS: { general: { defaultSettings: settings() } },
         updateSettings: (...args) => write('settings', ...args), resetSettings: (...args) => write('reset', ...args) };
     const ctx = vm.createContext({ console, structuredClone, TextEncoder, document: { getElementById: element,
-        querySelectorAll: () => [] }, window: { almahraPrograms: programs, almahraData: {
+        querySelectorAll: () => [] }, window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } }, almahraData: {
+            getActiveProgramId: () => state.program, getActiveSeasonId: () => state.season,
+            isReady: () => state.ready, getStudents: () => run('students.slice()'),
+            commitBatch: (...args) => write('batch', ...args),
             patchStudent: (...args) => write('patch', ...args), createGeneralStudentIfAbsent: (...args) => write('create', ...args) } },
         crypto: { randomUUID: () => `fake-uuid-${++state.uuid}` }, confirm: () => true, setTimeout() {},
         showToast: (message, type) => state.messages.push({ message, type }),
@@ -91,7 +94,7 @@ function harness() {
         getCumulativeStats: () => ({ tripPoints: 5 }), getStudentRank: () => 1,
         confetti: { create: () => () => { state.celebrations = (state.celebrations || 0) + 1; } },
         getCriteriaSelection: () => ({}), calculateQuran() {}, closeSmartModal: () => state.closed++,
-        buildEntryPatch: (student, date, entry) => ({ [`history.${date}.entries.fake-entry`]: entry }),
+        pinBaseFields: () => ({}), newEntryId: () => 'fake-entry',
         refreshGeneralHalaqaOptions() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => vm.runInContext(source(name), ctx));
@@ -99,9 +102,9 @@ function harness() {
     run(html.match(/let generalStudentSaveInFlight = false;/)[0]);
     run(html.slice(html.indexOf('        let generalSettingsHalaqaBaseline ='), html.indexOf('        function renderProgramSettings()')));
     install('isGeneralProgram', 'getStudentHalaqa', 'generalHalaqaLabel', 'generalStudentHalaqaHtml',
-        'generalRecitationTeacher', 'generalStudentMembership', 'cleanCellText', 'normalizeArabicKey',
+        'generalRecitationTeacher', 'generalStudentMembership', 'makeEntry', 'buildEntryPatch', 'cleanCellText', 'normalizeArabicKey',
         'normalizeSaudiPhone', 'noLevelReason', 'studentsWithoutLevel', 'validateGeneralHalaqas',
-        'saveProgramSettings', 'commitProgramSettings', 'fillStudentGeneralFields', 'saveStudent',
+        'saveProgramSettings', 'commitProgramSettings', 'generalHalaqaStudentPatches', 'syncGeneralHalaqaStudents', 'fillStudentGeneralFields', 'saveStudent',
         'commitGeneralStudentPatch', 'commitStudentPatch', 'restoreStudent', 'applyFieldsLocally', 'saveSmartProgress',
         'generalTeacherIsUsed', 'removeGeneralSettingRow', 'analyzeGeneralImportRows', 'resetProgramSettings');
     for (const id of ['psPtAtt', 'psMultNew', 'psMultRev']) element(id).value = '0';
@@ -139,12 +142,13 @@ test('settings save rejects blank/normalized duplicate names, duplicate active p
     await h.saveSettings(); assert.equal(h.state.writes[0].name, 'settings');
 });
 
-test('used halaqa teacher/stage cannot change in any season; name correction always saves the same ID', async () => {
-    for (const field of ['teacherId', 'stageId']) {
-        const h = harness(); h.state.all = [h.student()]; h.state.draft.halaqas[0][field] = field === 'teacherId' ? 't2' : 'g2';
-        await h.saveSettings(); assert.equal(h.state.writes.length, 0);
-        assert.equal(h.state.messages.at(-1).message, 'تغيير معلم الحلقة يأتي بإسناد مؤرّخ (الخطوة ٤)');
-    }
+test('used halaqa stage stays locked in any season; teacher reassignment and name correction keep the same ID', async () => {
+    const locked = harness(); locked.state.all = [locked.student()]; locked.state.draft.halaqas[0].stageId = 'g2';
+    await locked.saveSettings(); assert.equal(locked.state.writes.length, 0);
+    assert.equal(locked.state.messages.at(-1).message, 'لا يمكن تغيير مرحلة حلقة مستعملة؛ أنشئ حلقة جديدة');
+    const changed = harness(); changed.state.all = [changed.student()]; changed.state.draft.halaqas[0].teacherId = 't2';
+    await changed.saveSettings(); assert.equal(changed.state.writes.length, 1);
+    assert.equal(changed.state.writes[0].args[1].halaqas[0].teacherHistory[0].to, 't2');
     const h = harness(); h.state.all = [h.student()]; h.state.draft.halaqas[0].name = 'تصحيح اسم وهمي';
     await h.saveSettings(); assert.equal(h.state.writes.length, 1);
     assert.equal(h.state.writes[0].args[1].halaqas[0].id, 'halaqa-one');
@@ -154,7 +158,7 @@ test('used halaqa teacher/stage cannot change in any season; name correction alw
     const inactive = harness(); inactive.state.settings.halaqas[0].active = false;
     inactive.state.draft = copy(inactive.state.settings); inactive.state.draft.halaqas[0].name = 'تصحيح اسم حلقة موقوفة';
     inactive.setStudents([inactive.student()]); await inactive.saveSettings();
-    assert.equal(inactive.state.writes.length, 1);
+    assert.equal(inactive.state.writes.length, 2); // الحفظ يصلح النسخ القديمة أيضاً.
 });
 
 test('no halaqa deletion; only empty current-season halaqas can be deactivated; inactive references block deletion', async () => {
@@ -347,7 +351,7 @@ test('re-rendering settings during save invalidates its captured snapshot', asyn
     assert.equal(h.state.messages.at(-1).message, 'تغيّرت الحلقات من جهاز آخر؛ أعد فتح الإعدادات');
 });
 
-test('used halaqa locks compare teacher, stage and activation with settings received during the wait', async () => {
+test('used halaqa reassignment and locks compare with settings received during the wait', async () => {
     for (const field of ['teacherId', 'stageId', 'active']) {
         const h = harness(), wait = deferred(), latest = copy(h.state.settings);
         h.setStudents([h.student()]);
@@ -356,9 +360,14 @@ test('used halaqa locks compare teacher, stage and activation with settings rece
         h.ctx.window.almahraPrograms.getAllStudents = () => wait.promise;
         const saving = h.saveSettings(); h.state.settings = latest;
         wait.resolve([h.student()]); await saving;
-        assert.equal(h.state.writes.length, 0);
-        assert.equal(h.state.messages.at(-1).message, field === 'active'
-            ? 'لا يمكن إيقاف حلقة عليها طالب في الموسم الجاري' : 'تغيير معلم الحلقة يأتي بإسناد مؤرّخ (الخطوة ٤)');
+        if (field === 'teacherId') {
+            assert.equal(h.state.writes[0].args[1].halaqas[0].teacherHistory[0].from, 't2');
+            assert.equal(h.state.writes[0].args[1].halaqas[0].teacherHistory[0].to, 't1');
+        } else {
+            assert.equal(h.state.writes.length, 0);
+            assert.equal(h.state.messages.at(-1).message, field === 'active'
+                ? 'لا يمكن إيقاف حلقة عليها طالب في الموسم الجاري' : 'لا يمكن تغيير مرحلة حلقة مستعملة؛ أنشئ حلقة جديدة');
+        }
     }
 });
 
@@ -405,7 +414,7 @@ test('deletion still protects inactive halaqas and saved halaqas whose form rows
     }
 });
 
-test('recitation uses commitStudentPatch and closes immediately while cloud is pending, with unchanged entry shape and rollback', async () => {
+test('recitation uses commitStudentPatch and closes immediately while cloud is pending, with a halaqa snapshot and rollback', async () => {
     const production = source('saveSmartProgress');
     assert.match(production, /^function saveSmartProgress\(/);
     assert.doesNotMatch(production, /\bawait\b|commitGeneralStudentPatch/);
@@ -417,7 +426,7 @@ test('recitation uses commitStudentPatch and closes immediately while cloud is p
     assert.equal(h.state.closed, 1); assert.equal(h.state.updates, 1); assert.equal(h.state.celebrations, 1);
     const entry = h.state.writes[0].args[1]['history.fake-day.entries.fake-entry'];
     assert.equal(entry.heardBy, 't1'); assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 1); assert.equal(entry.points, 5);
-    assert.equal('halaqaId' in entry, false); assert.equal('stageId' in entry, false);
+    assert.equal(entry.halaqaId, 'halaqa-one'); assert.equal(entry.stageId, 'g1');
     assert.equal(student.history['fake-day'].entries['fake-entry'].heardBy, 't1');
     wait.resolve({ success: false, error: 'فشل وهمي' });
     await new Promise(resolve => setImmediate(resolve));
