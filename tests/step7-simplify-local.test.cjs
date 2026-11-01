@@ -55,6 +55,7 @@ function harness(list = [student()]) {
         window: { almahraAuth: { get currentUser() { return state.uid ? { uid: state.uid } : null; } },
             almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => 'season-1',
                 getCurrentProgram: () => ({ id: state.program, settings: state.settings }), getSettings: () => state.settings,
+                isCurrentSeasonArchived: () => state.archived,
                 PROGRAM_DEFS: { general: { defaultSettings: { grades: [] } } } },
             almahraData: { patchStudent: (id, fields) => {
                 state.writes.push({ id, fields: copy(fields) });
@@ -74,6 +75,8 @@ function harness(list = [student()]) {
     run(`let students = fixture, currentEditingStudentId = 1, todayStr = '${today}';
         const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
     run(html.match(/let generalUndoInProgress = false;/)[0]);
+    run(html.match(/const generalQuickEntry = .*;/)[0]);
+    install('canOpenGeneralFrontierFix', 'updateFrontierFixVisibility');
     run(html.match(/const ivPairs = .*;/)[0]); run(html.match(/const measureEntry = .*;/)[0]); run(html.match(/const rangeLabelOf = .*;/)[0]);
     install('generalQuickContext', 'generalQuickContextMatches', 'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'canWriteHistory', 'applyFieldsLocally', 'restoreStudent', 'commitStudentPatch', 'commitGeneralStudentPatch', 'computeFrontier', 'isFurther', 'endPointOf',
         'pinBaseFields', 'computeLastDaily', 'getGeneralUndoTarget', 'generalUndoLabel', 'updateGeneralUndoButton', 'undoLastGeneralEntry',

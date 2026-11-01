@@ -95,7 +95,7 @@ function harness(program = 'general', archived = false) {
         const todayStr = '2026-10-25', hijriDateStr = 'تاريخ وهمي';`);
     const constant = html.match(/const WRITABLE_PROGRAMS = \[[^\]]*\];/);
     assert.ok(constant); run(constant[0]);
-    install('isWriteLockedView', 'writeLockedMessage', 'canWriteView', 'canWriteCloud');
+    install('isWriteLockedView', 'writeLockedMessage', 'canWriteView', 'canWriteCloud', 'canOpenGeneralFrontierFix', 'updateFrontierFixVisibility');
     const timerStart = html.indexOf('        let _cloudSaveTimeout = null;');
     const timerEnd = html.indexOf('        function loadData()', timerStart);
     run(html.slice(timerStart, timerEnd));

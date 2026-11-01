@@ -138,8 +138,9 @@ test('central builder stamps golden and exam when active, allows absent/inactive
             assert.equal(Object.keys(patch).some(k => k.includes('2026-10-31')), false);
         }
     }
-    // ٨أ تضيف مستهلك العام المستقل إلى المسارات الثلاثة القديمة، ولا تغيّر الباني.
-    assert.equal((html.match(/buildEntryPatch\(student, todayStr,/g) || []).length, 4);
+    // ٨ب تمرّر التاريخ المختار في العام؛ المسارات الثلاثة القديمة تبقى لليوم.
+    assert.equal((html.match(/buildEntryPatch\(student, todayStr,/g) || []).length, 3);
+    assert.equal((html.match(/buildEntryPatch\(student, dateStr,/g) || []).length, 2); // التعريف + المستهلك العام.
 });
 
 test('used teacher change confirms today, appends exactly one audit and batches current season copies without touching history', async () => {

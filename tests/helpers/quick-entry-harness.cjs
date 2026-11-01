@@ -29,9 +29,10 @@ const student = (entries = {}, extra = {}) => ({ id: 1, sid: 'fake-sid', name: '
     frontierBase: null, lastDailyBase: null, history: { [today]: { entries } }, ...extra });
 function harness(s = student()) {
     const state = { program: 'general', season: 's1', writes: [], prompts: [], messages: [], confetti: 0, updates: 0,
-        school: true, cloud: true, measure: true, confirmed: true,
+        school: true, cloud: true, measure: true, confirmed: true, archived: false, knightWrites: 0,
+        calendar: { termStart: '2026-10-01', termEnd: '2026-12-31', calendar: [] },
         settings: { features: { goldenBoard: false }, grades: [{ id: 'good', name: 'جيد', percent: 100 }, { id: 'repeat', name: 'يُعاد', percent: 0 }],
-            kindMult: { newMemorization: 3, review: 1 }, teachers: [{ id: 't1', name: 'معلم وهمي' }],
+            workingDays: [0, 1, 2, 3, 4], kindMult: { newMemorization: 3, review: 1 }, teachers: [{ id: 't1', name: 'معلم وهمي' }],
             halaqas: [{ id: 'h1', name: 'حلقة وهمية', teacherId: 't1', stageId: 'stage1', active: true }], stages: [{ id: 'stage1' }],
             criteria: [{ id: 'early', name: 'موجب وهمي', points: 5, enabled: true }, { id: 'uniform', name: 'موجب آخر', points: 3 },
                 { id: 'late', name: 'سالب وهمي', points: -2 }, { id: 'off', name: 'معطل', points: 9, enabled: false }] } };
@@ -74,19 +75,23 @@ function harness(s = student()) {
     const quranMeta = { surahs: { references: QURAN_META.surahs.map((s, i) => ({ number: i + 1, name: QURAN_META.titles[i], numberOfAyahs: s[1] })) } };
     const ctx = vm.createContext({ console, structuredClone, QuranMeasure, quranMeta, generalEntryPoints,
         document: { getElementById: id => id.startsWith('quick_') || id === 'generalCriteriaAllBtn' ? elements.get(id) || null : element(id), createElement: tag => element(`${tag}-${++serial}`),
+            querySelector: () => element('settingsNav'),
             querySelectorAll: selector => [...elements.values()].filter(el => selector.startsWith('.crit-box') && el.classList.contains('crit-box') && (!selector.includes(':checked') || el.checked)) },
-        window: { addEventListener: (name, fn) => listeners.set(name, fn), quranData: { surahStarts: { 1: 1 } },
+        window: { scrollTo() {}, addEventListener: (name, fn) => listeners.set(name, fn), quranData: { surahStarts: { 1: 1 } },
             almahraAuth: { currentUser: { uid: 'fake-admin' } },
             almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season,
+                getCurrentSeason: () => state.calendar, isCurrentSeasonArchived: () => state.archived,
+                getKnightsLog: () => state.calendar.knightsLog || [], saveKnightsEntry: async () => { state.knightWrites++; return { success: true }; },
                 getSettings: () => state.settings, PROGRAM_DEFS: { general: { defaultSettings: state.settings } } },
             almahraData: { patchStudent: (id, fields) => { state.writes.push({ id, fields: copy(fields) }); return state.pending || Promise.resolve({ success: true }); } } },
         prepareSchoolDay: () => { state.onPrepare?.(); return state.school; }, canWriteCloud: () => state.cloud, canWriteView: () => true,
-        refreshToday() {}, requireSchoolDay: () => state.school, requireQuranMeasure: () => state.measure, measureReady: () => true,
+        refreshToday() { state.onRefresh?.(); }, requireSchoolDay: () => state.school, requireQuranMeasure: () => state.measure, measureReady: () => true,
         isWriteLockedView: () => !state.cloud, showToast: (message, type) => state.messages.push({ message, type }),
         confirm: message => { state.prompts.push(message); state.onConfirm?.(); return state.confirmed; },
         updateAllUIs: () => state.updates++, getTierBadge: () => null, updateSmartButton() {},
         calculateExamPrepQuran() {}, escapeHTML: value => String(value),
         getCumulativeStats: () => ({ tripPoints: 123 }), getStudentRank: () => 2,
+        switchTab: id => { state.tab = id; }, updateSettingsBadges() {},
         confetti: { create: () => () => state.confetti++ }, setTimeout() {}, closeKnightCelebration() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
@@ -95,9 +100,15 @@ function harness(s = student()) {
         let selectedMinor = null, selectedJuzs = []; const endAyahTouched = { end: false, examEnd: false };
         let generalUndoInProgress = false; const criteriaAtOpen = { sel: null }; const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
     run(html.match(/const generalQuickEntry = .*;/)[0]);
+    run(html.match(/const generalFrontierFix = .*;/)[0]);
+    run(html.match(/const ALL_DAY_NAMES = .*;/)[0]);
     for (const name of ['ivPairs', 'measureEntry', 'rangeLabelOf', 'newEntryId']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
     install('isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
-        'roundPointTotal', 'isFurther', 'endPointOf', 'computeFrontier', 'computeLastDaily', 'pinBaseFields', 'makeEntry', 'buildEntryPatch',
+        'roundPointTotal', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
+        'generalQuickDayName', 'getGeneralMissedDays', 'prepareGeneralQuickDate', 'renderGeneralQuickDate', 'showGeneralMissedDays', 'selectGeneralQuickDate',
+        'generalQuickEndValues', 'generalQuickHasUnsavedInput', 'openGeneralFrontierFixFromQuick',
+        'canOpenGeneralFrontierFix', 'updateFrontierFixVisibility', 'renderGeneralFrontierFix', 'renderFrontierFixStudents', 'renderFrontierFixPosition', 'updateFrontierFixAyah', 'saveGeneralFrontierFix', 'openSettingsSection', 'backToSettingsHome',
+        'isFurther', 'endPointOf', 'computeFrontier', 'computeLastDaily', 'pinBaseFields', 'makeEntry', 'buildEntryPatch',
         'applyFieldsLocally', 'canWriteHistory', 'commitGeneralStudentPatch', 'computeLastReview', 'hasGeneralAcceptedNew', 'generalNextPoint',
         'generalQuickContext', 'generalQuickContextMatches', 'invalidateGeneralQuickEntry',
         'generalQuickSuggestions', 'generalPointLabel', 'moveGeneralQuickSections', 'initGeneralQuickEntry', 'renderGeneralQuickGrades',

@@ -70,6 +70,7 @@ function harness() {
         const criteriaAtOpen = { sel: {} }, DEL_FIELD = { __almahraDelete: true };`);
     run(html.match(/let generalUndoInProgress = false;/)[0]);
     install('isGeneralProgram', 'isWorkingDay', 'escapeHTML', 'schoolCivilDate', 'setupDatesAndTimezone', 'refreshToday',
+        'prepareGeneralQuickDate', 'getGeneralMissedDays', 'getWeekStartDate', 'formatDateLocal',
         'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
         'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveGeneralQuickEntry', 'commitGeneralStudentPatch', 'generalQuickContext', 'generalQuickContextMatches',
@@ -77,7 +78,7 @@ function harness() {
         'isValidStudentBackup', 'importNuclearBackup', 'openSmartModal', 'loadAttendanceForDate', 'saveAttendanceEdit',
         'openAttendanceEditModal', 'saveSmartMastery', 'saveExamPrepProgress', 'resetStudentToday', 'markPresent');
     run("const generalQuickEntry = { previewKey: 'attendance-only', context: null };");
-    run('setupDatesAndTimezone(); generalQuickEntry.context = generalQuickContext(students[0])');
+    run('setupDatesAndTimezone(); generalQuickEntry.dateStr = todayStr; generalQuickEntry.context = generalQuickContext(students[0])');
     for (const id of ['startSurah', 'endSurah', 'startAyah', 'endAyah']) element(id).value = '1';
     element('disciplineOnlyCheck').checked = true;
     element('resWeightedPoints').innerText = '0';
@@ -450,7 +451,7 @@ test('Riyadh today and both header dates advance at 21:00 UTC; quick entry requi
     h.state.now = '2026-11-01T20:59:59Z'; h.run('setupDatesAndTimezone()');
     h.state.now = '2026-11-01T21:00:01Z'; await h.run('saveGeneralQuickEntry()');
     assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /أعد فتح النافذة/);
-    h.run('generalQuickEntry.context = generalQuickContext(students[0])');
+    h.run('generalQuickEntry.dateStr = todayStr; generalQuickEntry.context = generalQuickContext(students[0])');
     await h.run('saveGeneralQuickEntry()');
     const fields = h.state.writes.at(-1).args[1];
     assert.equal(fields['history.2026-11-02.attended'], true);
