@@ -75,6 +75,7 @@ function harness() {
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
     run("let students = [], generalSettingsHalaqaBaseline = null; const DEL_FIELD = { __almahraDelete: true }; const todayStr = '2026-11-01', hijriDateStr = 'تاريخ وهمي', criteriaAtOpen = { sel: {} }; let currentEditingStudentId = 1, currentSardType = 'new';");
+    run(html.match(/let generalUndoInProgress = false;/)[0]);
     install('isGeneralProgram', 'getStudentHalaqa', 'generalRecitationTeacher', 'normalizeArabicKey',
         'cleanCellText', 'validateGeneralHalaqas', 'generalTeacherIsUsed', 'saveProgramSettings', 'commitProgramSettings',
         'generalHalaqaStudentPatches', 'syncGeneralHalaqaStudents', 'makeEntry', 'buildEntryPatch', 'saveSmartProgress',

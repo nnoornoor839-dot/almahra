@@ -126,9 +126,9 @@ export const PROGRAM_DEFS = {
             ],
             titleRules: { requireSard: true, weeklyAttendancePct: 75, disciplineRequiresFullWeek: true },
             features: {
-                newMemorization: true, review: true, goldenBoard: true, attendance: true,
+                newMemorization: true, review: true, goldenBoard: false, attendance: true,
                 knights: true, honorBoard: true, finalExam: false, examPrep: false,
-                groups: false, pomodoro: true, tiers: false
+                groups: false, pomodoro: false, tiers: false
             }
         }
     },

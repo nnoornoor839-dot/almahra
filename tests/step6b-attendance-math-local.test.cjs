@@ -68,7 +68,7 @@ function harness(list = [], text = html, program = 'general') {
         'topTied', 'buildGeneralWeeklyMessage', 'getGeneralMessageWeek', 'exportToExcel', 'renderReportsTable',
         'renderAbsenceReport', 'renderHomeDashboard', 'renderHonorBoard', 'hbEmpty', 'hbTier', 'hbWinnerRow', 'hbDuo',
         'buildAchievementText', 'getSeasonLeaders', 'updateThreeKnightsSelects', 'syncFarsDayFromDate');
-    if (text === html) install('getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',
+    if (text === html) install('generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',
         'generalStudentAttendanceLabel', 'generalAttendanceLabel', 'getGeneralAttendanceEligibility', 'generalIncompleteAttendanceHtml');
     const countCalls = name => {
         const original = ctx[name], counter = { calls: 0 };
@@ -353,14 +353,22 @@ test('scope: all existing writes, points, settings and deferred group readers re
         'markPresent', 'saveGeneralAbsence', 'launchThreeKnights', 'saveCurrentThreeKnights',
         'getCumulativeStats', 'getPointsBreakdown', 'getProgramSettings',
         'getWeeklyPointChampions', 'getLastCompletedWeekRange', 'applyGroupWinnerForDate']) {
-        assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baseline).replaceAll('\r\n', '\n'), name);
+        // Step 7 adds only the general undo guard to recitation saving.
+        const current = source(name).replaceAll('\r\n', '\n');
+        const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
+        assert.equal(name === 'saveSmartProgress' ? current.replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
     // Manager-requested validation message is the sole change to this save function.
     assert.equal(source('saveAttendanceEdit').replace("{ showToast('اختر حاضر أو غائب', 'error'); return; }", 'return;').replaceAll('\r\n', '\n'),
         source('saveAttendanceEdit', baseline).replaceAll('\r\n', '\n'));
     assert.equal(html.match(/const dayPoints = .*;/)[0], baseline.match(/const dayPoints = .*;/)[0]);
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js']) {
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'),
+        // الخطوة ٧ غيّرت افتراضي الذهبية والبومودورو في general فقط.
+        let current = fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+        if (file === 'programs-store.js') current = current
+            .replace('newMemorization: true, review: true, goldenBoard: false, attendance: true,', 'newMemorization: true, review: true, goldenBoard: true, attendance: true,')
+            .replace('groups: false, pomodoro: false, tiers: false', 'groups: false, pomodoro: true, tiers: false');
+        assert.equal(current,
             cp.execFileSync('git', ['show', `3df7524:${file}`], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'), file);
     }
 });

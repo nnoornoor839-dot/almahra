@@ -88,6 +88,8 @@
         .ep-new-summer:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(251,191,36,.4); }
         .ep-new-review { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; border-color: #3b82f6; }
         .ep-new-review:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(59,130,246,.4); }
+        .ep-new-general { background: linear-gradient(135deg, #ecfdf5, #a7f3d0); color: #065f46; border-color: #10b981; }
+        .ep-new-general:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(16,185,129,.4); }
 
         /* ═══ شبكة أيقونات الأقسام (الإعدادات والسجل) ═══ */
         .panel-home { width: 100%; animation: fadeIn .3s ease-out; }
@@ -314,7 +316,8 @@
             font-weight: 700;
             transition: all 0.2s;
             outline: none;
-            direction: rtl;
+            direction: ltr;
+            text-align: left;
             box-sizing: border-box;
         }
         #loginOverlay input:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
@@ -401,9 +404,14 @@
 
         /* الجوال: نُخفي ما يمكن الاستغناء عنه ليبقى الرأس صفاً واحداً */
         @media (max-width: 720px) {
+            .app-header { padding-inline: 8px; gap: 8px; }
             .ah-logo { height: 34px; }
             .ah-sep, #headerGregorian { display: none; }
-            #authUserInfo { display: none; }
+            #authUserBar { gap: 4px; }
+            #currentEventBadge { padding: 6px 8px; gap: 4px; }
+            #authUserInfo { font-size: 10px; padding: 4px; gap: 0; max-width: none; overflow: visible; }
+            #authUserInfo > span:first-of-type, #authUserInfo > i { display: none; }
+            #authUserInfo > span:last-of-type { flex-shrink: 0; font-size: 9px; padding: 2px 4px; }
             .ah-logout-txt { display: none; }
             #authLogoutBtn { padding: 7px 10px; }
         }
@@ -1221,7 +1229,7 @@
 
                     <div class="p-3 bg-amber-50 text-amber-900 font-bold border-b-2 border-amber-200 text-sm flex items-center gap-2">
                         <i class="fas fa-circle-info text-amber-500 text-lg shrink-0"></i>
-                        <span>ملاحظة: الأرقام تراكمية وتشمل كل مراجعة مكررة (وليست بالضرورة ما حفظه الطالب فعليًا دفعة واحدة) — 🏆 كهرماني = زيادة الذهبية، ✓✓ أخضر = الإجمالي الكلي.</span>
+                        <span>ملاحظة: الأرقام تراكمية وتشمل كل مراجعة مكررة (وليست بالضرورة ما حفظه الطالب فعليًا دفعة واحدة)<span id="reportGoldenLegend"> — 🏆 كهرماني = زيادة الذهبية، ✓✓ أخضر = الإجمالي الكلي.</span></span>
                     </div>
 
                     <div class="p-6 bg-slate-50 overflow-x-auto overflow-y-auto custom-scroll" style="max-height: 50vh;">
@@ -1806,11 +1814,11 @@
                 </div>
             </div>
             
-            <div class="w-full bg-red-50 flex justify-end px-6 py-2 border-b border-red-100">
+            <div id="smartResetRow" class="w-full bg-red-50 flex justify-end px-6 py-2 border-b border-red-100">
                 <button onclick="resetStudentToday()" class="text-red-600 hover:text-red-800 font-bold flex items-center gap-2 transition-colors"><i class="fas fa-undo"></i> تصفير إنجاز اليوم (في حال إدخال خاطئ مسبقاً)</button>
             </div>
 
-            <div class="flex bg-slate-200 p-1.5 rounded-2xl mx-6 mt-6 shadow-inner">
+            <div id="smartTabs" class="flex bg-slate-200 p-1.5 rounded-2xl mx-6 mt-6 shadow-inner">
                 <button id="tabDailyBtn" onclick="switchSmartTab('daily')" class="flex-1 py-3 rounded-xl font-black text-lg md:text-xl bg-white text-emerald-600 shadow-sm transition-all border-b-4 border-emerald-500"><i class="fas fa-book-open"></i> المسار اليومي للمحطات المقطعة</button>
                 <button id="tabMasteryBtn" onclick="switchSmartTab('mastery')" class="flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent"><i class="fas fa-crown"></i> اللوحة الذهبية (اعتمادات الأجزاء)</button>
                 <button id="tabExamPrepBtn" onclick="switchSmartTab('examprep')" class="flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent"><i class="fas fa-graduation-cap"></i> الاستعداد للاختبار</button>
@@ -1880,7 +1888,7 @@
                 <div class="p-6 bg-slate-200 flex flex-wrap gap-4 border-t-2 border-slate-300 rounded-b-3xl">
                     <!-- حفظ المعايير وحدها بلا تسجيل سرد: خيار صريح لا يُخمَّن من «المدى لم يُلمس» -->
                         <label for="disciplineOnlyCheck" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-amber-300 text-amber-800 font-black text-lg md:text-xl cursor-pointer select-none"><input type="checkbox" id="disciplineOnlyCheck" onchange="if (isGeneralProgram()) calculateQuran()" class="w-6 h-6 rounded accent-amber-600"> انضباط فقط — بلا سرد</label>
-                    <button onclick="saveSmartProgress()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة الإنجاز اليومي وحفظ السجل</button>
+                    <button id="smartSaveBtn" onclick="saveSmartProgress()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة الإنجاز اليومي وحفظ السجل</button>
                 </div>
             </div>
 
@@ -1969,6 +1977,9 @@
                 <div class="p-6 bg-slate-200 flex gap-4 border-t-2 border-slate-300 rounded-b-3xl">
                     <button onclick="saveExamPrepProgress()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-3xl font-black py-4 rounded-2xl shadow-xl transition"><i class="fas fa-save mr-2"></i> إضافة مراجعة الاستعداد للاختبار</button>
                 </div>
+            </div>
+            <div id="smartUndoRow" class="hidden p-6 bg-slate-50 border-t border-slate-200">
+                <button id="smartUndoBtn" type="button" onclick="undoLastGeneralEntry()" disabled class="w-full py-3 px-4 rounded-xl border-2 border-slate-300 text-slate-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed">↩️ لا يوجد تسجيل لك اليوم للتراجع عنه</button>
             </div>
         </div>
     </div>
@@ -2194,6 +2205,10 @@
 
         function isGeneralProgram() {
             return window.almahraPrograms?.getCurrentProgramId() === 'general';
+        }
+
+        function generalGoldenHidden() {
+            return isGeneralProgram() && window.almahraPrograms?.getSettings()?.features?.goldenBoard === false;
         }
 
         // العلاقة الحالية تُقرأ من الحلقة، لا من نسختَي الطالب.
@@ -5511,10 +5526,10 @@
                     <span class="font-black text-purple-700 text-xl">${b.groupBonus}</span>
                 </div>
                 <div class="bg-white p-4 rounded-xl border-2 border-slate-200 flex justify-between items-center">
-                    <span class="font-bold text-slate-700"><i class="fas fa-quran text-emerald-500 ml-2"></i>سرد المسار اليومي + اللوحة الذهبية معاً</span>
+                    <span class="font-bold text-slate-700"><i class="fas fa-quran text-emerald-500 ml-2"></i>${generalGoldenHidden() ? 'سرد المسار اليومي' : 'سرد المسار اليومي + اللوحة الذهبية معاً'}</span>
                     <span class="font-black text-emerald-700 text-xl">${b.remainingPoints}</span>
                 </div>
-                ${b.goldenRawQuarters > 0 ? `
+                ${b.goldenRawQuarters > 0 && !generalGoldenHidden() ? `
                 <div class="bg-amber-50 p-3 rounded-xl border-2 border-amber-200 text-amber-800 text-sm font-bold">
                     <i class="fas fa-circle-info ml-1"></i> من ضمن البند أعلاه: ${b.goldenAyahs} آية جاءت عبر اللوحة الذهبية تحديدًا (لا يمكن فصل نقاطها بدقة تامة عن المسار اليومي في البيانات المسجّلة، لأن كليهما يُجمَعان في نفس حقل النقاط اليومي).
                 </div>` : ''}
@@ -5788,6 +5803,7 @@
         }
         
         function updateAllUIs() {
+            if (typeof updateGeneralUndoButton === 'function') updateGeneralUndoButton();
             updateSchoolCalendarAlert();
             updateGeneralAttendanceUI();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
@@ -6327,8 +6343,9 @@
         function dayAccreditationTexts(day) {
             // نصوص إنجازات اليوم (المحطات والأجزاء والاستعداد) لرسالة ولي الأمر: أجزاء sardAccreditation القديم،
             // ثم label كل تسجيل golden|exam بترتيب وقته — اليوم الجديد لا نص مجمّعاً فيه
-            const old = day && day.sardAccreditation ? day.sardAccreditation.split(' و ') : [];
-            const labels = Object.values((day && day.entries) || {}).filter(e => e && (e.kind === 'golden' || e.kind === 'exam') && e.label)
+            const hideGolden = generalGoldenHidden();
+            const old = !hideGolden && day && day.sardAccreditation ? day.sardAccreditation.split(' و ') : [];
+            const labels = Object.values((day && day.entries) || {}).filter(e => e && ((!hideGolden && e.kind === 'golden') || e.kind === 'exam') && e.label)
                 .sort((x, y) => (x.at || 0) - (y.at || 0)).map(e => e.label);
             return old.concat(labels);
         }
@@ -6391,6 +6408,7 @@
         }
         
         function switchSmartTab(tab) {
+            if ((tab === 'mastery' && generalGoldenHidden()) || (tab === 'examprep' && isGeneralProgram())) tab = 'daily';
             const dailyBtn = document.getElementById('tabDailyBtn'); const masteryBtn = document.getElementById('tabMasteryBtn'); const examBtn = document.getElementById('tabExamPrepBtn');
             const dailySec = document.getElementById('smartDailySection'); const masterySec = document.getElementById('smartMasterySection'); const examSec = document.getElementById('smartExamPrepSection');
             const inactiveClass = "flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent";
@@ -6669,9 +6687,10 @@
                     if (isGeneralProgram() ? dateStr > todayStr || dateStr < generalAttendanceStart(s) || getAttendanceState(s, dateStr).state !== 'present' : !d || !d.attended) return;
                     attended++;
                     const ds = dayStats(d, densityFor(s));   // كثافة الطالب مرة واحدة؛ الأساسي + الذهبي لليوم القديم والجديد
-                    ayahs += ds.ayahs + ds.golden.ayahs;
-                    pages += ds.pages + ds.golden.pages;
-                    quarters += ds.quarters + ds.golden.quarters;
+                    const golden = generalGoldenHidden() ? { ayahs: 0, pages: 0, quarters: 0 } : ds.golden;
+                    ayahs += ds.ayahs + golden.ayahs;
+                    pages += ds.pages + golden.pages;
+                    quarters += ds.quarters + golden.quarters;
                 });
             }
             return { attended, total: students.length, ayahs, pages, quarters };
@@ -6980,12 +6999,14 @@
             updateAyahMax('examStart'); updateAyahMax('examEnd'); calculateExamPrepQuran();
 
             switchSmartTab('daily');
+            updateSmartSimplification();
             const modal = document.getElementById('smartModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
         }
         
         function closeSmartModal() { document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
         
         function saveSmartProgress() {
+            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }
             if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId); if (!student) return showToast("حدث خطأ، لا يمكن العثور على بيانات الطالب", "error");
@@ -7605,6 +7626,69 @@
             const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast("جاري فتح الواتساب وتجهيز قائمة المنقطعين...");
         }
         
+        // آخر تسجيل للمستخدم اليوم؛ لا يرتبط بوقت فتح النافذة.
+        function getGeneralUndoTarget(student) {
+            const uid = window.almahraAuth?.currentUser?.uid;
+            if (!isGeneralProgram() || !uid) return null;
+            return Object.entries(student?.history?.[todayStr]?.entries || {})
+                .filter(([, entry]) => entry && ['new', 'review'].includes(entry.kind) && entry.by === uid)
+                .map(([id, entry]) => ({ id, entry }))
+                .sort((a, b) => (b.entry.at || 0) - (a.entry.at || 0))[0] || null;
+        }
+        function generalUndoLabel(entry) {
+            const number = n => Number(n).toLocaleString('ar-SA', { useGrouping: false });
+            const surah = n => quranMeta?.surahs.references.find(s => s.number === n)?.name.replace(/^سُورَةُ |^سورة /, '') || number(n);
+            const spec = entry.spec;
+            const range = spec?.from && spec?.to ? (spec.from[0] === spec.to[0]
+                ? `${surah(spec.from[0])} ${number(spec.from[1])}–${number(spec.to[1])}`
+                : `${surah(spec.from[0])} ${number(spec.from[1])} إلى ${surah(spec.to[0])} ${number(spec.to[1])}`) : 'نطاق غير متاح';
+            return `${entry.kind === 'new' ? 'حفظ جديد' : 'مراجعة'}، ${range} (النقاط: ${number(Math.max(0, Number(entry.points) || 0))})`;
+        }
+        let generalUndoInProgress = false;
+        function updateGeneralUndoButton() {
+            const saveButton = document.getElementById('smartSaveBtn');
+            if (saveButton) saveButton.disabled = isGeneralProgram() && generalUndoInProgress;
+            const row = document.getElementById('smartUndoRow'), button = document.getElementById('smartUndoBtn');
+            if (!row || !button) return;
+            row.classList.toggle('hidden', !isGeneralProgram());
+            const target = getGeneralUndoTarget(students.find(s => s.id === currentEditingStudentId));
+            button.disabled = generalUndoInProgress || !target || isWriteLockedView();
+            button.textContent = generalUndoInProgress ? 'جارٍ التراجع…'
+                : target ? '↩️ تراجع عن آخر تسجيل: ' + generalUndoLabel(target.entry) : '↩️ لا يوجد تسجيل لك اليوم للتراجع عنه';
+        }
+        async function undoLastGeneralEntry() {
+            if (generalUndoInProgress || !isGeneralProgram() || !prepareSchoolDay() || !canWriteCloud() || !requireQuranMeasure()) return;
+            const student = students.find(s => s.id === currentEditingStudentId);
+            // لا يوجد تراجع معلّق؛ الهدف والمؤشرات مشتقة من حالة الطالب الحالية.
+            const target = getGeneralUndoTarget(student);
+            if (!target) { updateGeneralUndoButton(); return; }
+            const dateStr = todayStr, label = generalUndoLabel(target.entry);
+            if (!confirm('التراجع عن: ' + label + '؟')) return;
+            const schoolDayReady = prepareSchoolDay();
+            if (todayStr !== dateStr || getGeneralUndoTarget(student)?.id !== target.id) {
+                showToast('تغيّر اليوم أو التسجيل؛ أعد المحاولة', 'error');
+                updateGeneralUndoButton(); return;
+            }
+            if (!schoolDayReady) { updateGeneralUndoButton(); return; }
+            const fields = pinBaseFields(student);
+            fields[`history.${todayStr}.entries.${target.id}`] = DEL_FIELD;
+            const after = structuredClone(student);
+            applyFieldsLocally(after, fields);
+            const last = computeLastDaily(after);
+            Object.assign(fields, { lastDailySurah: last ? (last.surah ?? null) : DEL_FIELD,
+                lastDailyAyah: last ? (last.ayah ?? null) : DEL_FIELD,
+                lastDailySardRange: last ? (last.range ?? null) : DEL_FIELD });
+            generalUndoInProgress = true;
+            updateGeneralUndoButton();
+            try {
+                if (!await commitGeneralStudentPatch(student, fields)) return;
+                updateAllUIs(); showToast('تم التراجع عن: ' + label, 'success');
+            } finally {
+                generalUndoInProgress = false;
+                updateGeneralUndoButton();
+            }
+        }
+
         function resetStudentToday() {
             if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
@@ -8076,7 +8160,7 @@
                 const activeSeason = seasons.find(s => s.id === prog.activeSeasonId);
                 const archivedCount = seasons.filter(s => s.status === 'archived').length;
 
-                const cls = key === 'summer' ? 'ep-new-summer' : 'ep-new-review';
+                const cls = key === 'summer' ? 'ep-new-summer' : key === 'general' ? 'ep-new-general' : 'ep-new-review';
                 html += `
                     <button class="ep-new-btn ${cls}" onclick="openProgram('${key}')">
                         <span class="ico">${def.icon}</span>
@@ -8209,6 +8293,7 @@
             if (tabExamPrep) tabExamPrep.style.display = (general || f?.examPrep === false) ? 'none' : '';
             document.querySelectorAll('[onclick*="printExamCards"], #examEntryContainer')
                 .forEach(el => { const card = el.closest('.rounded-3xl'); if (card) card.style.display = (general || f?.finalExam === false) ? 'none' : ''; });
+            updateSmartSimplification();
             // في وضع الأرشيف لا نغيّر شيئاً — applyArchivedMode هي المسؤولة
             if (isWriteLockedView()) return;
             if (!f) return;
@@ -8266,6 +8351,17 @@
             if (raceTitle && settings.raceName) raceTitle.textContent = settings.raceName;
             const raceSub = document.querySelector('#taifTripContainer h2 + p');
             if (raceSub && settings.raceSubtitle) raceSub.textContent = settings.raceSubtitle;
+        }
+
+        // تبسيط نافذة العام وحدها، مع إعادة العرض عند تبديل البرنامج.
+        function updateSmartSimplification() {
+            const general = isGeneralProgram(), hideGolden = generalGoldenHidden();
+            document.getElementById('smartResetRow').style.display = general ? 'none' : '';
+            document.getElementById('tabMasteryBtn').style.display = hideGolden ? 'none' : '';
+            document.getElementById('smartTabs').style.display = hideGolden ? 'none' : '';
+            document.getElementById('reportGoldenLegend').style.display = hideGolden ? 'none' : '';
+            if (hideGolden) switchSmartTab('daily');
+            updateGeneralUndoButton();
         }
 
         // ================================================================
@@ -8532,7 +8628,7 @@
 
         function generalSettingRow(item, kind) {
             return `<div class="general-setting-row flex gap-2 items-center mb-2" data-id="${escapeHTML(item.id)}">
-                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" oninput="refreshGeneralHalaqaOptions()" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
+                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" oninput="this.classList.remove('border-red-500', 'bg-red-50'); this.removeAttribute('aria-invalid'); refreshGeneralHalaqaOptions()" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
                 <button type="button" onclick="removeGeneralSettingRow(this, '${kind}')" class="text-red-600 p-2" title="حذف"><i class="fas fa-trash"></i></button>
             </div>`;
         }
@@ -9318,7 +9414,16 @@
                 const teachers = collectGeneralSettingRows('teacher');
                 const halaqas = collectGeneralHalaqaRows().map(h => ({ ...h }));
                 if (!stages.length || stages.some(t => !t.name) || teachers.some(t => !t.name)) {
-                    showToast('أدخل اسم كل مرحلة ومعلم، وأبقِ مرحلة واحدة على الأقل', 'error'); return;
+                    const kind = !stages.length || stages.some(t => !t.name) ? 'stage' : 'teacher';
+                    const box = document.getElementById(kind === 'stage' ? 'psStagesList' : 'psTeachersList');
+                    const inputs = [...box.querySelectorAll('.general-setting-name')];
+                    const empty = inputs.filter(input => !input.value.trim());
+                    empty.forEach(input => { input.classList.add('border-red-500', 'bg-red-50'); input.setAttribute('aria-invalid', 'true'); });
+                    const target = empty[0] || box;
+                    if (!empty.length) box.setAttribute('tabindex', '-1');
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    target.focus({ preventScroll: true });
+                    showToast(!stages.length ? 'أبقِ مرحلة واحدة على الأقل' : kind === 'stage' ? 'مرحلة بلا اسم' : 'معلم بلا اسم', 'error'); return;
                 }
                 const baseline = generalSettingsHalaqaBaseline;
                 let allStudents;

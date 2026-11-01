@@ -64,6 +64,7 @@ function harness() {
         let seasonCalendarDraft = null, generalStudentSaveInFlight = false, generalImportInFlight = false;
         let pendingImport = null, _noLevelWarned = null;
         const criteriaAtOpen = { sel: {} }, DEL_FIELD = { __almahraDelete: true };`);
+    run(html.match(/let generalUndoInProgress = false;/)[0]);
     install('isGeneralProgram', 'isWorkingDay', 'escapeHTML', 'schoolCivilDate', 'setupDatesAndTimezone', 'refreshToday',
         'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
@@ -527,6 +528,9 @@ test('scope: points, patch/builder and shared settings are unchanged; store adds
     for (const name of ['getProgramSettings', 'commitStudentPatch', 'buildEntryPatch', 'getCumulativeStats']) {
         assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baselineHtml).replaceAll('\r\n', '\n'), name);
     }
-    const withoutCalendar = store.replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '');
+    // الخطوة ٧ تطفئ افتراضي ميزتين في العام وحده؛ بقية الملف تبقى محمية.
+    const withoutCalendar = store.replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '')
+        .replace('newMemorization: true, review: true, goldenBoard: false, attendance: true,', 'newMemorization: true, review: true, goldenBoard: true, attendance: true,')
+        .replace('groups: false, pomodoro: false, tiers: false', 'groups: false, pomodoro: true, tiers: false');
     assert.equal(withoutCalendar.replaceAll('\r\n', '\n'), baselineStore.replaceAll('\r\n', '\n'));
 });

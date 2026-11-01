@@ -104,6 +104,7 @@ function harness() {
     const install = (...names) => names.forEach(name => vm.runInContext(source(name), ctx));
     run("let students = []; const DEL_FIELD = {__almahraDelete: true}; let currentEditingStudentId = 1; const todayStr = 'fake-day', hijriDateStr = 'تاريخ وهمي', criteriaAtOpen = {sel: {}}; let currentSardType = 'new';");
     run(html.match(/let generalStudentSaveInFlight = false;/)[0]);
+    run(html.match(/let generalUndoInProgress = false;/)[0]);
     run(html.slice(html.indexOf('        let generalSettingsHalaqaBaseline ='), html.indexOf('        function renderProgramSettings()')));
     install('isGeneralProgram', 'getStudentHalaqa', 'generalHalaqaLabel', 'generalStudentHalaqaHtml',
         'generalRecitationTeacher', 'generalStudentMembership', 'makeEntry', 'buildEntryPatch', 'cleanCellText', 'normalizeArabicKey',
@@ -707,9 +708,11 @@ test('absent halaqas are read as empty without mutating settings or adding a def
         h.state.program = program; assert.equal(h.run("'halaqas' in getProgramSettings()"), false);
     }
     const baseline = cp.execFileSync('git', ['show', '9628c9c:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
-    // Step5 adds one independent season-calendar method; settings/defaults/migration stay identical.
+    // Step5 adds the calendar method; step7 changes only the two general feature defaults.
     const restored = programsStore.replaceAll('\r\n', '\n')
         .replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '')
+        .replace('newMemorization: true, review: true, goldenBoard: false, attendance: true,', 'newMemorization: true, review: true, goldenBoard: true, attendance: true,')
+        .replace('groups: false, pomodoro: false, tiers: false', 'groups: false, pomodoro: true, tiers: false')
         .replace('                fresh.halaqas = JSON.parse(JSON.stringify(programsCache[programId]?.settings?.halaqas || []));\n', '');
     assert.equal(restored, baseline);
 });

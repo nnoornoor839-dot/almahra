@@ -326,6 +326,9 @@ test('scope: recitation and commit functions remain exactly as the step6 base', 
     const baseline = cp.execFileSync('git', ['show', '2c20668:index.html'], { cwd: path.join(__dirname, '..'), encoding: 'utf8' });
     // قارئات التقارير أُصلحت في ٦ب؛ حماية الكتابة والتسميع باقية.
     for (const name of ['commitStudentPatch', 'commitPatches', 'buildEntryPatch', 'saveSmartProgress', 'getProgramSettings']) {
-        assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baseline).replaceAll('\r\n', '\n'), name);
+        // Step 7 adds only the general undo guard to recitation saving.
+        const current = source(name).replaceAll('\r\n', '\n');
+        const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
+        assert.equal(name === 'saveSmartProgress' ? current.replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
 });
