@@ -520,8 +520,9 @@ test('weekly sheet shades holiday/outside-term rows without boxes and escapes th
 
 test('scope: points, patch/builder, shared settings and attendance reports are unchanged; store adds only the calendar method', () => {
     const cp = require('node:child_process'), root = path.join(__dirname, '..');
-    const baselineHtml = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });
-    const baselineStore = cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' });
+    // خط أساس الخطوة ٥ ثابت؛ HEAD صار يحتوي دالة التقويم بعد دمجها.
+    const baselineHtml = cp.execFileSync('git', ['show', 'e608836:index.html'], { cwd: root, encoding: 'utf8' });
+    const baselineStore = cp.execFileSync('git', ['show', 'e608836:programs-store.js'], { cwd: root, encoding: 'utf8' });
     for (const name of ['getProgramSettings', 'getWorkingDaysList', 'calculateStudentAttendance', 'getConsecutiveAbsenceStreak',
         'commitStudentPatch', 'buildEntryPatch', 'getCumulativeStats', 'renderHomeDashboard']) {
         assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baselineHtml).replaceAll('\r\n', '\n'), name);

@@ -771,6 +771,10 @@
 
             <!-- لوحة معلومات المجمع -->
             <div id="schoolCalendarAlert" class="hidden p-4 mb-4 rounded-xl bg-amber-100 text-amber-900 font-bold" role="alert"></div>
+            <div id="generalAttendanceTools" class="hidden flex flex-wrap gap-3 no-print">
+                <button onclick="openGeneralAbsenceModal()" class="bg-white text-slate-700 hover:bg-slate-100 py-3 px-6 rounded-xl font-bold text-lg flex items-center gap-2 shadow-md"><i class="fas fa-user-xmark"></i> قائمة الغياب</button>
+            </div>
+            <div id="generalUnrecordedAlert" class="hidden p-4 rounded-xl bg-amber-100 text-amber-900 font-bold flex flex-wrap gap-3 no-print" role="status"></div>
             <div id="homeDashboard" class="home-dash"></div>
 
             <!-- المتابعة والمتصدّرون: يظهران فقط إذا كان في الموسم طلاب -->
@@ -2061,6 +2065,24 @@
     </div>
 
 
+    <!-- قائمة غياب الحلقة — للبرنامج العام وحده -->
+    <div id="generalAbsenceModal" class="fixed inset-0 z-[6000] hidden items-center justify-center bg-slate-900 bg-opacity-90 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div class="bg-blue-600 text-white p-5 flex justify-between items-center">
+                <h3 class="text-2xl font-black">قائمة الغياب</h3>
+                <button onclick="closeGeneralAbsenceModal()" aria-label="إغلاق" class="text-3xl">×</button>
+            </div>
+            <div class="p-5 bg-slate-50 grid sm:grid-cols-2 gap-4">
+                <label class="font-bold">التاريخ<input id="generalAbsenceDate" type="date" onchange="loadGeneralAbsenceList()" class="block w-full p-3 border-2 rounded-xl mt-2"></label>
+                <label class="font-bold">الحلقة<select id="generalAbsenceHalaqa" onchange="loadGeneralAbsenceList()" class="block w-full p-3 border-2 rounded-xl mt-2"></select></label>
+            </div>
+            <div id="generalAbsenceRows" class="p-5 overflow-y-auto space-y-3"></div>
+            <div class="p-5 border-t bg-slate-100">
+                <button id="generalAbsenceSave" onclick="saveGeneralAbsence()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">حفظ الغياب</button>
+            </div>
+        </div>
+    </div>
+
     <!-- نافذة إعدادات مواقيت البومودورو -->
     <div id="pomoSettingsModal" class="fixed inset-0 z-[6000] hidden items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-md p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border-4 border-emerald-500 flex flex-col max-h-[90vh]">
@@ -2470,6 +2492,154 @@
         function prepareSchoolDay() {
             refreshToday();
             return requireSchoolDay();
+        }
+
+        // قراءة فقط: التسميع يثبت الحضور، وغير الدراسي بلا حالة حضور.
+        function getAttendanceState(student, dateStr) {
+            const info = getSchoolDayInfo(dateStr);
+            if (!info.isSchoolDay) return { state: 'holiday', ...info };
+            const day = student.history?.[dateStr];
+            const hasEntries = Object.keys(day?.entries || {}).length > 0;
+            if (hasEntries || day?.attended === true) return { state: 'present', hasEntries };
+            if (day?.attended === false) return { state: 'absent', absence: day.absence || '', note: day.note || '' };
+            return { state: 'unrecorded' };
+        }
+        function generalAttendanceStart(student) {
+            // لا يوجد تاريخ إنشاء على الطالب حالياً؛ بلا سجل نعدّ اليوم فقط.
+            return Object.keys(student.history || {}).filter(date => schoolCivilDate(date)).sort()[0] || todayStr;
+        }
+        function getGeneralUnrecordedDays() {
+            if (!isGeneralProgram() || window.almahraPrograms.isCurrentSeasonArchived() || !isSeasonCalendarComplete()) return [];
+            const settings = getProgramSettings();
+            const eligible = students.filter(student => getStudentHalaqa(student, settings)?.active === true)
+                .map(student => ({ student, start: generalAttendanceStart(student) }));
+            const days = [];
+            for (let date = schoolCivilDate(getWeekStartDate(todayStr)); formatDateLocal(date) <= todayStr; date.setDate(date.getDate() + 1)) {
+                const dateStr = formatDateLocal(date);
+                if (!getSchoolDayInfo(dateStr).isSchoolDay) continue;
+                const count = eligible.filter(({ student, start }) => dateStr >= start && getAttendanceState(student, dateStr).state === 'unrecorded').length;
+                if (count) days.push({ dateStr, count });
+            }
+            return days;
+        }
+        function updateGeneralAttendanceUI() {
+            const visible = isGeneralProgram() && !window.almahraPrograms.isCurrentSeasonArchived();
+            document.getElementById('generalAttendanceTools')?.classList.toggle('hidden', !visible);
+            const bar = document.getElementById('generalUnrecordedAlert');
+            if (!bar) return;
+            const days = getGeneralUnrecordedDays();
+            bar.classList.toggle('hidden', !days.length);
+            bar.innerHTML = days.map(({ dateStr, count }) => {
+                const label = dateStr === todayStr ? 'اليوم' : ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()];
+                return `<button class="underline" onclick="openGeneralAbsenceModal('${dateStr}')">${label}: ${count.toLocaleString('ar-SA')} لم يُسجَّلوا${dateStr === todayStr ? ' بعد' : ''}</button>`;
+            }).join('<span aria-hidden="true">·</span>');
+            if (!visible) closeGeneralAbsenceModal();
+        }
+
+        let generalAbsenceDraft = null;
+        function openGeneralAbsenceModal(dateStr) {
+            refreshToday();
+            if (!isGeneralProgram() || !canWriteCloud() || !requireSchoolCalendar()) return;
+            const season = window.almahraPrograms.getCurrentSeason();
+            const input = document.getElementById('generalAbsenceDate');
+            input.min = season.termStart; input.max = todayStr < season.termEnd ? todayStr : season.termEnd;
+            input.value = dateStr || todayStr;
+            const select = document.getElementById('generalAbsenceHalaqa');
+            const previous = select.value;
+            select.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)
+                .map(h => `<option value="${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
+            if (getProgramSettings().halaqas.some(h => h.id === previous && h.active === true)) select.value = previous;
+            const modal = document.getElementById('generalAbsenceModal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            loadGeneralAbsenceList();
+        }
+        function closeGeneralAbsenceModal() {
+            const modal = document.getElementById('generalAbsenceModal');
+            modal?.classList.remove('flex'); modal?.classList.add('hidden');
+            generalAbsenceDraft = null;
+        }
+        function validateGeneralAbsenceDate(dateStr, approvedWeek = '') {
+            if (!schoolCivilDate(dateStr)) { showToast('اختر تاريخاً صحيحاً', 'error'); return false; }
+            if (dateStr > todayStr) { showToast('لا يمكن تسجيل غياب تاريخ مستقبلي', 'error'); return false; }
+            if (!requireSchoolDay(dateStr, true)) return false;
+            const week = getWeekStartDate(todayStr);
+            if (dateStr < week && approvedWeek !== week && !confirm('هذا من أسبوع سابق. هل تكمل؟')) return false;
+            return true;
+        }
+        function loadGeneralAbsenceList(approvedWeek = '') {
+            refreshToday();
+            const previousDraft = generalAbsenceDraft;
+            generalAbsenceDraft = null;
+            const box = document.getElementById('generalAbsenceRows');
+            box.innerHTML = '';
+            document.getElementById('generalAbsenceSave').disabled = true;
+            if (!isGeneralProgram() || !requireSchoolCalendar()) return;
+            const dateStr = document.getElementById('generalAbsenceDate').value;
+            if (previousDraft?.dateStr === dateStr) approvedWeek = approvedWeek || previousDraft.approvedWeek;
+            if (!validateGeneralAbsenceDate(dateStr, approvedWeek)) return;
+            const settings = getProgramSettings(), halaqaId = document.getElementById('generalAbsenceHalaqa').value;
+            if (!settings.halaqas.some(h => h.id === halaqaId && h.active === true)) return;
+            const rows = students.filter(student => getStudentHalaqa(student, settings)?.id === halaqaId)
+                .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
+                .map(student => ({ id: student.id, ...getAttendanceState(student, dateStr) }));
+            generalAbsenceDraft = { seasonId: window.almahraPrograms.getCurrentSeasonId(), dateStr, halaqaId, rows, approvedWeek: getWeekStartDate(todayStr) };
+            const reasons = '<option value="">اختر السبب</option>' + settings.absence.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)}</option>`).join('');
+            box.innerHTML = rows.map((row, i) => {
+                const student = students.find(s => s.id === row.id), absent = row.state === 'absent';
+                const label = row.hasEntries ? 'حاضر (سمّع)' : row.state === 'present' ? 'حاضر' : absent ? 'غائب' : 'لم يُسجَّل';
+                return `<div class="border rounded-xl p-4 space-y-3">
+                    <div class="flex flex-wrap justify-between gap-3"><span class="font-bold">${escapeHTML(student.name)} · ${label}</span>
+                    <label><input id="generalAbsent${i}" type="checkbox" ${absent ? 'checked' : ''} ${row.hasEntries ? 'disabled' : ''} onchange="toggleGeneralAbsenceRow(${i})"> غائب</label></div>
+                    <div id="generalAbsenceFields${i}" class="${absent ? '' : 'hidden'} space-y-2">
+                        <label class="block">سبب الغياب<select id="generalReason${i}" class="block w-full border rounded-lg p-2">${reasons}</select></label>
+                        <label class="block">ملاحظة (اختيارية)<textarea id="generalNote${i}" class="block w-full border rounded-lg p-2">${escapeHTML(row.note || '')}</textarea></label>
+                    </div></div>`;
+            }).join('') || '<p>لا يوجد طلاب في هذه الحلقة</p>';
+            rows.forEach((row, i) => { document.getElementById(`generalReason${i}`).value = row.absence || ''; });
+            document.getElementById('generalAbsenceSave').disabled = !rows.length;
+        }
+        function toggleGeneralAbsenceRow(index) {
+            document.getElementById(`generalAbsenceFields${index}`).classList.toggle('hidden', !document.getElementById(`generalAbsent${index}`).checked);
+        }
+        function saveGeneralAbsence() {
+            refreshToday();
+            const draft = generalAbsenceDraft;
+            if (!isGeneralProgram() || !draft || !canWriteCloud()) return;
+            if (draft.seasonId !== window.almahraPrograms.getCurrentSeasonId() || draft.dateStr !== document.getElementById('generalAbsenceDate').value ||
+                draft.halaqaId !== document.getElementById('generalAbsenceHalaqa').value) { showToast('أعد فتح قائمة الغياب', 'error'); return; }
+            if (!validateGeneralAbsenceDate(draft.dateStr, draft.approvedWeek)) return;
+            const settings = getProgramSettings();
+            if (!settings.halaqas.some(h => h.id === draft.halaqaId && h.active === true)) { loadGeneralAbsenceList(); return; }
+            const patches = [];
+            for (let i = 0; i < draft.rows.length; i++) {
+                const row = draft.rows[i], checked = document.getElementById(`generalAbsent${i}`).checked;
+                const absence = document.getElementById(`generalReason${i}`).value, note = document.getElementById(`generalNote${i}`).value.trim();
+                if (row.hasEntries) continue;
+                const student = students.find(s => s.id === row.id);
+                if (!student || getStudentHalaqa(student, settings)?.id !== draft.halaqaId) { showToast('تغيّر طلاب الحلقة، أعد تحميل القائمة', 'error'); return; }
+                if (checked && !settings.absence.some(a => a.id === absence && ['excused', 'unexcused'].includes(a.id))) {
+                    showToast(`اختر سبب الغياب للطالب ${escapeHTML(student.name)}`, 'error'); return;
+                }
+                if (checked === (row.state === 'absent') && (!checked || (absence === row.absence && note === row.note))) continue;
+                const current = getAttendanceState(student, draft.dateStr), p = `history.${draft.dateStr}.`;
+                if (current.hasEntries) { showToast(`الطالب ${escapeHTML(student.name)} حاضر (سمّع)، أعد تحميل القائمة`, 'error'); return; }
+                let fields;
+                if (checked) {
+                    if (current.state === 'absent' && current.absence === absence && current.note === note) continue;
+                    fields = { [p + 'attended']: false, [p + 'absence']: absence, [p + 'note']: note };
+                    if (!student.history?.[draft.dateStr]) fields[p + 'hijri'] = hijriForDateStr(draft.dateStr);
+                } else {
+                    if (current.state !== 'absent') continue;
+                    fields = { [p + 'attended']: DEL_FIELD, [p + 'absence']: DEL_FIELD, [p + 'note']: DEL_FIELD };
+                }
+                patches.push({ student, fields });
+            }
+            if (!patches.length) { showToast('لا تغييرات'); return; }
+            if (!commitPatches(patches)) return;
+            const count = patches.filter(p => p.fields[`history.${draft.dateStr}.attended`] === false).length;
+            const removed = patches.length - count;
+            updateAllUIs(); loadGeneralAbsenceList(getWeekStartDate(todayStr));
+            showToast([count ? `حُفظ: ${count.toLocaleString('ar-SA')} غائب` : '', removed ? `أُزيل غياب ${removed.toLocaleString('ar-SA')}` : ''].filter(Boolean).join('، و'));
         }
         function updateSchoolCalendarAlert() {
             const bar = document.getElementById('schoolCalendarAlert');
@@ -3962,6 +4132,9 @@
                 const value = fields[key];
                 if (!path) { showToast('صيغة سجل الطالب غير مسموحة', 'error'); return false; }
                 if (path === 'attended') {
+                    // العودة إلى «لم يُسجَّل» تحذف الحقول الثلاثة معاً فقط.
+                    if (value === DEL_FIELD && fields[key.replace(/attended$/, 'absence')] === DEL_FIELD &&
+                        fields[key.replace(/attended$/, 'note')] === DEL_FIELD) continue;
                     if (typeof value !== 'boolean') { showToast('حالة الحضور غير صالحة', 'error'); return false; }
                     if (value === false && (!keys.some(k => k === key.replace(/attended$/, 'absence') && ['excused', 'unexcused'].includes(fields[k])) ||
                         typeof fields[key.replace(/attended$/, 'note')] !== 'string')) {
@@ -3969,10 +4142,12 @@
                     }
                 } else if (path === 'absence') {
                     if (!['excused', 'unexcused'].includes(value) && value !== DEL_FIELD) { showToast('سبب الغياب غير صالح', 'error'); return false; }
-                    if (value === DEL_FIELD && fields[key.replace(/absence$/, 'attended')] !== true) { showToast('مسح الغياب يتطلب تسجيل الحضور لليوم نفسه', 'error'); return false; }
+                    if (value === DEL_FIELD && fields[key.replace(/absence$/, 'attended')] !== true &&
+                        !(fields[key.replace(/absence$/, 'attended')] === DEL_FIELD && fields[key.replace(/absence$/, 'note')] === DEL_FIELD)) { showToast('مسح الغياب يتطلب تسجيل الحضور أو حذف الحالة كاملة', 'error'); return false; }
                 } else if (path === 'note') {
                     if (typeof value !== 'string' && value !== DEL_FIELD) { showToast('ملاحظة الغياب غير صالحة', 'error'); return false; }
-                    if (value === DEL_FIELD && fields[key.replace(/note$/, 'attended')] !== true) { showToast('مسح الملاحظة يتطلب تسجيل الحضور لليوم نفسه', 'error'); return false; }
+                    if (value === DEL_FIELD && fields[key.replace(/note$/, 'attended')] !== true &&
+                        !(fields[key.replace(/note$/, 'attended')] === DEL_FIELD && fields[key.replace(/note$/, 'absence')] === DEL_FIELD)) { showToast('مسح الملاحظة يتطلب تسجيل الحضور أو حذف الحالة كاملة', 'error'); return false; }
                 } else if (path === 'hijri' || path === 'criteria' || path === 'criteriaPoints' || path === 'sardAccreditation') {
                     // حقول اليوم الموجودة مسبقاً، بما فيها تصفير السرد.
                 } else if (/^entries\.[^.]+$/.test(path)) {
@@ -5502,6 +5677,7 @@
         
         function updateAllUIs() {
             updateSchoolCalendarAlert();
+            updateGeneralAttendanceUI();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
             processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
             if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
@@ -7315,6 +7491,17 @@
             if (!commitStudentPatch(student, fields)) return; updateAllUIs(); if(!curr) showToast(`تم تحضير الطالب ${escapeHTML(student.name)}`); }
 
         let attEditStudentId = null; let attEditChoice = null; let attendanceDateFollowsToday = true;
+        function lastSchoolDateBeforeToday() {
+            const season = window.almahraPrograms.getCurrentSeason();
+            const date = schoolCivilDate(todayStr);
+            date.setDate(date.getDate() - 1);
+            if (formatDateLocal(date) > season.termEnd) date.setTime(schoolCivilDate(season.termEnd).getTime());
+            for (; formatDateLocal(date) >= season.termStart; date.setDate(date.getDate() - 1)) {
+                const dateStr = formatDateLocal(date);
+                if (getSchoolDayInfo(dateStr).isSchoolDay) return dateStr;
+            }
+            return '';
+        }
         function openAttendanceEditModal(id, chooseAbsent = false) {
             refreshToday();
             if (!requireSchoolCalendar()) return;
@@ -7323,10 +7510,17 @@
             document.getElementById('attEditStudentName').innerText = student.name;
             const dateInput = document.getElementById('attEditDateInput');
             dateInput.max = todayStr; dateInput.value = todayStr;
+            if (isGeneralProgram() && !getSchoolDayInfo(todayStr).isSchoolDay) dateInput.value = lastSchoolDateBeforeToday();
             document.getElementById('attEditStatusDisplay').classList.add('hidden');
-            attendanceDateFollowsToday = true;
-            if (loadAttendanceForDate() === false) return;
-            if (isGeneralProgram() && chooseAbsent) setAttendanceEditChoice(false);
+            attendanceDateFollowsToday = dateInput.value === todayStr;
+            if (dateInput.value) {
+                if (loadAttendanceForDate() === false) return;
+            } else {
+                document.getElementById('attEditAbsence').value = '';
+                document.getElementById('attEditNote').value = '';
+                updateAttendanceEditButtons();
+            }
+            if (isGeneralProgram() && chooseAbsent && dateInput.value) setAttendanceEditChoice(false);
             const modal = document.getElementById('attendanceEditModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
@@ -7357,7 +7551,11 @@
         function setAttendanceEditChoice(val) { attEditChoice = val; updateAttendanceEditButtons(); }
         function updateAttendanceEditButtons() {
             const presentBtn = document.getElementById('attEditPresentBtn'); const absentBtn = document.getElementById('attEditAbsentBtn');
-            document.getElementById('generalAbsenceFields').classList.toggle('hidden', !isGeneralProgram() || attEditChoice);
+            document.getElementById('generalAbsenceFields').classList.toggle('hidden', !isGeneralProgram() || attEditChoice !== false);
+            if (isGeneralProgram() && attEditChoice === null) {
+                presentBtn.className = absentBtn.className = "py-3 rounded-xl font-black text-lg border-4 border-slate-300 bg-white text-slate-600 transition-all";
+                return;
+            }
             if (attEditChoice) {
                 presentBtn.className = "py-3 rounded-xl font-black text-lg border-4 border-emerald-500 bg-emerald-500 text-white transition-all";
                 absentBtn.className = "py-3 rounded-xl font-black text-lg border-4 border-slate-300 bg-white text-slate-600 transition-all";
@@ -7373,6 +7571,7 @@
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             if (!requireSchoolDay(dateStr, true)) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
+            if (isGeneralProgram() && attEditChoice === null) return;
             const fields = { [`history.${dateStr}.attended`]: attEditChoice };
             if (isGeneralProgram()) {
                 if (attEditChoice) {
