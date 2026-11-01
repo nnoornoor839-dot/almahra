@@ -353,10 +353,11 @@ test('scope: all existing writes, points, settings and deferred group readers re
         'markPresent', 'saveGeneralAbsence', 'launchThreeKnights', 'saveCurrentThreeKnights',
         'getCumulativeStats', 'getPointsBreakdown', 'getProgramSettings',
         'getWeeklyPointChampions', 'getLastCompletedWeekRange', 'applyGroupWinnerForDate']) {
-        // Step 7 adds only the general undo guard to recitation saving.
+        // Only the exact general undo and quick-entry guards are exempt.
         const current = source(name).replaceAll('\r\n', '\n');
+        const quickGuard = "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }\n";
         const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
-        assert.equal(name === 'saveSmartProgress' ? current.replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);
+        assert.equal(name === 'saveSmartProgress' ? current.replace(quickGuard, '').replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
     // Manager-requested validation message is the sole change to this save function.
     assert.equal(source('saveAttendanceEdit').replace("{ showToast('اختر حاضر أو غائب', 'error'); return; }", 'return;').replaceAll('\r\n', '\n'),

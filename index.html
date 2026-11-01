@@ -641,6 +641,13 @@
         .card-rank-2, .card-rank-3 { border: 2px solid #cbd5e1; background: linear-gradient(to bottom, #f8fafc, #ffffff); }
         .card-rank-top20 { border: 2px solid #34d399; }
         
+        #smartModal.smart-general > div { max-height: 94dvh; overflow-y: auto; }
+        #smartModal.smart-general > div > div:first-child { padding: 16px; }
+        #smartModal.smart-general h2 { font-size: 1.75rem; }
+        #smartModal.smart-general #smartUndoRow { padding: 0; border: 0; flex: 2; }
+        #generalQuickPanels label { display: block; font-weight: 700; margin-top: 8px; }
+        #generalQuickPanels select, #generalQuickPanels input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; min-height: 44px; }
+        #generalQuickPanels button { min-height: 44px; }
     </style>
 
     <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
@@ -1824,6 +1831,16 @@
                 <button id="tabExamPrepBtn" onclick="switchSmartTab('examprep')" class="flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent"><i class="fas fa-graduation-cap"></i> الاستعداد للاختبار</button>
             </div>
 
+            <div id="generalQuickSection" class="hidden" dir="rtl">
+                <fieldset id="generalQuickFields" class="p-4 md:p-6 space-y-4 disabled:opacity-60">
+                    <div id="generalQuickPanels" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="generalCriteriaHost"></div>
+                    <p id="generalQuickPreview" class="text-center text-lg font-black text-emerald-800" aria-live="polite"></p>
+                </fieldset>
+                <div id="generalQuickFooter" class="sticky bottom-0 bg-white border-t border-slate-200 p-3 flex flex-wrap items-center gap-3">
+                    <button id="generalQuickSaveBtn" type="button" onclick="saveGeneralQuickEntry()" class="flex-1 bg-emerald-600 text-white text-2xl font-black rounded-xl p-3 disabled:opacity-50">حفظ</button>
+                </div>
+            </div>
             <div id="smartDailySection" class="block">
                 <div class="p-6 md:p-8 bg-white space-y-6">
                     <div>
@@ -5094,12 +5111,15 @@
             const dir = student.direction === 'down' ? 'down' : 'up';
             // الرجوع إلى المؤشر القديم للطالب القديم فقط (لا حقل frontierBase أصلاً)؛ وجود الحقل ولو null يمنعه،
             // وإلا عاد الحدّ إلى نهاية تسجيل محذوف كان قد كتب lastDaily* (Sol)
-            const base = ('frontierBase' in student) ? student.frontierBase : ((student.lastDailySurah || student.lastSurah) && (student.lastDailyAyah || student.lastAyah)
+            const base = isGeneralProgram() ? (('frontierBase' in student) ? student.frontierBase
+                : student.lastSurah && student.lastAyah ? { surah: Number(student.lastSurah), ayah: Number(student.lastAyah) } : null)
+                : ('frontierBase' in student) ? student.frontierBase : ((student.lastDailySurah || student.lastSurah) && (student.lastDailyAyah || student.lastAyah)
                 ? { surah: parseInt(student.lastDailySurah || student.lastSurah), ayah: parseInt(student.lastDailyAyah || student.lastAyah) } : null);
             let f = base ? { surah: base.surah, ayah: base.ayah } : null;
             if (!measureReady()) return f;
             Object.keys(student.history || {}).sort().forEach(ds => Object.values((student.history[ds] || {}).entries || {}).forEach(e => {
                 if (!e || e.kind !== 'new' || (!e.iv && !e.spec)) return;
+                if (isGeneralProgram() && e.grade === 'repeat') return;
                 try { measureEntry(e); } catch (err) { return; }   // ما يرفضه dayStats (تكرار ٠، مقطع خارج المصحف) لا يقدّم الحدّ (Sol)
                 let p; try { p = endPointOf(e, dir); } catch (err) { return; }
                 if (!f || isFurther(p.surah, p.ayah, f.surah, f.ayah, dir)) f = p;
@@ -6424,6 +6444,8 @@
                 examBtn.className = "flex-1 py-3 rounded-xl font-black text-lg md:text-xl bg-white text-purple-600 shadow-sm transition-all border-b-4 border-purple-500";
                 examSec.classList.remove('hidden');
             }
+            dailySec.style.display = isGeneralProgram() ? 'none' : '';
+            document.getElementById('generalQuickSection').classList.toggle('hidden', !isGeneralProgram() || tab !== 'daily');
         }
 
         // ================================================================
@@ -6929,6 +6951,7 @@
         }
 
         function updateGrandTotal() {
+            if (isGeneralProgram()) updateGeneralQuickPreview();
             const sard = (isGeneralProgram() ? Number : parseInt)(document.getElementById('resWeightedPoints')?.innerText) || 0;
             const crit = parseInt(document.getElementById('criteriaTotal')?.innerText) || 0;
             const el = document.getElementById('resGrandTotal');
@@ -6952,7 +6975,287 @@
             heard.value = settings.teachers.some(t => t.id === heardBy) ? heardBy : '';
         }
 
+        // مؤشرا العام مشتقان؛ «يُعاد» لا يقدّم الجديد.
+        function computeLastReview(student) {
+            let last = null, at = -Infinity;
+            for (const day of Object.values(student?.history || {})) {
+                for (const entry of Object.values(day?.entries || {})) {
+                    if (entry?.kind !== 'review' || (entry.at || 0) < at) continue;
+                    try {
+                        measureEntry(entry);
+                        last = endPointOf(entry, student.direction === 'down' ? 'down' : 'up');
+                        at = entry.at || 0;
+                    } catch (err) { /* التسجيل الفاسد لا يغيّر المقترح */ }
+                }
+            }
+            return last;
+        }
+        function hasGeneralAcceptedNew(student) {
+            return Object.values(student?.history || {}).some(day => Object.values(day?.entries || {}).some(entry => {
+                if (entry?.kind !== 'new' || entry.grade === 'repeat') return false;
+                try { return measureEntry(entry).ayahs > 0; } catch (err) { return false; }
+            }));
+        }
+        function generalNextPoint(point, dir) {
+            const first = { surah: dir === 'down' ? 1 : 114, ayah: 1 };
+            if (!point) return first;
+            const ref = quranMeta.surahs.references[point.surah - 1];
+            if (point.ayah < ref.numberOfAyahs) return { surah: point.surah, ayah: point.ayah + 1 };
+            const surah = point.surah + (dir === 'down' ? 1 : -1);
+            return surah >= 1 && surah <= 114 ? { surah, ayah: 1 } : null;
+        }
+        function generalQuickSuggestions(student) {
+            const dir = student.direction === 'down' ? 'down' : 'up', frontier = computeFrontier(student);
+            const locked = hasGeneralAcceptedNew(student), review = computeLastReview(student);
+            const first = generalNextPoint(null, dir);
+            // أول محاولة «يُعاد»: نعيد بدايتها المختارة، دون تحويلها إلى حدّ محفوظ.
+            let attemptedStart = null, attemptedAt = -Infinity;
+            if (!locked) for (const day of Object.values(student.history || {})) {
+                for (const entry of Object.values(day?.entries || {})) {
+                    if (entry?.kind !== 'new' || entry.grade !== 'repeat' || !entry.spec?.from || (entry.at || 0) < attemptedAt) continue;
+                    try {
+                        QuranMeasure.specToIntervals({ spec: entry.spec }); measureEntry(entry);
+                        attemptedStart = { surah: entry.spec.from[0], ayah: entry.spec.from[1] };
+                        attemptedAt = entry.at || 0;
+                    } catch (err) { /* المحاولة الفاسدة لا تغيّر البداية */ }
+                }
+            }
+            const reached = review && frontier && !isFurther(frontier.surah, frontier.ayah, review.surah, review.ayah, dir);
+            return { locked, frontier, newStart: locked ? generalNextPoint(frontier, dir)
+                : attemptedStart || (student.lastSurah && student.lastAyah ? { surah: Number(student.lastSurah), ayah: Number(student.lastAyah) } : first),
+                reviewStart: !review || reached ? first : generalNextPoint(review, dir) || first };
+        }
+        function generalPointLabel(point) {
+            const name = quranMeta.surahs.references[point.surah - 1].name.replace('سُورَةُ ', '').replace(/آ/g, 'آ')
+                .replace(/[ـً-ٰٟۖ-ۭ]/g, '').replace(/ٱ/g, 'ا').replace(/إ$/, 'أ');
+            return `${name} ${Number(point.ayah).toLocaleString('ar-SA', { useGrouping: false })}`;
+        }
+        const generalQuickEntry = { grades: { new: '', review: '' }, newStart: null, locked: false, previewKey: null, homes: null, context: null };
+        function generalQuickContext(student) {
+            return { programId: window.almahraPrograms.getCurrentProgramId(), seasonId: window.almahraPrograms.getCurrentSeasonId(),
+                studentId: student.id, sid: student.sid, todayStr };
+        }
+        function generalQuickContextMatches(context) {
+            const student = students.find(s => s.id === currentEditingStudentId);
+            return !!context && !!student && context.programId === window.almahraPrograms.getCurrentProgramId()
+                && context.seasonId === window.almahraPrograms.getCurrentSeasonId() && context.studentId === student.id
+                && context.sid === student.sid && context.todayStr === todayStr;
+        }
+        // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.
+        function invalidateGeneralQuickEntry() {
+            if (!generalQuickEntry.context) return;
+            generalQuickEntry.context = null;
+            document.getElementById('generalQuickSection').dataset.ready = 'false';
+            closeSmartModal(true);
+        }
+        window.addEventListener('almahra-program-changed', invalidateGeneralQuickEntry);
+        function moveGeneralQuickSections(general) {
+            const criteria = document.getElementById('criteriaSection'), undo = document.getElementById('smartUndoRow');
+            if (!generalQuickEntry.homes) generalQuickEntry.homes = [criteria, undo].map(el => ({ el, parent: el.parentNode, next: el.nextSibling }));
+            if (general) {
+                document.getElementById('generalCriteriaHost').appendChild(criteria);
+                document.getElementById('generalQuickFooter').appendChild(undo);
+            } else {
+                generalQuickEntry.homes.forEach(({ el, parent, next }) => parent.insertBefore(el, next));
+            }
+        }
+        function initGeneralQuickEntry(student) {
+            document.getElementById('generalQuickSection').dataset.ready = 'true';
+            const suggestions = generalQuickSuggestions(student);
+            Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,
+                locked: suggestions.locked, previewKey: null, context: generalQuickContext(student) });
+            const options = quranMeta.surahs.references.map(s => `<option value="${s.number}">${escapeHTML(s.name)}</option>`).join('');
+            const rangeFields = (kind, edge) => `<div class="grid grid-cols-2 gap-2"><label>السورة<select id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select></label><label>الآية<input id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" oninput="updateGeneralQuickPreview()"></label></div>`;
+            document.getElementById('generalQuickPanels').innerHTML = ['new', 'review'].map(kind => `<section class="rounded-2xl border p-4 ${kind === 'new' ? 'bg-emerald-50 border-emerald-200' : 'bg-blue-50 border-blue-200'}">
+                <h3 class="text-2xl font-black">${kind === 'new' ? 'الجديد' : 'المراجعة'}</h3>
+                ${kind === 'new' && suggestions.locked ? `<p class="mt-3 font-bold">${suggestions.newStart ? 'من: ' + escapeHTML(generalPointLabel(suggestions.newStart)) : 'اكتمل المصحف'}</p>`
+                    : `${kind === 'new' ? '<p class="text-sm mt-2">أول تسميع جديد: حدّد بدايته</p>' : '<p class="text-sm mt-2">البداية مقترحة ويمكن تعديلها</p>'}<p class="font-bold mt-2">من</p>${rangeFields(kind, 'from')}`}
+                <p class="font-bold mt-3">إلى</p>${rangeFields(kind, 'to')}
+                <div id="quick_${kind}_grades" class="flex flex-wrap gap-2 mt-4" aria-label="تقدير ${kind === 'new' ? 'الجديد' : 'المراجعة'}"></div>
+            </section>`).join('');
+            for (const kind of ['new', 'review']) {
+                const start = (kind === 'new' ? suggestions.newStart : suggestions.reviewStart) || generalNextPoint(null, student.direction);
+                for (const edge of ['from', 'to']) {
+                    if (kind === 'new' && edge === 'from' && suggestions.locked) continue;
+                    document.getElementById(`quick_${kind}_${edge}Surah`).value = start.surah;
+                    document.getElementById(`quick_${kind}_${edge}Ayah`).value = start.ayah;
+                    document.getElementById(`quick_${kind}_${edge}Ayah`).max = quranMeta.surahs.references[start.surah - 1].numberOfAyahs;
+                }
+            }
+            moveGeneralQuickSections(true);
+            let allButton = document.getElementById('generalCriteriaAllBtn');
+            if (!allButton) {
+                allButton = document.createElement('button'); allButton.id = 'generalCriteriaAllBtn'; allButton.type = 'button';
+                allButton.className = 'w-full p-3 mb-3 rounded-xl bg-amber-100 text-amber-900 font-black';
+                allButton.textContent = '✓ استوفى المعايير'; allButton.onclick = fulfillGeneralCriteria;
+                document.getElementById('criteriaSection').prepend(allButton);
+            }
+            allButton.hidden = false;
+            renderGeneralQuickGrades();
+            updateGeneralQuickPreview();
+        }
+        function renderGeneralQuickGrades() {
+            const grades = getProgramSettings().grades;
+            for (const kind of ['new', 'review']) {
+                const box = document.getElementById(`quick_${kind}_grades`);
+                box.replaceChildren();
+                grades.forEach(grade => {
+                    const button = document.createElement('button'), selected = generalQuickEntry.grades[kind] === grade.id;
+                    button.type = 'button'; button.textContent = grade.name;
+                    button.className = 'rounded-xl border-2 px-3 py-2 font-bold ' + (selected ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-700');
+                    button.setAttribute('aria-pressed', String(selected));
+                    button.onclick = () => {
+                        generalQuickEntry.grades[kind] = generalQuickEntry.grades[kind] === grade.id ? '' : grade.id;
+                        renderGeneralQuickGrades(); updateGeneralQuickPreview();
+                    };
+                    box.appendChild(button);
+                });
+            }
+        }
+        function quickSurahChanged(kind, edge) {
+            const surah = Number(document.getElementById(`quick_${kind}_${edge}Surah`).value);
+            const input = document.getElementById(`quick_${kind}_${edge}Ayah`);
+            const max = quranMeta.surahs.references[surah - 1].numberOfAyahs;
+            input.max = max;
+            if (edge === 'to') input.value = max;
+            else if (Number(input.value) > max) input.value = max;
+            updateGeneralQuickPreview();
+        }
+        function fulfillGeneralCriteria() {
+            if (!isGeneralProgram() || generalUndoInProgress) return;
+            document.querySelectorAll('.crit-box').forEach(cb => { cb.checked = Number(cb.dataset.pts) >= 0; });
+            updateCriteriaTotal();
+        }
+        function generalCriteriaChange(student) {
+            const selection = getCriteriaSelection(), key = sel => JSON.stringify(Object.keys(sel).sort().map(k => [k, sel[k]]));
+            const changed = criteriaAtOpen.sel === null || key(selection) !== key(criteriaAtOpen.sel);
+            const points = Object.values(selection).reduce((a, b) => a + b, 0);
+            return { selection, changed, points, delta: changed ? points - (student.history?.[todayStr]?.criteriaPoints || 0) : 0 };
+        }
+        // المعاينة والحفظ يقرآن الحساب نفسه، بلا قصّ للآية الفارغة أو الخارجة عن السورة.
+        function calculateGeneralQuickEntry(student, settings = getProgramSettings()) {
+            const dir = student.direction === 'down' ? 'down' : 'up', sections = [];
+            const suggestions = generalQuickSuggestions(student);
+            if (generalQuickEntry.grades.new && (suggestions.locked !== generalQuickEntry.locked
+                || (suggestions.locked && JSON.stringify(suggestions.newStart) !== JSON.stringify(generalQuickEntry.newStart))))
+                throw new Error('تغيّر آخر جديد؛ أعد فتح النافذة لمراجعة البداية');
+            for (const kind of ['new', 'review']) {
+                const grade = generalQuickEntry.grades[kind];
+                if (!grade) continue;
+                const label = kind === 'new' ? 'الجديد' : 'المراجعة';
+                const read = edge => [Number(document.getElementById(`quick_${kind}_${edge}Surah`).value), Number(document.getElementById(`quick_${kind}_${edge}Ayah`).value)];
+                const from = kind === 'new' && generalQuickEntry.locked
+                    ? generalQuickEntry.newStart && [generalQuickEntry.newStart.surah, generalQuickEntry.newStart.ayah] : read('from');
+                const to = read('to');
+                let measured;
+                try {
+                    if (!from || [...from, ...to].some(n => !Number.isInteger(n) || n < 1)
+                        || isFurther(from[0], from[1], to[0], to[1], dir)) throw new Error();
+                    measured = QuranMeasure.measure({ spec: { from, to } });
+                    if (!measured.ayahs) throw new Error();
+                } catch (err) { throw new Error(`قسم ${label}: اختر مقطعاً صحيحاً غير فارغ أو مقلوب`); }
+                const points = generalEntryPoints({ lines: measured.lines, kind, gradeId: grade, settings });
+                sections.push({ kind, grade, mult: points.mult, points: points.points, spec: { from, to }, iv: measured.intervals, rep: 1 });
+            }
+            const criteria = generalCriteriaChange(student);
+            const total = roundPointTotal(sections.reduce((sum, entry) => sum + entry.points, 0) + criteria.delta);
+            return { sections, criteria, total, key: JSON.stringify([sections, criteria.selection, criteria.delta, total]) };
+        }
+        function updateGeneralQuickPreview() {
+            if (!isGeneralProgram()) return;
+            const student = students.find(s => s.id === currentEditingStudentId);
+            if (!student || !document.getElementById('quick_new_toSurah')) return;
+            const preview = document.getElementById('generalQuickPreview');
+            try {
+                const calculation = calculateGeneralQuickEntry(student);
+                const points = kind => calculation.sections.find(s => s.kind === kind)?.points || 0;
+                generalQuickEntry.previewKey = calculation.key;
+                preview.textContent = `الجديد ${points('new')} + المراجعة ${points('review')} + فرق الانضباط (${calculation.criteria.delta}) = ${calculation.total} نقطة`;
+            } catch (err) { generalQuickEntry.previewKey = null; preview.textContent = err.message; }
+        }
+        function generalReviewExceedsFrontier(student, sections) {
+            if (!hasGeneralAcceptedNew(student) && !sections.some(e => e.kind === 'new' && e.grade !== 'repeat')) return null;
+            const after = structuredClone(student);
+            const day = after.history[todayStr] ||= {}, entries = day.entries ||= {};
+            sections.forEach((entry, i) => { entries['quick_preview_' + i] = entry; });
+            const frontier = computeFrontier(after), review = sections.find(e => e.kind === 'review');
+            if (!frontier || !review) return null;
+            const dir = student.direction === 'down' ? 'down' : 'up';
+            // أبعد نقطة تشمل الآيات الداخلية حتى لو دمج الميزان عدة سور في فترة واحدة.
+            const end = endPointOf(review, dir);
+            return isFurther(end.surah, end.ayah, frontier.surah, frontier.ayah, dir) ? frontier : null;
+        }
+        async function saveGeneralQuickEntry() {
+            if (!isGeneralProgram() || generalUndoInProgress || !prepareSchoolDay() || !canWriteCloud()) return;
+            const student = students.find(s => s.id === currentEditingStudentId);
+            if (!student) return showToast('حدث خطأ، لا يمكن العثور على بيانات الطالب', 'error');
+            const context = generalQuickContext(student), formContext = generalQuickEntry.context;
+            if (!generalQuickContextMatches(formContext)) { showToast('تغيّر سياق التسجيل؛ أعد فتح النافذة', 'error'); return; }
+            const settings = getProgramSettings();
+            let heardBy, calculation;
+            try { heardBy = generalRecitationTeacher(student, settings); }
+            catch (err) { showToast(err.message, 'error'); return; }
+            if (!requireQuranMeasure()) return;
+            try { calculation = calculateGeneralQuickEntry(student, settings); }
+            catch (err) { showToast(err.message, 'error'); return; }
+            if (calculation.key !== generalQuickEntry.previewKey) {
+                updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;
+            }
+            const dateStr = todayStr, frontier = generalReviewExceedsFrontier(student, calculation.sections);
+            if (frontier && !confirm(`المراجعة تتعدّى محفوظ الطالب (حدّه: ${generalPointLabel(frontier)})، هل تحفظ؟`)) return;
+            if (!prepareSchoolDay() || dateStr !== todayStr || !generalQuickContextMatches(context)
+                || generalQuickEntry.context !== formContext) { showToast('تغيّر سياق التسجيل؛ أعد فتح النافذة', 'error'); return; }
+            const p = `history.${todayStr}.`, fields = Object.assign(pinBaseFields(student), {
+                [p + 'attended']: true, [p + 'hijri']: hijriDateStr, [p + 'absence']: DEL_FIELD, [p + 'note']: DEL_FIELD });
+            const entryPatches = calculation.sections.map(entry => buildEntryPatch(student, todayStr, { ...entry, heardBy }, settings));
+            if (entryPatches.length === 2) {
+                // قد يضيف الباني تسجيلات ترحيل قديمة؛ نرتّب الجديد والمراجعة وحدهما.
+                const savedEntry = (patch, kind) => Object.entries(patch).find(([key, entry]) => key.startsWith(p + 'entries.') && entry.kind === kind)[1];
+                savedEntry(entryPatches[1], 'review').at = savedEntry(entryPatches[0], 'new').at + 1;
+            }
+            entryPatches.forEach(patch => Object.assign(fields, patch));
+            if (calculation.criteria.changed) {
+                fields[p + 'criteria'] = calculation.criteria.selection;
+                fields[p + 'criteriaPoints'] = calculation.criteria.points;
+            }
+            const after = structuredClone(student);
+            applyFieldsLocally(after, fields);
+            const last = computeLastDaily(after);
+            Object.assign(fields, { lastDailySurah: last ? (last.surah ?? null) : DEL_FIELD,
+                lastDailyAyah: last ? (last.ayah ?? null) : DEL_FIELD,
+                lastDailySardRange: last ? (last.range ?? null) : DEL_FIELD });
+            generalUndoInProgress = 'save'; updateGeneralUndoButton();
+            try {
+                if (!await commitGeneralStudentPatch(student, fields)) return;
+                if (!generalQuickContextMatches(context) || generalQuickEntry.context !== formContext) return;
+                updateAllUIs();
+                generalUndoInProgress = false;
+                closeSmartModal();
+                celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total);
+            } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }
+        }
+        function celebrateGeneralQuickEntry(student, totalAdded) {
+            if (totalAdded <= 0) { showToast(`تم تسجيل إنجاز ${escapeHTML(student.name)} بنجاح!`); return; }
+            const totalStats = getCumulativeStats(student), currentRank = getStudentRank(student.id);
+            const celModal = document.getElementById('knightCelebrationModal');
+            document.getElementById('celebrationTitle').innerText = 'تم تسجيل الإنجاز والتحصيل بنجاح! ✨';
+            document.getElementById('celebrationName').innerText = escapeHTML(student.name);
+            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded} نقطة جديدة مضافة للسباق 🎁`;
+            const totalEl = document.getElementById('celebrationTotalPointsContainer');
+            if (totalEl) {
+                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`;
+                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`;
+                document.getElementById('celebrationRank').classList.toggle('hidden', students.length > 1 && currentRank === students.length);
+                totalEl.classList.remove('hidden');
+            }
+            celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
+            if (!window.localConfettiInstance) window.localConfettiInstance = confetti.create(document.getElementById('celebrationCanvas'), { resize: true });
+            window.localConfettiInstance({ particleCount: 150, spread: 85, origin: { y: 0.5 } });
+            setTimeout(() => { closeKnightCelebration(); }, 7000);
+        }
+
         function openSmartModal(id) {
+            if (isGeneralProgram() && generalUndoInProgress) return;
             if (!prepareSchoolDay()) return;
             // حماية: لا إدخال في موسم مؤرشف
             if (!canWriteView()) return;
@@ -6990,6 +7293,11 @@
             updateAyahMax('start'); updateAyahMax('end'); setSardType('review');
             renderCriteriaList(student);
             criteriaAtOpen.sel = getCriteriaSelection();   // ما رسمته النافذة من السجل؛ الحفظ يقارن به
+            if (isGeneralProgram()) initGeneralQuickEntry(student);
+            else if (generalQuickEntry.homes) {
+                moveGeneralQuickSections(false);
+                document.getElementById('generalCriteriaAllBtn').hidden = true;
+            }
 
             selectedMinor = null; selectedJuzs = []; document.querySelectorAll('.minor-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.juz-checkbox').forEach(cb => { cb.checked = false; cb.disabled = false; }); const halfCb = document.getElementById('isHalfJuz'); if(halfCb) { halfCb.checked = false; halfCb.disabled = false; } updateSmartButton();
 
@@ -7003,9 +7311,10 @@
             const modal = document.getElementById('smartModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
         }
         
-        function closeSmartModal() { document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
+        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
         
         function saveSmartProgress() {
+            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }
             if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }
             if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
@@ -7647,13 +7956,19 @@
         let generalUndoInProgress = false;
         function updateGeneralUndoButton() {
             const saveButton = document.getElementById('smartSaveBtn');
-            if (saveButton) saveButton.disabled = isGeneralProgram() && generalUndoInProgress;
+            if (saveButton) saveButton.disabled = isGeneralProgram() && !!generalUndoInProgress;
+            const quickSave = document.getElementById('generalQuickSaveBtn'), quickFields = document.getElementById('generalQuickFields');
+            if (quickSave) {
+                quickSave.disabled = !!generalUndoInProgress || isWriteLockedView();
+                quickSave.textContent = generalUndoInProgress === 'save' ? 'جارٍ الحفظ…' : 'حفظ';
+            }
+            if (quickFields) quickFields.disabled = !!generalUndoInProgress;
             const row = document.getElementById('smartUndoRow'), button = document.getElementById('smartUndoBtn');
             if (!row || !button) return;
             row.classList.toggle('hidden', !isGeneralProgram());
             const target = getGeneralUndoTarget(students.find(s => s.id === currentEditingStudentId));
-            button.disabled = generalUndoInProgress || !target || isWriteLockedView();
-            button.textContent = generalUndoInProgress ? 'جارٍ التراجع…'
+            button.disabled = !!generalUndoInProgress || !target || isWriteLockedView();
+            button.textContent = generalUndoInProgress === 'save' ? 'جارٍ الحفظ…' : generalUndoInProgress ? 'جارٍ التراجع…'
                 : target ? '↩️ تراجع عن آخر تسجيل: ' + generalUndoLabel(target.entry) : '↩️ لا يوجد تسجيل لك اليوم للتراجع عنه';
         }
         async function undoLastGeneralEntry() {
@@ -7662,6 +7977,7 @@
             // لا يوجد تراجع معلّق؛ الهدف والمؤشرات مشتقة من حالة الطالب الحالية.
             const target = getGeneralUndoTarget(student);
             if (!target) { updateGeneralUndoButton(); return; }
+            const context = generalQuickContext(student);
             const dateStr = todayStr, label = generalUndoLabel(target.entry);
             if (!confirm('التراجع عن: ' + label + '؟')) return;
             const schoolDayReady = prepareSchoolDay();
@@ -7682,6 +7998,9 @@
             updateGeneralUndoButton();
             try {
                 if (!await commitGeneralStudentPatch(student, fields)) return;
+                if (!generalQuickContextMatches(context)) return;
+                const current = students.find(s => s.id === context.studentId && s.sid === context.sid);
+                if (document.getElementById('generalQuickSection')?.dataset?.ready === 'true') initGeneralQuickEntry(current);
                 updateAllUIs(); showToast('تم التراجع عن: ' + label, 'success');
             } finally {
                 generalUndoInProgress = false;
@@ -8356,6 +8675,7 @@
         // تبسيط نافذة العام وحدها، مع إعادة العرض عند تبديل البرنامج.
         function updateSmartSimplification() {
             const general = isGeneralProgram(), hideGolden = generalGoldenHidden();
+            document.getElementById('smartModal').classList.toggle('smart-general', general);
             document.getElementById('smartResetRow').style.display = general ? 'none' : '';
             document.getElementById('tabMasteryBtn').style.display = hideGolden ? 'none' : '';
             document.getElementById('smartTabs').style.display = hideGolden ? 'none' : '';
@@ -9961,6 +10281,9 @@
                         document.getElementById('lblReviewMult').textContent = `(×${settings.kindMult.review})`;
                         document.getElementById('lblNewMult').textContent = `(×${settings.kindMult.newMemorization})`;
                         calculateQuran();
+                        if (document.getElementById('generalQuickSection')?.dataset?.ready === 'true') {
+                            renderGeneralQuickGrades(); updateGeneralQuickPreview();
+                        }
                     }
                 }
                 if (typeof loadCurrentThreeKnights === 'function') loadCurrentThreeKnights();

@@ -38,7 +38,11 @@ function harness() {
     const programs = { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season.id,
         getCurrentSeason: () => state.season, isCurrentSeasonArchived: () => state.archived,
         updateSeasonCalendar: (...args) => state.calendarSave ? state.calendarSave(...args) : write('calendar', ...args) };
-    const ctx = vm.createContext({ console, Date: Clock, Intl, structuredClone, crypto: { randomUUID: () => 'random-id' },
+    const ctx = vm.createContext({
+        // Isolate calendar guards; section math and the form DOM are exercised in step8a.
+        pinBaseFields: () => ({}), computeLastDaily: () => null, updateGeneralUndoButton() {},
+        calculateGeneralQuickEntry: () => ({ sections: [], criteria: { changed: false }, total: 0, key: 'attendance-only' }),
+        generalReviewExceedsFrontier: () => null, celebrateGeneralQuickEntry() {}, console, Date: Clock, Intl, structuredClone, crypto: { randomUUID: () => 'random-id' },
         document: { getElementById: element, querySelectorAll: selector => selector === '.school-calendar-row' ? state.rows : [] },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } },
             almahraData: { getActiveSeasonId: () => state.season.id, isReadOnly: () => state.archived,
@@ -68,11 +72,12 @@ function harness() {
     install('isGeneralProgram', 'isWorkingDay', 'escapeHTML', 'schoolCivilDate', 'setupDatesAndTimezone', 'refreshToday',
         'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
-        'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveSmartProgress',
+        'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveGeneralQuickEntry', 'commitGeneralStudentPatch', 'generalQuickContext', 'generalQuickContextMatches',
         'saveStudent', 'openStudentModal', 'startExcelImport', 'handleExcelImport', 'confirmExcelImport', 'confirmGeneralExcelImport',
         'isValidStudentBackup', 'importNuclearBackup', 'openSmartModal', 'loadAttendanceForDate', 'saveAttendanceEdit',
         'openAttendanceEditModal', 'saveSmartMastery', 'saveExamPrepProgress', 'resetStudentToday', 'markPresent');
-    run('setupDatesAndTimezone()');
+    run("const generalQuickEntry = { previewKey: 'attendance-only', context: null };");
+    run('setupDatesAndTimezone(); generalQuickEntry.context = generalQuickContext(students[0])');
     for (const id of ['startSurah', 'endSurah', 'startAyah', 'endAyah']) element(id).value = '1';
     element('disciplineOnlyCheck').checked = true;
     element('resWeightedPoints').innerText = '0';
@@ -279,7 +284,7 @@ test('mandatory calendar blocks every student/import/restore/registration/attend
     const h = harness(); delete h.state.season.calendar;
     for (const call of ['openStudentModal()', 'saveStudent()', 'startExcelImport()', 'handleExcelImport({})',
         'confirmExcelImport()', 'confirmGeneralExcelImport()', 'importNuclearBackup({})', 'openSmartModal(1)',
-        'saveSmartProgress()', 'saveSmartMastery()', 'saveExamPrepProgress()', 'resetStudentToday()', 'markPresent(1)',
+        'saveGeneralQuickEntry()', 'saveSmartMastery()', 'saveExamPrepProgress()', 'resetStudentToday()', 'markPresent(1)',
         'openAttendanceEditModal(1)', 'loadAttendanceForDate()', 'saveAttendanceEdit()']) {
         const before = h.state.messages.length; await h.run(call);
         assert.equal(h.state.messages.length, before + 1, call);
@@ -291,7 +296,7 @@ test('mandatory calendar blocks every student/import/restore/registration/attend
     assert.equal(h.run('requireSchoolCalendar()'), true);
     await h.run('saveStudent()'); assert.equal(h.state.writes.at(-1).kind, 'create');
     h.run('startExcelImport()'); assert.equal(h.state.clicked, 'excelFileInput');
-    h.run('saveSmartProgress()'); assert.equal(h.state.writes.at(-1).kind, 'patch');
+    await h.run('saveGeneralQuickEntry()'); assert.equal(h.state.writes.at(-1).kind, 'patch');
     h.run('saveAttendanceEdit()'); assert.equal(h.state.writes.at(-1).kind, 'patch');
     h.run("importNuclearBackup({ target: { files: [{}] } })");
     h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });
@@ -300,7 +305,7 @@ test('mandatory calendar blocks every student/import/restore/registration/attend
 
 test('holiday locks every history writer, including an already open form and a dated attendance edit; old records survive', async () => {
     const h = harness(); h.state.season.calendar = [holiday({ from: '2026-11-01', to: '2026-11-01' })];
-    for (const call of ['openSmartModal(1)', 'saveSmartProgress()', 'saveSmartMastery()', 'saveExamPrepProgress()',
+    for (const call of ['openSmartModal(1)', 'saveGeneralQuickEntry()', 'saveSmartMastery()', 'saveExamPrepProgress()',
         'resetStudentToday()', 'markPresent(1)', 'loadAttendanceForDate()', 'saveAttendanceEdit()']) {
         await h.run(call); assert.equal(h.state.messages.at(-1).message, 'اليوم إجازة: إجازة وهمية', call);
         assert.equal(h.state.writes.length, 0);
@@ -361,7 +366,7 @@ test('every non-school reason produces its specified save message', () => {
         ['2026-10-30T12:00:00Z', 'خارج الفصل الدراسي (2026-11-01 – 2026-12-31)'],
         ['2027-01-03T12:00:00Z', 'خارج الفصل الدراسي (2026-11-01 – 2026-12-31)']
     ]) {
-        h.state.now = instant; h.run('saveSmartProgress()');
+        h.state.now = instant; h.run('saveGeneralQuickEntry()');
         assert.equal(h.state.writes.length, 0); assert.equal(h.state.messages.at(-1).message, message);
     }
 });
@@ -432,7 +437,7 @@ test('bulk backup save checks completeness again in its delayed callback', () =>
     h.state.season.calendar = []; h.run('saveData()'); callbacks[1](); assert.equal(h.state.writes.length, 1);
 });
 
-test('Riyadh today and both header dates advance at 21:00 UTC; a form opened before midnight saves on the new day', () => {
+test('Riyadh today and both header dates advance at 21:00 UTC; quick entry requires reopening after midnight', async () => {
     const h = harness(); h.state.now = '2026-11-01T22:30:00Z';
     h.run('setupDatesAndTimezone()'); assert.equal(h.run('todayStr'), '2026-11-02');
     for (const [id, locale, options] of [
@@ -443,18 +448,21 @@ test('Riyadh today and both header dates advance at 21:00 UTC; a form opened bef
         assert.ok(h.element(id).innerText.startsWith(formatted));
     }
     h.state.now = '2026-11-01T20:59:59Z'; h.run('setupDatesAndTimezone()');
-    h.state.now = '2026-11-01T21:00:01Z'; h.run('saveSmartProgress()');
+    h.state.now = '2026-11-01T21:00:01Z'; await h.run('saveGeneralQuickEntry()');
+    assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /أعد فتح النافذة/);
+    h.run('generalQuickEntry.context = generalQuickContext(students[0])');
+    await h.run('saveGeneralQuickEntry()');
     const fields = h.state.writes.at(-1).args[1];
     assert.equal(fields['history.2026-11-02.attended'], true);
     assert.equal(Object.keys(fields).some(key => key.includes('2026-11-01')), false);
-    assert.equal(h.state.updates, 2); // refresh and successful save
+    assert.equal(h.state.updates, 2); // refresh and successful save after reopening
     assert.equal(h.element('attEditDateInput').value, '2026-11-02');
     assert.match(html, /setInterval\(refreshToday, 60000\)/);
 });
 
 test('midnight rechecks holidays before saving, while an explicitly selected older attendance date stays selected', () => {
     const h = harness(); h.state.now = '2026-11-01T20:59:59Z'; h.run('setupDatesAndTimezone()');
-    h.state.season.calendar = [holiday()]; h.state.now = '2026-11-01T21:00:01Z'; h.run('saveSmartProgress()');
+    h.state.season.calendar = [holiday()]; h.state.now = '2026-11-01T21:00:01Z'; h.run('saveGeneralQuickEntry()');
     assert.equal(h.state.writes.length, 0); assert.equal(h.state.messages.at(-1).message, 'اليوم إجازة: إجازة وهمية');
     h.run('attendanceDateFollowsToday = false'); h.element('attEditDateInput').value = '2026-11-01';
     h.state.now = '2026-11-02T21:00:01Z'; h.run('saveAttendanceEdit()');

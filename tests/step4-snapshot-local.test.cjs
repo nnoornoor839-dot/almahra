@@ -7,6 +7,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const programsStore = fs.readFileSync(path.join(__dirname, '..', 'programs-store.js'), 'utf8');
+const { harness: quickHarness, student: quickStudent, savedEntries } = require('./helpers/quick-entry-harness.cjs');
 const copy = value => JSON.parse(JSON.stringify(value));
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 function source(name, text = html) {
@@ -95,22 +96,21 @@ function harness() {
 }
 const stampedEntry = h => h.state.writes.find(w => w.kind === 'patch').args[1]['history.2026-11-01.entries.entry-1'];
 
-test('general sard stamps all three fields from one settings read, despite stale student stage and teacher', () => {
-    const h = harness(), s = student(1, { stage: 'g2', teacherId: 't2' }); h.setStudents([s]);
-    const first = copy(h.state.settings), second = copy(first);
+test('general quick sard stamps all three fields from one settings snapshot despite stale student copies', async () => {
+    const h = quickHarness(quickStudent({}, { stage: 'g2', teacherId: 't2' }));
+    h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();
+    const first = copy(h.state.settings), second = copy(first); let reads = 0;
     second.halaqas[0].stageId = 'g2'; second.halaqas[0].teacherId = 't2';
-    h.state.read = () => h.state.reads === 1 ? first : second;
-    // الحارس مفحوص مستقلاً؛ هنا نحصي قراءة الحفظ وحدها.
-    h.ctx.canWriteHistory = () => true;
-    const wait = deferred(); h.state.write = () => wait.promise;
-    assert.equal(h.recite(), undefined); assert.equal(h.state.closed, 1);
-    assert.equal(h.state.reads, 1);
-    const entry = stampedEntry(h);
-    assert.equal(entry.halaqaId, 'h1'); assert.equal(entry.stageId, 'g1'); assert.equal(entry.heardBy, 't1');
-    assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 1); assert.equal(entry.points, 5);
-    assert.deepEqual(entry.iv, [1, 1]); assert.equal(entry.by, 'synthetic-admin');
+    h.ctx.window.almahraPrograms.getSettings = () => ++reads === 1 ? first : second;
+    h.ctx.canWriteHistory = () => true; // حارس الكتابة له اختبارات مستقلة؛ نحصي قراءة الحفظ هنا.
+    const wait = deferred(); h.state.pending = wait.promise; const saving = h.save();
+    assert.equal(reads, 1); assert.equal(h.state.updates, 0);
+    const entry = savedEntries(h)[0];
+    assert.equal(entry.halaqaId, 'h1'); assert.equal(entry.stageId, 'stage1'); assert.equal(entry.heardBy, 't1');
+    assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 3); assert.equal(entry.by, 'fake-admin');
     assert.equal(JSON.stringify(entry).includes('undefined'), false);
-    wait.resolve({ success: true });
+    wait.resolve({ success: true }); await saving;
+    assert.equal(h.element('smartModal').classList.contains('hidden'), true);
 });
 
 for (const program of ['summer', 'review-day']) {
@@ -138,7 +138,8 @@ test('central builder stamps golden and exam when active, allows absent/inactive
             assert.equal(Object.keys(patch).some(k => k.includes('2026-10-31')), false);
         }
     }
-    assert.equal((html.match(/buildEntryPatch\(student, todayStr,/g) || []).length, 3);
+    // ٨أ تضيف مستهلك العام المستقل إلى المسارات الثلاثة القديمة، ولا تغيّر الباني.
+    assert.equal((html.match(/buildEntryPatch\(student, todayStr,/g) || []).length, 4);
 });
 
 test('used teacher change confirms today, appends exactly one audit and batches current season copies without touching history', async () => {
@@ -154,7 +155,9 @@ test('used teacher change confirms today, appends exactly one audit and batches 
     assert.deepEqual(h.state.prompts, ['سيصير معلم وهمي ثان معلم حلقة حلقة وهمية من اليوم. التسميعات السابقة تبقى باسم معلم وهمي أول.']);
     assert.deepEqual(h.state.writes[1].args[0], [{ type: 'update', id: 1, fields: { teacherId: 't2', stage: 'g1' } }]);
     assert.equal(current.teacherId, 't2'); assert.deepEqual(current.history, history); assert.deepEqual(archived, archivedBefore);
-    h.recite(); assert.equal(stampedEntry(h).heardBy, 't2');
+    const recitation = quickHarness(quickStudent({}, { ...current, history: {} })); recitation.state.settings = h.state.settings;
+    recitation.range('new', [114, 1], [114, 6]); recitation.grade('new'); recitation.preview();
+    await recitation.save(); assert.equal(savedEntries(recitation)[0].heardBy, 't2');
     assert.equal(current.history['2026-10-31'].entries.old.heardBy, 't1');
 });
 

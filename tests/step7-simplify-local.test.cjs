@@ -10,6 +10,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8').replaceAll('\r\n', '\n');
 const store = fs.readFileSync(path.join(root, 'programs-store.js'), 'utf8').replaceAll('\r\n', '\n');
 const baseline = cp.execFileSync('git', ['show', '6810c38:index.html'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
+const { harness: quickHarness, student: quickStudent, entry: quickEntry } = require('./helpers/quick-entry-harness.cjs');
 const copy = value => JSON.parse(JSON.stringify(value));
 function source(name, text = html) {
     const start = text.search(new RegExp(`(?:async )?function ${name}\\(`));
@@ -74,7 +75,7 @@ function harness(list = [student()]) {
         const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
     run(html.match(/let generalUndoInProgress = false;/)[0]);
     run(html.match(/const ivPairs = .*;/)[0]); run(html.match(/const measureEntry = .*;/)[0]); run(html.match(/const rangeLabelOf = .*;/)[0]);
-    install('isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'canWriteHistory', 'applyFieldsLocally', 'restoreStudent', 'commitStudentPatch', 'commitGeneralStudentPatch', 'computeFrontier', 'isFurther', 'endPointOf',
+    install('generalQuickContext', 'generalQuickContextMatches', 'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'canWriteHistory', 'applyFieldsLocally', 'restoreStudent', 'commitStudentPatch', 'commitGeneralStudentPatch', 'computeFrontier', 'isFurther', 'endPointOf',
         'pinBaseFields', 'computeLastDaily', 'getGeneralUndoTarget', 'generalUndoLabel', 'updateGeneralUndoButton', 'undoLastGeneralEntry',
         'updateSmartSimplification', 'switchSmartTab', 'dayAccreditationTexts', 'dayStats', 'getDayHarvest', 'saveProgramSettings');
     return { state, ctx, list, run, element, install, undo: () => run('undoLastGeneralEntry()'), target: () => run('getGeneralUndoTarget(students[0])') };
@@ -233,47 +234,21 @@ test('two clicks during pending undo send one request; success applies locally a
     await h.undo(); assert.equal(h.state.writes.length, 2); assert.equal(h.target(), null);
 });
 
-test('pending general undo blocks save before all work; completion restores saving and consistent lastDaily pointers', async () => {
-    const h = harness([student({ first: entry('new', 10), second: entry('review', 20) })]);
-    Object.assign(h.state.settings, { teachers: [{ id: 't1' }], grades: [{ id: 'good', percent: 100 }],
-        halaqas: [{ id: 'h1', active: true, teacherId: 't1', stageId: 's1' }], kindMult: { newMemorization: 1, review: 1 } });
-    h.list[0].halaqaId = 'h1';
-    Object.assign(h.ctx, { generalEntryPoints: require('../general-points.js').generalEntryPoints,
-        getCriteriaSelection: () => ({}), closeSmartModal() {}, escapeHTML: value => String(value),
-        getCumulativeStats: () => ({ tripPoints: 10 }), getStudentRank: () => 1,
-        confetti: { create: () => () => {} }, setTimeout() {} });
-    h.run("const hijriDateStr = 'synthetic-date', criteriaAtOpen = { sel: {} }; let currentSardType = 'new';");
-    h.run(html.match(/const newEntryId = .*;/)[0]);
-    h.install('getStudentHalaqa', 'generalRecitationTeacher', 'calculateRangeStats', 'makeEntry', 'buildEntryPatch', 'saveSmartProgress');
-    const name = h.ctx.quranMeta.surahs.references[66].name.replace('سُورَةُ ', '');
-    for (const id of ['startSurah', 'endSurah']) Object.assign(h.element(id), { value: '67', selectedIndex: 0, options: [{ text: name }] });
-    h.element('startAyah').value = '21'; h.element('endAyah').value = '25'; h.element('smartGrade').value = 'good';
-    h.element('resWeightedPoints').innerText = String(h.run("generalEntryPoints({ lines: calculateRangeStats(67, 21, 67, 25).lines, kind: currentSardType, gradeId: 'good', settings: getProgramSettings() }).points"));
-    const before = copy(h.list);
-    let resolveWrite;
-    h.state.pendingWrite = new Promise(resolve => { resolveWrite = resolve; });
-    const pending = h.undo();
-    assert.equal(h.element('smartSaveBtn').disabled, true);
-    assert.match(html, /id="smartSaveBtn"[^>]*disabled:opacity-50 disabled:cursor-not-allowed/);
+test('pending general undo blocks quick save before all work; completion restores saving and consistent lastDaily pointers', async () => {
+    const h = quickHarness(quickStudent({ first: quickEntry('new', [114, 1], [78, 10], 'good', 10),
+        second: quickEntry('review', [114, 1], [78, 20], 'good', 20) }));
+    const before = copy(h.s); let release;
+    h.state.pending = new Promise(resolve => { release = resolve; }); const pending = h.run('undoLastGeneralEntry()');
+    assert.equal(h.element('generalQuickSaveBtn').disabled, true);
     const prepare = h.ctx.prepareSchoolDay;
-    h.ctx.prepareSchoolDay = () => { assert.fail('blocked save must return before preparing the day'); };
-    for (const disciplineOnly of [false, true]) {
-        h.element('disciplineOnlyCheck').checked = disciplineOnly;
-        h.run('saveSmartProgress()');
-        assert.equal(h.state.writes.length, 1); assert.deepEqual(h.list, before);
-        assert.deepEqual(h.state.messages.at(-1), { message: 'انتظر حتى ينتهي التراجع', type: 'error' });
-        assert.equal(h.state.updates, 0);
-    }
-    h.ctx.prepareSchoolDay = prepare; h.element('disciplineOnlyCheck').checked = false;
-    resolveWrite({ success: true }); await pending; h.state.pendingWrite = null;
-    assert.equal(h.element('smartSaveBtn').disabled, false);
-    h.run('saveSmartProgress()'); await Promise.resolve();
-    assert.equal(h.state.writes.length, 2);
-    const entries = Object.values(h.list[0].history[today].entries);
-    assert.equal(entries.length, 2); assert.ok(entries.some(e => e.spec.to[1] === 25));
-    assert.deepEqual({ surah: h.list[0].lastDailySurah, ayah: h.list[0].lastDailyAyah, range: h.list[0].lastDailySardRange },
+    h.ctx.prepareSchoolDay = () => assert.fail('blocked quick save must return before preparing the day');
+    await h.save(); assert.equal(h.state.writes.length, 1); assert.deepEqual(h.s, before);
+    h.ctx.prepareSchoolDay = prepare; release({ success: true }); await pending; h.state.pending = null;
+    assert.equal(h.element('generalQuickSaveBtn').disabled, false);
+    h.range('new', null, [78, 25]); h.grade('new'); h.preview(); await h.save();
+    assert.equal(h.state.writes.length, 2); assert.equal(h.s.lastDailyAyah, 25);
+    assert.deepEqual({ surah: h.s.lastDailySurah, ayah: h.s.lastDailyAyah, range: h.s.lastDailySardRange },
         copy(h.run('computeLastDaily(students[0])')));
-    assert.equal(h.list[0].lastDailyAyah, 25);
 });
 
 test('pending general undo does not disable or guard legacy saving', () => {
@@ -393,10 +368,11 @@ test('golden messages and today harvest respect general switch; points readers a
         assert.equal(h.run('getDayHarvest(todayStr).ayahs'), expected.ayahs * 2);
         assert.equal(h.run('dayAccreditationTexts(dayFixture).length'), 3);
     }
-    // The sole change inside saveSmartProgress is the manager-requested general undo guard.
+    // Only the exact manager-approved general quick-entry and undo guards are exempt.
+    const quickGuard = "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }\n";
     const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
-    assert.ok(source('saveSmartProgress').startsWith('function saveSmartProgress() {\n' + guard));
-    assert.equal(source('saveSmartProgress').replace(guard, ''), source('saveSmartProgress', baseline));
+    assert.ok(source('saveSmartProgress').startsWith('function saveSmartProgress() {\n' + quickGuard + guard));
+    assert.equal(source('saveSmartProgress').replace(quickGuard, '').replace(guard, ''), source('saveSmartProgress', baseline));
     for (const name of ['buildEntryPatch', 'getCumulativeStats', 'getPointsBreakdown', 'dayStats', 'commitStudentPatch'])
         assert.equal(source(name), source(name, baseline), name);
     assert.match(source('openPointsBreakdownModal'), /generalGoldenHidden\(\)/);

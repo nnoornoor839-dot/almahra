@@ -10,6 +10,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const dataStore = fs.readFileSync(path.join(root, 'data-store.js'), 'utf8');
 const programsStore = fs.readFileSync(path.join(root, 'programs-store.js'), 'utf8');
+const { harness: quickHarness, student: quickStudent, savedEntries } = require('./helpers/quick-entry-harness.cjs');
 const copy = value => JSON.parse(JSON.stringify(value));
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 const settleOpeningRead = () => new Promise(resolve => setImmediate(resolve));
@@ -419,43 +420,33 @@ test('deletion still protects inactive halaqas and saved halaqas whose form rows
     }
 });
 
-test('recitation uses commitStudentPatch and closes immediately while cloud is pending, with a halaqa snapshot and rollback', async () => {
-    const production = source('saveSmartProgress');
-    assert.match(production, /^function saveSmartProgress\(/);
-    assert.doesNotMatch(production, /\bawait\b|commitGeneralStudentPatch/);
-    assert.ok(production.indexOf('commitStudentPatch(student, fields)') < production.indexOf('closeSmartModal()'));
-    const h = harness(), student = h.student(); h.setStudents([student]); h.element('smartHeardBy').value = 't2';
-    const before = copy(student);
-    const wait = deferred(); h.state.write = () => wait.promise;
-    assert.equal(h.saveRecitation(), undefined);
-    assert.equal(h.state.closed, 1); assert.equal(h.state.updates, 1); assert.equal(h.state.celebrations, 1);
-    const entry = h.state.writes[0].args[1]['history.fake-day.entries.fake-entry'];
-    assert.equal(entry.heardBy, 't1'); assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 1); assert.equal(entry.points, 5);
-    assert.equal(entry.halaqaId, 'halaqa-one'); assert.equal(entry.stageId, 'g1');
-    assert.equal(student.history['fake-day'].entries['fake-entry'].heardBy, 't1');
-    wait.resolve({ success: false, error: 'فشل وهمي' });
-    await new Promise(resolve => setImmediate(resolve));
-    assert.deepEqual(student, before); assert.equal(h.state.messages.at(-1).type, 'error');
-    const success = harness(); success.setStudents([success.student()]);
-    const successWait = deferred(); success.state.write = () => successWait.promise;
-    success.saveRecitation();
-    assert.equal(success.state.closed, 1); assert.equal(success.state.celebrations, 1);
-    successWait.resolve({ success: true }); await new Promise(resolve => setImmediate(resolve));
-    assert.equal(success.state.messages.some(m => m.type === 'error'), false);
+test('general quick recitation waits for cloud, freezes its halaqa and preserves local state on failure', async () => {
+    for (const success of [false, true]) {
+        const h = quickHarness(); h.element('smartHeardBy').value = 't2';
+        h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();
+        const before = copy(h.s), wait = deferred(); h.state.pending = wait.promise;
+        const pending = h.save();
+        assert.equal(h.state.updates, 0); assert.equal(h.state.confetti, 0); assert.deepEqual(h.s, before);
+        assert.equal(h.element('smartModal').classList.contains('flex'), true);
+        const entry = savedEntries(h)[0];
+        assert.equal(entry.heardBy, 't1'); assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 3);
+        assert.equal(entry.halaqaId, 'h1'); assert.equal(entry.stageId, 'stage1');
+        wait.resolve({ success, error: 'فشل وهمي' }); await pending;
+        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }
+        else { assert.deepEqual(h.s, before); assert.equal(h.state.messages.at(-1).type, 'error'); }
+    }
 });
 
-test('recitation refuses absent/missing/inactive halaqas and a missing teacher, including discipline-only', async () => {
-    for (const kind of ['absent', 'missing', 'inactive', 'teacher']) {
-        for (const disciplineOnly of [false, true]) {
-            const h = harness(), student = h.student();
-            if (kind === 'absent') delete student.halaqaId;
-            if (kind === 'missing') student.halaqaId = 'missing';
-            if (kind === 'inactive') h.state.settings.halaqas[0].active = false;
-            if (kind === 'teacher') h.state.settings.teachers = [];
-            h.setStudents([student]); h.element('disciplineOnlyCheck').checked = disciplineOnly;
-            await h.saveRecitation(); assert.equal(h.state.writes.length, 0);
-            assert.equal(h.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
-        }
+test('quick recitation refuses absent/missing/inactive halaqas and a missing teacher, including attendance-only', async () => {
+    for (const kind of ['absent', 'missing', 'inactive', 'teacher']) for (const attendanceOnly of [false, true]) {
+        const h = quickHarness();
+        if (kind === 'absent') delete h.s.halaqaId;
+        if (kind === 'missing') h.s.halaqaId = 'missing';
+        if (kind === 'inactive') h.state.settings.halaqas[0].active = false;
+        if (kind === 'teacher') h.state.settings.teachers = [];
+        if (!attendanceOnly) { h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview(); }
+        await h.save(); assert.equal(h.state.writes.length, 0);
+        assert.equal(h.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
     }
 });
 
@@ -524,8 +515,9 @@ test('editing basic data keeps inactive or missing membership untouched, without
         assert.equal(student.parentPhone, '966500000000');
         assert.equal(student.halaqaId, 'halaqa-one'); assert.equal(student.teacherId, 't2'); assert.equal(student.stage, 'g2');
         for (const field of ['halaqaId', 'teacherId', 'stage']) assert.equal(field in h.state.writes[0].args[1], false);
-        h.saveRecitation(); assert.equal(h.state.writes.length, 1);
-        assert.equal(h.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
+        const recitation = quickHarness(quickStudent({}, { ...student, history: {} })); recitation.state.settings = h.state.settings;
+        await recitation.save(); assert.equal(recitation.state.writes.length, 0);
+        assert.equal(recitation.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
     }
 });
 
@@ -544,8 +536,9 @@ test('a missing halaqa defaults to keeping membership so a name-only correction 
     assert.equal(h.state.writes.length, 1); assert.equal(h.state.closed, 1);
     assert.deepEqual(student, { ...before, name: 'اسم وهمي مصحح' });
     for (const field of ['halaqaId', 'teacherId', 'stage']) assert.equal(field in h.state.writes[0].args[1], false);
-    h.saveRecitation(); assert.equal(h.state.writes.length, 1);
-    assert.equal(h.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
+    const recitation = quickHarness(quickStudent({}, { ...student, history: {} })); recitation.state.settings = h.state.settings;
+    await recitation.save(); assert.equal(recitation.state.writes.length, 0);
+    assert.equal(recitation.state.messages.at(-1).message, 'اربط الطالب بحلقة فعّالة أولاً');
 });
 
 test('a missing halaqa allows linking an existing student to an active halaqa', async () => {
