@@ -65,7 +65,7 @@ function harness() {
         let pendingImport = null, _noLevelWarned = null;
         const criteriaAtOpen = { sel: {} }, DEL_FIELD = { __almahraDelete: true };`);
     install('isGeneralProgram', 'isWorkingDay', 'escapeHTML', 'schoolCivilDate', 'setupDatesAndTimezone', 'refreshToday',
-        'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'requireSchoolDay', 'prepareSchoolDay',
+        'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
         'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveSmartProgress',
         'saveStudent', 'openStudentModal', 'startExcelImport', 'handleExcelImport', 'confirmExcelImport', 'confirmGeneralExcelImport',
@@ -518,13 +518,13 @@ test('weekly sheet shades holiday/outside-term rows without boxes and escapes th
     assert.match(rows[2], /gws-box/);
 });
 
-test('scope: points, patch/builder, shared settings and attendance reports are unchanged; store adds only the calendar method', () => {
+test('scope: points, patch/builder and shared settings are unchanged; store adds only the calendar method', () => {
     const cp = require('node:child_process'), root = path.join(__dirname, '..');
     // خط أساس الخطوة ٥ ثابت؛ HEAD صار يحتوي دالة التقويم بعد دمجها.
     const baselineHtml = cp.execFileSync('git', ['show', 'e608836:index.html'], { cwd: root, encoding: 'utf8' });
     const baselineStore = cp.execFileSync('git', ['show', 'e608836:programs-store.js'], { cwd: root, encoding: 'utf8' });
-    for (const name of ['getProgramSettings', 'getWorkingDaysList', 'calculateStudentAttendance', 'getConsecutiveAbsenceStreak',
-        'commitStudentPatch', 'buildEntryPatch', 'getCumulativeStats', 'renderHomeDashboard']) {
+    // ٦ب غيّرت قارئات الحضور عمداً؛ اختبارها يحمي المسارين الآخرين مقابل خط أساس ٦أ.
+    for (const name of ['getProgramSettings', 'commitStudentPatch', 'buildEntryPatch', 'getCumulativeStats']) {
         assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baselineHtml).replaceAll('\r\n', '\n'), name);
     }
     const withoutCalendar = store.replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '');

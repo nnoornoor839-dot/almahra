@@ -321,11 +321,11 @@ test('summer and review-day have no absence button or bar and preserve attendanc
     }
 });
 
-test('scope: report, recitation and commit functions remain exactly as the step6 base', () => {
+test('scope: recitation and commit functions remain exactly as the step6 base', () => {
     const cp = require('node:child_process');
     const baseline = cp.execFileSync('git', ['show', '2c20668:index.html'], { cwd: path.join(__dirname, '..'), encoding: 'utf8' });
-    for (const name of ['getWorkingDaysList', 'calculateStudentAttendance', 'getConsecutiveAbsenceStreak', 'renderHomeDashboard',
-        'commitStudentPatch', 'commitPatches', 'buildEntryPatch', 'saveSmartProgress', 'getProgramSettings']) {
+    // قارئات التقارير أُصلحت في ٦ب؛ حماية الكتابة والتسميع باقية.
+    for (const name of ['commitStudentPatch', 'commitPatches', 'buildEntryPatch', 'saveSmartProgress', 'getProgramSettings']) {
         assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
 });

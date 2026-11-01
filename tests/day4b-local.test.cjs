@@ -111,7 +111,10 @@ function installReports(h, source = html) {
     h.state.settings.points = { attendance: 0 };
     Object.assign(h.ctx, { todayStr: 'day', CHRONIC_MIN_STREAK: 3, FOLLOWUP_MIN_STREAK: 2,
         getWorkingDaysList: () => ['day'],
-        calculateStudentAttendance: () => ({ expectedDays: 1, actualDays: 1, absences: 0 }),
+        calculateStudentAttendance: () => ({ expectedDays: 1, actualDays: 1, absences: 0, unrecorded: 0, attendancePct: 100 }),
+        // حساب الحضور مفحوص في ٦ب؛ هذه التجهيزات تعزل فحص دقة كميات المصحف.
+        getGeneralDayAttendance: () => ({ info: { isSchoolDay: true }, present: h.getStudents(), absent: [], unrecorded: [], attendancePct: 100 }),
+        generalAttendanceLabel: () => 'حضور وهمي', generalDayAttendanceLabel: () => 'حضور يوم وهمي',
         getConsecutiveAbsenceStreak: () => 0, roundPointTotal: n => n, snapQuarters: n => n,
         getLastActiveHijri: () => 'تاريخ وهمي', densityFor: () => ({}), dayPoints: () => 0,
         dayStats: () => ({ ayahs: 1, pages: 0.125, quarters: 1, golden: { ayahs: 0, pages: 0, quarters: 0 } }),
@@ -406,6 +409,7 @@ test('Excel export uses raw numeric amounts: two 0.25 hizb values sum to 0.5', (
     h.ctx.getWorkingDaysList = () => [];
     h.ctx.getCumulativeStats = () => ({ tripPoints: 0 });
     h.ctx.calculateStudentAttendance = () => ({ actualDays: 0, absences: 0 });
+    h.ctx.todayStr = 'day'; h.ctx.generalStudentAttendanceLabel = () => 'حاضر';
     h.ctx.XLSX.utils.json_to_sheet = rows => { h.state.exported = rows; return {}; };
     h.ctx.XLSX.utils.book_new = () => ({}); h.ctx.XLSX.utils.book_append_sheet = () => {}; h.ctx.XLSX.writeFile = () => {};
     h.setStudents([1, 2].map(id => ({ id, name: `وهمي ${id}`, history: { day: { entries: {

@@ -3214,6 +3214,10 @@
         // آخر يوم عمل قبل اليوم — يُحسب ديناميكياً من أيام العمل في إعدادات البرنامج
         const ALL_DAY_NAMES = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         function getPreviousWorkingDayInfo() {
+            if (isGeneralProgram()) {
+                const dateStr = isSeasonCalendarComplete() ? lastSchoolDateBeforeToday() : '';
+                return { dateStr, dayName: dateStr ? ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()] : '' };
+            }
             const wd = getProgramSettings().workingDays;
             const now = new Date();
             // ارجع يوماً بيوم حتى تجد أول يوم عمل (بحد أقصى ١٤ يوماً)
@@ -3734,7 +3738,7 @@
                 dkHtml = winners.map(w => crownRow(w, true)).join('')
                     + hbDuo(runnersUp[0]?.student.name, runnersUp[1]?.student.name);
             }
-            document.getElementById('hbDailyKnights').innerHTML = dkHtml || hbEmpty('لم يُعتمد فرسان بعد', 'اعتمدهم من الإعدادات ← الفرسان');
+            document.getElementById('hbDailyKnights').innerHTML = (dkHtml || hbEmpty('لم يُعتمد فرسان بعد', 'اعتمدهم من الإعدادات ← الفرسان')) + generalIncompleteAttendanceHtml([approvedDate]);
             hbSetCard('hbCardDaily', {
                 theme: 'daily', ico: '🏆', cover: 'فرسان اليوم',
                 title: boardDayName ? `فرسان يوم ${boardDayName}` : 'فرسان اليوم',
@@ -3783,6 +3787,10 @@
                     ${stars.slice(0, SHOWN).map(s => hbWinnerRow(s.student.name, `${s.criteriaPoints} نقطة انضباط`, { medal: '⭐' })).join('')}
                     ${rest > 0 ? `<div class="hb-more">${more}</div>` : ''}`;
             }
+            if (isGeneralProgram()) {
+                const range = getBoardWeekRange();
+                dsContainer.innerHTML += generalIncompleteAttendanceHtml(getWorkingDatesInRange(range.startStr, range.endStr));
+            }
             hbSetCard('hbCardDiscipline', {
                 theme: 'disc', ico: '🛡️', cover: coverText, title: coverText, tease: teaseText
             });
@@ -3829,7 +3837,9 @@
                 } else {
                     wkHtml = topTied(getWeekTitleCandidates(), e => e.points).map(weekRow).join('');
                 }
-                wkContainer.innerHTML = wkHtml || hbEmpty('لا مرشحين هذا الأسبوع', `الشرط: حضور ${hbN(getTitleRules().weeklyAttendancePct)}٪ · بلا مخالفة أدب`);
+                const weekRange = isGeneralProgram() ? getBoardWeekRange() : null;
+                const incomplete = weekRange ? generalIncompleteAttendanceHtml(getWorkingDatesInRange(weekRange.startStr, weekRange.endStr)) : '';
+                wkContainer.innerHTML = (wkHtml || hbEmpty('لا مرشحين هذا الأسبوع', `الشرط: حضور ${hbN(getTitleRules().weeklyAttendancePct)}٪ · بلا مخالفة أدب`)) + incomplete;
                 hbSetCard('hbCardWeekly', {
                     theme: 'week', ico: '⭐', cover: 'فرسان الأسبوع', title: 'فرسان الأسبوع',
                     tease: !wkHtml ? 'لا مرشحين هذا الأسبوع' : tiersOn ? (isGeneralProgram() ? 'لكل مرحلة فارس' : 'لكل شريحة فارس') : 'أبرز الأسبوع'
@@ -5213,6 +5223,7 @@
             let ayahs = 0, pages = 0, quarters = 0, points = 0;
             let generalHizb = 0, generalJuz = 0;
             let expected = 0, actual = 0, activeExpected = 0, activeActual = 0, chronic = 0;
+            let unrecorded = 0, activeUnrecorded = 0;
 
             students.forEach(st => {
                 const s = getCumulativeStats(st);
@@ -5228,14 +5239,16 @@
 
                 const att = calculateStudentAttendance(st, workingDaysList);
                 expected += att.expectedDays; actual += att.actualDays;
+                if (isGeneralProgram()) unrecorded += att.unrecorded;
 
                 // المنقطع: ٣ أيام عمل متتالية فأكثر. ويُستثنى من نسبة «النشطين» وحدها
                 if (getConsecutiveAbsenceStreak(st, workingDaysList) >= CHRONIC_MIN_STREAK) chronic++;
-                else { activeExpected += att.expectedDays; activeActual += att.actualDays; }
+                else { activeExpected += att.expectedDays; activeActual += att.actualDays; if (isGeneralProgram()) activeUnrecorded += att.unrecorded; }
             });
 
-            const presentToday = students.filter(s => s.history[todayStr] && s.history[todayStr].attended).length;
+            const presentToday = isGeneralProgram() ? 0 : students.filter(s => s.history[todayStr] && s.history[todayStr].attended).length;
             const pct = (a, b) => b > 0 ? Math.round((a / b) * 100) : 0;
+            const generalDay = isGeneralProgram() ? getGeneralDayAttendance(todayStr) : null;
 
             return {
                 workingDaysList,
@@ -5246,9 +5259,10 @@
                 expected, actual, activeExpected, activeActual, chronic,
                 attendancePct: pct(actual, expected),
                 activePct: pct(activeActual, activeExpected),
-                presentToday,
-                absentToday: students.length - presentToday,
-                todayPct: pct(presentToday, students.length)
+                presentToday: generalDay ? generalDay.present.length : presentToday,
+                absentToday: generalDay ? generalDay.absent.length : students.length - presentToday,
+                todayPct: generalDay ? generalDay.attendancePct : pct(presentToday, students.length),
+                ...(generalDay ? { unrecorded, activeUnrecorded, unrecordedToday: generalDay.unrecorded.length, todayInfo: generalDay.info } : {})
             };
         }
 
@@ -5294,8 +5308,8 @@
                 card('', '<i class="fas fa-users"></i> الطلاب', num(c.studentCount),
                      tierCount ? `على ${countLabel(tierCount, 'شريحة واحدة', 'شريحتين', 'شرائح', 'شريحة')}` : 'في البرنامج',
                      "goHome('page-students')") +
-                card('', '<i class="fas fa-user-check"></i> حضور اليوم', c.todayPct + '٪',
-                     `حضر ${num(c.presentToday)} · غاب ${num(c.absentToday)}`, "goHome('page-students')") +
+                card('', '<i class="fas fa-user-check"></i> حضور اليوم', isGeneralProgram() && !c.todayInfo.isSchoolDay ? (c.todayInfo.reason === 'holiday' ? 'إجازة' : 'غير دراسي') : c.todayPct + '٪',
+                     `حضر ${num(c.presentToday)} · غاب ${num(c.absentToday)}` + (isGeneralProgram() ? ` · لم يُسجَّل ${num(c.unrecordedToday)}` : ''), "goHome('page-students')") +
                 card('', '<i class="fas fa-quran"></i> الآيات', num(c.ayahs),
                      'حفظاً ومراجعة', "goRecords('recPanelStats')") +
                 card('', isGeneralProgram() ? '<i class="fas fa-file-alt"></i> الأوجه' : '<i class="fas fa-file-alt"></i> الصفحات', isGeneralProgram() ? formatGeneralUnit(c.pages) : num(c.pages),
@@ -5515,7 +5529,16 @@
             document.getElementById('pointsBreakdownModal').classList.remove('flex'); document.getElementById('pointsBreakdownModal').classList.add('hidden');
         }
         
-        function getLastActiveHijri(student) {
+        function getLastActiveHijri(student, workingDaysList) {
+            if (isGeneralProgram()) {
+                const dates = workingDaysList || getWorkingDaysList(students);
+                const start = generalAttendanceStart(student);
+                for (let i = dates.length - 1; i >= 0 && dates[i] >= start; i--) {
+                    const date = dates[i];
+                    if (getAttendanceState(student, date).state === 'present') return student.history[date].hijri || date;
+                }
+                return 'لم يحضر بعد';
+            }
             const dates = Object.keys(student.history).sort((a,b) => new Date(a) - new Date(b));
             for (let i = dates.length - 1; i >= 0; i--) { if (student.history[dates[i]].attended) return student.history[dates[i]].hijri || dates[i]; }
             return "لم يحضر بعد";
@@ -5644,15 +5667,92 @@
         }
 
         function getWorkingDaysList(studentsArr) {
+            if (isGeneralProgram()) return getGeneralSchoolDates();
             let allDates = new Set(); studentsArr.forEach(s => { for (const dStr in s.history) { allDates.add(dStr); } });
             const wd = getProgramSettings().workingDays;
             return Array.from(allDates).sort().filter(dStr => { let dObj = new Date(dStr); if(isNaN(dObj.getTime())) return false; return wd.includes(dObj.getDay()); });
         }
 
         function calculateStudentAttendance(student, workingDaysList) {
+            if (isGeneralProgram()) {
+                const start = generalAttendanceStart(student);
+                const dates = [...new Set(workingDaysList)].filter(d => d >= start && d <= todayStr && getSchoolDayInfo(d).isSchoolDay);
+                let actualDays = 0, absences = 0, unrecorded = 0, excused = 0, unexcused = 0;
+                dates.forEach(date => {
+                    const state = getAttendanceState(student, date);
+                    if (state.state === 'present') actualDays++;
+                    else if (state.state === 'absent') {
+                        absences++;
+                        if (state.absence === 'excused') excused++;
+                        if (state.absence === 'unexcused') unexcused++;
+                    } else if (state.state === 'unrecorded') unrecorded++;
+                });
+                // المقام للمسجّل فقط؛ المطلوب وغير المسجّل يبقيان ظاهرين.
+                const expectedDays = actualDays + absences;
+                return { actualDays, absences, unrecorded, excused, unexcused, expectedDays, schoolDays: dates.length,
+                    attendancePct: expectedDays ? actualDays / expectedDays * 100 : 0 };
+            }
             let firstDateStr = Object.keys(student.history).sort()[0]; let expectedDays = 0; let actualDays = 0;
             if (firstDateStr) { workingDaysList.forEach(wDate => { if (wDate >= firstDateStr) { expectedDays++; if (student.history[wDate] && student.history[wDate].attended) { actualDays++; } } }); }
             return { expectedDays, actualDays, absences: Math.max(0, expectedDays - actualDays) };
+        }
+
+        // التقويم وحده يحدد أيام الحساب، ولو لم يُرصد فيها أحد.
+        function getGeneralSchoolDates(startStr, endStr = todayStr) {
+            const season = window.almahraPrograms?.getCurrentSeason();
+            if (!isSeasonCalendarComplete(season)) return [];
+            const from = startStr && startStr > season.termStart ? startStr : season.termStart;
+            const to = [endStr, todayStr, season.termEnd].sort()[0];
+            const date = schoolCivilDate(from);
+            if (!date || !schoolCivilDate(to)) return [];
+            const dates = [];
+            for (; formatDateLocal(date) <= to; date.setDate(date.getDate() + 1)) {
+                const ds = formatDateLocal(date);
+                if (getSchoolDayInfo(ds).isSchoolDay) dates.push(ds);
+            }
+            return dates;
+        }
+
+        function getGeneralDayAttendance(dateStr) {
+            const info = getSchoolDayInfo(dateStr);
+            const eligible = info.isSchoolDay && dateStr <= todayStr ? students.filter(s => dateStr >= generalAttendanceStart(s)) : [];
+            const list = state => eligible.filter(s => getAttendanceState(s, dateStr).state === state);
+            const present = list('present'), absent = list('absent'), unrecorded = list('unrecorded');
+            const recorded = present.length + absent.length;
+            return { info, present, absent, unrecorded, recorded, attendancePct: recorded ? Math.round(present.length / recorded * 100) : 0 };
+        }
+
+        function generalDayAttendanceLabel(dateStr, day = getGeneralDayAttendance(dateStr)) {
+            if (!day.info.isSchoolDay) return day.info.reason === 'holiday' ? 'إجازة' : 'غير دراسي';
+            if (dateStr > todayStr) return 'لم يحن موعده';
+            return `حضر ${day.present.length} · غاب ${day.absent.length} · لم يُسجَّل ${day.unrecorded.length} · ${day.attendancePct}%`;
+        }
+
+        function generalAttendanceLabel(att) {
+            return `حضر ${att.actualDays} · غاب ${att.absences} (بعذر ${att.excused} / بغير عذر ${att.unexcused}) · لم يُسجَّل ${att.unrecorded} · ${Math.round(att.attendancePct)}%`;
+        }
+
+        function generalStudentAttendanceLabel(student, dateStr) {
+            const info = getSchoolDayInfo(dateStr);
+            if (!info.isSchoolDay) return info.reason === 'holiday' ? 'إجازة' : 'غير دراسي';
+            if (dateStr > todayStr) return 'لم يحن موعده';
+            if (dateStr < generalAttendanceStart(student)) return 'قبل بداية الطالب';
+            const state = getAttendanceState(student, dateStr);
+            return state.state === 'present' ? 'حاضر' : state.state === 'absent' ? 'غائب' : 'لم يُسجَّل';
+        }
+
+        function getGeneralAttendanceEligibility(student, dates, minimumPct) {
+            const att = calculateStudentAttendance(student, dates);
+            const status = att.unrecorded ? 'incomplete' : att.expectedDays && att.attendancePct >= minimumPct ? 'eligible' : 'excluded';
+            return { ...att, status };
+        }
+
+        function generalIncompleteAttendanceHtml(dates) {
+            if (!isGeneralProgram()) return '';
+            return students.map(s => {
+                const att = getGeneralAttendanceEligibility(s, dates, 0);
+                return att.status === 'incomplete' ? `<div class="text-sm font-bold text-amber-700">${escapeHTML(s.name)} <span class="bg-amber-100 rounded px-2">غير مكتمل</span> · لم يُسجَّل ${att.unrecorded}</div>` : '';
+            }).join('');
         }
 
         // ⭐ حدّا الغياب المتتالي — مصدر واحد تقرأ منه كل الشاشات فلا تتضارب أرقامها:
@@ -5663,6 +5763,18 @@
 
         // عدد أيام العمل الغائبة المتتالية حالياً (من آخر يوم للخلف، تتوقف أول ما تصادف يوم حضور) بدءاً من أول يوم تسجيل للطالب نفسه
         function getConsecutiveAbsenceStreak(student, workingDaysList) {
+            if (isGeneralProgram()) {
+                const start = generalAttendanceStart(student);
+                const dates = [...new Set(workingDaysList)].filter(d => d >= start && d <= todayStr && getSchoolDayInfo(d).isSchoolDay).sort();
+                let streak = 0;
+                for (let i = dates.length - 1; i >= 0; i--) {
+                    const state = getAttendanceState(student, dates[i]).state;
+                    if (state === 'unrecorded' && dates[i] === todayStr) continue;
+                    if (state !== 'absent') break;
+                    streak++;
+                }
+                return streak;
+            }
             const firstDateStr = Object.keys(student.history).sort()[0];
             if (!firstDateStr) return 0;
             const relevantDays = workingDaysList.filter(d => d >= firstDateStr);
@@ -5692,9 +5804,15 @@
         
         function updateThreeKnightsSelects() {
             const ids = ['fars1Select', 'fars2Select', 'fars3Select'];
+            const date = isGeneralProgram() ? document.getElementById('farsAutoDate')?.value || todayStr : '';
+            let opts = '<option value="">-- اختر اسم الطالب الفارس يدوياً --</option>';
+            students.forEach(s => {
+                const incomplete = isGeneralProgram() && getGeneralAttendanceEligibility(s, [date], 100).status === 'incomplete';
+                opts += `<option value="${s.id}">${escapeHTML(s.name)}${incomplete ? ' — غير مكتمل' : ''}</option>`;
+            });
             ids.forEach(id => {
-                const el = document.getElementById(id); if(!el) return; let currentVal = el.value; let opts = '<option value="">-- اختر اسم الطالب الفارس يدوياً --</option>';
-                students.forEach(s => { opts += `<option value="${s.id}">${escapeHTML(s.name)}</option>`; }); el.innerHTML = opts; if(currentVal) el.value = currentVal;
+                const el = document.getElementById(id); if(!el) return; let currentVal = el.value;
+                el.innerHTML = opts; if(currentVal) el.value = currentVal;
             });
         }
         
@@ -5840,7 +5958,7 @@
             const workingDaysList = getWorkingDaysList(students);
             students.forEach(student => {
                 if (query && !student.name.toLowerCase().includes(query)) return;
-                const hist = student.history[todayStr] || {}; const isPresent = hist.attended; const cStats = getCumulativeStats(student);
+                const hist = student.history[todayStr] || {}; const isPresent = isGeneralProgram() ? getAttendanceState(student, todayStr).state === 'present' : hist.attended; const cStats = getCumulativeStats(student);
                 const absenceStreak = getConsecutiveAbsenceStreak(student, workingDaysList);
                 let cardBorder = 'border-2 border-slate-200'; let absenceBadge = '';
                 if (absenceStreak >= FOLLOWUP_MIN_STREAK) {
@@ -5857,6 +5975,7 @@
                         <div class="w-20 h-20 mb-3 cursor-pointer ${isPresent ? 'text-emerald-500':'text-slate-300'}" onclick="markPresent(${student.id})">${genericStudentIcon}</div>
                         <h3 class="text-xl font-black text-slate-800 mb-1 truncate w-full" title="${escapeHTML(student.name)}">${escapeHTML(student.name)}</h3>
                         ${isGeneralProgram() ? `<div class="text-xs text-slate-600 mb-2">${generalStudentHalaqaHtml(student)}</div>` : ''}
+                        ${isGeneralProgram() ? `<div class="text-xs text-slate-600 mb-2">${generalStudentAttendanceLabel(student, todayStr)}</div>` : ''}
                         <div class="text-xs text-slate-500 mb-3 bg-slate-50 px-2 py-1 rounded w-full ${isGeneralProgram() ? '' : 'truncate'} border border-slate-100">${isGeneralProgram() ? generalRecitationHtml(student) : `إجمالي السرد: ${cStats.totalAyahs} آية`}</div>
                         <div class="flex w-full gap-2 mt-auto">
                             <button onclick="openSmartModal(${student.id})" class="flex-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white rounded-xl py-2 font-black text-lg transition-colors">إدخال إنجاز</button>
@@ -5953,11 +6072,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <div class="font-black text-slate-800">#${p.a.id} — ${escapeHTML(p.a.name)}</div>
-                                <div class="text-sm text-slate-500 mt-1">آيات: ${statsA.sardAyahs} | نقاط: ${statsA.tripPoints} | أيام حضور: ${statsA.attendanceDays}</div>
+                                <div class="text-sm text-slate-500 mt-1">آيات: ${statsA.sardAyahs} | نقاط: ${statsA.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.a, getWorkingDaysList(students))) : `أيام حضور: ${statsA.attendanceDays}`}</div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <div class="font-black text-slate-800">#${p.b.id} — ${escapeHTML(p.b.name)}</div>
-                                <div class="text-sm text-slate-500 mt-1">آيات: ${statsB.sardAyahs} | نقاط: ${statsB.tripPoints} | أيام حضور: ${statsB.attendanceDays}</div>
+                                <div class="text-sm text-slate-500 mt-1">آيات: ${statsB.sardAyahs} | نقاط: ${statsB.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.b, getWorkingDaysList(students))) : `أيام حضور: ${statsB.attendanceDays}`}</div>
                             </div>
                         </div>
                     </div>`;
@@ -5976,10 +6095,13 @@
             students.forEach(s => { for (const dStr in s.history) { allRecordedDates.add(dStr); } });
             
             let workingDaysList = getWorkingDaysList(students);
-            const presentToday = students.filter(s => s.history[todayStr] && s.history[todayStr].attended); const absentToday = students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
+            const generalDay = isGeneralProgram() ? getGeneralDayAttendance(todayStr) : null;
+            const presentToday = generalDay ? generalDay.present : students.filter(s => s.history[todayStr] && s.history[todayStr].attended); const absentToday = generalDay ? generalDay.absent : students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
             const dashboardEl = document.getElementById('executiveAttendanceDashboard');
             if (dashboardEl) {
-                if(students.length === 0) { dashboardEl.innerHTML = `<div class="col-span-2 text-center text-slate-400 py-4 font-bold text-xl">يرجى إضافة طلاب لعرض إحصائيات الحضور والغياب اليومية للبرنامج.</div>`; } 
+                if (generalDay && !generalDay.info.isSchoolDay) {
+                    dashboardEl.innerHTML = `<div class="col-span-2 font-bold p-4">${generalDayAttendanceLabel(todayStr)}</div>`;
+                } else if(students.length === 0) { dashboardEl.innerHTML = `<div class="col-span-2 text-center text-slate-400 py-4 font-bold text-xl">يرجى إضافة طلاب لعرض إحصائيات الحضور والغياب اليومية للبرنامج.</div>`; }
                 else {
                     dashboardEl.innerHTML = `
                         <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
@@ -5988,8 +6110,9 @@
                         </div>
                         <div class="bg-red-50 border-2 border-red-300 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
                             <div class="flex justify-between items-center border-b border-red-200 pb-2"><span class="text-2xl font-black text-red-800 flex items-center gap-2"><i class="fas fa-user-times"></i> عدد الطلاب الغائبين اليوم</span><span class="bg-red-600 text-white text-2xl font-black px-4 py-1 rounded-full shadow-sm">${absentToday.length} طالب</span></div>
-                            <div class="flex flex-wrap gap-2 max-h-[160px] overflow-y-auto custom-scroll p-1">${absentToday.length > 0 ? absentToday.map(s => `<span class="bg-white text-red-700 border border-red-200 px-3 py-1.5 rounded-xl font-bold text-lg shadow-sm flex items-center gap-1.5"><i class="fas fa-circle text-[10px] text-red-400"></i>${escapeHTML(s.name)}</span>`).join('') : `<span class="text-emerald-600 font-black text-lg flex items-center gap-2"><i class="fas fa-star text-yellow-500"></i> حضور كامل لكافة الحلقات اليوم ولله الحمد!</span>`}</div>
+                            <div class="flex flex-wrap gap-2 max-h-[160px] overflow-y-auto custom-scroll p-1">${absentToday.length > 0 ? absentToday.map(s => `<span class="bg-white text-red-700 border border-red-200 px-3 py-1.5 rounded-xl font-bold text-lg shadow-sm flex items-center gap-1.5"><i class="fas fa-circle text-[10px] text-red-400"></i>${escapeHTML(s.name)}</span>`).join('') : isGeneralProgram() ? '<span class="font-bold">لا غياب مسجّل اليوم</span>' : `<span class="text-emerald-600 font-black text-lg flex items-center gap-2"><i class="fas fa-star text-yellow-500"></i> حضور كامل لكافة الحلقات اليوم ولله الحمد!</span>`}</div>
                         </div>`;
+                    if (generalDay) dashboardEl.innerHTML += `<div class="col-span-2 font-bold text-amber-700 p-3">لم يُسجَّل: ${generalDay.unrecorded.length} · ${generalDay.unrecorded.map(s => escapeHTML(s.name)).join('، ')}</div>`;
                 }
             }
             
@@ -6033,10 +6156,10 @@
                     <tr class="border-b border-slate-200 hover:bg-blue-50/50">
                         <td class="py-3 px-2 text-center border-r border-slate-200 font-black text-slate-500 bg-slate-100/50">${isGeneralProgram() && calcs.length > 1 && idx === calcs.length - 1 ? '' : idx + 1}</td>
                         <td class="py-3 px-4 font-bold text-slate-800 text-lg">${escapeHTML(s.name)}${absenceBadge}</td>
-                        <td class="py-3 px-4 text-center border-r border-slate-200 bg-slate-50"><div class="flex flex-col md:flex-row justify-center items-center gap-2"><span class="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-1.5 rounded shadow-sm border border-emerald-200 whitespace-nowrap"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> ${attStats.actualDays} يوم</span><span class="text-red-600 font-bold bg-red-50/80 px-2 py-1.5 rounded shadow-sm border border-red-200 whitespace-nowrap"><i class="fas fa-times-circle mr-1 text-red-400"></i> ${attStats.absences} يوم</span></div></td>
+                        <td class="py-3 px-4 text-center border-r border-slate-200 bg-slate-50">${isGeneralProgram() ? generalAttendanceLabel(attStats) : `<div class="flex flex-col md:flex-row justify-center items-center gap-2"><span class="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-1.5 rounded shadow-sm border border-emerald-200 whitespace-nowrap"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> ${attStats.actualDays} يوم</span><span class="text-red-600 font-bold bg-red-50/80 px-2 py-1.5 rounded shadow-sm border border-red-200 whitespace-nowrap"><i class="fas fa-times-circle mr-1 text-red-400"></i> ${attStats.absences} يوم</span></div>`}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 bg-orange-50/10 min-w-[280px]">${quranStatsHtml}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 font-bold text-blue-800 text-base bg-blue-50/30">${escapeHTML(s.lastDailySardRange || s.lastSardRange || 'لم يسرد بعد')}</td>
-                        <td class="py-3 px-4 text-center border-r border-slate-200 text-slate-500 text-base">${getLastActiveHijri(s)}</td>
+                        <td class="py-3 px-4 text-center border-r border-slate-200 text-slate-500 text-base">${getLastActiveHijri(s, workingDaysList)}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-300 font-black text-yellow-800 bg-yellow-100/30 text-2xl">
                             ${s.tripPoints}
                             <button onclick="openPointsBreakdownModal(${s.id})" title="تفصيل مصدر النقاط" class="no-print block mx-auto mt-1 text-indigo-500 hover:text-indigo-700 text-xs font-bold"><i class="fas fa-magnifying-glass-chart"></i> تفصيل</button>
@@ -6050,7 +6173,7 @@
             });
             
             let cumulativeAttendancePerc = globalExpected > 0 ? Math.round((globalActual / globalExpected) * 100) : 0;
-            const eqCumCard = document.getElementById('eqCumulativeAttendance'); if(eqCumCard) { eqCumCard.innerText = cumulativeAttendancePerc + "%"; }
+            const eqCumCard = document.getElementById('eqCumulativeAttendance'); if(eqCumCard) { eqCumCard.innerText = cumulativeAttendancePerc + "%" + (isGeneralProgram() ? ` · لم يُسجَّل ${CS.unrecorded}` : ''); }
 
             // تنبيه بجانب نسبة الانضباط التراكمي: عدد الطلاب المنقطعين 3 أيام متتالية فأكثر (يومان فأقل يُعتبر منضبطًا) من أصل كل الطلاب المسجلين
             const chronicCount = CS.chronic;
@@ -6069,7 +6192,7 @@
             if (eqActiveEl) {
                 if (activeExpected > 0 && chronicCount > 0) {
                     const activePerc = Math.round((activeActual / activeExpected) * 100);
-                    eqActiveEl.innerText = `✅ بين الطلاب النشطين فقط: ${activePerc}%`;
+                    eqActiveEl.innerText = `✅ بين الطلاب النشطين فقط: ${activePerc}%` + (isGeneralProgram() ? ` · لم يُسجَّل ${CS.activeUnrecorded}` : '');
                     eqActiveEl.classList.remove('hidden');
                 } else {
                     eqActiveEl.classList.add('hidden');
@@ -6157,6 +6280,10 @@
                     }
                 });
             });
+            if (isGeneralProgram()) workingDaysList.forEach(dStr => {
+                if (!dailyProduction[dStr]) dailyProduction[dStr] = { ayahs: 0, exactPages: 0, quarters: 0, hijri: dStr,
+                    general: generalRecitationTotals({ history: {} }) };
+            });
             const sortedProdDates = Object.keys(dailyProduction).sort();
             if(sortedProdDates.length === 0) { dailyBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">لا يوجد إنتاج يومي مسجل حتى الآن.</td></tr>`; } 
             else {
@@ -6165,9 +6292,10 @@
                     let dJuzs = Math.floor(dayObj.quarters / 8); let dHizbs = Math.floor((dayObj.quarters % 8) / 4); let dQuarters = Math.floor(dayObj.quarters % 4); let dPages = dayObj.exactPages.toFixed(1);
                     
                     let expectedStudentsThatDay = 0; let dayAttendedCount = 0;
-                    students.forEach(s => { let sDates = Object.keys(s.history).sort(); if (sDates.length > 0 && sDates[0] <= dStr) expectedStudentsThatDay++; if (s.history[dStr] && s.history[dStr].attended) dayAttendedCount++; });
+                    if (!isGeneralProgram()) students.forEach(s => { let sDates = Object.keys(s.history).sort(); if (sDates.length > 0 && sDates[0] <= dStr) expectedStudentsThatDay++; if (s.history[dStr] && s.history[dStr].attended) dayAttendedCount++; });
                     let dayAttPerc = expectedStudentsThatDay > 0 ? Math.round((dayAttendedCount / expectedStudentsThatDay) * 100) : 0;
                     let attHtml = `<div class="bg-blue-50 text-blue-800 px-3 py-2 rounded-xl font-bold shadow-sm border border-blue-200 print:bg-transparent print:border-none print:shadow-none print:p-0">حضر ${dayAttendedCount} من ${expectedStudentsThatDay} <br><span class="text-blue-600 font-black text-lg print:text-base">${dayAttPerc}%</span></div>`;
+                    if (isGeneralProgram()) attHtml = `<div class="font-bold">${generalDayAttendanceLabel(dStr)}</div>`;
                     
                     let dParts = `
                         <div class="flex flex-wrap justify-center gap-2 w-full py-1">
@@ -6287,11 +6415,12 @@
         // الاختيار الآلي للفرسان (الأعلى نقاطاً في يوم محدد)
         // ================================================================
         function getDayRanking(dateStr, tierId = null) {
+            if (isGeneralProgram() && (!dateStr || dateStr > todayStr || !getSchoolDayInfo(dateStr).isSchoolDay)) return [];
             return students
                 .filter(s => tierId === null || studentTierId(s) === tierId)
                 .map(s => {
                     const d = s.history?.[dateStr];
-                    if (!d || !d.attended) return null;
+                    if (isGeneralProgram() ? dateStr < generalAttendanceStart(s) || getAttendanceState(s, dateStr).state !== 'present' : !d || !d.attended) return null;
                     const ds = dayStats(d);   // الآيات والنقاط لا تتوقف على الكثافة
                     return {
                         student: s,
@@ -6308,10 +6437,11 @@
 
         // ترتيب الانضباط (نقاط المعايير فقط) — لفارس الانضباط
         function getDisciplineRanking(dateStr) {
+            if (isGeneralProgram() && (!dateStr || dateStr > todayStr || !getSchoolDayInfo(dateStr).isSchoolDay)) return [];
             return students
                 .map(s => {
                     const d = s.history?.[dateStr];
-                    if (!d || !d.attended) return null;
+                    if (isGeneralProgram() ? dateStr < generalAttendanceStart(s) || getAttendanceState(s, dateStr).state !== 'present' : !d || !d.attended) return null;
                     const cp = d.criteriaPoints || 0;
                     if (cp <= 0) return null; // لا يُرشَّح من لا انضباط إيجابي له
                     return { student: s, criteriaPoints: cp, criteria: d.criteria || {} };
@@ -6383,6 +6513,7 @@
         //  • الأسبوع هو أسبوع ذلك اليوم، فلا يفرغ صباح الأحد وفيه نتائج الأسبوع الماضي
         // ================================================================
         function getBoardDate() {
+            if (isGeneralProgram()) return getGeneralSchoolDates().at(-1) || null;
             let latest = null;
             students.forEach(s => {
                 for (const ds in (s.history || {})) {
@@ -6400,6 +6531,12 @@
 
         // نطاق أسبوع اللوحة (أحد → سبت). inProgress = الأسبوع الجاري لم ينتهِ بعد
         function getBoardWeekRange() {
+            if (isGeneralProgram()) {
+                const ref = getBoardDate();
+                if (!ref) return { startStr: todayStr, endStr: todayStr, inProgress: false };
+                const startStr = getWeekStartDate(ref), weekEnd = addDaysToDateStr(startStr, 6);
+                return { startStr, endStr: ref, inProgress: todayStr <= weekEnd };
+            }
             const ref = getBoardDate() || todayStr;
             const startStr = getWeekStartDate(ref);
             const weekEnd = addDaysToDateStr(startStr, 6);
@@ -6411,6 +6548,7 @@
         // نعتمد الواقع لا الجدول النظري، فلو عمل المجمع يوم سبت استثناءً حُسب،
         // ولو تعطّل يوم عمل لم يُحسب على الطلاب غياباً.
         function getWorkingDatesInRange(startStr, endStr) {
+            if (isGeneralProgram()) return getGeneralSchoolDates(startStr, endStr);
             const dates = new Set();
             students.forEach(s => {
                 for (const ds in (s.history || {})) {
@@ -6439,13 +6577,17 @@
             return required.every(id => (crit[id] || 0) > 0);
         }
 
-        function summarizeRange(student, dates) {
+        function summarizeRange(student, dates, attendance = null) {
+            if (isGeneralProgram()) {
+                const start = generalAttendanceStart(student);
+                dates = dates.filter(d => d >= start && d <= todayStr && getSchoolDayInfo(d).isSchoolDay);
+            }
             let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, disciplineDays = 0;
             const blocking = getBlockingCriteriaIds();
             dates.forEach(dt => {
                 const d = student.history?.[dt];
                 if (!d) return;
-                if (d.attended) attended++;
+                if (isGeneralProgram() ? getAttendanceState(student, dt).state === 'present' : d.attended) attended++;
                 const ds = dayStats(d);
                 points += dayPoints(d, ds);
                 sard += ds.ayahs;
@@ -6454,6 +6596,11 @@
                 // هل استوفى شروط الانضباط في هذا اليوم؟ (كل الشروط المؤشَّرة، أو تقييم إيجابي واحد إن لم يُؤشَّر شيء)
                 if (dayMeetsDisciplineCriteria(d)) disciplineDays++;
             });
+            if (isGeneralProgram()) {
+                const att = attendance || calculateStudentAttendance(student, dates);
+                return { points: roundPointTotal(points), sard, attended: att.actualDays, violations, blockingViolations, disciplineDays,
+                    expected: att.expectedDays, schoolDays: att.schoolDays, unrecorded: att.unrecorded, absences: att.absences };
+            }
             return { points: roundPointTotal(points), sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };
         }
 
@@ -6467,7 +6614,9 @@
             return students
                 .filter(s => tierId === null || studentTierId(s) === tierId)
                 .map(s => {
-                    const sum = summarizeRange(s, dates);
+                    const attendance = isGeneralProgram() ? getGeneralAttendanceEligibility(s, dates, rules.weeklyAttendancePct) : null;
+                    const sum = summarizeRange(s, dates, attendance);
+                    if (attendance && attendance.status !== 'eligible') return null;
                     if (sum.points <= 0) return null;
                     if (rules.requireSard && sum.sard <= 0) return null;
                     if (sum.blockingViolations > 0) return null;
@@ -6486,7 +6635,9 @@
             if (dates.length === 0) return { stars: [], daysCount: 0 };
 
             const stars = students.map(s => {
-                const sum = summarizeRange(s, dates);
+                const attendance = isGeneralProgram() ? getGeneralAttendanceEligibility(s, dates, 100) : null;
+                const sum = summarizeRange(s, dates, attendance);
+                if (attendance && attendance.status !== 'eligible') return null;
                 if (sum.attended < sum.expected) return null;      // أي غياب يحجب (ولو بعذر)
                 if (sum.violations > 0) return null;                // أي مخالفة تحجب
                 if (sum.disciplineDays < sum.expected) return null; // لا بد من استيفاء شروط الانضباط كل يوم
@@ -6499,9 +6650,10 @@
         // نجوم انضباط يوم واحد (اليوم القرآني المكثف): حضر + بلا أي مخالفة + استوفى شروط الانضباط
         function getDayDisciplineStars(dateStr) {
             if (!dateStr) return [];
+            if (isGeneralProgram() && (dateStr > todayStr || !getSchoolDayInfo(dateStr).isSchoolDay)) return [];
             return students.map(s => {
                 const d = s.history?.[dateStr];
-                if (!d || !d.attended) return null;
+                if (isGeneralProgram() ? dateStr < generalAttendanceStart(s) || getAttendanceState(s, dateStr).state !== 'present' : !d || !d.attended) return null;
                 if (dayHasAnyViolation(d)) return null;
                 if (!dayMeetsDisciplineCriteria(d)) return null;
                 return { student: s, criteriaPoints: d.criteriaPoints || 0 };
@@ -6514,7 +6666,7 @@
             if (dateStr) {
                 students.forEach(s => {
                     const d = s.history?.[dateStr];
-                    if (!d || !d.attended) return;
+                    if (isGeneralProgram() ? dateStr > todayStr || dateStr < generalAttendanceStart(s) || getAttendanceState(s, dateStr).state !== 'present' : !d || !d.attended) return;
                     attended++;
                     const ds = dayStats(d, densityFor(s));   // كثافة الطالب مرة واحدة؛ الأساسي + الذهبي لليوم القديم والجديد
                     ayahs += ds.ayahs + ds.golden.ayahs;
@@ -6539,17 +6691,18 @@
 
             // كل أيام الدوام السابقة لبداية هذا الأسبوع
             const pastSet = new Set();
-            students.forEach(s => {
+            if (!isGeneralProgram()) students.forEach(s => {
                 for (const ds in (s.history || {})) {
                     if (ds < startStr && s.history[ds]?.attended) pastSet.add(ds);
                 }
             });
-            const pastDates = Array.from(pastSet).sort();
+            const pastDates = isGeneralProgram() ? getGeneralSchoolDates(undefined, addDaysToDateStr(startStr, -1)) : Array.from(pastSet).sort();
             if (pastDates.length === 0) return []; // لا سابقة للمقارنة
 
             return students.map(s => {
                 const now = summarizeRange(s, thisWeek);
                 const past = summarizeRange(s, pastDates);
+                if (isGeneralProgram() && (now.unrecorded || past.unrecorded)) return null;
                 if (now.points <= 0 || past.attended === 0) return null;
                 const pastAvg = past.points / past.attended;
                 const nowAvg = now.attended ? now.points / now.attended : 0;
@@ -6622,6 +6775,7 @@
             const d = new Date(dateStr + 'T12:00:00');
             const daySel = document.getElementById('farsDayInput');
             if (daySel && !isNaN(d.getTime())) daySel.value = ALL_DAY_NAMES[d.getDay()];
+            if (isGeneralProgram()) updateThreeKnightsSelects();
         }
 
         // تعبئة قائمة أوضاع الاختيار الآلي (كل الطلاب / لكل شريحة / الانضباط)
@@ -7349,7 +7503,8 @@
                 if (working(ds)) dates.push(ds);
             }
             const days = dates.map(ds => history[ds]).filter(Boolean);
-            const entries = dates.flatMap(ds => Object.values(history[ds]?.entries || {})
+            // الإنجاز يبقى ظاهراً حتى لو أضيفت إجازة بأثر رجعي.
+            const entries = Object.keys(history).filter(ds => ds >= week.startStr && ds <= week.endStr && ds <= settings.todayStr).flatMap(ds => Object.values(history[ds]?.entries || {})
                 .filter(e => e && (e.kind === 'new' || e.kind === 'review'))
                 .map(e => ({ ...e, dateStr: ds })))
                 .sort((a, b) => a.dateStr.localeCompare(b.dateStr) || (a.at || 0) - (b.at || 0));
@@ -7372,10 +7527,8 @@
                     ? `من ${settings.surahName(from[0])} (${from[1]}) إلى ${settings.surahName(to[0])} (${to[1]})`
                     : 'مدى غير محدد في التسجيل';
             };
-            const attended = days.filter(d => d.attended).length;
-            const excused = days.filter(d => d.attended === false && d.absence === 'excused').length;
-            const unexcused = days.filter(d => d.attended === false && d.absence === 'unexcused').length;
-            const unrecorded = dates.length - attended - excused - unexcused;
+            const att = settings.attendanceSummary(student, week.startStr, week.endStr);
+            const { actualDays: attended, excused, unexcused, unrecorded } = att;
             const currentPoints = dates.reduce((sum, ds) => sum + (history[ds] ? pointsFor(history[ds]) : 0), 0);
             const past = new Map();
             Object.keys(history).filter(ds => ds < week.startStr && /^\d{4}-\d{2}-\d{2}$/.test(ds) && working(ds)
@@ -7390,18 +7543,15 @@
                 + `الأسبوع: ${week.startStr} إلى ${week.endStr}${hijriLabel}\n\n`
                 + `الحفظ الجديد: ${newRanges} — ${quantity(newEntries)}\n`
                 + `المراجعة: ${quantity(reviewEntries)}\n`
-                + `الحضور: ${number(attended)} من ${number(dates.length)} أيام عمل؛ الغياب بعذر: ${number(excused)}؛ بغير عذر: ${number(unexcused)}`
-                + (unrecorded ? `؛ أيام بلا تسجيل: ${number(unrecorded)}` : '') + `\n`
+                + `الحضور: ${number(attended)} من ${number(att.expectedDays)} أيام مسجّلة (${number(Math.round(att.attendancePct))}٪)؛ الغياب: ${number(att.absences)}؛ بعذر: ${number(excused)}؛ بغير عذر: ${number(unexcused)}`
+                + `؛ لم يُسجَّل: ${number(unrecorded)}\n`
                 + `نقاط هذا الأسبوع: ${number(currentPoints)}؛ ${average === null ? 'أول أسبوع' : `متوسط أسابيعه السابقة: ${number(average)}`}\n\n`
                 + settings.brandName;
         }
 
         function getGeneralMessageWeek(current) {
-            const now = new Date();
-            const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-            const start = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() - (current ? 0 : 7));
-            const end = current ? now : new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
-            return { startStr: formatDateLocal(start), endStr: formatDateLocal(end) };
+            const startStr = addDaysToDateStr(getWeekStartDate(todayStr), current ? 0 : -7);
+            return { startStr, endStr: current ? todayStr : addDaysToDateStr(startStr, 6) };
         }
 
         function renderGeneralWeeklyMessages() {
@@ -7423,7 +7573,8 @@
             if (!isGeneralProgram() || !student) return;
             if (!measureReady() || !quranMeta) { showToast('ميزان المصحف غير جاهز؛ افتح الرسائل بعد اكتمال تحميله', 'error'); return; }
             const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
-            const settings = { ...getProgramSettings(), measureEntry, dayPoints,
+            const settings = { ...getProgramSettings(), measureEntry, dayPoints, todayStr,
+                attendanceSummary: (s, from, to) => calculateStudentAttendance(s, getGeneralSchoolDates(from, to)),
                 surahName: n => quranMeta.surahs?.references?.[n - 1]?.name?.replace('سُورَةُ ', '') || `سورة ${n}`,
                 brandName: programBrandName() };
             const msg = buildGeneralWeeklyMessage(student, week, settings);
@@ -7435,7 +7586,8 @@
         }
 
         function copyAbsenteesList() {
-            const absentees = students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
+            const absentees = isGeneralProgram() ? getTodayAbsentees() : students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
+            if (isGeneralProgram() && !getSchoolDayInfo(todayStr).isSchoolDay) { showToast(generalDayAttendanceLabel(todayStr)); return; }
             if(absentees.length === 0) { showToast("لا يوجد غائبين اليوم ولله الحمد!", "success"); return; }
             let msg = `📋 *إشعار غياب - ${programBrandName()}*\n🗓️ اليوم: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\n\n`;
             absentees.forEach((s, idx) => { msg += `${idx + 1}. ${s.name}\n`; }); msg += `\nشاكرين ومقدرين حرصكم وتعاونكم 🌹`;
@@ -7538,7 +7690,8 @@
                 document.getElementById('attEditStatusDisplay').classList.add('hidden');
                 return false;
             }
-            attEditChoice = !!(student.history[dateStr] && student.history[dateStr].attended);
+            const state = isGeneralProgram() ? getAttendanceState(student, dateStr).state : null;
+            attEditChoice = isGeneralProgram() ? (state === 'present' ? true : state === 'absent' ? false : null) : !!(student.history[dateStr] && student.history[dateStr].attended);
             const absenceSelect = document.getElementById('attEditAbsence');
             if (isGeneralProgram()) {
                 absenceSelect.innerHTML = '<option value="">اختر السبب</option>' + getProgramSettings().absence.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)}</option>`).join('');
@@ -7571,7 +7724,7 @@
             const dateStr = document.getElementById('attEditDateInput').value; if (!dateStr) return;
             if (!requireSchoolDay(dateStr, true)) return;
             if (dateStr > todayStr) { showToast("لا يمكن تعديل حضور تاريخ مستقبلي", "error"); return; }
-            if (isGeneralProgram() && attEditChoice === null) return;
+            if (isGeneralProgram() && attEditChoice === null) { showToast('اختر حاضر أو غائب', 'error'); return; }
             const fields = { [`history.${dateStr}.attended`]: attEditChoice };
             if (isGeneralProgram()) {
                 if (attEditChoice) {
@@ -7851,7 +8004,10 @@
                 if (isGeneralProgram()) {
                     const t = generalRecitationTotals(s);
                     const fields = { "م": idx + 1, "اسم الطالب": s.name,
-                        "عدد أيام الحضور": attStats.actualDays, "عدد أيام الغياب": attStats.absences };
+                        "عدد أيام الحضور": attStats.actualDays, "عدد أيام الغياب": attStats.absences,
+                        "غياب بعذر": attStats.excused, "غياب بغير عذر": attStats.unexcused,
+                        "لم يُسجَّل": attStats.unrecorded, "نسبة الحضور": Math.round(attStats.attendancePct),
+                        "حالة اليوم": generalStudentAttendanceLabel(s, todayStr) };
                     for (const [kind, label] of [['new', 'الحفظ'], ['review', 'المراجعة']]) {
                         fields[`${label} - الآيات`] = t[kind].ayahs;
                         fields[`${label} - الأوجه`] = t[kind].pages;
@@ -8201,6 +8357,7 @@
         // تقرير الغياب والانقطاع
         // ================================================================
         function getTodayAbsentees() {
+            if (isGeneralProgram()) return getGeneralDayAttendance(todayStr).absent;
             return students.filter(s => !s.history?.[todayStr]?.attended);
         }
 
@@ -8219,15 +8376,16 @@
         }
 
         function renderAbsenceReport() {
+            const day = isGeneralProgram() ? getGeneralDayAttendance(todayStr) : null;
             const sum = document.getElementById('absenceSummary');
             const list = document.getElementById('absenceDetailList');
             if (!sum || !list) return;
 
-            const absentToday = getTodayAbsentees();
+            const absentToday = day ? day.absent : getTodayAbsentees();
             const followup = getFollowupAbsentees();
             const chronic = followup.filter(x => x.streak >= CHRONIC_MIN_STREAK);
             const needsCare = followup.filter(x => x.streak < CHRONIC_MIN_STREAK);
-            const present = students.length - absentToday.length;
+            const present = day ? day.present.length : students.length - absentToday.length;
 
             const card = (color, icon, label, value) => `
                 <div class="bg-white rounded-2xl border-2 border-${color}-200 p-4 text-center">
@@ -8240,6 +8398,7 @@
                 card('emerald', '✅', 'حاضرون اليوم', present) +
                 card('amber', '⚠️', 'غائبون اليوم', absentToday.length) +
                 card('red', '🚫', 'منقطعون (ثلاثة أيام+)', chronic.length);
+            if (day) sum.innerHTML = `<div class="col-span-full font-bold">${generalDayAttendanceLabel(todayStr, day)}</div>` + sum.innerHTML;
 
             let html = '';
             if (chronic.length) {
@@ -8266,6 +8425,10 @@
                     </div>`).join('');
             }
             if (!html) html = '<div class="text-center text-emerald-600 font-black py-8 text-lg">🎉 لا يوجد غياب — الحمد لله</div>';
+            if (day) {
+                if (!day.info.isSchoolDay && !followup.length) html = `<div class="font-bold p-4">${generalDayAttendanceLabel(todayStr, day)}</div>`;
+                if (day.unrecorded.length) html += `<div class="font-bold text-amber-700 p-4">لم يُسجَّل: ${day.unrecorded.length} · ${day.unrecorded.map(s => escapeHTML(s.name)).join('، ')}</div>`;
+            }
             list.innerHTML = html;
         }
 
