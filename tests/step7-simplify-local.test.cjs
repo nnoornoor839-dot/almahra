@@ -79,7 +79,7 @@ function harness(list = [student()]) {
     run(html.match(/const generalQuickEntry = .*;/)[0]);
     install('canOpenGeneralFrontierFix', 'updateFrontierFixVisibility');
     run(html.match(/const ivPairs = .*;/)[0]); run(html.match(/const measureEntry = .*;/)[0]); run(html.match(/const rangeLabelOf = .*;/)[0]);
-    install('generalQuickContext', 'generalQuickContextMatches', 'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'canWriteHistory', 'applyFieldsLocally', 'restoreStudent', 'commitStudentPatch', 'commitGeneralStudentPatch', 'computeFrontier', 'isFurther', 'endPointOf',
+    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickContext', 'generalQuickContextMatches', 'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'canWriteHistory', 'applyFieldsLocally', 'restoreStudent', 'commitStudentPatch', 'commitGeneralStudentPatch', 'computeFrontier', 'isFurther', 'endPointOf',
         'pinBaseFields', 'computeLastDaily', 'getGeneralUndoTarget', 'generalUndoLabel', 'updateGeneralUndoButton', 'undoLastGeneralEntry',
         'updateSmartSimplification', 'switchSmartTab', 'dayAccreditationTexts', 'dayStats', 'getDayHarvest', 'saveProgramSettings');
     return { state, ctx, list, run, element, install, undo: () => run('undoLastGeneralEntry()'), target: () => run('getGeneralUndoTarget(students[0])') };
@@ -110,7 +110,7 @@ test('undo selects current user latest today; one entry path plus derived pointe
     const h = harness([student({ first: entry('new', 10), second: entry('review', 20, uid, 15), other: entry('review', 30, 'another-user', 20) })]);
     const before = copy(h.list[0]);
     assert.equal(h.target().id, 'second'); h.run('updateGeneralUndoButton()');
-    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن آخر تسجيل: مراجعة/);
+    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: مراجعة/);
     assert.match(h.element('smartUndoBtn').textContent, /١–١٥.*النقاط: ٤/);
     await h.undo();
     const fields = h.state.writes[0].fields;
@@ -142,7 +142,7 @@ test('undo button, confirmation and success share points label for whole and fra
         h.run('updateGeneralUndoButton()');
         const label = h.run('generalUndoLabel(students[0].history[todayStr].entries.only)');
         assert.ok(label.endsWith(suffix));
-        assert.equal(h.element('smartUndoBtn').textContent, '↩️ تراجع عن آخر تسجيل: ' + label);
+        assert.equal(h.element('smartUndoBtn').textContent, '↩ تراجع عن: ' + label);
         await h.undo();
         assert.equal(h.state.prompts[0], 'التراجع عن: ' + label + '؟');
         assert.equal(h.state.messages[0].message, 'تم التراجع عن: ' + label);
@@ -233,7 +233,7 @@ test('two clicks during pending undo send one request; success applies locally a
     resolveWrite({ success: true }); await pending;
     assert.equal(h.target().id, 'first'); assert.equal(h.state.updates, 1);
     assert.equal(h.element('smartUndoBtn').disabled, false);
-    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن آخر تسجيل: حفظ جديد/);
+    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: حفظ جديد/);
     assert.equal(h.state.messages.length, 1); assert.equal(h.state.messages[0].type, 'success');
     await h.undo(); assert.equal(h.state.writes.length, 2); assert.equal(h.target(), null);
 });
@@ -282,7 +282,7 @@ test('two clicks then cloud failure leave the student unchanged, re-enable undo 
         assert.deepEqual(h.list, before); assert.equal(h.target().id, 'second');
         assert.equal(h.element('smartUndoBtn').disabled, false);
         assert.equal(h.element('smartSaveBtn').disabled, false);
-        assert.match(h.element('smartUndoBtn').textContent, /تراجع عن آخر تسجيل: مراجعة/);
+        assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: مراجعة/);
         assert.equal(h.state.updates, 0);
         assert.deepEqual(h.state.messages, [{ message: 'فشل الحفظ السحابي: synthetic failure', type: 'error' }]);
         h.state.pendingWrite = null; await h.undo();
@@ -305,7 +305,7 @@ test('day changes during confirmation: prepareSchoolDay refreshes it and cancels
         assert.equal(refreshes, 2); assert.equal(h.run('todayStr'), civilDay);
         assert.equal(h.state.writes.length, 0); assert.deepEqual(h.list, before);
         assert.deepEqual(h.state.messages, [{ message: 'تغيّر اليوم أو التسجيل؛ أعد المحاولة', type: 'error' }]);
-        assert.match(h.element('smartUndoBtn').textContent, /تراجع عن آخر تسجيل: مراجعة/);
+        assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: مراجعة/);
         assert.equal(h.state.updates, 0);
     }
 });
@@ -318,7 +318,7 @@ test('target changes during confirmation: cancel without writing and refresh the
     assert.deepEqual(Object.keys(h.list[0].history[today].entries), ['only', 'newer']);
     assert.deepEqual(h.state.messages, [{ message: 'تغيّر اليوم أو التسجيل؛ أعد المحاولة', type: 'error' }]);
     assert.equal(h.element('smartUndoBtn').disabled, false);
-    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن آخر تسجيل: مراجعة/);
+    assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: مراجعة/);
 });
 
 test('general hides reset, golden tab/section/orphan bar/legend and pomodoro; legacy reset is visible and its function unchanged', () => {

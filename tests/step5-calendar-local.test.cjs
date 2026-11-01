@@ -41,8 +41,8 @@ function harness() {
     const ctx = vm.createContext({
         // Isolate calendar guards; section math and the form DOM are exercised in step8a.
         pinBaseFields: () => ({}), computeLastDaily: () => null, updateGeneralUndoButton() {},
-        calculateGeneralQuickEntry: () => ({ sections: [], criteria: { changed: false }, total: 0, key: 'attendance-only' }),
-        generalReviewExceedsFrontier: () => null, celebrateGeneralQuickEntry() {}, console, Date: Clock, Intl, structuredClone, crypto: { randomUUID: () => 'random-id' },
+        calculateGeneralQuickEntry: () => ({ errors: [], position: { valid: true }, sections: [], criteria: { changed: false }, total: 0, key: 'attendance-only' }),
+        celebrateGeneralQuickEntry() {}, console, Date: Clock, Intl, structuredClone, crypto: { randomUUID: () => 'random-id' },
         document: { getElementById: element, querySelectorAll: selector => selector === '.school-calendar-row' ? state.rows : [] },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } },
             almahraData: { getActiveSeasonId: () => state.season.id, isReadOnly: () => state.archived,
@@ -71,7 +71,7 @@ function harness() {
         const criteriaAtOpen = { sel: {} }, DEL_FIELD = { __almahraDelete: true };`);
     run(html.match(/let generalUndoInProgress = false;/)[0]);
     install('isGeneralProgram', 'isWorkingDay', 'escapeHTML', 'schoolCivilDate', 'setupDatesAndTimezone', 'refreshToday',
-        'prepareGeneralQuickDate', 'getGeneralMissedDays', 'getWeekStartDate', 'formatDateLocal',
+        'generalQuickDateBlocked', 'prepareGeneralQuickDate', 'getGeneralMissedDays', 'getWeekStartDate', 'formatDateLocal',
         'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
         'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveGeneralQuickEntry', 'commitGeneralStudentPatch', 'generalQuickContext', 'generalQuickContextMatches',

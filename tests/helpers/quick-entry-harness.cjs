@@ -45,6 +45,13 @@ function harness(s = student()) {
             classList: { add: (...names) => names.forEach(n => classes.add(n)), remove: (...names) => names.forEach(n => classes.delete(n)),
                 contains: n => classes.has(n), toggle(n, on = !classes.has(n)) { if (on) classes.add(n); else classes.delete(n); } },
             setAttribute(n, v) { this.attrs[n] = v; },
+            checkVisibility() {
+                for (let el = this; el; el = el.parentNode)
+                    if (el.hidden || el.classList.contains('hidden') || el.style.display === 'none') return false;
+                return true;
+            },
+            focus() { state.focus = this.id; state.focusVisible = this.checkVisibility(); },
+            querySelectorAll(selector) { return selector === 'button' ? this.children.filter(el => el.tagName === 'BUTTON') : []; },
             appendChild(child) { if (child.parentNode) child.parentNode.children = child.parentNode.children.filter(x => x !== child); this.children.push(child); child.parentNode = this; return child; },
             prepend(child) { this.appendChild(child); this.children = [child, ...this.children.filter(x => x !== child)]; },
             insertBefore(child, next) { this.appendChild(child); if (next) { this.children = this.children.filter(x => x !== child); this.children.splice(this.children.indexOf(next), 0, child); } },
@@ -54,17 +61,24 @@ function harness(s = student()) {
             get innerHTML() { return markup; },
             set innerHTML(value) {
                 markup = value; this.replaceChildren();
-                for (const match of value.matchAll(/<(select|input|div|button)\b([^>]*)>/g)) {
+                for (const match of value.matchAll(/<(select|input|div|button|section|p)\b([^>]*)>/g)) {
                     const attrs = match[2], child = element(/\bid="([^"]+)"/.exec(attrs)?.[1] || `generated-${++serial}`);
                     for (const attr of attrs.matchAll(/data-([a-z]+)="([^"]*)"/g)) child.dataset[attr[1]] = attr[2];
+                    child.tagName = match[1].toUpperCase();
                     child.value = /\bvalue="([^"]*)"/.exec(attrs)?.[1] || '';
-                    child.checked = /\bchecked\b/.test(attrs);
+                    const bareAttrs = attrs.replace(/"[^"]*"/g, '');
+                    child.checked = /\bchecked\b/.test(bareAttrs);
+                    child.hidden = /\bhidden\b/.test(bareAttrs);
+                    child.textContent = value.slice(match.index + match[0].length).match(/^[^<]*/)[0];
+                    const click = /\bonclick="([^"]*)"/.exec(attrs)?.[1];
+                    if (click) child.onclick = () => run(click);
                     const names = /\bclass="([^"]*)"/.exec(attrs)?.[1] || '';
                     names.split(' ').forEach(name => child.classList.add(name));
                     this.appendChild(child);
                 }
             } };
-        let currentId = id;
+        let currentId = id, currentValue = '';
+        Object.defineProperty(el, 'value', { get: () => currentValue, set: value => { currentValue = String(value); } });
         Object.defineProperty(el, 'id', { get: () => currentId, set: value => { elements.delete(currentId); currentId = value; elements.set(value, el); } });
         Object.defineProperty(el, 'className', { get: () => [...classes].join(' '), set: value => { classes.clear(); value.split(' ').forEach(n => classes.add(n)); } });
         elements.set(id, el); return el;
@@ -72,9 +86,21 @@ function harness(s = student()) {
     const legacy = element('legacyDailyBody'), modal = element('modalContent');
     legacy.appendChild(element('criteriaSection')); legacy.appendChild(element('legacySummary'));
     modal.appendChild(element('smartUndoRow'));
+    // لا نخلق عنصراً مفقوداً بصمت؛ الأسماء الثابتة مأخوذة من HTML الفعلي.
+    const staticMarkup = html.slice(0, html.indexOf('<script src="quran/'));
+    for (const tag of staticMarkup.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
+        const el = element(tag[3]);
+        el.tagName = tag[1].toUpperCase();
+        el.value = /\bvalue="([^"]*)"/.exec(tag[2])?.[1] || '';
+        el.className = /\bclass="([^"]*)"/.exec(tag[2])?.[1] || '';
+    }
+    element('generalQuickSection').innerHTML = html.slice(html.indexOf('<div id="generalQuickSection"'), html.indexOf('<div id="smartDailySection"'));
+    // سلسلة ظهور حقل النهاية تشمل ورقة الطالب والنافذة المخفية عند البداية.
+    element('smartModal').appendChild(element('generalQuickSection'));
+    element('generalQuickSection').appendChild(element('generalQuickPanels'));
     const quranMeta = { surahs: { references: QURAN_META.surahs.map((s, i) => ({ number: i + 1, name: QURAN_META.titles[i], numberOfAyahs: s[1] })) } };
     const ctx = vm.createContext({ console, structuredClone, QuranMeasure, quranMeta, generalEntryPoints,
-        document: { getElementById: id => id.startsWith('quick_') || id === 'generalCriteriaAllBtn' ? elements.get(id) || null : element(id), createElement: tag => element(`${tag}-${++serial}`),
+        document: { getElementById: id => elements.get(id) || null, createElement: tag => { const el = element(`${tag}-${++serial}`); el.tagName = tag.toUpperCase(); return el; },
             querySelector: () => element('settingsNav'),
             querySelectorAll: selector => [...elements.values()].filter(el => selector.startsWith('.crit-box') && el.classList.contains('crit-box') && (!selector.includes(':checked') || el.checked)) },
         window: { scrollTo() {}, addEventListener: (name, fn) => listeners.set(name, fn), quranData: { surahStarts: { 1: 1 } },
@@ -104,17 +130,19 @@ function harness(s = student()) {
     run(html.match(/const generalFrontierFix = .*;/)[0]);
     run(html.match(/const ALL_DAY_NAMES = .*;/)[0]);
     for (const name of ['ivPairs', 'measureEntry', 'rangeLabelOf', 'newEntryId']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
-    install('isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
-        'roundPointTotal', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
+    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
+        'generalQuickDateBlocked', 'readGeneralQuickPosition', 'generalQuickPositionChanged', 'clearGeneralQuickSection', 'toggleGeneralCriteriaExceptions', 'generalQuickKeydown', 'generalQuickEntryLabel',
+        'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
+        'roundPointTotal', 'dayStats', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
         'generalQuickDayName', 'getGeneralMissedDays', 'prepareGeneralQuickDate', 'renderGeneralQuickDate', 'showGeneralMissedDays', 'selectGeneralQuickDate',
-        'generalQuickEndValues', 'generalQuickHasUnsavedInput', 'openGeneralFrontierFixFromQuick',
+        'generalQuickHasUnsavedInput', 'openGeneralFrontierFixFromQuick',
         'canOpenGeneralFrontierFix', 'updateFrontierFixVisibility', 'renderGeneralFrontierFix', 'renderFrontierFixStudents', 'renderFrontierFixPosition', 'updateFrontierFixAyah', 'saveGeneralFrontierFix', 'openSettingsSection', 'backToSettingsHome',
         'isFurther', 'endPointOf', 'computeFrontier', 'computeLastDaily', 'pinBaseFields', 'makeEntry', 'buildEntryPatch',
         'applyFieldsLocally', 'canWriteHistory', 'commitGeneralStudentPatch', 'computeLastReview', 'hasGeneralAcceptedNew', 'generalNextPoint',
         'generalQuickContext', 'generalQuickContextMatches', 'invalidateGeneralQuickEntry',
         'generalQuickSuggestions', 'generalPointLabel', 'moveGeneralQuickSections', 'initGeneralQuickEntry', 'renderGeneralQuickGrades',
         'quickSurahChanged', 'fulfillGeneralCriteria', 'generalCriteriaChange', 'calculateGeneralQuickEntry', 'updateGeneralQuickPreview',
-        'generalReviewExceedsFrontier', 'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
+        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
         'renderCriteriaList', 'updateCriteriaTotal', 'updateGrandTotal', 'updateGeneralUndoButton', 'getGeneralUndoTarget', 'generalUndoLabel',
         'undoLastGeneralEntry', 'switchSmartTab', 'updateSmartSimplification', 'openSmartModal', 'closeSmartModal',
         'refreshGeneralRecitationFields', 'updateAyahMax', 'setSardType');
@@ -124,7 +152,8 @@ function harness(s = student()) {
     run('openSmartModal(1)');
     const range = (kind, from, to) => {
         if (from) for (const [edge, point] of [['from', from], ['to', to]]) {
-            element(`quick_${kind}_${edge}Surah`).value = String(point[0]); element(`quick_${kind}_${edge}Ayah`).value = String(point[1]);
+            const surah = elements.get(`quick_${kind}_${edge}Surah`), ayah = elements.get(`quick_${kind}_${edge}Ayah`);
+            if (surah && ayah) { surah.value = String(point[0]); ayah.value = String(point[1]); }
         }
         else { element(`quick_${kind}_toSurah`).value = String(to[0]); element(`quick_${kind}_toAyah`).value = String(to[1]); }
     };

@@ -5,7 +5,8 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const cp = require('node:child_process');
 const path = require('node:path');
-const { harness: quickHarness, student, copy, source, html, root } = require('./helpers/quick-entry-harness.cjs');
+const { harness: rawQuickHarness, student, copy, source, html, root } = require('./helpers/quick-entry-harness.cjs');
+const quickHarness = (s = student({}, { frontierFix: { surah: null, ayah: null, at: 0 } })) => rawQuickHarness(s);
 const { installTv } = require('./helpers/tv-harness.cjs');
 const adhan = require('../vendor/adhan-4.4.3.umd.js');
 const tv = require('../tv.js');
@@ -207,7 +208,7 @@ test('real quick save celebrates only after cloud success, never failed, zero or
     h.state.pending = null; await h.run('undoLastGeneralEntry()');
     assert.deepEqual(sent[1], { type: 'cancel', id: sent[0].id });
     for (const mode of ['failed', 'zero', 'missed']) {
-        const q = quickHarness(student({}, { history: {} })), messages = connectQuick(q);
+        const q = quickHarness(student({}, { history: {}, frontierFix: { surah: null, ayah: null, at: 0 } })), messages = connectQuick(q);
         if (mode === 'missed') { q.ctx.date = '2026-11-05'; q.run('todayStr = date'); q.reopen(); q.run("selectGeneralQuickDate('2026-11-01')"); }
         if (mode === 'zero') { q.state.settings.points = { attendance: 0 }; q.range('new', [114, 1], [114, 6]); q.grade('new', 'repeat'); }
         else { q.range('new', [114, 1], [114, 6]); q.grade('new'); }
@@ -311,7 +312,7 @@ test('TV page has only two local scripts, no storage/cloud/external resources or
     assert.doesNotMatch(page + js, /localStorage|firebase|https?:|innerHTML|insertAdjacentHTML|document\.write/);
     assert.match(js, /textContent = event\.name/); assert.match(js, /requestFullscreen/); assert.match(js, /visibilitychange/);
     for (const name of ['commitGeneralStudentPatch', 'buildEntryPatch']) assert.equal(source(name), source(name, base).replaceAll('\r\n', '\n'));
-    assert.equal(source('saveGeneralQuickEntry').replace(/^.*sendGeneralTvCelebration.*\n/m, ''), source('saveGeneralQuickEntry', base).replaceAll('\r\n', '\n'));
+    assert.match(source('saveGeneralQuickEntry'), /if \(!missed && calculation.total > 0\) sendGeneralTvCelebration/);
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js']) {
         const original = cp.execFileSync('git', ['show', `0f1c43e:${file}`], { cwd: root });
         assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), original.toString('utf8').replaceAll('\r\n', '\n'));

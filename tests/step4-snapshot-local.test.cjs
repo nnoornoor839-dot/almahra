@@ -99,7 +99,7 @@ function harness() {
 const stampedEntry = h => h.state.writes.find(w => w.kind === 'patch').args[1]['history.2026-11-01.entries.entry-1'];
 
 test('general quick sard stamps all three fields from one settings snapshot despite stale student copies', async () => {
-    const h = quickHarness(quickStudent({}, { stage: 'g2', teacherId: 't2' }));
+    const h = quickHarness(quickStudent({}, { frontierFix: { surah: null, ayah: null, at: 0 }, stage: 'g2', teacherId: 't2' }));
     h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();
     const first = copy(h.state.settings), second = copy(first); let reads = 0;
     second.halaqas[0].stageId = 'g2'; second.halaqas[0].teacherId = 't2';
@@ -158,7 +158,7 @@ test('used teacher change confirms today, appends exactly one audit and batches 
     assert.deepEqual(h.state.prompts, ['سيصير معلم وهمي ثان معلم حلقة حلقة وهمية من اليوم. التسميعات السابقة تبقى باسم معلم وهمي أول.']);
     assert.deepEqual(h.state.writes[1].args[0], [{ type: 'update', id: 1, fields: { teacherId: 't2', stage: 'g1' } }]);
     assert.equal(current.teacherId, 't2'); assert.deepEqual(current.history, history); assert.deepEqual(archived, archivedBefore);
-    const recitation = quickHarness(quickStudent({}, { ...current, history: {} })); recitation.state.settings = h.state.settings;
+    const recitation = quickHarness(quickStudent({}, { frontierFix: { surah: null, ayah: null, at: 0 }, ...current, history: {} })); recitation.state.settings = h.state.settings;
     recitation.range('new', [114, 1], [114, 6]); recitation.grade('new'); recitation.preview();
     await recitation.save(); assert.equal(savedEntries(recitation)[0].heardBy, 't2');
     assert.equal(current.history['2026-10-31'].entries.old.heardBy, 't1');

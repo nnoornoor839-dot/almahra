@@ -424,7 +424,7 @@ test('deletion still protects inactive halaqas and saved halaqas whose form rows
 
 test('general quick recitation waits for cloud, freezes its halaqa and preserves local state on failure', async () => {
     for (const success of [false, true]) {
-        const h = quickHarness(); h.element('smartHeardBy').value = 't2';
+        const h = quickHarness(quickStudent({}, { frontierFix: { surah: null, ayah: null, at: 0 } })); h.element('smartHeardBy').value = 't2';
         h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();
         const before = copy(h.s), wait = deferred(); h.state.pending = wait.promise;
         const pending = h.save();

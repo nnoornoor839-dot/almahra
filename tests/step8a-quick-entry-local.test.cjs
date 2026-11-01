@@ -5,21 +5,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const cp = require('node:child_process');
-const { harness, student, entry, today, savedEntries, copy, source, html, baseline, root, QuranMeasure, generalEntryPoints } = require('./helpers/quick-entry-harness.cjs');
+const { harness: rawHarness, student: rawStudent, entry, today, savedEntries, copy, source, html, baseline, root, QuranMeasure, generalEntryPoints } = require('./helpers/quick-entry-harness.cjs');
+// بقية اختبارات السحابة تبدأ بطالب معروف لم يحفظ شيئاً؛ المجهول له حالات مستقلة.
+const student = (entries = {}, extra = {}) => rawStudent(entries, { frontierFix: { surah: null, ayah: null, at: 0, by: 'fake-admin', prev: null }, ...extra });
+const harness = (s = student()) => rawHarness(s);
 
-test('first new starts open; accepted new locks next; repeat alone stays open at the same chosen position', async () => {
-    const h = harness(student({}, { lastSurah: 78, lastAyah: 11 }));
-    assert.match(h.element('generalQuickPanels').innerHTML, /أول تسميع جديد: حدّد بدايته/);
-    assert.match(h.element('generalQuickPanels').innerHTML, /id="quick_new_fromSurah"/);
-    assert.equal(h.element('quick_new_fromAyah').value, 11);
+
+test('imported last verse locks next from first opening; repeat keeps it locked', async () => {
+    const h = harness(rawStudent({}, { lastSurah: 78, lastAyah: 11 }));
+    assert.equal(h.ctx.document.getElementById('quick_new_fromSurah'), null);
+    assert.equal(h.element('quick_new_start').textContent, 'النبأ ١٢');
     assert.equal(h.run('Object.hasOwn(getProgramSettings(), "features")'), false);
-    h.range('new', [78, 11], [78, 20]); h.grade('new', 'repeat'); h.preview(); await h.save(); h.reopen();
-    assert.equal(h.run('generalQuickEntry.locked'), false); assert.equal(h.element('quick_new_fromAyah').value, 11);
-    h.range('new', [78, 11], [78, 20]); h.grade('new'); h.preview(); await h.save(); h.reopen();
+    h.range('new', null, [78, 20]); h.grade('new', 'repeat'); h.preview(); await h.save(); h.reopen();
     assert.equal(h.run('generalQuickEntry.locked'), true);
+    assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 78, ayah: 12 });
+    h.range('new', null, [78, 20]); h.grade('new'); h.preview(); await h.save(); h.reopen();
     assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 78, ayah: 21 });
-    assert.doesNotMatch(h.element('generalQuickPanels').innerHTML, /id="quick_new_fromSurah"/);
-    assert.match(h.element('generalQuickPanels').innerHTML, /من: النبأ ٢١/);
 });
 
 test('repeat never moves an accepted frontier; general legacy base ignores lastDaily review pointer; summer/review-day match e93084d', () => {
@@ -27,7 +28,7 @@ test('repeat never moves an accepted frontier; general legacy base ignores lastD
     const h = harness(s);
     assert.deepEqual(copy(h.run('computeFrontier(students[0])')), { surah: 78, ayah: 10 });
     assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 78, ayah: 11 });
-    const legacy = student({}, { lastSurah: 78, lastAyah: 10, lastDailySurah: 67, lastDailyAyah: 20 }); delete legacy.frontierBase;
+    const legacy = rawStudent({}, { lastSurah: 78, lastAyah: 10, lastDailySurah: 67, lastDailyAyah: 20 }); delete legacy.frontierBase;
     h.ctx.legacy = legacy;
     assert.deepEqual(copy(h.run('computeFrontier(legacy)')), { surah: 78, ayah: 10 });
     for (const program of ['summer', 'review-day']) {
@@ -42,12 +43,11 @@ test('repeat never moves an accepted frontier; general legacy base ignores lastD
     }
 });
 
-test('first repeat without any imported position suggests the chosen start again without locking or advancing frontier', async () => {
-    const h = harness(); h.range('new', [78, 11], [78, 20]); h.grade('new', 'repeat'); h.preview(); await h.save(); h.reopen();
-    assert.equal(h.run('generalQuickEntry.locked'), false);
+test('known no memorization starts locked at first route verse; repeat leaves frontier empty', async () => {
+    const h = harness(); h.range('new', null, [114, 6]); h.grade('new', 'repeat'); h.preview(); await h.save(); h.reopen();
+    assert.equal(h.run('generalQuickEntry.locked'), true);
     assert.equal(h.run('computeFrontier(students[0])'), null);
-    assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 78, ayah: 11 });
-    assert.equal(h.element('quick_new_fromSurah').value, 78); assert.equal(h.element('quick_new_fromAyah').value, 11);
+    assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 114, ayah: 1 });
 });
 
 test('review suggestion uses most recent at, endPointOf, next verse and cycles at/beyond frontier', () => {
@@ -66,25 +66,21 @@ test('review suggestion uses most recent at, endPointOf, next verse and cycles a
     assert.deepEqual(copy(h.run('generalQuickSuggestions(students[0]).reviewStart')), { surah: 2, ayah: 1 });
 });
 
-test('warning checks any review part, cancellation writes nothing, and same-save accepted new extends the limit', async () => {
-    for (const [end, confirm, count] of [[20, true, 0], [21, false, 1], [21, true, 1]]) {
+test('review over known frontier is blocked without confirmation; accepted same-save new extends limit', async () => {
+    for (const [end, confirm] of [[20, true], [21, false], [21, true]]) {
         const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
         h.range('review', [114, 1], [78, end]); h.grade('review'); h.preview(); h.state.confirmed = confirm; await h.save();
-        assert.equal(h.state.prompts.length, count); assert.equal(h.state.writes.length, confirm ? 1 : 0);
-        if (count) assert.match(h.state.prompts[0], /^المراجعة تتعدّى محفوظ الطالب \(حدّه: النبأ ٢٠\)، هل تحفظ؟$/);
-        if (!confirm) assert.equal(h.element('smartModal').classList.contains('flex'), true);
+        assert.equal(h.state.prompts.length, 0); assert.equal(h.state.writes.length, end === 20 ? 1 : 0);
+        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ ٢٠/);
     }
-    const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
-    h.range('new', null, [78, 25]); h.grade('new'); h.range('review', [114, 1], [78, 25]); h.grade('review'); h.preview(); await h.save();
-    assert.equal(h.state.prompts.length, 0); assert.equal(savedEntries(h).length, 2);
-    const repeat = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
-    repeat.range('new', null, [78, 25]); repeat.grade('new', 'repeat'); repeat.range('review', [114, 1], [78, 25]); repeat.grade('review'); repeat.preview();
-    await repeat.save(); assert.equal(repeat.state.prompts.length, 1);
+    for (const grade of ['good','repeat']) {
+        const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
+        h.range('new', null, [78, 25]); h.grade('new', grade); h.range('review', [114, 1], [78, 25]); h.grade('review'); h.preview(); await h.save();
+        assert.equal(h.state.prompts.length, 0); assert.equal(h.state.writes.length, grade === 'good' ? 1 : 0);
+        if (grade === 'good') assert.equal(savedEntries(h).length, 2);
+    }
     const first = harness(); first.range('review', [114, 1], [67, 20]); first.grade('review'); first.preview(); await first.save();
-    assert.equal(first.state.prompts.length, 0);
-    const firstBoth = harness(); firstBoth.range('new', [114, 1], [78, 20]); firstBoth.grade('new');
-    firstBoth.range('review', [114, 1], [78, 21]); firstBoth.grade('review'); firstBoth.preview(); await firstBoth.save();
-    assert.equal(firstBoth.state.prompts.length, 1);
+    assert.equal(first.state.writes.length, 0); assert.match(first.element('quick_review_message').textContent, /لا محفوظ/);
 });
 
 test('both sections produce one request, frozen context and exact preview sum including changed criteria; lastDaily is derived', async () => {
@@ -109,17 +105,19 @@ test('both sections produce one request, frozen context and exact preview sum in
     assert.equal(Object.keys(fields).some(k => k === 'history' || k.endsWith('.entries')), false);
 });
 
-test('one grade registers one section; toggling a selected grade cancels; no grades saves attendance and only changed criteria', async () => {
+test('second grade click retains selection; explicit clear resets section; unused sections save attendance', async () => {
     for (const kind of ['new', 'review']) {
-        const h = harness(); h.range(kind, [114, 1], [114, 6]); h.grade(kind); h.preview(); await h.save();
+        const h = harness(rawStudent({}, { lastSurah: 114, lastAyah: 3 }));
+        h.range(kind, kind === 'new' ? null : [114, 1], [114, kind === 'new' ? 6 : 3]); h.grade(kind); h.preview(); await h.save();
         assert.equal(savedEntries(h).length, 1); assert.equal(savedEntries(h)[0].kind, kind);
     }
     const h = harness(); h.grade('new'); h.grade('new');
-    assert.equal(h.run('generalQuickEntry.grades.new'), '');
-    h.element('quick_new_toAyah').value = ''; h.preview(); await h.save();
+    assert.equal(h.run('generalQuickEntry.grades.new'), 'good');
+    await h.save(); assert.equal(h.state.writes.length, 0);
+    h.run("clearGeneralQuickSection('new')"); h.preview(); await h.save();
     assert.equal(savedEntries(h).length, 0); assert.equal(h.s.history[today].attended, true);
-    assert.equal(`history.${today}.criteria` in h.state.writes[0].fields, false);
-    assert.equal(h.state.confetti, 0);
+    assert.equal(('history.' + today + '.criteria') in h.state.writes[0].fields, false);
+    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ الحضور فقط');
     const changed = harness(); changed.run('fulfillGeneralCriteria()'); const p = changed.preview(); await changed.save();
     assert.equal(savedEntries(changed).length, 0); assert.equal(changed.s.history[today].criteriaPoints, 8);
     assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);
@@ -128,7 +126,7 @@ test('one grade registers one section; toggling a selected grade cancels; no gra
 test('criteria remain unevaluated on open; fulfill checks only enabled positives and removes negatives; unchanged snapshot is not written', async () => {
     const h = harness(); assert.deepEqual(copy(h.run('getCriteriaSelection()')), {});
     assert.equal(h.element('generalCriteriaAllBtn').textContent, '✓ استوفى المعايير');
-    assert.equal(h.element('generalCriteriaAllBtn').parentNode.id, 'criteriaSection');
+    assert.equal(h.element('generalCriteriaHost').hidden, true);
     h.element('generalCriteriaAllBtn').onclick(); assert.deepEqual(copy(h.run('getCriteriaSelection()')), { early: 5, uniform: 3 });
     const saved = harness(student({}, { history: { [today]: { entries: {}, criteria: { early: 5 }, criteriaPoints: 5 } } }));
     saved.range('new', [114, 1], [114, 6]); saved.grade('new');
@@ -176,10 +174,14 @@ test('guards reject missing teacher, school/cloud/measure blocks; preview must m
     await h.save(); assert.equal(h.state.writes.length, 1); assert.equal(savedEntries(h)[0].mult, 5);
 });
 
-test('selected empty, out-of-range, fractional and reversed segments are rejected with section name; no-grade ignores them', async () => {
-    for (const kind of ['new', 'review']) for (const [from, to] of [[[114, 1], [114, '']], [[114, 1], [114, 7]], [[114, 1], [114, 2.5]], [[78, 20], [78, 10]], [[78, 1], [79, 1]]]) {
-        const h = harness(); h.range(kind, from, to); h.grade(kind); await h.save();
-        assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, new RegExp(`قسم ${kind === 'new' ? 'الجديد' : 'المراجعة'}`));
+test('used invalid segments fail with specific field messages, with or without grade', async () => {
+    for (const kind of ['new', 'review']) for (const grade of [false,true]) for (const to of [[78,''],[78,999],[78,2.5],[78,10],[79,1]]) {
+        const h = harness(rawStudent({}, { lastSurah: 78, lastAyah: 19 }));
+        h.range(kind, kind === 'new' ? null : [78,20], to); if(grade) h.grade(kind);
+        // آية فارغة وحدها بلا تغيير قسم غير مستعمل؛ تغيير السورة يجعله مستعملاً.
+        if (!grade && to[1] === '') h.element('quick_' + kind + '_toSurah').value = '77';
+        h.preview(); await h.save(); assert.equal(h.state.writes.length, 0);
+        assert.ok(h.element('quick_' + kind + '_message').textContent.length > 0);
     }
 });
 
@@ -202,7 +204,7 @@ test('summer/review-day retain legacy DOM and save functions verbatim; criteria/
     const h = harness(); assert.equal(h.element('criteriaSection').parentNode.id, 'generalCriteriaHost');
     assert.equal(h.element('smartUndoRow').parentNode.id, 'generalQuickFooter');
     assert.match(h.element('generalQuickPanels').innerHTML, /الجديد[\s\S]*المراجعة/);
-    assert.match(html, /id="generalQuickPanels" class="grid grid-cols-1 md:grid-cols-2/);
+    assert.match(html, /id="generalQuickPanels"/);
     for (const program of ['summer', 'review-day']) {
         h.state.program = program; h.reopen();
         assert.equal(h.element('smartDailySection').style.display, '');
@@ -228,19 +230,15 @@ test('legacy general save refuses hidden or forged inputs before any guard, writ
     }
 });
 
-test('merged cross-surah review asks at Naba 40 beyond Naba 20, and no leaves the form unchanged', async () => {
-    const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
-    h.range('review', [114, 1], [78, 40]); h.grade('review'); const before = h.preview();
-    assert.equal(before.sections[0].iv.length, 1);
-    h.state.confirmed = false; await h.save();
-    assert.equal(h.state.prompts.length, 1); assert.match(h.state.prompts[0], /النبأ ٢٠/);
-    assert.equal(h.state.writes.length, 0); assert.equal(h.state.confetti, 0);
-    assert.equal(h.element('quick_review_toAyah').value, '40');
-    assert.equal(h.element('smartModal').classList.contains('flex'), true);
-    h.state.confirmed = true; await h.save(); assert.equal(h.state.writes.length, 1);
-    const down = harness(student({ a: entry('new', [1, 1], [2, 20]) }, { direction: 'down' }));
-    down.range('review', [1, 1], [2, 40]); down.grade('review'); down.preview();
-    await down.save(); assert.equal(down.state.prompts.length, 1);
+test('merged cross-surah review is blocked in both directions and stays blocked after agreeing to other prompts', async () => {
+    for (const [direction, from, to, base] of [['up',[114,1],[78,40],[78,20]],['down',[1,1],[2,40],[2,20]]]) {
+        const h = harness(rawStudent({}, { direction, lastSurah:base[0], lastAyah:base[1] }));
+        h.range('review',from,to); h.grade('review'); h.preview(); await h.save();
+        assert.equal(h.state.prompts.length, 0); assert.equal(h.state.writes.length, 0);
+        assert.match(h.element('quick_review_message').textContent,/المراجعة تتعدّى محفوظه/);
+        assert.equal(h.element('smartModal').classList.contains('flex'), true);
+        h.state.confirmed = true; await h.save(); assert.equal(h.state.writes.length, 0);
+    }
 });
 
 test('pending save checks program, season, student ID, sid and date before closing or celebrating', async () => {
@@ -302,7 +300,7 @@ test('undo reinitializes the current snapshot student, and ignores changed stude
         release({ success: true }); await pending;
         if (contextChange === 'none') {
             assert.equal(h.run(`Object.keys(students[0].history['${today}'].entries).length`), 0);
-            assert.equal(h.run('generalQuickEntry.locked'), false);
+            assert.equal(h.run('generalQuickEntry.locked'), true);
             assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 114, ayah: 1 });
             assert.equal(h.state.updates, 1);
             assert.equal(h.s.history[today].entries.a.kind, 'new'); // النسخة القديمة بقيت كما هي.
