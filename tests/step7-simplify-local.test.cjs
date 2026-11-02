@@ -408,7 +408,7 @@ test('login direction, green program card and compact mobile role are wired to t
     const loginCss = /#loginOverlay input\[type="email"\],\s*#loginOverlay input\[type="password"\]\s*\{([^}]+)\}/.exec(html)[1];
     assert.match(loginCss, /direction: ltr/); assert.match(loginCss, /text-align: left/);
     assert.match(html, /\.ep-new-general \{[^}]*#10b981/);
-    const mobileCss = /@media \(max-width: 720px\) \{([\s\S]*?)\n        \}/.exec(html)[1];
+    const mobileCss = [...html.matchAll(/@media \(max-width: 720px\) \{([\s\S]*?)\n        \}/g)].map(m => m[1]).find(css => css.includes('#authUserInfo'));
     assert.match(mobileCss, /#authUserInfo > span:first-of-type, #authUserInfo > i \{\s*display: none;/);
     assert.match(mobileCss, /#authUserInfo \{[^}]*max-width: none;[^}]*overflow: visible;/);
     assert.match(mobileCss, /#authUserInfo > span:last-of-type \{[^}]*flex-shrink: 0/);

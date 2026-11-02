@@ -143,7 +143,7 @@ async function handleLogin(e) {
 
     const btn = $('loginBtn');
     btn.disabled = true;
-    btn.textContent = '⏳ جاري الدخول...';
+    btn.textContent = 'جاري الدخول…';
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -151,7 +151,7 @@ async function handleLogin(e) {
     } catch (err) {
         showLoginError(translateAuthError(err.code));
         btn.disabled = false;
-        btn.textContent = '🔓 تسجيل الدخول';
+        btn.textContent = 'دخول';
     }
 }
 

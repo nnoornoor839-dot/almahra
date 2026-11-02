@@ -281,86 +281,70 @@
         #currentEventBadge:hover { background: #fef3c7; }
 
         /* شاشة تسجيل الدخول */
+        /* شاشة الدخول: على ترتيب الصورة المرجعية للمالك، بهوية جمعية أفضلكم */
         #loginOverlay {
-            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 4000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            --lg-green: #125c2f; --lg-green-600: #259046; --lg-gold: #c9b14b; --lg-field: #e9ebea; --lg-muted: #6b7570;
+            background: linear-gradient(to left, var(--lg-green-600), var(--lg-green));
+            display: none; position: fixed; inset: 0; z-index: 4000;
+            flex-direction: column; align-items: center; overflow-y: auto;
+            padding: clamp(24px, 5vh, 64px) 16px 24px;
         }
         #loginOverlay.flex { display: flex; }
+        #loginOverlay .login-title {
+            margin: 0 0 clamp(20px, 4vh, 48px); color: #fff; text-align: center;
+            font-weight: 700; font-size: clamp(24px, 3.4vw, 52px); line-height: 1.3; text-wrap: balance;
+        }
         #loginOverlay .login-card {
-            background: white;
-            border-radius: 24px;
-            padding: 3rem 2.5rem;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            width: min(75vw, 1440px); background: #fff; border-radius: 32px;
+            display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 32px;
+            padding: clamp(28px, 5vh, 80px) clamp(24px, 5vw, 96px);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.18);
             animation: loginCardEnter 0.5s ease-out;
         }
         @keyframes loginCardEnter {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        #loginOverlay .login-form { width: 100%; max-width: 440px; justify-self: center; display: flex; flex-direction: column; gap: 18px; }
+        #loginOverlay .login-form h2 { margin: 0 0 18px; color: var(--lg-green); font-weight: 700; font-size: clamp(24px, 2.2vw, 38px); }
+        #loginOverlay .login-field { position: relative; }
+        #loginOverlay .login-field i { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: #555; font-size: 17px; pointer-events: none; }
         #loginOverlay input[type="email"],
         #loginOverlay input[type="password"] {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            transition: all 0.2s;
-            outline: none;
-            direction: ltr;
-            text-align: left;
-            box-sizing: border-box;
+            width: 100%; height: 72px; box-sizing: border-box;
+            padding: 0 28px 0 60px; border: 0; border-radius: 999px; outline: none;
+            background: var(--lg-field); color: #222;
+            font-family: 'Cairo', sans-serif; font-size: 18px; font-weight: 700;
+            direction: ltr; text-align: left; transition: box-shadow 0.2s;
         }
-        #loginOverlay input:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
+        #loginOverlay input:placeholder-shown { text-align: right; }
+        #loginOverlay input::placeholder { color: #7a7f7c; font-weight: 600; }
+        #loginOverlay input:focus-visible { box-shadow: 0 0 0 3px var(--lg-green-600); }
         #loginOverlay .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 18px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-            margin-top: 0.5rem;
+            margin-top: 22px; width: 100%; height: 72px; border: 0; border-radius: 999px;
+            background: var(--lg-gold); color: var(--lg-green);
+            font-family: 'Cairo', sans-serif; font-size: 20px; font-weight: 800; cursor: pointer;
+            transition: filter 0.2s, transform 0.2s;
         }
-        #loginOverlay .login-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16,185,129,0.4); }
-        #loginOverlay .login-btn:active { transform: translateY(0); }
+        #loginOverlay .login-btn:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+        #loginOverlay .login-btn:focus-visible { outline: 3px solid var(--lg-green); outline-offset: 3px; }
         #loginOverlay .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        #loginOverlay .forgot-link {
-            display: block;
-            text-align: center;
-            margin-top: 1.5rem;
-            color: #6b7280;
-            font-weight: 700;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-family: 'Cairo', sans-serif;
-            font-size: 15px;
-            width: 100%;
-        }
-        #loginOverlay .forgot-link:hover { color: #10b981; text-decoration: underline; }
+        #loginOverlay .login-logo { justify-self: center; display: flex; }
+        #loginOverlay .login-logo img { height: clamp(200px, 42vh, 380px); width: auto; }
+        #loginOverlay .login-foot { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; }
+        #loginOverlay .login-foot span { font-weight: 700; font-size: 14px; }
+        #loginOverlay .forgot-link { background: none; border: 0; padding: 10px 12px; min-height: 44px; color: rgba(255,255,255,0.8); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+        #loginOverlay .forgot-link:hover, #loginOverlay .forgot-link:focus-visible { color: #fff; text-decoration: underline; }
         #loginOverlay .login-error {
-            background: #fef2f2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid #fecaca;
-            font-weight: 700;
-            text-align: center;
-            font-size: 14px;
+            background: #fef2f2; color: #991b1b; padding: 12px; border-radius: 14px;
+            border: 1px solid #fecaca; font-weight: 700; text-align: center; font-size: 14px;
+        }
+        @media (max-width: 720px) {
+            #loginOverlay .login-card { width: 100%; grid-template-columns: 1fr; gap: 20px; padding: 28px 20px; border-radius: 24px; }
+            #loginOverlay .login-logo { order: -1; }
+            #loginOverlay .login-logo img { height: 120px; }
+            #loginOverlay .login-form h2 { margin-bottom: 6px; text-align: center; }
+            #loginOverlay input[type="email"], #loginOverlay input[type="password"], #loginOverlay .login-btn { height: 56px; }
         }
 
         /* ═══════════ الرأس: صفّ واحد مضغوط، شفاف يلبس الأبيض عند النزول ═══════════ */
@@ -724,42 +708,28 @@
 
     <!-- شاشة تسجيل الدخول - تظهر قبل البرنامج -->
     <div id="loginOverlay">
+        <h1 class="login-title">جمعية أفضلكم لتعليم القرآن الكريم وعلومه</h1>
         <div class="login-card">
-            <div class="text-center mb-6">
-                <div class="text-6xl mb-3">🕌</div>
-                <h1 data-program-brand class="text-3xl font-black text-slate-800">برنامج المهرة</h1>
-                <p class="text-slate-500 font-bold mt-2">نظام إدارة الحلقات القرآنية</p>
-            </div>
-
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">
-                        <i class="fas fa-envelope text-emerald-600 ml-1"></i> البريد الإلكتروني
-                    </label>
-                    <input type="email" id="loginEmail" placeholder="example@gmail.com" required autocomplete="email">
+            <form id="loginForm" class="login-form">
+                <h2>بيانات تسجيل الدخول</h2>
+                <div class="login-field">
+                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" required autocomplete="email">
+                    <i class="fas fa-user" aria-hidden="true"></i>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">
-                        <i class="fas fa-lock text-emerald-600 ml-1"></i> كلمة المرور
-                    </label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                <div class="login-field">
+                    <input type="password" id="loginPassword" placeholder="كلمة المرور" aria-label="كلمة المرور" required autocomplete="current-password">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
                 </div>
-
                 <div id="loginError" class="login-error hidden"></div>
-
-                <button type="submit" id="loginBtn" class="login-btn">
-                    🔓 تسجيل الدخول
-                </button>
-
-                <button type="button" id="forgotBtn" class="forgot-link">
-                    نسيت كلمة المرور؟
-                </button>
+                <button type="submit" id="loginBtn" class="login-btn">دخول</button>
             </form>
-
-            <div class="text-center text-xs text-slate-400 mt-6 pt-4 border-t border-slate-100">
-                للحصول على حساب، تواصل مع المشرف
+            <div class="login-logo">
+                <img src="./assets/brand/afdalkom-logo-vertical-color.png" alt="شعار جمعية أفضلكم لتعليم القرآن الكريم وعلومه">
             </div>
+        </div>
+        <div class="login-foot">
+            <span data-program-brand>برنامج المهرة</span>
+            <button type="button" id="forgotBtn" class="forgot-link">نسيت كلمة المرور؟</button>
         </div>
     </div>
 
