@@ -329,10 +329,8 @@
         #loginOverlay .login-btn:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
         #loginOverlay .login-btn:focus-visible { outline: 3px solid var(--lg-green); outline-offset: 3px; }
         #loginOverlay .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        #loginOverlay .login-logo { justify-self: center; display: flex; perspective: 900px; animation: loginLogoFloat 6s ease-in-out infinite; }
+        #loginOverlay .login-logo { justify-self: center; display: flex; perspective: 900px; }
         #loginOverlay .login-logo img { height: clamp(200px, 42vh, 380px); width: auto; transform-style: preserve-3d; filter: drop-shadow(0 14px 18px rgba(18,92,47,0.18)); will-change: transform; }
-        @keyframes loginLogoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @media (prefers-reduced-motion: reduce) { #loginOverlay .login-logo { animation: none; } }
         #loginOverlay .login-foot { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; }
         #loginOverlay .login-foot span { font-weight: 700; font-size: 14px; }
         #loginOverlay .forgot-link { background: none; border: 0; padding: 10px 12px; min-height: 44px; color: rgba(255,255,255,0.8); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -735,20 +733,19 @@
         </div>
     </div>
     <script>
-        // الشعار يميل نحو الماوس في أي مكان من شاشة الدخول (كميلان الحديث في الرئيسية)
+        // الشعار يميل يميناً ويساراً مع الماوس حين يكون فوقه فقط
         (function initLoginLogoTilt() {
-            const overlay = document.getElementById('loginOverlay'), logo = document.getElementById('loginLogo');
-            if (!overlay || !logo) return;
+            const box = document.querySelector('#loginOverlay .login-logo'), logo = document.getElementById('loginLogo');
+            if (!box || !logo) return;
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            overlay.addEventListener('pointermove', e => {
+            box.addEventListener('pointermove', e => {
                 if (e.pointerType === 'touch') return;
-                const r = logo.getBoundingClientRect();
-                const x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
-                const y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
-                logo.style.transition = 'transform .15s linear';
-                logo.style.transform = `rotateY(${x * 22}deg) rotateX(${-y * 16}deg) translateZ(14px)`;
+                const r = box.getBoundingClientRect();
+                const x = Math.max(-0.5, Math.min(0.5, (e.clientX - r.left) / r.width - 0.5));
+                logo.style.transition = 'transform .12s linear';
+                logo.style.transform = `rotateY(${x * 40}deg)`;
             });
-            overlay.addEventListener('pointerleave', () => {
+            box.addEventListener('pointerleave', () => {
                 logo.style.transition = 'transform .6s cubic-bezier(.22,.9,.3,1)';
                 logo.style.transform = '';
             });
