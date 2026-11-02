@@ -123,6 +123,28 @@ test('second grade click retains selection; explicit clear resets section; unuse
     assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);
 });
 
+test('quick-entry scroll wrapper contains the fieldset and preview, outside the fixed footer', () => {
+    assert.match(html, /<div class="qe-body">\s*<fieldset id="generalQuickFields" class="qe-fields">[\s\S]*?<p id="generalQuickPreview"[^>]*><\/p>\s*<\/fieldset>\s*<\/div>\s*<div id="generalQuickFooter"/);
+    assert.doesNotMatch(html, /<fieldset[^>]*class="[^"]*\bqe-body\b/);
+    assert.match(html, /\.qe-body\s*\{\s*min-height: 0; overflow: auto; padding: 14px 18px;\s*\}/);
+    assert.match(html, /\.qe-fields\s*\{\s*display: flex; flex-direction: column; gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0;\s*\}/);
+});
+
+test('opening criteria exceptions scrolls the visible host into view; closing does not scroll', () => {
+    const h = harness(), host = h.element('generalCriteriaHost'), calls = [];
+    host.scrollIntoView = options => {
+        assert.equal(host.hidden, false);
+        calls.push(copy(options));
+    };
+    h.run('toggleGeneralCriteriaExceptions()');
+    assert.equal(h.element('generalCriteriaExceptions').attrs['aria-expanded'], 'true');
+    assert.deepEqual(calls, [{ block: 'nearest' }]);
+    h.run('toggleGeneralCriteriaExceptions()');
+    assert.equal(host.hidden, true);
+    assert.equal(h.element('generalCriteriaExceptions').attrs['aria-expanded'], 'false');
+    assert.equal(calls.length, 1);
+});
+
 test('criteria remain unevaluated on open; fulfill checks only enabled positives and removes negatives; unchanged snapshot is not written', async () => {
     const h = harness(); assert.deepEqual(copy(h.run('getCriteriaSelection()')), {});
     assert.equal(h.element('generalCriteriaAllBtn').textContent, '✓ استوفى المعايير');
