@@ -665,16 +665,17 @@
     .qe-body { min-height: 0; overflow: auto; padding: 14px 18px; }
     .qe-fields { display: flex; flex-direction: column; gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0; }
     #generalQuickPanels { display: flex; flex-direction: column; gap: 12px; }
-    .qe-row { display: grid; grid-template-columns: 76px minmax(200px, 1fr) minmax(220px, 1fr) auto 64px; gap: 6px 12px; align-items: center; padding: 12px; border: 1px solid var(--qe-line); border-radius: 12px; }
+    .qe-row { display: grid; grid-template-columns: 76px minmax(200px, 1fr) minmax(220px, 1fr) auto 64px; gap: 6px 12px; align-items: end; padding: 12px; border: 1px solid var(--qe-line); border-radius: 12px; }
     .qe-new { background: var(--qe-new-bg); } .qe-review { background: var(--qe-bg); }
-    .qe-row h3 { font-size: 19px; font-weight: 800; } .qe-field > label { display: block; font-size: 13px; color: var(--qe-muted); margin-bottom: 4px; }
+    .qe-row h3 { display: flex; align-items: center; height: 42px; font-size: 19px; font-weight: 800; } .qe-field > label { display: block; font-size: 13px; color: var(--qe-muted); margin-bottom: 4px; }
     .qe-pair { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 6px; }
     .qe-pair input, .qe-pair select { width: 100%; height: 42px; border: 1px solid var(--qe-line); border-radius: 9px; padding: 0 8px; background: var(--qe-bg); font-size: 17px; }
-    .qe-pair input { text-align: center; } .qe-locked { min-height: 42px; padding: 8px 12px; border: 1px dashed var(--qe-line); border-radius: 9px; background: var(--qe-bg); color: var(--qe-accent); font-size: 18px; font-weight: 700; }
+    .qe-pair input { text-align: center; } .qe-locked { display: flex; align-items: center; height: 42px; padding: 0 12px; border: 1px dashed var(--qe-line); border-radius: 9px; background: var(--qe-bg); color: var(--qe-accent); font-size: 18px; font-weight: 700; }
     .qe-fix { font-size: 12px !important; color: var(--qe-muted); text-decoration: underline; } .qe-hint { font-size: 12px; color: var(--qe-muted); }
+    .qe-below { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 12px; }
     .qe-position { padding: 8px; border: 1px solid var(--qe-amber); background: var(--qe-amber-bg); border-radius: 9px; font-size: 13px; }
     .qe-position > label { display: block; margin: 3px 0; } .qe-position input[type=checkbox] { width: auto; }
-    .qe-grades { display: flex; flex-wrap: wrap; gap: 5px; } .qe-grade { border: 1px solid var(--qe-line); border-radius: 9px; padding: 9px 10px; background: var(--qe-bg); font-weight: 700 !important; }
+    .qe-grades { display: flex; flex-wrap: wrap; gap: 5px; } .qe-grade { height: 42px; border: 1px solid var(--qe-line); border-radius: 9px; padding: 9px 10px; background: var(--qe-bg); font-weight: 700 !important; }
     .qe-grade[aria-pressed=true] { color: var(--qe-bg); background: var(--qe-accent); border-color: var(--qe-accent); }
     .qe-clear { color: var(--qe-muted); text-decoration: underline; font-size: 12px !important; }
     .qe-message { grid-column: 1 / -1; color: var(--qe-error); font-size: 14px; }
@@ -7434,9 +7435,10 @@
             const rangeFields = (kind, edge) => `<div class="qe-field"><label for="quick_${kind}_${edge}Surah">${edge === 'from' ? 'من' : 'إلى'}</label><div class="qe-pair"><select aria-label="سورة ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select><input aria-label="آية ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" placeholder="الآية" oninput="updateGeneralQuickPreview()"></div></div>`;
             document.getElementById('generalQuickPanels').innerHTML = ['new', 'review'].map(kind => `<section id="quick_${kind}_row" class="qe-row qe-${kind}">
                 <h3>${kind === 'new' ? 'الجديد' : 'المراجعة'}</h3>
-                ${kind === 'new' ? `<div class="qe-field"><label>من 🔒</label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p><button type="button" onclick="openGeneralFrontierFixFromQuick()" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع</button><p id="quick_new_after" class="qe-hint"></p></div>` : rangeFields(kind, 'from')}
+                ${kind === 'new' ? `<div class="qe-field"><label>من 🔒</label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p></div>` : rangeFields(kind, 'from')}
                 ${rangeFields(kind, 'to')}<div id="quick_${kind}_grades" class="qe-grades" aria-label="تقدير ${kind === 'new' ? 'الجديد' : 'المراجعة'}"></div>
                 <button id="quick_${kind}_clear" type="button" class="qe-clear" onclick="clearGeneralQuickSection('${kind}')">مسح القسم</button>
+                ${kind === 'new' ? '<div class="qe-below"><button type="button" onclick="openGeneralFrontierFixFromQuick()" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع</button><p id="quick_new_after" class="qe-hint"></p></div>' : ''}
                 <p id="quick_${kind}_message" class="qe-message" aria-live="polite"></p>
                 ${kind === 'new' ? '<button id="quick_position_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>' : '<button id="quick_review_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>'}
             </section>`).join('');

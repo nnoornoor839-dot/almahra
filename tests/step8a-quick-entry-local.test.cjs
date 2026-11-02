@@ -130,6 +130,22 @@ test('quick-entry scroll wrapper contains the fieldset and preview, outside the 
     assert.match(html, /\.qe-fields\s*\{\s*display: flex; flex-direction: column; gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0;\s*\}/);
 });
 
+test('new-row correction and after hint share a separate row outside the start field, with IDs preserved', () => {
+    for (const fixture of [student(), rawStudent()]) {
+        const h = harness(fixture), markup = h.element('generalQuickPanels').innerHTML;
+        const newRow = markup.match(/<section id="quick_new_row"[^>]*>([\s\S]*?)<\/section>/)[1];
+        const startField = newRow.match(/<div class="qe-field"><label>من 🔒<\/label>([\s\S]*?)<p id="quick_new_start" class="qe-locked"><\/p><\/div>/)[1];
+        assert.doesNotMatch(startField, /quick_new_after|openGeneralFrontierFixFromQuick/);
+        assert.equal(startField.includes('class="qe-position"'), h.run('generalQuickEntry.needsPosition'));
+        assert.match(newRow, /<div class="qe-below"><button type="button" onclick="openGeneralFrontierFixFromQuick\(\)" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع<\/button><p id="quick_new_after" class="qe-hint"><\/p><\/div>\s*<p id="quick_new_message"/);
+        for (const id of ['quick_new_start', 'quick_new_toSurah', 'quick_new_toAyah', 'quick_new_grades', 'quick_new_clear', 'quick_new_after', 'quick_new_message', 'quick_position_fix']) {
+            assert.equal(newRow.split(`id="${id}"`).length - 1, 1, id);
+        }
+        const reviewRow = markup.match(/<section id="quick_review_row"[^>]*>([\s\S]*?)<\/section>/)[1];
+        assert.doesNotMatch(reviewRow, /qe-below|quick_new_after/);
+    }
+});
+
 test('opening criteria exceptions scrolls the visible host into view; closing does not scroll', () => {
     const h = harness(), host = h.element('generalCriteriaHost'), calls = [];
     host.scrollIntoView = options => {
