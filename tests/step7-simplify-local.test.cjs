@@ -32,7 +32,7 @@ const entry = (kind, at, by = uid, end = 10) => ({ kind, at, by, spec: { from: [
 const student = (entries = {}) => ({ id: 1, sid: 'synthetic-sid', name: 'طالب وهمي', lastSurah: 114, lastAyah: 1,
     lastSardRange: 'موضع وهمي', history: { [today]: { attended: true, hijri: 'وهمي', criteria: { early: true }, criteriaPoints: 5,
         absence: 'excused', note: 'تبقى', entries } } });
-function harness(list = [student()]) {
+function harness(list = [student()], goldenRepair = true) {
     const state = { program: 'general', uid, settings: { features: { goldenBoard: false, pomodoro: false }, points: { attendance: 0 } },
         writes: [], messages: [], prompts: [], updates: 0, confirm: true, school: true, writable: true, measure: true, archived: false };
     const elements = new Map();
@@ -70,6 +70,7 @@ function harness(list = [student()]) {
         getAttendanceState: () => ({ state: 'present' }), generalAttendanceStart: () => yesterday,
         densityFor: () => null, roundPointTotal: n => n, collectCriteriaFromRows: () => [] });
     const run = code => vm.runInContext(code, ctx);
+    run(html.match(/const GOLDEN_BOARD_UNDER_REPAIR = (?:true|false);/)[0].replace('= true', `= ${goldenRepair}`));
     const install = (...names) => names.forEach(name => run(source(name)));
     require('./helpers/tv-harness.cjs').installTv(run, install);
     ctx.fixture = list;
@@ -170,7 +171,7 @@ test('golden visibility reads store features only; the real getProgramSettings p
             h.run('updateSmartSimplification(); switchSmartTab("mastery"); openPointsBreakdownModal(1)');
             for (const id of ['tabMasteryBtn', 'smartTabs', 'reportGoldenLegend'])
                 assert.equal(h.element(id).style.display, hidden ? 'none' : '', `${program}/${goldenBoard}/${id}`);
-            assert.equal(h.element('smartMasterySection').classList.contains('hidden'), hidden);
+            assert.equal(h.element('smartMasterySection').classList.contains('hidden'), true);
             const content = h.element('pbContent').innerHTML;
             assert.equal(content.includes('سرد المسار اليومي + اللوحة الذهبية معاً'), !hidden);
             assert.equal(content.includes('من ضمن البند أعلاه:'), !hidden);
@@ -185,7 +186,7 @@ test('golden visibility reads store features only; the real getProgramSettings p
 
 test('disabling golden while mastery or exam preparation is active selects and styles the daily tab', () => {
     for (const tab of ['mastery', 'examprep']) {
-        const h = harness();
+        const h = harness(undefined, false); // عزل إخفاء العام بعد انتهاء الإغلاق المؤقت.
         // Activate the tab before switching from the legacy program to general.
         h.state.program = 'summer'; h.run(`switchSmartTab('${tab}')`);
         assert.equal(h.element('smartDailySection').classList.contains('hidden'), true);

@@ -361,7 +361,9 @@ test('scope: all existing writes, points, settings and deferred group readers re
         const current = source(name).replaceAll('\r\n', '\n');
         const quickGuard = "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }\n";
         const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
-        assert.equal(name === 'saveSmartProgress' ? current.replace(quickGuard, '').replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);
+        const goldenGuard = "            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }\n";
+        const scoped = name === 'saveSmartMastery' ? current.replace(goldenGuard, '') : current;
+        assert.equal(name === 'saveSmartProgress' ? scoped.replace(quickGuard, '').replace(guard, '') : scoped, source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
     // Manager-requested validation message is the sole change to this save function.
     assert.equal(source('saveAttendanceEdit').replace("{ showToast('اختر حاضر أو غائب', 'error'); return; }", 'return;').replaceAll('\r\n', '\n'),

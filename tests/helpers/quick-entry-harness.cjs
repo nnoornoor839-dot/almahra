@@ -120,6 +120,7 @@ function harness(s = student()) {
         switchTab: id => { state.tab = id; }, updateSettingsBadges() {},
         confetti: { create: () => () => state.confetti++ }, setTimeout() {}, closeKnightCelebration() {} });
     const run = code => vm.runInContext(code, ctx);
+    run(html.match(/const GOLDEN_BOARD_UNDER_REPAIR = (?:true|false);/)[0]);
     const install = (...names) => names.forEach(name => run(source(name)));
     require('./tv-harness.cjs').installTv(run, install);
     ctx.fixture = s;

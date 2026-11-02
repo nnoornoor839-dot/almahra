@@ -61,6 +61,8 @@ function harness() {
         saveData: () => { state.writes.push({ kind: 'restore' }); }, studentsCountLabel: n => `${n} طالب`,
         setTimeout() {} });
     const run = code => vm.runInContext(code, ctx);
+    // اختبارات التقويم تعزل الإغلاق المؤقت؛ مفتاح الإنتاج المفعّل مغطّى في golden-lock-local.
+    run(html.match(/const GOLDEN_BOARD_UNDER_REPAIR = (?:true|false);/)[0].replace('= true', '= false'));
     const install = (...names) => names.forEach(name => run(source(name)));
     require('./helpers/tv-harness.cjs').installTv(run, install);
     run(`let students = [{ id: 1, sid: 'synthetic-student', name: 'طالب وهمي', history: {} }];

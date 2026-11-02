@@ -2316,6 +2316,9 @@
             return window.almahraPrograms?.getCurrentProgramId() === 'general';
         }
 
+        // إغلاق مؤقت: حدود نصف الجزء ومحطتي عمّ غير مطابقة؛ تقرير Astra notes/quran-engine-audit/astra/REPORT.ar.md (أ١، أ٢).
+        const GOLDEN_BOARD_UNDER_REPAIR = true;
+
         function generalGoldenHidden() {
             return isGeneralProgram() && window.almahraPrograms?.getSettings()?.features?.goldenBoard === false;
         }
@@ -5095,7 +5098,7 @@
             JUZ_NAMES.forEach((name, index) => {
                 grid.innerHTML += `
                     <label class="block relative cursor-pointer group">
-                        <input type="checkbox" value="${index}" id="juz_${index}" onchange="handleJuzSelection()" class="juz-checkbox peer sr-only">
+                        <input type="checkbox" value="${index}" id="juz_${index}" ${GOLDEN_BOARD_UNDER_REPAIR ? 'disabled' : ''} onchange="handleJuzSelection()" class="juz-checkbox peer sr-only">
                         <div class="p-3 bg-white border-2 border-slate-200 rounded-xl peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:border-emerald-300 transition-all text-center h-full flex items-center justify-center">
                             <span class="font-bold text-slate-700 peer-checked:text-emerald-700 text-sm">${name}</span>
                         </div>
@@ -5105,6 +5108,7 @@
         }
 
         function selectMinor(id, points, name) {
+            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }
             if (selectedMinor && selectedMinor.id === id) {
                 document.getElementById(`btn-${id}`).classList.remove('active'); selectedMinor = null;
                 document.querySelectorAll('.juz-checkbox').forEach(cb => { cb.disabled = false; });
@@ -5119,6 +5123,7 @@
         }
 
         function handleJuzSelection() {
+            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }
             selectedMinor = null; document.querySelectorAll('.minor-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('isHalfJuz').disabled = false;
             selectedJuzs = Array.from(document.querySelectorAll('.juz-checkbox:checked')).map(cb => parseInt(cb.value));
@@ -5132,6 +5137,7 @@
         }
 
         function handleHalfJuzToggle() {
+            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }
             if (document.getElementById('isHalfJuz').checked && selectedJuzs.length > 1) {
                 let firstSelected = selectedJuzs[0]; selectedJuzs = [firstSelected];
                 document.querySelectorAll('.juz-checkbox').forEach(cb => cb.checked = false);
@@ -5142,6 +5148,13 @@
 
         function updateSmartButton() {
             const btn = document.getElementById('smartSubmitBtn'); const isHalf = document.getElementById('isHalfJuz').checked;
+            if (GOLDEN_BOARD_UNDER_REPAIR) {
+                document.querySelectorAll('.minor-btn, .juz-checkbox').forEach(el => { el.disabled = true; });
+                document.getElementById('isHalfJuz').disabled = true;
+                btn.textContent = '🔧 اللوحة الذهبية — مغلقة للإصلاح'; btn.disabled = true;
+                btn.className = 'w-full py-5 bg-slate-300 text-slate-500 font-black text-2xl rounded-2xl shadow-sm cursor-not-allowed transition-all';
+                return;
+            }
 
             if (selectedMinor) {
                 btn.innerHTML = `اعتماد (${selectedMinor.name}) ⬅️ +${selectedMinor.points} نقطة`; activateButton(btn, 'bg-blue-600', 'hover:bg-blue-700'); return;
@@ -5163,6 +5176,7 @@
         function activateButton(btn, colorClass, hoverClass) { btn.disabled = false; btn.className = `w-full py-5 ${colorClass} ${hoverClass} text-white font-black text-2xl rounded-2xl shadow-lg transition-all transform hover:scale-[1.01]`; }
         
         function saveSmartMastery() {
+            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }
             if (!prepareSchoolDay()) return;
             if (!canWriteCloud()) return;
             const student = students.find(s => s.id === currentEditingStudentId);
@@ -5815,6 +5829,7 @@
         }
         
         function setSardType(type) {
+            if (GOLDEN_BOARD_UNDER_REPAIR && type === 'golden') { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }
             currentSardType = type; const btnNew = document.getElementById('btnTypeNew'); const btnReview = document.getElementById('btnTypeReview');
             if (type === 'review') {
                 btnReview.className = "py-4 px-6 rounded-2xl font-black text-2xl flex items-center justify-center gap-2 border-4 border-blue-500 bg-blue-500 text-white shadow-md transition-all";
@@ -6664,11 +6679,15 @@
         }
         
         function switchSmartTab(tab) {
+            if (tab === 'mastery' && GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); tab = 'daily'; }
             if ((tab === 'mastery' && generalGoldenHidden()) || (tab === 'examprep' && isGeneralProgram())) tab = 'daily';
             const dailyBtn = document.getElementById('tabDailyBtn'); const masteryBtn = document.getElementById('tabMasteryBtn'); const examBtn = document.getElementById('tabExamPrepBtn');
             const dailySec = document.getElementById('smartDailySection'); const masterySec = document.getElementById('smartMasterySection'); const examSec = document.getElementById('smartExamPrepSection');
             const inactiveClass = "flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent";
             dailyBtn.className = inactiveClass; masteryBtn.className = inactiveClass; examBtn.className = inactiveClass;
+            masteryBtn.disabled = GOLDEN_BOARD_UNDER_REPAIR;
+            masteryBtn.innerHTML = GOLDEN_BOARD_UNDER_REPAIR ? '🔧 اللوحة الذهبية — مغلقة للإصلاح' : '<i class="fas fa-crown"></i> اللوحة الذهبية (اعتمادات الأجزاء)';
+            if (GOLDEN_BOARD_UNDER_REPAIR) masteryBtn.className = 'flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-400 bg-slate-200 cursor-not-allowed';
             dailySec.classList.add('hidden'); masterySec.classList.add('hidden'); examSec.classList.add('hidden');
             if(tab === 'daily') {
                 dailyBtn.className = "flex-1 py-3 rounded-xl font-black text-lg md:text-xl bg-white text-emerald-600 shadow-sm transition-all border-b-4 border-emerald-500";
@@ -9199,7 +9218,7 @@
             document.getElementById('tabMasteryBtn').style.display = hideGolden ? 'none' : '';
             document.getElementById('smartTabs').style.display = hideGolden ? 'none' : '';
             document.getElementById('reportGoldenLegend').style.display = hideGolden ? 'none' : '';
-            if (hideGolden) switchSmartTab('daily');
+            if (hideGolden || GOLDEN_BOARD_UNDER_REPAIR) switchSmartTab('daily');
             updateGeneralUndoButton();
         }
 

@@ -46,6 +46,7 @@ function harness(program = 'general') {
         updateAllUIs: () => state.updates++
     });
     const run = code => vm.runInContext(code, ctx);
+    run(html.match(/const GOLDEN_BOARD_UNDER_REPAIR = (?:true|false);/)[0]);
     ctx.initialStudents = original;
     run("let students = initialStudents, _noLevelWarned = { key: 'synthetic', ids: [1] };");
     for (const name of ['countLabel', 'getStudentHalaqa', 'generalRecitationTeacher',

@@ -87,6 +87,7 @@ function harness(program = 'general', archived = false) {
         FileReader: class { constructor() { state.reader = this; } readAsText() {} },
         showToast(message, type = 'success') { state.messages.push({ message, type }); } });
     const run = code => vm.runInContext(code, ctx);
+    run(html.match(/const GOLDEN_BOARD_UNDER_REPAIR = (?:true|false);/)[0]);
     const install = (...names) => names.forEach(name => run(source(name)));
     run(`let students = [{ id: 1, name: 'طالب وهمي', history: { '2026-10-25': { attended: true } } }];
         let groups = [{ id: 1, name: 'مجموعة وهمية', leaderId: 1, deputyId: null, memberIds: [] }], groupIdCounter = 2;
@@ -181,7 +182,7 @@ test('student/import/settings/season entry points refuse locked writes before re
         const h = harness('summer'), before = h.snapshot(); h.install(name);
         await h.run(`${name}()`);
         assert.equal(h.snapshot(), before, name); assert.deepEqual(h.state.writes, [], name); assert.equal(h.state.prompts, 0, name);
-        assert.match(h.state.messages.at(-1).message, /مقفل/, name);
+        assert.match(h.state.messages.at(-1).message, name === 'saveSmartMastery' ? /مغلقة للإصلاح/ : /مقفل/, name);
     }
 });
 
