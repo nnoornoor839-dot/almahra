@@ -20,7 +20,7 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; padding-bottom: 100px; overflow-x: hidden; scroll-behavior: smooth; }
 
         /* حماية: إخفاء البرنامج قبل التحقق من تسجيل الدخول */
@@ -281,70 +281,74 @@
         #currentEventBadge:hover { background: #fef3c7; }
 
         /* شاشة تسجيل الدخول */
-        /* شاشة الدخول: على ترتيب الصورة المرجعية للمالك، بهوية جمعية أفضلكم */
+        /* شاشة الدخول: على نِسَب الصورة المرجعية للمالك (مقيسة بنسبة الشاشة)، بهوية جمعية أفضلكم */
         #loginOverlay {
-            --lg-green: #125c2f; --lg-green-600: #259046; --lg-gold: #c9b14b; --lg-field: #e9ebea; --lg-muted: #6b7570;
+            --lg-green: #125c2f; --lg-green-600: #259046; --lg-gold: #c9b14b; --lg-field: #e9ebea;
+            --lg-h: clamp(44px, 6.25vh, 78px);
             background: linear-gradient(to left, var(--lg-green-600), var(--lg-green));
             display: none; position: fixed; inset: 0; z-index: 4000;
             flex-direction: column; align-items: center; overflow-y: auto;
-            padding: clamp(24px, 5vh, 64px) 16px 24px;
+            padding: clamp(20px, 6vh, 80px) 16px clamp(12px, 3vh, 40px);
         }
         #loginOverlay.flex { display: flex; }
         #loginOverlay .login-title {
-            margin: 0 0 clamp(20px, 4vh, 48px); color: #fff; text-align: center;
-            font-weight: 700; font-size: clamp(24px, 3.4vw, 52px); line-height: 1.3; text-wrap: balance;
+            margin: 0 0 clamp(20px, 8.5vh, 120px); color: #fff; text-align: center;
+            font-weight: 600; font-size: clamp(24px, 3.65vw, 72px); line-height: 1.25; text-wrap: balance;
         }
         #loginOverlay .login-card {
-            width: min(75vw, 1440px); background: #fff; border-radius: 32px;
-            display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 32px;
-            padding: clamp(28px, 5vh, 80px) clamp(24px, 5vw, 96px);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+            width: min(75vw, 1440px); min-height: clamp(360px, 54.5vh, 680px); background: #fff; border-radius: clamp(20px, 1.7vw, 32px);
+            display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4vw;
+            padding: clamp(24px, 5vh, 64px) 6vw; box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
             animation: loginCardEnter 0.5s ease-out;
         }
         @keyframes loginCardEnter {
             from { opacity: 0; transform: translateY(20px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        #loginOverlay .login-form { width: 100%; max-width: 440px; justify-self: center; display: flex; flex-direction: column; gap: 18px; }
-        #loginOverlay .login-form h2 { margin: 0 0 18px; color: var(--lg-green); font-weight: 700; font-size: clamp(24px, 2.2vw, 38px); }
+        #loginOverlay .login-form { width: clamp(260px, 22.6vw, 460px); justify-self: center; display: flex; flex-direction: column; gap: clamp(10px, 1.25vh, 18px); }
+        #loginOverlay .login-form h2 { margin: 0 0 clamp(8px, 2.5vh, 32px); color: var(--lg-green); font-weight: 600; font-size: clamp(20px, 2.1vw, 40px); line-height: 1.3; }
         #loginOverlay .login-field { position: relative; }
-        #loginOverlay .login-field i { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: #555; font-size: 17px; pointer-events: none; }
+        #loginOverlay .login-field i { position: absolute; left: clamp(18px, 1.6vw, 32px); top: 50%; transform: translateY(-50%); color: #555; font-size: clamp(13px, 0.95vw, 18px); pointer-events: none; }
         #loginOverlay input[type="email"],
         #loginOverlay input[type="password"] {
-            width: 100%; height: 72px; box-sizing: border-box;
-            padding: 0 28px 0 60px; border: 0; border-radius: 999px; outline: none;
+            width: 100%; height: var(--lg-h); box-sizing: border-box;
+            padding: 0 clamp(18px, 2.2vw, 44px) 0 clamp(44px, 4vw, 76px); border: 0; border-radius: 999px; outline: none;
             background: var(--lg-field); color: #222;
-            font-family: 'Cairo', sans-serif; font-size: 18px; font-weight: 700;
+            font-family: 'Cairo', sans-serif; font-size: clamp(14px, 1.15vw, 21px); font-weight: 600;
             direction: ltr; text-align: left; transition: box-shadow 0.2s;
         }
         #loginOverlay input:placeholder-shown { text-align: right; }
-        #loginOverlay input::placeholder { color: #7a7f7c; font-weight: 600; }
+        #loginOverlay input::placeholder { color: #7a7f7c; font-weight: 400; }
         #loginOverlay input:focus-visible { box-shadow: 0 0 0 3px var(--lg-green-600); }
         #loginOverlay .login-btn {
-            margin-top: 22px; width: 100%; height: 72px; border: 0; border-radius: 999px;
+            margin-top: clamp(14px, 2.5vh, 32px); width: 100%; height: var(--lg-h); border: 0; border-radius: 999px;
             background: var(--lg-gold); color: var(--lg-green);
-            font-family: 'Cairo', sans-serif; font-size: 20px; font-weight: 800; cursor: pointer;
+            font-family: 'Cairo', sans-serif; font-size: clamp(15px, 1.15vw, 22px); font-weight: 700; cursor: pointer;
             transition: filter 0.2s, transform 0.2s;
         }
         #loginOverlay .login-btn:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
         #loginOverlay .login-btn:focus-visible { outline: 3px solid var(--lg-green); outline-offset: 3px; }
         #loginOverlay .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         #loginOverlay .login-logo { justify-self: center; display: flex; perspective: 900px; }
-        #loginOverlay .login-logo img { height: clamp(200px, 42vh, 380px); width: auto; transform-style: preserve-3d; filter: drop-shadow(0 14px 18px rgba(18,92,47,0.18)); will-change: transform; }
-        #loginOverlay .login-foot { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; }
+        #loginOverlay .login-logo img { height: clamp(160px, 35vh, 440px); width: auto; transform-style: preserve-3d; will-change: transform; }
+        #loginOverlay .login-foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 0; color: #fff; }
         #loginOverlay .login-foot span { font-weight: 700; font-size: 14px; }
-        #loginOverlay .forgot-link { background: none; border: 0; padding: 10px 12px; min-height: 44px; color: rgba(255,255,255,0.8); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+        #loginOverlay .forgot-link { background: none; border: 0; padding: 8px 12px; min-height: 44px; color: rgba(255,255,255,0.8); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
         #loginOverlay .forgot-link:hover, #loginOverlay .forgot-link:focus-visible { color: #fff; text-decoration: underline; }
         #loginOverlay .login-error {
             background: #fef2f2; color: #991b1b; padding: 12px; border-radius: 14px;
             border: 1px solid #fecaca; font-weight: 700; text-align: center; font-size: 14px;
         }
         @media (max-width: 720px) {
-            #loginOverlay .login-card { width: 100%; grid-template-columns: 1fr; gap: 20px; padding: 28px 20px; border-radius: 24px; }
+            #loginOverlay .login-title { margin-bottom: 24px; }
+            #loginOverlay .login-card { width: 100%; min-height: 0; grid-template-columns: 1fr; gap: 20px; padding: 28px 20px; border-radius: 24px; }
+            #loginOverlay .login-form { width: 100%; }
             #loginOverlay .login-logo { order: -1; }
             #loginOverlay .login-logo img { height: 120px; }
             #loginOverlay .login-form h2 { margin-bottom: 6px; text-align: center; }
-            #loginOverlay input[type="email"], #loginOverlay input[type="password"], #loginOverlay .login-btn { height: 56px; }
+            #loginOverlay { --lg-h: 54px; }
+            #loginOverlay input[type="email"], #loginOverlay input[type="password"], #loginOverlay .login-btn { font-size: 16px; }
         }
 
         /* ═══════════ الرأس: صفّ واحد مضغوط، شفاف يلبس الأبيض عند النزول ═══════════ */
