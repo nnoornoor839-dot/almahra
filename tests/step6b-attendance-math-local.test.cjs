@@ -353,8 +353,9 @@ test('summer and review-day readers and rendered reports match the exact 6a base
 });
 
 test('scope: all existing writes, points, settings and deferred group readers remain byte-identical to 6a', () => {
+    // تغيّرت بقرار المالك ٢٠٢٦-١١-٠٣ (ت٢٤)؛ يغطيها students-page-local
     for (const name of ['commitStudentPatch', 'commitPatches', 'buildEntryPatch', 'saveSmartProgress', 'saveSmartMastery',
-        'markPresent', 'saveGeneralAbsence', 'launchThreeKnights', 'saveCurrentThreeKnights',
+        'markPresent', 'launchThreeKnights', 'saveCurrentThreeKnights',
         'getCumulativeStats', 'getPointsBreakdown', 'getProgramSettings',
         'getWeeklyPointChampions', 'getLastCompletedWeekRange', 'applyGroupWinnerForDate']) {
         // Only the exact general undo and quick-entry guards are exempt.

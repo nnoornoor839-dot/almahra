@@ -113,14 +113,14 @@ test('list contains only selected halaqa, sorted names, active halaqas only and 
     assert.deepEqual(copy(h.run('generalAbsenceDraft.rows.map(r => r.id)')), [3]);
 });
 
-test('reciting student is present and disabled, manual present can be corrected; two absences use one batch and only attendance fields', () => {
+test('reciting student is present and disabled, manual present can be corrected; two absences use one batch and only attendance fields', async () => {
     const h = harness([student(1, 'أحمد', { history: { '2026-11-04': { entries: { e1: {} } } } }),
         student(2, 'بدر', { history: { '2026-11-04': { attended: true, hijri: 'لا يتغير', criteria: { c: true } } } }), student(3, 'زيد')]);
     h.open();
     assert.match(h.element('generalAbsenceRows').innerHTML, /حاضر \(سمّع\)/);
     assert.equal(h.element('generalAbsent0').disabled, true);
     h.mark(0); h.mark(1, 'excused', '  عذر وهمي  '); h.mark(2, 'unexcused');
-    h.run('saveGeneralAbsence()');
+    await h.run('saveGeneralAbsence()');
     assert.equal(h.state.batches.length, 1); assert.equal(h.state.batches[0].length, 2);
     const [manual, fresh] = h.state.batches[0];
     assert.deepEqual(manual.fields, { 'history.2026-11-04.attended': false, 'history.2026-11-04.absence': 'excused', 'history.2026-11-04.note': 'عذر وهمي' });
@@ -133,42 +133,44 @@ test('reciting student is present and disabled, manual present can be corrected;
     assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب');
     assert.equal(h.element('generalAbsent1').checked, true);
     assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
-    h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 1);
+    await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 1);
 });
 
-test('one missing reason rejects the whole batch and names the escaped student', () => {
+test('one missing reason rejects the whole batch and names the escaped student', async () => {
     const h = harness([student(1, 'أحمد'), student(2, 'زيد<وهمي>')]); h.open();
-    h.mark(0); h.mark(1, ''); h.run('saveGeneralAbsence()');
+    h.mark(0); h.mark(1, ''); await h.run('saveGeneralAbsence()');
     assert.equal(h.state.batches.length, 0);
     assert.match(h.state.messages.at(-1).message, /زيد&lt;وهمي&gt;/);
     assert.equal(h.list[0].history['2026-11-04'], undefined);
 });
 
-test('previous absence is populated, editable, and unchecking deletes all three fields without writing present or changing hijri', () => {
+// حلّ محل سلوك ٦أ بقرار المالك ٢٠٢٦-١١-٠٣ (ت٢٤)
+test('previous absence is populated, editable, and choosing present records attendance, removes absence/note and preserves hijri', async () => {
     const h = harness([student(1, 'طالب وهمي', { history: { '2026-11-04': { attended: false, absence: 'excused', note: 'عذر', hijri: 'يبقى' } } })]);
     h.open(); assert.equal(h.element('generalAbsent0').checked, true);
     assert.equal(h.element('generalReason0').value, 'excused'); assert.equal(h.element('generalNote0').value, 'عذر');
-    h.mark(0, 'unexcused', 'تصحيح'); h.run('saveGeneralAbsence()');
+    h.mark(0, 'unexcused', 'تصحيح'); await h.run('saveGeneralAbsence()');
     assert.equal(h.list[0].history['2026-11-04'].note, 'تصحيح');
-    h.element('generalAbsent0').checked = false; h.run('saveGeneralAbsence()');
-    assert.deepEqual(h.state.batches[1][0].fields, Object.fromEntries(['attended', 'absence', 'note'].map(k => [`history.2026-11-04.${k}`, { __almahraDelete: true }])));
-    assert.deepEqual(h.list[0].history['2026-11-04'], { hijri: 'يبقى' });
-    assert.equal(h.run("getAttendanceState(students[0], '2026-11-04').state"), 'unrecorded');
-    assert.match(h.element('generalUnrecordedAlert').innerHTML, /اليوم: ١ لم يُسجَّلوا بعد/);
+    h.element('generalAbsent0').checked = false; h.element('generalPresent0').checked = true; await h.run('saveGeneralAbsence()');
+    assert.deepEqual(h.state.batches[1][0].fields, { 'history.2026-11-04.attended': true,
+        'history.2026-11-04.absence': { __almahraDelete: true }, 'history.2026-11-04.note': { __almahraDelete: true } });
+    assert.deepEqual(h.list[0].history['2026-11-04'], { attended: true, hijri: 'يبقى' });
+    assert.equal(h.run("getAttendanceState(students[0], '2026-11-04').state"), 'present');
+    assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
 });
 
-test('history guard accepts only complete deletion, including at save when calendar changes', () => {
+test('history guard accepts only complete deletion, including at save when calendar changes', async () => {
     const h = harness();
     for (const fields of ["{ 'history.2026-11-04.attended': DEL_FIELD }", "{ 'history.2026-11-04.absence': DEL_FIELD }",
         "{ 'history.2026-11-04.note': DEL_FIELD }", "{ 'history.2026-11-04.attended': DEL_FIELD, 'history.2026-11-04.absence': DEL_FIELD }"]) {
         assert.equal(h.run(`canWriteHistory(${fields})`), false);
     }
     assert.equal(h.run("canWriteHistory({ 'history.2026-11-04.attended': DEL_FIELD, 'history.2026-11-04.absence': DEL_FIELD, 'history.2026-11-04.note': DEL_FIELD })"), true);
-    h.open(); h.mark(0); h.holiday('2026-11-04'); h.run('saveGeneralAbsence()');
+    h.open(); h.mark(0); h.holiday('2026-11-04'); await h.run('saveGeneralAbsence()');
     assert.equal(h.state.batches.length, 0); assert.match(h.state.messages.at(-1).message, /إجازة وهمية/);
 });
 
-test('holiday, future and outside-term dates show no list; old week needs confirm, cancel rejects, successful save does not ask twice', () => {
+test('holiday, future and outside-term dates show no list; old week needs confirm, cancel rejects, successful save does not ask twice', async () => {
     const h = harness(); h.holiday();
     h.open('2026-11-02'); assert.equal(h.run('generalAbsenceDraft'), null);
     assert.match(h.state.messages.at(-1).message, /2026-11-02 إجازة: إجازة وهمية/);
@@ -177,17 +179,17 @@ test('holiday, future and outside-term dates show no list; old week needs confir
     h.open('2026-10-20'); assert.match(h.state.messages.at(-1).message, /خارج الفصل/);
     h.state.confirm = false; h.open('2026-10-29'); assert.equal(h.run('generalAbsenceDraft'), null);
     assert.equal(h.state.prompts.at(-1), 'هذا من أسبوع سابق. هل تكمل؟');
-    h.state.confirm = true; h.open('2026-10-29'); h.mark(0); h.run('saveGeneralAbsence()');
+    h.state.confirm = true; h.open('2026-10-29'); h.mark(0); await h.run('saveGeneralAbsence()');
     assert.equal(h.state.prompts.length, 2); assert.equal(h.state.batches.length, 1);
 });
 
-test('no-op save writes nothing, read-only and stale season/halaqa reject; a new recitation cannot be overwritten', () => {
-    const h = harness(); h.open(); h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
-    h.mark(0); h.state.archived = true; h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
-    h.state.archived = false; h.state.season.id = 's2'; h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
+test('no-op save writes nothing, read-only and stale season/halaqa reject; a new recitation cannot be overwritten', async () => {
+    const h = harness(); h.open(); await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
+    h.mark(0); h.state.archived = true; await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
+    h.state.archived = false; h.state.season.id = 's2'; await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
     h.state.season.id = 's1'; h.list[0].history['2026-11-04'] = { entries: { e1: {} } };
-    h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0); assert.match(h.state.messages.at(-1).message, /سمّع/);
-    h.list[0].history = {}; h.list[0].halaqaId = 'h2'; h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
+    await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0); assert.match(h.state.messages.at(-1).message, /سمّع/);
+    h.list[0].history = {}; h.list[0].halaqaId = 'h2'; await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 0);
 });
 
 test('alert counts only school days this week through today, active halaqas and days since first history; empty history counts today only', () => {
@@ -233,7 +235,7 @@ test('alert computes the attendance start once per eligible student across schoo
     assert.deepEqual(h.ctx.attendanceStartCalls, [1, 2]);
 });
 
-test('old-date approval survives halaqa changes and saving, but expires when the date changes', () => {
+test('old-date approval survives halaqa changes and saving, but expires when the date changes', async () => {
     const h = harness([student(1, 'طالب أول'), student(2, 'طالب آخر', { halaqaId: 'h2' })]);
     h.open('2026-10-29'); assert.equal(h.state.prompts.length, 1);
     for (const halaqa of ['h2', 'h1', 'h2']) {
@@ -241,7 +243,7 @@ test('old-date approval survives halaqa changes and saving, but expires when the
         assert.equal(h.state.prompts.length, 1);
         assert.equal(h.run('generalAbsenceDraft.halaqaId'), halaqa);
     }
-    h.mark(0); h.run('saveGeneralAbsence()');
+    h.mark(0); await h.run('saveGeneralAbsence()');
     assert.equal(h.state.batches.length, 1); assert.equal(h.state.prompts.length, 1);
     h.element('generalAbsenceDate').value = '2026-10-28'; h.run('loadGeneralAbsenceList()');
     assert.equal(h.state.prompts.length, 2);
@@ -252,7 +254,7 @@ test('old-date approval survives halaqa changes and saving, but expires when the
     assert.equal(h.state.prompts.length, 4); assert.equal(h.run('generalAbsenceDraft'), null);
 });
 
-test('save message reports saved absences, removals, and mixed changes accurately', () => {
+test('save message reports saved absences, removals, and mixed changes accurately', async () => {
     for (const [saved, removed, expected] of [
         [2, 0, 'حُفظ: ٢ غائب'], [0, 1, 'أُزيل غياب ١'], [2, 1, 'حُفظ: ٢ غائب، وأُزيل غياب ١']
     ]) {
@@ -263,7 +265,7 @@ test('save message reports saved absences, removals, and mixed changes accuratel
         h.open();
         for (let i = 0; i < saved; i++) h.mark(i);
         if (removed) h.element('generalAbsent2').checked = false;
-        h.run('saveGeneralAbsence()');
+        await h.run('saveGeneralAbsence()');
         assert.equal(h.state.batches[0].length, saved + removed);
         assert.equal(h.state.messages.at(-1).message, expected);
     }

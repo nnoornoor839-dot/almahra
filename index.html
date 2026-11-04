@@ -707,6 +707,53 @@
 
     <!-- طبقة البيانات السحابية (تُبدّل localStorage بـ Firestore) -->
     <script type="module" src="./data-store.js"></script>
+    <style>
+        /* صفحة general وحدها؛ تبقى أصناف الصفحة القديمة للبرنامجين المقفلين. */
+        #page-students.general-students { padding: 24px; background: #f4f6f5; }
+        .general-students > div { max-width: 1240px; }
+        .general-students #legacyStudentsTools { display: none; }
+        .general-students #generalStudentsTools { position: sticky; top: 64px; z-index: 20; background: #f4f6f5; padding: 4px 0 12px; margin-bottom: 20px; }
+        .gs-tools-row { display: flex; gap: 10px; align-items: stretch; }
+        .gs-tools-row input { min-width: 0; flex: 1; border: 2px solid #e2e8e4; border-radius: 14px; padding: 14px 18px; background: white; font-size: 20px; font-weight: 700; outline: none; }
+        .gs-tools-row input:focus { border-color: #259046; box-shadow: 0 0 0 4px #eef7f1; }
+        .gs-tools-row > button { border: 1px solid #b9c5be; background: white; color: #4a5a51; border-radius: 14px; padding: 0 16px; font-size: 15px; font-weight: 800; }
+        .gs-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .gs-chips button { border: 1px solid #e2e8e4; background: white; color: #4a5a51; border-radius: 999px; padding: 6px 14px; font-weight: 700; }
+        .gs-chips small { margin-inline-start: 4px; }
+        .gs-chips button[aria-pressed="true"] { background: #125c2f; border-color: #125c2f; color: white; }
+        .general-students #studentsGrid { display: flex; flex-direction: column; gap: 24px; }
+        .gs-group { min-width: 0; }
+        .gs-group-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .gs-group-head h2 { font-size: 17px; font-weight: 800; overflow-wrap: anywhere; }
+        .gs-group-head span { margin-inline-start: auto; font-size: 13px; font-weight: 700; color: #4a5a51; }
+        .gs-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .gs-card { min-width: 0; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: white; border: 1px solid #e2e8e4; border-radius: 16px; box-shadow: 0 1px 2px #1028180a, 0 4px 16px #1028180d; color: #13231a; }
+        .gs-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .gs-number { font-size: 28px; font-weight: 900; color: #125c2f; line-height: 1; }
+        .gs-state { margin-inline-start: auto; font-size: 14px; font-weight: 800; border-radius: 8px; padding: 2px 10px; border: 1px solid transparent; }
+        .gs-done { background: #eaf6ee; color: #1d7a3e; }
+        .gs-present { background: #e4e9e6; color: #13231a; }
+        .gs-none { background: white; color: #13231a; border-color: #b9c5be; }
+        .gs-absent { background: transparent; color: #4a5a51; }
+        .gs-name { font-size: 18px; font-weight: 800; line-height: 1.45; min-height: 2.9em; overflow-wrap: anywhere; }
+        .gs-actions { display: flex; gap: 8px; margin-top: auto; }
+        .gs-entry { min-width: 0; flex: 1; height: 44px; border: 1.5px solid #259046; border-radius: 12px; background: #259046; color: white; font-size: 16px; font-weight: 800; }
+        .gs-attendance { height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #b9c5be; background: white; color: #4a5a51; font-size: 14px; font-weight: 800; }
+        .gs-card.is-done .gs-entry { background: white; color: #259046; }
+        .gs-entry:focus-visible, .gs-attendance:focus-visible { outline: 3px solid #125c2f; outline-offset: 2px; }
+        .gs-empty { padding: 40px 0; text-align: center; color: #4a5a51; }
+        .gs-att-choices { display: flex; gap: 16px; font-weight: 700; }
+        @media (max-width: 1020px) { .gs-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 780px) { .gs-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 600px) {
+            #page-students.general-students { padding: 16px; }
+            .general-students #generalStudentsTools { top: 52px; }
+            .gs-cards { grid-template-columns: minmax(0, 1fr); }
+            .gs-tools-row { flex-wrap: wrap; }
+            .gs-tools-row input { flex-basis: 100%; }
+            .gs-tools-row > button { min-height: 44px; width: 100%; }
+        }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col custom-scroll auth-not-ready">
 
@@ -885,7 +932,14 @@
     <!-- Students Tab -->
     <div id="page-students" class="tab-content p-6 md:p-10">
         <div class="max-w-[1800px] mx-auto">
-            <div class="flex flex-col mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-6">
+            <div id="generalStudentsTools" class="hidden no-print">
+                <div class="gs-tools-row">
+                    <input id="generalStudentSearchInput" type="search" aria-label="ابحث بالاسم أو الرقم" placeholder="ابحث بالاسم أو الرقم…" oninput="renderStudentsGrid()" onkeydown="generalStudentsSearchKeydown(event)">
+                    <button type="button" onclick="openGeneralStudentsAttendance()">حضور وغياب الحلقة</button>
+                </div>
+                <div id="generalStudentsHalaqas" class="gs-chips" aria-label="الحلقات"></div>
+            </div>
+            <div id="legacyStudentsTools" class="flex flex-col mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-6">
                 <div class="flex flex-col lg:flex-row justify-between items-center gap-6 w-full">
                     <h2 class="text-3xl md:text-4xl font-black text-slate-700"><i class="fas fa-book-reader text-emerald-500 ml-4"></i> لوحة الإنجاز والتحضير اليومي للطلاب</h2>
                     <div class="relative w-full lg:w-96 no-print shadow-sm rounded-2xl">
@@ -2189,16 +2243,16 @@
     <div id="generalAbsenceModal" class="fixed inset-0 z-[6000] hidden items-center justify-center bg-slate-900 bg-opacity-90 p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden">
             <div class="bg-blue-600 text-white p-5 flex justify-between items-center">
-                <h3 class="text-2xl font-black">قائمة الغياب</h3>
+                <h3 class="text-2xl font-black">حضور وغياب الحلقة</h3>
                 <button onclick="closeGeneralAbsenceModal()" aria-label="إغلاق" class="text-3xl">×</button>
             </div>
             <div class="p-5 bg-slate-50 grid sm:grid-cols-2 gap-4">
                 <label class="font-bold">التاريخ<input id="generalAbsenceDate" type="date" onchange="loadGeneralAbsenceList()" class="block w-full p-3 border-2 rounded-xl mt-2"></label>
                 <label class="font-bold">الحلقة<select id="generalAbsenceHalaqa" onchange="loadGeneralAbsenceList()" class="block w-full p-3 border-2 rounded-xl mt-2"></select></label>
             </div>
-            <div id="generalAbsenceRows" class="p-5 overflow-y-auto space-y-3"></div>
+            <fieldset id="generalAbsenceRows" class="p-5 overflow-y-auto space-y-3 min-w-0"></fieldset>
             <div class="p-5 border-t bg-slate-100">
-                <button id="generalAbsenceSave" onclick="saveGeneralAbsence()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">حفظ الغياب</button>
+                <button id="generalAbsenceSave" onclick="saveGeneralAbsence()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">حفظ</button>
             </div>
         </div>
     </div>
@@ -2332,7 +2386,8 @@
         function generalHalaqaLabel(halaqa, settings = getProgramSettings()) {
             const teacher = settings.teachers.find(t => t.id === halaqa.teacherId);
             const stage = settings.stages.find(t => t.id === halaqa.stageId);
-            return `${halaqa.name} — ${teacher?.name || 'معلم غير موجود'} / ${stage?.name || 'مرحلة غير موجودة'}`;
+            const teacherName = teacher?.name?.trim();
+            return `${halaqa.name} — ${teacherName ? (/^الأستاذ(?:\s|$)/.test(teacherName) ? teacherName : 'الأستاذ ' + teacherName) : 'معلم غير موجود'} / ${stage?.name || 'مرحلة غير موجودة'}`;
         }
 
         function generalStudentHalaqaHtml(student) {
@@ -2664,7 +2719,8 @@
         }
 
         let generalAbsenceDraft = null;
-        function openGeneralAbsenceModal(dateStr) {
+        function openGeneralAbsenceModal(dateStr, halaqaId) {
+            if (generalAbsenceDraft?.saving) { showToast('جارٍ حفظ الحضور السابق'); return; }
             refreshToday();
             if (!isGeneralProgram() || !canWriteCloud() || !requireSchoolCalendar()) return;
             const season = window.almahraPrograms.getCurrentSeason();
@@ -2672,7 +2728,7 @@
             input.min = season.termStart; input.max = todayStr < season.termEnd ? todayStr : season.termEnd;
             input.value = dateStr || todayStr;
             const select = document.getElementById('generalAbsenceHalaqa');
-            const previous = select.value;
+            const previous = halaqaId || select.value;
             select.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)
                 .map(h => `<option value="${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
             if (getProgramSettings().halaqas.some(h => h.id === previous && h.active === true)) select.value = previous;
@@ -2683,8 +2739,15 @@
         function closeGeneralAbsenceModal() {
             const modal = document.getElementById('generalAbsenceModal');
             modal?.classList.remove('flex'); modal?.classList.add('hidden');
-            generalAbsenceDraft = null;
+            ['generalAbsenceDate', 'generalAbsenceHalaqa', 'generalAbsenceRows'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+            const saveButton = document.getElementById('generalAbsenceSave');
+            saveButton.textContent = 'حفظ'; saveButton.disabled = !generalAbsenceDraft?.rows.length;
+            // يبقى الطلب حياً ويمنع إعادة الفتح؛ الإغلاق يحرر الواجهة فقط.
+            if (!generalAbsenceDraft?.saving) generalAbsenceDraft = null;
         }
+        window.addEventListener('almahra-program-changed', closeGeneralAbsenceModal);
         function validateGeneralAbsenceDate(dateStr, approvedWeek = '') {
             if (!schoolCivilDate(dateStr)) { showToast('اختر تاريخاً صحيحاً', 'error'); return false; }
             if (dateStr > todayStr) { showToast('لا يمكن تسجيل غياب تاريخ مستقبلي', 'error'); return false; }
@@ -2694,6 +2757,7 @@
             return true;
         }
         function loadGeneralAbsenceList(approvedWeek = '') {
+            if (generalAbsenceDraft?.saving) return;
             refreshToday();
             const previousDraft = generalAbsenceDraft;
             generalAbsenceDraft = null;
@@ -2716,7 +2780,10 @@
                 const label = row.hasEntries ? 'حاضر (سمّع)' : row.state === 'present' ? 'حاضر' : absent ? 'غائب' : 'لم يُسجَّل';
                 return `<div class="border rounded-xl p-4 space-y-3">
                     <div class="flex flex-wrap justify-between gap-3"><span class="font-bold">${escapeHTML(student.name)} · ${label}</span>
-                    <label><input id="generalAbsent${i}" type="checkbox" ${absent ? 'checked' : ''} ${row.hasEntries ? 'disabled' : ''} onchange="toggleGeneralAbsenceRow(${i})"> غائب</label></div>
+                    <div class="gs-att-choices" role="group" aria-label="حضور ${escapeHTML(student.name)}">
+                        <label><input id="generalPresent${i}" name="generalAttendance${i}" type="radio" ${row.state === 'present' ? 'checked' : ''} onchange="toggleGeneralAbsenceRow(${i})"> حاضر</label>
+                        <label><input id="generalAbsent${i}" name="generalAttendance${i}" type="radio" ${absent ? 'checked' : ''} ${row.hasEntries ? 'disabled' : ''} onchange="toggleGeneralAbsenceRow(${i})"> غائب</label>
+                    </div></div>
                     <div id="generalAbsenceFields${i}" class="${absent ? '' : 'hidden'} space-y-2">
                         <label class="block">سبب الغياب<select id="generalReason${i}" class="block w-full border rounded-lg p-2">${reasons}</select></label>
                         <label class="block">ملاحظة (اختيارية)<textarea id="generalNote${i}" class="block w-full border rounded-lg p-2">${escapeHTML(row.note || '')}</textarea></label>
@@ -2728,10 +2795,10 @@
         function toggleGeneralAbsenceRow(index) {
             document.getElementById(`generalAbsenceFields${index}`).classList.toggle('hidden', !document.getElementById(`generalAbsent${index}`).checked);
         }
-        function saveGeneralAbsence() {
+        async function saveGeneralAbsence() {
             refreshToday();
             const draft = generalAbsenceDraft;
-            if (!isGeneralProgram() || !draft || !canWriteCloud()) return;
+            if (!isGeneralProgram() || !draft || draft.saving || !canWriteCloud()) return;
             if (draft.seasonId !== window.almahraPrograms.getCurrentSeasonId() || draft.dateStr !== document.getElementById('generalAbsenceDate').value ||
                 draft.halaqaId !== document.getElementById('generalAbsenceHalaqa').value) { showToast('أعد فتح قائمة الغياب', 'error'); return; }
             if (!validateGeneralAbsenceDate(draft.dateStr, draft.approvedWeek)) return;
@@ -2740,14 +2807,17 @@
             const patches = [];
             for (let i = 0; i < draft.rows.length; i++) {
                 const row = draft.rows[i], checked = document.getElementById(`generalAbsent${i}`).checked;
+                const present = document.getElementById(`generalPresent${i}`).checked || (row.state === 'absent' && !checked);
                 const absence = document.getElementById(`generalReason${i}`).value, note = document.getElementById(`generalNote${i}`).value.trim();
                 if (row.hasEntries) continue;
+                if (!checked && !present) continue;
                 const student = students.find(s => s.id === row.id);
                 if (!student || getStudentHalaqa(student, settings)?.id !== draft.halaqaId) { showToast('تغيّر طلاب الحلقة، أعد تحميل القائمة', 'error'); return; }
                 if (checked && !settings.absence.some(a => a.id === absence && ['excused', 'unexcused'].includes(a.id))) {
                     showToast(`اختر سبب الغياب للطالب ${escapeHTML(student.name)}`, 'error'); return;
                 }
-                if (checked === (row.state === 'absent') && (!checked || (absence === row.absence && note === row.note))) continue;
+                if (checked && row.state === 'absent' && absence === row.absence && note === row.note) continue;
+                if (!checked && row.state === 'present') continue;
                 const current = getAttendanceState(student, draft.dateStr), p = `history.${draft.dateStr}.`;
                 if (current.hasEntries) { showToast(`الطالب ${escapeHTML(student.name)} حاضر (سمّع)، أعد تحميل القائمة`, 'error'); return; }
                 let fields;
@@ -2756,17 +2826,52 @@
                     fields = { [p + 'attended']: false, [p + 'absence']: absence, [p + 'note']: note };
                     if (!student.history?.[draft.dateStr]) fields[p + 'hijri'] = hijriForDateStr(draft.dateStr);
                 } else {
-                    if (current.state !== 'absent') continue;
-                    fields = { [p + 'attended']: DEL_FIELD, [p + 'absence']: DEL_FIELD, [p + 'note']: DEL_FIELD };
+                    if (current.state === 'present') continue;
+                    fields = { [p + 'attended']: true, [p + 'absence']: DEL_FIELD, [p + 'note']: DEL_FIELD };
+                    if (!student.history?.[draft.dateStr]) fields[p + 'hijri'] = hijriForDateStr(draft.dateStr);
                 }
                 patches.push({ student, fields });
             }
             if (!patches.length) { showToast('لا تغييرات'); return; }
-            if (!commitPatches(patches)) return;
+            if (patches.some(patch => !canWriteHistory(patch.fields))) return;
             const count = patches.filter(p => p.fields[`history.${draft.dateStr}.attended`] === false).length;
-            const removed = patches.length - count;
-            updateAllUIs(); loadGeneralAbsenceList(getWeekStartDate(todayStr));
-            showToast([count ? `حُفظ: ${count.toLocaleString('ar-SA')} غائب` : '', removed ? `أُزيل غياب ${removed.toLocaleString('ar-SA')}` : ''].filter(Boolean).join('، و'));
+            const removed = patches.filter(p => p.fields[`history.${draft.dateStr}.attended`] === true &&
+                draft.rows.find(r => r.id === p.student.id)?.state === 'absent').length;
+            const presentCount = patches.length - count - removed;
+            const saveButton = document.getElementById('generalAbsenceSave');
+            const controls = ['generalAbsenceDate', 'generalAbsenceHalaqa', 'generalAbsenceRows'].map(id => document.getElementById(id));
+            let saved = false;
+            draft.saving = true;
+            saveButton.disabled = true; saveButton.textContent = 'جارٍ الحفظ…';
+            controls.forEach(control => { control.disabled = true; });
+            try {
+                const result = await window.almahraData.commitBatch(patches.map(patch => ({ type: 'update', id: patch.student.id, fields: patch.fields })));
+                if (!result?.success) throw new Error(result?.error || 'خطأ غير معروف');
+                if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== draft.seasonId) return;
+                patches.forEach(patch => {
+                    const current = students.find(student => student.id === patch.student.id);
+                    if (current) applyFieldsLocally(current, patch.fields);
+                });
+                saved = true;
+                updateAllUIs();
+                showToast([count ? `حُفظ: ${count.toLocaleString('ar-SA')} غائب` : '', removed ? `أُزيل غياب ${removed.toLocaleString('ar-SA')}` : '', presentCount ? `حُفظ: ${presentCount.toLocaleString('ar-SA')} حاضر` : ''].filter(Boolean).join('، و'));
+            } catch (err) {
+                showToast('فشل الحفظ السحابي: ' + err.message, 'error');
+            } finally {
+                draft.saving = false;
+                if (generalAbsenceDraft === draft) {
+                    if (document.getElementById('generalAbsenceModal').classList.contains('hidden')) {
+                        generalAbsenceDraft = null;
+                    } else if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== draft.seasonId) {
+                        closeGeneralAbsenceModal();
+                    } else {
+                        controls.forEach(control => { control.disabled = false; });
+                        saveButton.textContent = 'حفظ';
+                        saveButton.disabled = !draft.rows.length;
+                        if (saved) loadGeneralAbsenceList(getWeekStartDate(todayStr));
+                    }
+                }
+            }
         }
         function updateSchoolCalendarAlert() {
             const bar = document.getElementById('schoolCalendarAlert');
@@ -4817,7 +4922,7 @@
                     ['الصف', 'اسم الطالب', 'المعلم', 'المرحلة', 'الحلقة', 'الجوال', 'الحالة', 'الملاحظات'].map(label => `<th scope="col" class="p-2">${label}</th>`).join('') +
                     '</tr></thead><tbody>' + rows.map(r =>
                         `<tr class="border-b ${r.status === 'error' ? 'bg-red-50' : r.status === 'duplicate' ? 'bg-slate-50' : 'bg-emerald-50'}">` +
-                        [r.line, r.name || '(بلا اسم)', r.teacher || '(بلا معلم)', r.stageName || '(بلا مرحلة)', r.halaqaName || 'بلا حلقة', r.phone || 'بلا جوال',
+                        [r.line, r.name || '(بلا اسم)', r.teacher ? (/^الأستاذ(?:\s|$)/.test(r.teacher.trim()) ? r.teacher.trim() : 'الأستاذ ' + r.teacher.trim()) : '(بلا معلم)', r.stageName || '(بلا مرحلة)', r.halaqaName || 'بلا حلقة', r.phone || 'بلا جوال',
                             r.status === 'new' ? 'جديد' : r.status === 'duplicate' ? 'مكرر محتمل' : 'خطأ', r.reason || '']
                             .map(value => `<td class="p-2">${escapeHTML(String(value))}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>'
                 : '<div class="text-center text-slate-500">لا توجد صفوف في الملف</div>';
@@ -6239,7 +6344,90 @@
         let searchTimeout;
         function debounceSearchStudents() { clearTimeout(searchTimeout); searchTimeout = setTimeout(renderStudentsGrid, 200); }
 
+        let generalStudentsHalaqa = '';
+        function generalStudentsQuery(value) {
+            return String(value || '').trim().toLowerCase().replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)));
+        }
+        function generalStudentsMatching(list, query, halaqaId) {
+            const key = generalStudentsQuery(query);
+            return list.filter(student => (!halaqaId || student.halaqaId === halaqaId) &&
+                (!key || generalStudentsQuery(student.name).includes(key) || String(student.id).includes(key)));
+        }
+        function generalCardTodayState(student, dateStr) {
+            const attendance = getAttendanceState(student, dateStr);
+            const cardState = attendance.hasEntries ? 'done' : attendance.state === 'present' ? 'present' : attendance.state === 'absent' ? 'absent' : 'none';
+            const label = attendance.hasEntries ? 'سمّع' : attendance.state === 'present' ? 'حاضر' : attendance.state === 'absent' ? 'غائب'
+                : attendance.state === 'holiday' ? (attendance.reason === 'holiday' ? 'إجازة' : 'غير دراسي') : 'لم يُسجَّل';
+            return { ...attendance, cardState, label };
+        }
+        // مصدر العدّ: الحلقة النشطة وحالات اليوم فقط؛ لا كتابة ولا اشتقاق آخر للحضور.
+        function generalHalaqaTodayCounts(list, halaqaId, dateStr, settings) {
+            return list.reduce((counts, student) => {
+                const halaqa = getStudentHalaqa(student, settings);
+                if (!halaqa || halaqa.id !== halaqaId || halaqa.active !== true) return counts;
+                const state = generalCardTodayState(student, dateStr);
+                if (state.state === 'holiday') return counts;
+                if (state.state === 'absent') counts.absent++;
+                else { counts.total++; if (state.hasEntries) counts.recited++; }
+                return counts;
+            }, { recited: 0, total: 0, absent: 0 });
+        }
+        function generalHalaqaTodayText(counts) {
+            return `سمّع ${counts.recited.toLocaleString('ar-SA')} من ${counts.total.toLocaleString('ar-SA')}` +
+                (counts.absent ? ` · غائب ${counts.absent.toLocaleString('ar-SA')}` : '');
+        }
+        function selectGeneralStudentsHalaqa(halaqaId) {
+            generalStudentsHalaqa = halaqaId;
+            renderStudentsGrid();
+        }
+        function generalStudentsSearchKeydown(event) {
+            if (!isGeneralProgram() || event.key !== 'Enter' || event.isComposing) return;
+            const matches = generalStudentsMatching(students, document.getElementById('generalStudentSearchInput').value, generalStudentsHalaqa);
+            if (matches.length === 1) { event.preventDefault(); openSmartModal(matches[0].id); }
+        }
+        function openGeneralStudentsAttendance() {
+            if (!isGeneralProgram()) return;
+            if (!generalStudentsHalaqa) { showToast('اختر حلقة أولاً'); return; }
+            refreshToday();
+            openGeneralAbsenceModal(todayStr, generalStudentsHalaqa);
+        }
+        function generalStudentsCardHtml(student) {
+            const state = generalCardTodayState(student, todayStr);
+            return `<article class="gs-card${state.hasEntries ? ' is-done' : ''}">
+                <div class="gs-card-top"><span class="gs-number">${escapeHTML(String(student.id))}</span><span class="gs-state gs-${state.cardState}">${state.label}</span></div>
+                <h3 class="gs-name">${escapeHTML(student.name)}</h3>
+                <div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div>
+            </article>`;
+        }
+        function renderGeneralStudentsGrid() {
+            const settings = getProgramSettings(), query = document.getElementById('generalStudentSearchInput').value;
+            const halaqas = [...(settings.halaqas || [])].sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+            if (generalStudentsHalaqa && !halaqas.some(h => h.id === generalStudentsHalaqa && h.active === true)) generalStudentsHalaqa = '';
+            const chips = document.getElementById('generalStudentsHalaqas');
+            // معرّف الحلقة يبقى في الذاكرة؛ لا يُحقن داخل شيفرة onclick.
+            const chipRows = [{ id: '', name: 'كل الحلقات', count: students.length }, ...halaqas.filter(h => h.active === true)
+                .map(h => ({ ...h, count: students.filter(s => s.halaqaId === h.id).length }))];
+            chips.innerHTML = chipRows.map((h, i) => `<button type="button" aria-pressed="${h.id === generalStudentsHalaqa}" data-index="${i}">${escapeHTML(h.name)} <small>${h.count.toLocaleString('ar-SA')}</small></button>`).join('');
+            chips.querySelectorAll('button').forEach((button, i) => { button.onclick = () => selectGeneralStudentsHalaqa(chipRows[i].id); });
+            const matches = generalStudentsMatching(students, query, generalStudentsHalaqa);
+            const groups = halaqas.map(halaqa => ({ halaqa, list: matches.filter(s => s.halaqaId === halaqa.id) }));
+            groups.push({ halaqa: null, list: matches.filter(s => !getStudentHalaqa(s, settings)) });
+            document.getElementById('studentsGrid').innerHTML = groups.filter(group => group.list.length).map(({ halaqa, list }) => {
+                const teacher = settings.teachers.find(t => t.id === halaqa?.teacherId);
+                const teacherName = teacher?.name ? (/^الأستاذ(?:\s|$)/.test(teacher.name.trim()) ? teacher.name.trim() : 'الأستاذ ' + teacher.name.trim()) : 'معلم غير موجود';
+                const name = halaqa ? (/^حلقة(?:\s|$)/.test(halaqa.name.trim()) ? halaqa.name : 'حلقة ' + halaqa.name) : 'بلا حلقة';
+                const school = getSchoolDayInfo(todayStr);
+                const count = halaqa?.active === true ? (school.isSchoolDay
+                    ? generalHalaqaTodayText(generalHalaqaTodayCounts(students, halaqa.id, todayStr, settings))
+                    : school.reason === 'holiday' ? 'إجازة' : 'غير دراسي') : 'بلا حلقة نشطة';
+                return `<section class="gs-group"><div class="gs-group-head"><h2>${escapeHTML(name)}${halaqa ? ' · ' + escapeHTML(teacherName) : ''}</h2><span>${count}</span></div><div class="gs-cards">${[...list].sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(generalStudentsCardHtml).join('')}</div></section>`;
+            }).join('') || '<p class="gs-empty">لا يوجد طلاب مطابقون للبحث</p>';
+        }
         function renderStudentsGrid() {
+            const general = isGeneralProgram();
+            document.getElementById('page-students')?.classList.toggle('general-students', general);
+            document.getElementById('generalStudentsTools')?.classList.toggle('hidden', !general);
+            if (general) { renderGeneralStudentsGrid(); return; }
             const grid = document.getElementById('studentsGrid'); grid.innerHTML = '';
             const searchInput = document.getElementById('studentSearchInput'); const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
             const workingDaysList = getWorkingDaysList(students);
@@ -7228,7 +7416,7 @@
             const heardBy = isGeneralProgram() ? getStudentHalaqa(student, settings)?.teacherId : reset ? student.teacherId : heard.value;
             grade.innerHTML = '<option value="">اختر التقدير</option>' + settings.grades.map(g => `<option value="${escapeHTML(g.id)}">${escapeHTML(g.name)} (${g.percent}٪)</option>`).join('');
             grade.value = gradeId;
-            heard.innerHTML = '<option value="">اختر المعلم</option>' + settings.teachers.map(t => `<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`).join('');
+            heard.innerHTML = '<option value="">اختر المعلم</option>' + settings.teachers.map(t => `<option value="${escapeHTML(t.id)}">${escapeHTML(isGeneralProgram() && !/^الأستاذ(?:\s|$)/.test(t.name.trim()) ? 'الأستاذ ' + t.name.trim() : t.name)}</option>`).join('');
             heard.value = settings.teachers.some(t => t.id === heardBy) ? heardBy : '';
         }
 
@@ -7442,7 +7630,8 @@
             document.getElementById('generalCriteriaAllBtn').hidden = false;
             const halaqa = getStudentHalaqa(student, getProgramSettings());
             const teacher = getProgramSettings().teachers.find(t => t.id === halaqa?.teacherId);
-            document.getElementById('generalQuickWho').textContent = [halaqa?.name, teacher?.name].filter(Boolean).join(' · ');
+            const teacherName = teacher?.name?.trim();
+            document.getElementById('generalQuickWho').textContent = [halaqa?.name, teacherName ? (/^الأستاذ(?:\s|$)/.test(teacherName) ? teacherName : 'الأستاذ ' + teacherName) : ''].filter(Boolean).join(' · ');
             const options = quranMeta.surahs.references.map(s => `<option value="${s.number}">${escapeHTML(s.name)}</option>`).join('');
             const rangeFields = (kind, edge) => `<div class="qe-field"><label for="quick_${kind}_${edge}Surah">${edge === 'from' ? 'من' : 'إلى'}</label><div class="qe-pair"><select aria-label="سورة ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select><input aria-label="آية ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" placeholder="الآية" oninput="updateGeneralQuickPreview()"></div></div>`;
             document.getElementById('generalQuickPanels').innerHTML = ['new', 'review'].map(kind => `<section id="quick_${kind}_row" class="qe-row qe-${kind}">
@@ -7547,7 +7736,9 @@
         }
         function fulfillGeneralCriteria() {
             if (!isGeneralProgram() || generalUndoInProgress) return;
-            document.querySelectorAll('.crit-box').forEach(cb => { cb.checked = Number(cb.dataset.pts) >= 0; });
+            const boxes = [...document.querySelectorAll('.crit-box')];
+            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);
+            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });
             updateCriteriaTotal();
         }
         function generalCriteriaChange(student) {
@@ -7750,9 +7941,12 @@
             try {
                 if (!await commitGeneralStudentPatch(student, fields)) return;
                 if (!generalQuickContextMatches(context) || generalQuickEntry.context !== formContext) return;
+                const search = document.getElementById('generalStudentSearchInput');
+                if (search) search.value = '';
                 updateAllUIs();
                 generalUndoInProgress = false;
                 closeSmartModal();
+                search?.focus();
                 showToast(savedSummary + (missed ? ` — على يوم ${dayName}` : ''), 'success');
                 if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);
                 if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);
@@ -7760,6 +7954,11 @@
         }
         function celebrateGeneralQuickEntry(student, totalAdded, savedSummary) {
             if (totalAdded <= 0) { showToast(savedSummary || 'حُفظ الحضور فقط', 'success'); return; }
+            if (generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);
+            if (generalTv.enabled && generalTvReady()) {
+                showToast(`تم الحفظ: ${student.name} — الاحتفال على التلفاز`, 'success');
+                return;
+            }
             const totalStats = getCumulativeStats(student), currentRank = getStudentRank(student.id);
             const celModal = document.getElementById('knightCelebrationModal');
             document.getElementById('celebrationTitle').innerText = savedSummary || 'حُفظ الحضور فقط';
@@ -8196,7 +8395,7 @@
                 </div>
                 <div class="gws-info">
                     <div>الاسم: <b>${e(student.name)}</b></div><div>الحلقة: <b>${e(halaqa?.name)}</b></div>
-                    <div>المعلم: <b>${e(teacher?.name)}</b></div><div>المرحلة: <b>${e(stage?.name)}</b></div>
+                    <div>المعلم: <b>${e(teacher?.name ? (/^الأستاذ(?:\s|$)/.test(teacher.name.trim()) ? teacher.name.trim() : 'الأستاذ ' + teacher.name.trim()) : '')}</b></div><div>المرحلة: <b>${e(stage?.name)}</b></div>
                     <div>الأسبوع: <b>${e(weekLabel)}</b></div>
                 </div>
                 <div class="gws-table-wrap"><table>
@@ -9479,6 +9678,7 @@
             const bar = document.getElementById('attendanceAlertBar');
             const txt = document.getElementById('attendanceAlertText');
             if (!bar || !txt) return;
+            if (isGeneralProgram()) { bar.classList.add('hidden'); return; }
             if (students.length === 0) { bar.classList.add('hidden'); return; }
 
             const absentToday = getTodayAbsentees().length;
@@ -9631,7 +9831,7 @@
                     const value = select.dataset.selected ?? select.value;
                     delete select.dataset.selected;
                     select.innerHTML = '<option value="">— اختر —</option>' + list.map(item =>
-                        `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name || '(بلا اسم)')}</option>`).join('');
+                        `<option value="${escapeHTML(item.id)}">${escapeHTML(kind === 'teacher' && item.name && !/^الأستاذ(?:\s|$)/.test(item.name.trim()) ? 'الأستاذ ' + item.name.trim() : item.name || '(بلا اسم)')}</option>`).join('');
                     select.value = value;
                 });
             }

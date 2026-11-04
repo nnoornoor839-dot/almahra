@@ -192,7 +192,7 @@ function connectQuick(h) {
     h.ctx.window.almahraData.isReady = () => true;
     h.ctx.window.almahraData.getActiveProgramId = () => h.state.program;
     h.ctx.window.almahraData.getActiveSeasonId = () => h.state.season;
-    h.run('generalTv.channel = { postMessage: sink }; generalTv.enabled = true; generalTv.dataContext = generalTvContext()');
+    h.run('generalTv.channel = { postMessage: sink }; generalTv.enabled = true; generalTv.lastHello = Date.now(); generalTv.dataContext = generalTvContext()');
     // اللقطة مفحوصة مستقلاً؛ هنا نراقب مسار نجاح الحفظ والتراجع الحقيقيين.
     h.ctx.sendGeneralTvSnapshot = () => {};
     return sent;
