@@ -199,6 +199,7 @@ test('season management hides new-season/settings writes and disables deletion, 
     for (const program of ['summer', 'review-day', 'general']) {
         const h = harness(program);
         const api = h.ctx.window.almahraPrograms;
+        api.getSettings = () => api.getCurrentProgram().settings;
         api.PROGRAM_DEFS = Object.fromEntries(['summer', 'review-day', 'general'].map(id => [id, {
             icon: '📚', defaultSettings: { points: { attendance: 0 }, kindMult: {}, grades: [] }
         }]));
@@ -206,7 +207,7 @@ test('season management hides new-season/settings writes and disables deletion, 
         Object.assign(h.ctx, { getTitleRules: () => ({ blockedByCriteriaIds: [] }),
             renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });
         h.run("const DAY_NAMES = ['يوم وهمي']; const FEATURE_LABELS = {};");
-        h.install('renderProgramSettings', 'archivedBannerHtml', 'saveBarHtml', 'generalHalaqaRow',
+        h.install('generalPerformanceSettings', 'renderProgramSettings', 'archivedBannerHtml', 'saveBarHtml', 'generalHalaqaRow',
             'refreshGeneralHalaqaOptions', 'collectGeneralSettingRows');
         h.run('renderProgramSettings()');
         const output = h.element('psPanelProgramBody').innerHTML;

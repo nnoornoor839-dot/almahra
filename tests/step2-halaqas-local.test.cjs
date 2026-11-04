@@ -105,6 +105,9 @@ function harness() {
     const install = (...names) => names.forEach(name => vm.runInContext(source(name), ctx));
     require('./helpers/tv-harness.cjs').installTv(run, install);
     element('psTvMaghrib').value = '20'; element('psTvIsha').value = '30';
+    // مدخلات واجهة الأداء الجديدة؛ لا تغيير لتوقعات اختبار الحلقات.
+    install('generalPerformanceSettings');
+    element('psNewGoalPerDay').value = '0.5'; element('psFollowupAttendance').value = '85'; element('psFollowupNew').value = '80';
     run("let students = []; const DEL_FIELD = {__almahraDelete: true}; let currentEditingStudentId = 1; const todayStr = 'fake-day', hijriDateStr = 'تاريخ وهمي', criteriaAtOpen = {sel: {}}; let currentSardType = 'new';");
     run(html.match(/let generalStudentSaveInFlight = false;/)[0]);
     run(html.match(/let generalUndoInProgress = false;/)[0]);

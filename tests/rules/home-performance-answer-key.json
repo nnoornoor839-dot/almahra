@@ -1,0 +1,13 @@
+{
+  "source": "home-answer-key.md §5 cards 4–8; manager overrides: no today point, holiday gap, flat delta, empty current week",
+  "periods": {
+    "all": { "present": 21, "absent": 11, "attendance": 66, "previousAttendance": 96, "attendanceDelta": -30, "raw": 8, "goal": 10.5, "counted": 7.5, "achievement": 71, "previousAchievement": 100, "achievementDelta": -29 },
+    "asr": { "present": 4, "absent": 8, "attendance": 33, "previousAttendance": 92, "attendanceDelta": -59, "raw": 2, "goal": 2, "counted": 2, "achievement": 100, "previousAchievement": 100, "achievementDelta": 0 },
+    "maghrib": { "present": 17, "absent": 3, "attendance": 85, "previousAttendance": 100, "attendanceDelta": -15, "raw": 6, "goal": 8.5, "counted": 5.5, "achievement": 65, "previousAchievement": 100, "achievementDelta": -35 }
+  },
+  "attendanceFollowup": [ ["a", 33], ["c", 75] ],
+  "achievementFollowup": [ ["b", 64], ["c", 67] ],
+  "daily": [100, 100, 100, 86, "إجازة", 75, 88, 50, 50],
+  "weekly": [100, "إجازة", 71, null],
+  "weeks": ["2026-11-01", "2026-11-08", "2026-11-15", "2026-11-22"]
+}

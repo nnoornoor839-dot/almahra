@@ -246,6 +246,40 @@
         .gh-complete { background:var(--gh-ok-bg); }
         .gh-complete b { color:var(--gh-ok); font-size:26px; padding:4px 0; }
         #generalHome button:focus-visible, #generalHome a:focus-visible { outline:2px solid var(--gh-brand); outline-offset:3px; }
+        .gh-performance-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .gh-periods { display:flex; background:#e9eeeb; border-radius:12px; padding:4px; gap:2px; margin-bottom:16px; }
+        .gh-periods button { flex:1; min-width:0; border:0; background:transparent; color:var(--gh-ink-2);
+            font-family:inherit; font-size:14px; font-weight:700; line-height:1.35; padding:8px 12px; border-radius:9px; cursor:pointer; overflow-wrap:anywhere; }
+        .gh-periods small { display:block; font-size:12px; color:var(--gh-muted); font-weight:600; }
+        .gh-periods [aria-pressed="true"] { background:var(--gh-surface); color:var(--gh-brand); box-shadow:0 1px 3px #0001; }
+        .gh-kpi-label { color:var(--gh-ink-2); font-size:14px; font-weight:700; }
+        .gh-kpi-row { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-top:2px; }
+        .gh-kpi-value { font-size:44px; font-weight:900; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .gh-kpi-unit { font-size:18px; color:var(--gh-ink-2); font-weight:800; }
+        .gh-kpi-sub, .gh-chart-note { color:var(--gh-muted); font-size:12.5px; font-weight:600; }
+        .gh-delta { font-size:13px; font-weight:800; border-radius:8px; padding:2px 8px; }
+        .gh-delta.up { color:var(--gh-ok); background:var(--gh-ok-bg); }
+        .gh-delta.down { color:var(--gh-alert); background:var(--gh-alert-bg); }
+        .gh-chart { position:relative; margin-top:10px; min-width:0; direction:ltr; }
+        .gh-chart svg { display:block; width:100%; height:auto; touch-action:pan-y; }
+        .gh-axis { fill:var(--gh-muted); font:600 11px Cairo,sans-serif; }
+        .gh-chart-note { margin:6px 0 12px; font-size:12px; }
+        .gh-performance-foot { margin-top:auto; padding-top:10px; border-top:1px solid var(--gh-grid); font-size:13px; color:var(--gh-ink-2); }
+        .gh-performance-foot h4 { font-weight:800; color:var(--gh-ink); margin:0 0 4px; }
+        .gh-performance-foot h4 small { color:var(--gh-muted); font-size:12px; font-weight:600; }
+        .gh-foot-row { display:flex; justify-content:space-between; gap:8px; padding:3px 0; overflow-wrap:anywhere; }
+        .gh-foot-row b { color:var(--gh-warn); white-space:nowrap; }
+        .gh-foot-ok { color:var(--gh-ok); font-weight:700; }
+        .gh-tip { position:absolute; pointer-events:none; background:var(--gh-ink); color:#fff; direction:rtl;
+            border-radius:10px; padding:8px 12px; font-size:12.5px; font-weight:600; line-height:1.55;
+            max-width:100%; width:max-content; opacity:0; transform:translate(-50%,-100%); z-index:5; }
+        .gh-tip.on { opacity:1; }
+        @media (max-width:1019px) { .gh-performance-grid { grid-template-columns:1fr; } }
+        @media (max-width:640px) {
+            .gh-periods button { padding:6px 4px; font-size:13px; }
+            .gh-periods small { font-size:11px; }
+            .gh-kpi-value { font-size:38px; }
+        }
         @media (max-width:1019px) { .gh-grid { grid-template-columns:1fr; } }
         @media (max-width:640px) {
             #generalHome { gap:24px; }
@@ -982,6 +1016,14 @@
                 <section aria-labelledby="generalFollowupTitle">
                     <h2 id="generalFollowupTitle" class="gh-section-title">المتابعة</h2>
                     <div id="generalHomeFollowup" class="gh-grid"></div>
+                </section>
+                <section id="generalPerformance" aria-labelledby="generalPerformanceTitle">
+                    <h2 id="generalPerformanceTitle" class="gh-section-title">الأداء</h2>
+                    <div id="generalPerformancePeriods" class="gh-periods" role="group" aria-label="الفترة"></div>
+                    <div class="gh-performance-grid">
+                        <article id="generalAttendanceCard" class="gh-card"></article>
+                        <article id="generalAchievementCard" class="gh-card"></article>
+                    </div>
                 </section>
             </div>
             <div id="homeDashboard" class="home-dash"></div>
@@ -3087,6 +3129,7 @@
                 if (seasonCalendarDraft !== draft || !isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== draft.seasonId) return;
                 // لقطة محلية بعد تأكيد المعاملة، حتى وصول اشتراك الموسم.
                 Object.assign(window.almahraPrograms.getCurrentSeason(), structuredClone(next));
+                if (typeof generalPerformanceInvalidate === 'function') generalPerformanceInvalidate(false);
                 draft.expected = structuredClone(next); draft.next = structuredClone(next);
                 redrawSeasonCalendar(); updateSchoolCalendarAlert(); updateAllUIs(); showToast('تم حفظ التقويم الدراسي');
             } catch (err) { showToast('فشل حفظ التقويم: ' + err.message, 'error'); }
@@ -5872,6 +5915,275 @@
             return `<article class="gh-card ${type === 'absent' && list.length ? 'gh-alert' : ''}">${head}${list.length
                 ? `<div>${rows}</div>${more}` : `<p class="gh-empty">✓ ${empty}</p>`}</article>`;
         }
+        // قراءة افتراضيات الأداء فقط؛ لا ترحيل ولا كتابة ولا تغيير للإعدادات الخام.
+        function generalPerformanceSettings(raw = window.almahraPrograms.getSettings() || {}) {
+            const positive = value => typeof value === 'number' && Number.isFinite(value) && value > 0;
+            const limit = (value, fallback) => positive(value) && value >= 1 && value <= 100 ? value : fallback;
+            return {
+                periodOf: stage => ['asr', 'maghrib'].includes(stage?.period) ? stage.period : stage?.id === 'primary' ? 'asr' : 'maghrib',
+                newGoalPerDay: positive(raw.newGoalPerDay) ? raw.newGoalPerDay : 0.5,
+                limits: { attendancePct: limit(raw.followupLimits?.attendancePct, 85), newPct: limit(raw.followupLimits?.newPct, 80) }
+            };
+        }
+        // دالة نقية: الفترة والمدى واعتماديات قراءة الحضور والقياس مدخلات صريحة.
+        // القصّ لكل طالب على مجموع المدى، لا لكل تسجيل أو يوم أو حلقة.
+        function generalPerformanceTotals(studentList, settings, config, period, range, readers, halaqaId = null) {
+            let present = 0, absent = 0, raw = 0, goal = 0, counted = 0;
+            for (const student of studentList) {
+                const halaqa = (settings.halaqas || []).find(h => h.id === student.halaqaId);
+                if (halaqaId !== null && halaqa?.id !== halaqaId) continue;
+                const stage = (settings.stages || []).find(s => s.id === halaqa?.stageId);
+                if (period !== 'all' && (!stage || config.periodOf(stage) !== period)) continue;
+                const start = readers.startOf(student);
+                let daysPresent = 0, studentRaw = 0;
+                for (const date of range.dates) {
+                    if (date >= range.today || date < start) continue;
+                    const state = readers.stateOf(student, date).state;
+                    if (state === 'absent') { absent++; continue; }
+                    if (state !== 'present') continue;
+                    present++; daysPresent++;
+                    for (const entry of Object.values(student.history?.[date]?.entries || {})) {
+                        if (entry?.kind !== 'new' || !entry.grade || entry.grade === 'repeat') continue;
+                        try { studentRaw += readers.measure(entry).pages; }
+                        catch (_) { /* التسجيل الذي يرفضه الميزان يُستبعد، ولا يُخمّن مقداره. */ }
+                    }
+                }
+                const studentGoal = config.newGoalPerDay * daysPresent;
+                if (studentGoal > 0) {
+                    raw += studentRaw; goal += studentGoal; counted += Math.min(studentRaw, studentGoal);
+                }
+            }
+            const attendanceRawPct = present + absent ? present / (present + absent) * 100 : null;
+            const newRawPct = goal ? counted / goal * 100 : null;
+            return { present, absent, raw, goal, counted, attendanceRawPct, newRawPct,
+                attendancePct: attendanceRawPct === null ? null : Math.round(attendanceRawPct),
+                newPct: newRawPct === null ? null : Math.round(newRawPct) };
+        }
+        function generalPerformanceDelta(current, previous) {
+            return current === null || previous === null ? null : current - previous;
+        }
+        function generalPerformanceFollowup(studentList, settings, config, period, range, readers) {
+            const rows = (settings.halaqas || []).map(halaqa => ({ halaqa,
+                totals: generalPerformanceTotals(studentList, settings, config, period, range, readers, halaqa.id) }));
+            const below = (field, limit) => rows.filter(row => row.totals[field] !== null && row.totals[field] < limit)
+                .sort((a, b) => a.totals[field] - b.totals[field]);
+            return { attendance: below('attendancePct', config.limits.attendancePct), achievement: below('newPct', config.limits.newPct) };
+        }
+        // الأسابيع التقويمية داخل الفصل، بما فيها أسبوع الإجازة كي يبقى موضعه فجوة.
+        function generalPerformanceWeeks(season, workingDays, today, count, schoolDayInfo) {
+            if (!season?.termStart || !season?.termEnd || !Array.isArray(season.calendar)) return [];
+            const end = today < season.termEnd ? today : season.termEnd;
+            if (end < season.termStart) return [];
+            const weeks = [];
+            const first = schoolCivilDate(getWeekStartDate(season.termStart));
+            const last = getWeekStartDate(end);
+            for (let date = first; formatDateLocal(date) <= last; date.setDate(date.getDate() + 7)) {
+                const start = formatDateLocal(date), scheduled = [];
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(date); day.setDate(day.getDate() + i);
+                    const value = formatDateLocal(day);
+                    if (value >= season.termStart && value <= season.termEnd && workingDays.includes(day.getDay())) scheduled.push(value);
+                }
+                if (!scheduled.length) continue;
+                const schoolDates = scheduled.filter(value => schoolDayInfo(value).isSchoolDay);
+                weeks.push({ start, end: scheduled[scheduled.length - 1],
+                    holiday: scheduled.every(value => schoolDayInfo(value).reason === 'holiday'),
+                    partial: schoolDates.some(value => value >= today), dates: schoolDates.filter(value => value < today) });
+            }
+            return weeks.slice(-count);
+        }
+        function generalPerformanceModel(studentList, settings, config, period, range, season, readers) {
+            const dates = range.dates.filter(date => date < range.today);
+            const currentRange = { today: range.today, dates: dates.slice(-4) };
+            const previousRange = { today: range.today, dates: dates.slice(-8, -4) };
+            const current = generalPerformanceTotals(studentList, settings, config, period, currentRange, readers);
+            const previous = generalPerformanceTotals(studentList, settings, config, period, previousRange, readers);
+            const weeks = generalPerformanceWeeks(season, settings.workingDays, range.today, 8, readers.schoolDayInfo);
+            const weekly = weeks.map(week => ({ ...week,
+                totals: generalPerformanceTotals(studentList, settings, config, period, { dates: week.dates, today: range.today }, readers) }));
+            const daily = weekly.slice(-4).flatMap(week => week.holiday ? [{ holiday: true, date: week.start }]
+                : week.dates.map(date => ({ date, holiday: false,
+                    totals: generalPerformanceTotals(studentList, settings, config, period, { dates: [date], today: range.today }, readers) })));
+            return { current, previous, daily, weekly,
+                attendanceDelta: generalPerformanceDelta(current.attendancePct, previous.attendancePct),
+                achievementDelta: generalPerformanceDelta(current.newPct, previous.newPct),
+                followup: generalPerformanceFollowup(studentList, settings, config, period, currentRange, readers) };
+        }
+        function generalPerformanceNumber(value) {
+            return value.toLocaleString('ar-SA', { maximumFractionDigits: 2 });
+        }
+        function generalPerformancePercent(value) {
+            return value === null ? '—' : generalPerformanceNumber(value) + '٪';
+        }
+        function generalPerformanceDeltaHtml(delta, previous) {
+            if (delta === null || delta === 0) return '<span class="gh-kpi-sub">—</span>';
+            const amount = Math.abs(delta), word = amount >= 3 && amount <= 10 ? 'نقاط' : 'نقطة';
+            return `<span class="gh-delta ${delta > 0 ? 'up' : 'down'}" title="الفرق بالنقاط المئوية">${delta > 0 ? '↑' : '↓'} ${generalPerformanceNumber(amount)} ${word}</span>
+                <span class="gh-kpi-sub">عن الأربعة قبلها (${generalPerformancePercent(previous)})</span>`;
+        }
+        function generalPerformancePeriodsHtml(settings, config, period) {
+            return [['all', 'المجمع'], ['asr', 'حلقات العصر'], ['maghrib', 'حلقات المغرب']].map(([id, name]) => {
+                const names = id === 'all' ? 'كل الحلقات' : (settings.stages || []).filter(stage => config.periodOf(stage) === id).map(stage => stage.name).join(' و');
+                return `<button type="button" aria-pressed="${period === id}" onclick="setGeneralPerformancePeriod('${id}')">${name}<small>${escapeHTML(names || '—')}</small></button>`;
+            }).join('');
+        }
+        function generalPerformanceFootHtml(rows, settings, field, condition) {
+            return `<div class="gh-performance-foot"><h4>حلقات تحتاج متابعة <small>(${condition})</small></h4>${rows.length
+                ? rows.map(({ halaqa, totals }) => {
+                    const name = (settings.teachers || []).find(t => t.id === halaqa.teacherId)?.name || 'غير محدد';
+                    const teacher = /^الأستاذ(?:\s|$)/.test(name.trim()) ? name.trim() : 'الأستاذ ' + name.trim();
+                    return `<div class="gh-foot-row"><span>${escapeHTML(halaqa.name)} — ${escapeHTML(teacher)}</span><b>${generalPerformancePercent(totals[field])}</b></div>`;
+                }).join('') : '<div class="gh-foot-ok">✓ لا حلقة تحت الحد</div>'}</div>`;
+        }
+        function generalPerformanceDateLabel(value) {
+            const date = schoolCivilDate(value);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+        }
+        // SVG يدوي؛ إحداثي الأقدم يميناً. المدى الخالي/الإجازة يقطع المسار.
+        function generalPerformanceChart(series, kind, width = 640) {
+            const W = Math.max(260, Math.min(640, width)), H = W < 450 ? 280 : 220;
+            const PT = 22, PB = 35, PR = 42, PL = 18, base = H - PB;
+            const num = generalPerformanceNumber, dm = generalPerformanceDateLabel;
+            const points = [], weekly = kind === 'achievement';
+            const values = series.filter(item => !item.holiday && item.totals.attendancePct !== null).map(item => item.totals.attendancePct);
+            const yMin = weekly || !values.length ? 0 : Math.max(0, Math.floor((Math.min(...values) - 4) / 10) * 10);
+            const Y = value => PT + (100 - value) / (100 - yMin) * (base - PT);
+            let markup = '';
+            for (let value = yMin; value <= 100; value += weekly ? 25 : 10) {
+                markup += `<line x1="${PL}" x2="${W - PR}" y1="${Y(value)}" y2="${Y(value)}" stroke="var(--gh-grid)"/>
+                    <text class="gh-axis" x="${W - PR + 5}" y="${Y(value) + 4}">${num(value)}٪</text>`;
+            }
+            let path = '', connected = false;
+            const segments = [];
+            series.forEach((item, i) => {
+                const value = item.holiday ? null : item.totals[weekly ? 'newPct' : 'attendancePct'];
+                const band = (W - PR - PL) / Math.max(1, series.length);
+                const x = weekly ? W - PR - band * (i + 0.5) : W - PR - (series.length > 1 ? i * (W - PR - PL) / (series.length - 1) : (W - PR - PL) / 2);
+                const y = value === null ? base : Y(value);
+                const label = item.holiday ? 'إجازة' : value === null ? '—' : null;
+                if (weekly) {
+                    if (value !== null && value > 0) markup += `<rect class="gh-bar" x="${x - band * .28}" y="${y}" width="${band * .56}" height="${base - y}" rx="3" fill="var(--gh-brand-600)" ${item.partial ? 'fill-opacity=".35" stroke="var(--gh-brand-600)" stroke-dasharray="3 3"' : ''}/>`;
+                    if (label) markup += `<text class="gh-axis" x="${x}" y="${base - 12}" text-anchor="middle">${label}</text>`;
+                    markup += `<text class="gh-axis" x="${x}" y="${H - 9}" text-anchor="middle">${item.partial ? 'حتى الآن' : dm(item.start)}</text>`;
+                } else {
+                    if (value === null) connected = false;
+                    else {
+                        if (!connected) segments.push([]);
+                        segments[segments.length - 1].push({ x, y });
+                        path += `${connected ? 'L' : 'M'}${x} ${y} `; connected = true;
+                    }
+                    if (item.holiday) markup += `<text class="gh-axis" x="${x}" y="${Y((100 + yMin) / 2)}" text-anchor="middle">إجازة</text>`;
+                    if (!item.holiday && (i === 0 || schoolCivilDate(item.date).getDay() === 0 || i === series.length - 1))
+                        markup += `<text class="gh-axis" x="${x}" y="${H - 9}" text-anchor="middle">${dm(item.date)}</text>`;
+                }
+                const title = item.holiday ? 'إجازة' : weekly ? `${item.partial ? 'هذا الأسبوع (حتى الآن)' : 'أسبوع ' + dm(item.start) + ' – ' + dm(item.end)} · ${generalPerformancePercent(value)}<br>حفظوا ${num(item.totals.raw)} وجه من هدف ${num(item.totals.goal)}`
+                    : `${ALL_DAY_NAMES[schoolCivilDate(item.date).getDay()]} ${dm(item.date)} · ${generalPerformancePercent(value)}<br>حضر ${num(item.totals.present)} · غاب ${num(item.totals.absent)}`;
+                points.push({ x, y, value, title });
+            });
+            if (weekly) markup += `<line data-goal="100" x1="${PL}" x2="${W - PR}" y1="${Y(100)}" y2="${Y(100)}" stroke="var(--gh-brand-600)" stroke-dasharray="4 4"/>`;
+            else {
+                markup += '<defs><linearGradient id="gh-attendance-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gh-brand-600)" stop-opacity=".18"/><stop offset="1" stop-color="var(--gh-brand-600)" stop-opacity="0"/></linearGradient></defs>';
+                markup += segments.map(segment => `<path d="${segment.map((point, i) => `${i ? 'L' : 'M'}${point.x} ${point.y}`).join(' ')} L${segment[segment.length - 1].x} ${base} L${segment[0].x} ${base} Z" fill="url(#gh-attendance-area)"/>`).join('');
+                markup += `<path class="gh-attendance-line" d="${path}" fill="none" stroke="var(--gh-brand-600)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+                markup += points.filter(p => p.value !== null).map(p => `<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="var(--gh-brand-600)"/>`).join('');
+            }
+            markup += `<line class="gh-cross" y1="${PT}" y2="${base}" stroke="var(--gh-ink-2)" stroke-dasharray="2 3" opacity="0"/>
+                <circle class="gh-hover-dot" r="5" fill="var(--gh-brand-600)" stroke="var(--gh-surface)" stroke-width="2" opacity="0"/>`;
+            if (!series.length) markup += `<text class="gh-axis" x="${W / 2}" y="${H / 2}" text-anchor="middle">—</text>`;
+            return { points, html: `<div class="gh-chart"><svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${weekly ? 'نسبة تحقق هدف الحفظ الجديد أسبوعياً لآخر 8 أسابيع' : 'منحنى نسبة الحضور اليومية لآخر 4 أسابيع'}">${markup}</svg><div class="gh-tip" role="status"></div></div>` };
+        }
+        function bindGeneralPerformanceTip(card, points) {
+            const svg = card.querySelector('svg'), tip = card.querySelector('.gh-tip');
+            if (!svg || !tip || !points.length) return;
+            const cross = svg.querySelector('.gh-cross'), dot = svg.querySelector('.gh-hover-dot');
+            let selected = 0;
+            const show = index => {
+                selected = index;
+                const point = points[index], rect = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+                cross.setAttribute('x1', point.x); cross.setAttribute('x2', point.x); cross.setAttribute('opacity', '1');
+                dot.setAttribute('cx', point.x); dot.setAttribute('cy', point.y); dot.setAttribute('opacity', point.value === null ? '0' : '1');
+                tip.innerHTML = point.title; tip.classList.add('on');
+                const half = tip.getBoundingClientRect().width / 2;
+                tip.style.left = Math.max(half, Math.min(rect.width - half, point.x / vb.width * rect.width)) + 'px';
+                tip.style.top = Math.max(28, point.y / vb.height * rect.height - 12) + 'px';
+            };
+            const move = event => {
+                const rect = svg.getBoundingClientRect(), x = (event.clientX - rect.left) / rect.width * svg.viewBox.baseVal.width;
+                let nearest = 0;
+                points.forEach((point, index) => { if (Math.abs(point.x - x) < Math.abs(points[nearest].x - x)) nearest = index; });
+                show(nearest);
+            };
+            const hide = () => { tip.classList.remove('on'); cross.setAttribute('opacity', '0'); dot.setAttribute('opacity', '0'); };
+            svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move);
+            svg.addEventListener('pointerleave', hide); svg.addEventListener('blur', hide);
+            svg.addEventListener('keydown', event => {
+                if (!['ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key)) return;
+                event.preventDefault();
+                if (event.key === 'Escape') hide();
+                else show(Math.max(0, Math.min(points.length - 1, selected + (event.key === 'ArrowLeft' ? 1 : -1))));
+            });
+        }
+        function setGeneralPerformancePeriod(period) {
+            if (!isGeneralProgram() || !['all', 'asr', 'maghrib'].includes(period)) return;
+            document.getElementById('generalPerformance').dataset.period = period;
+            renderGeneralPerformance();
+        }
+        function renderGeneralPerformanceCharts(model) {
+            for (const [id, series, kind] of [['generalAttendanceChart', model.daily, 'attendance'], ['generalAchievementChart', model.weekly, 'achievement']]) {
+                const chart = document.getElementById(id);
+                if (!chart) continue;
+                const drawing = generalPerformanceChart(series, kind, chart.clientWidth || 640);
+                chart.innerHTML = drawing.html;
+                bindGeneralPerformanceTip(chart, drawing.points);
+            }
+        }
+        function generalPerformanceInvalidate(refresh = true) {
+            if (!isGeneralProgram()) return;
+            const section = document.getElementById('generalPerformance');
+            if (section) section.generalPerformanceSnapshot = null;
+            if (refresh && document.getElementById('page-home')?.classList.contains('active')) renderHomeDashboard();
+        }
+        function generalPerformanceResize() {
+            if (!isGeneralProgram() || !document.getElementById('page-home')?.classList.contains('active')) return;
+            const section = document.getElementById('generalPerformance');
+            if (!section?.generalPerformanceSnapshot || section.generalPerformanceResizeFrame != null) return;
+            // تجميع أحداث الحجم في إطار واحد؛ إعادة الرسم لا تقرأ الطلاب ولا تقيس التسميع.
+            section.generalPerformanceResizeFrame = requestAnimationFrame(() => {
+                section.generalPerformanceResizeFrame = null;
+                if (!isGeneralProgram() || !document.getElementById('page-home')?.classList.contains('active')) return;
+                const snapshot = section.generalPerformanceSnapshot;
+                if (!snapshot || snapshot.context !== window.almahraPrograms.getCurrentSeasonId() || snapshot.period !== section.dataset.period || snapshot.today !== todayStr) return;
+                renderGeneralPerformanceCharts(snapshot.model);
+            });
+        }
+        function renderGeneralPerformance() {
+            if (!isGeneralProgram() || !document.getElementById('page-home')?.classList.contains('active')) return;
+            const section = document.getElementById('generalPerformance');
+            if (!section) return;
+            const context = window.almahraPrograms.getCurrentSeasonId();
+            if (section.dataset.context !== context) { section.dataset.context = context; section.dataset.period = 'all'; }
+            const period = section.dataset.period, settings = getProgramSettings(), config = generalPerformanceSettings();
+            const model = generalPerformanceModel(students, settings, config, period, { dates: getGeneralSchoolDates(), today: todayStr },
+                window.almahraPrograms.getCurrentSeason(), { stateOf: getAttendanceState, startOf: generalAttendanceStart, measure: measureEntry, schoolDayInfo: getSchoolDayInfo });
+            document.getElementById('generalPerformancePeriods').innerHTML = generalPerformancePeriodsHtml(settings, config, period);
+            const attendance = document.getElementById('generalAttendanceCard'), achievement = document.getElementById('generalAchievementCard');
+            attendance.innerHTML = `<div class="gh-kpi-label">نسبة الحضور · آخر 4 أيام دراسية</div><div class="gh-kpi-row">
+                <span class="gh-kpi-value">${generalPerformancePercent(model.current.attendancePct)}</span>
+                ${generalPerformanceDeltaHtml(model.attendanceDelta, model.previous.attendancePct)}</div><div id="generalAttendanceChart"></div>
+                <p class="gh-chart-note">آخر 4 أسابيع دراسية · اليوم قيد التسجيل ولا يدخل الحساب حتى ينتهي</p>
+                ${generalPerformanceFootHtml(model.followup.attendance, settings, 'attendancePct', 'حضورها أقل من ' + generalPerformancePercent(config.limits.attendancePct))}`;
+            achievement.innerHTML = `<div class="gh-kpi-label">إنجاز الحفظ الجديد · آخر 4 أيام دراسية</div><div class="gh-kpi-row">
+                <span class="gh-kpi-value">${generalPerformancePercent(model.current.newPct)}</span><span class="gh-kpi-unit">من الهدف</span>
+                ${generalPerformanceDeltaHtml(model.achievementDelta, model.previous.newPct)}</div>
+                <div class="gh-kpi-sub">${model.current.newPct === null ? '—' : 'حفظوا ' + generalPerformanceNumber(model.current.raw) + ' أوجه من هدف ' + generalPerformanceNumber(model.current.goal)}</div><div id="generalAchievementChart"></div>
+                <p class="gh-chart-note">نسبة تحقق الهدف أسبوعياً لآخر 8 أسابيع · الغائب لا يُحسب عليه · «يُعاد» لا يُحسب</p>
+                ${generalPerformanceFootHtml(model.followup.achievement, settings, 'newPct', 'إنجازها أقل من ' + generalPerformancePercent(config.limits.newPct) + ' من الهدف')}`;
+            // كل عرض/تحديث أو تبديل فترة يحسب من جديد؛ اللقطة مخصصة لتغيير أبعاد الرسم فقط.
+            section.generalPerformanceSnapshot = { model, context, period, today: todayStr };
+            renderGeneralPerformanceCharts(model);
+        }
+        window.addEventListener('resize', generalPerformanceResize);
+
         function renderGeneralHome() {
             if (!isGeneralProgram()) return;
             const settings = getProgramSettings(), card = document.getElementById('generalTodayCard');
@@ -5892,6 +6204,7 @@
             const followup = document.getElementById('generalHomeFollowup');
             if (followup) followup.innerHTML = Object.entries(lists)
                 .map(([type, list]) => generalHomeFollowupCard(type, list, settings, !!generalHomeExpanded[type])).join('');
+            renderGeneralPerformance();
         }
 
         function renderHomeDashboard() {
@@ -9379,6 +9692,7 @@
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0);
+            if (id === 'page-home' && isGeneralProgram()) renderHomeDashboard();
             if (id === 'page-settings') {
                 if (isGeneralProgram()) seasonCalendarDraft = null; // فتح صريح جديد بعد التعارض.
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
@@ -10084,7 +10398,11 @@
 
         function generalSettingRow(item, kind) {
             return `<div class="general-setting-row flex gap-2 items-center mb-2" data-id="${escapeHTML(item.id)}">
-                <input class="general-setting-name flex-1 p-2 border-2 rounded-lg" oninput="this.classList.remove('border-red-500', 'bg-red-50'); this.removeAttribute('aria-invalid'); refreshGeneralHalaqaOptions()" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
+                <input class="general-setting-name flex-1 min-w-0 p-2 border-2 rounded-lg" oninput="this.classList.remove('border-red-500', 'bg-red-50'); this.removeAttribute('aria-invalid'); refreshGeneralHalaqaOptions()" value="${escapeHTML(item.name || '')}" placeholder="اسم ${kind === 'stage' ? 'المرحلة' : 'المعلم'}">
+                ${kind === 'stage' ? `<label class="text-xs font-bold">الفترة<select class="general-stage-period block p-2 border-2 rounded-lg" aria-label="فترة المرحلة">
+                    <option value="asr" ${generalPerformanceSettings().periodOf(item) === 'asr' ? 'selected' : ''}>العصر</option>
+                    <option value="maghrib" ${generalPerformanceSettings().periodOf(item) === 'maghrib' ? 'selected' : ''}>المغرب</option>
+                </select></label>` : ''}
                 <button type="button" onclick="removeGeneralSettingRow(this, '${kind}')" class="text-red-600 p-2" title="حذف"><i class="fas fa-trash"></i></button>
             </div>`;
         }
@@ -10121,7 +10439,9 @@
 
         function collectGeneralSettingRows(kind) {
             return [...document.querySelectorAll(`#${kind === 'stage' ? 'psStagesList' : 'psTeachersList'} .general-setting-row`)]
-                .map((row, i) => ({ id: row.dataset.id, name: row.querySelector('input').value.trim(), ...(kind === 'stage' ? { order: i + 1 } : {}) }));
+                .map((row, i) => ({ ...(getProgramSettings()[kind === 'stage' ? 'stages' : 'teachers'] || []).find(item => item.id === row.dataset.id),
+                    id: row.dataset.id, name: row.querySelector('input').value.trim(),
+                    ...(kind === 'stage' ? { order: i + 1, period: row.querySelector('.general-stage-period').value } : {}) }));
         }
 
         function generalHalaqaRow(halaqa) {
@@ -10222,6 +10542,7 @@
 
             const def = window.almahraPrograms.PROGRAM_DEFS[prog.id];
             const s = prog.settings || {};
+            const performance = isGeneralProgram() ? generalPerformanceSettings() : null;
             if (isGeneralProgram()) {
                 const ids = new Set((s.halaqas || []).map(h => h.id));
                 const baseline = generalSettingsHalaqaBaseline = {
@@ -10339,6 +10660,17 @@
                         </div>
                     </div>
 
+                    ${isGeneralProgram() ? `<div class="bg-white p-5 rounded-2xl border-2 border-emerald-200 lg:col-span-2" id="generalPerformanceSettingsSection">
+                        <h3 class="font-black text-lg text-slate-700 mb-4">هدف الحفظ وحدود متابعة الأداء</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="text-sm font-bold">هدف الجديد لكل يوم حضور (وجه)
+                                <input id="psNewGoalPerDay" type="number" min="0" step="any" value="${performance.newGoalPerDay}" class="w-full p-2 border-2 rounded-xl"></label>
+                            <label class="text-sm font-bold">حد متابعة الحضور (٪)
+                                <input id="psFollowupAttendance" type="number" min="1" max="100" step="any" value="${performance.limits.attendancePct}" class="w-full p-2 border-2 rounded-xl"></label>
+                            <label class="text-sm font-bold">حد متابعة إنجاز الجديد (٪)
+                                <input id="psFollowupNew" type="number" min="1" max="100" step="any" value="${performance.limits.newPct}" class="w-full p-2 border-2 rounded-xl"></label>
+                        </div>
+                    </div>` : ''}
                     <!-- شروط استحقاق الألقاب -->
                     <div class="bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2">
                         <h3 class="font-black text-lg text-slate-700 mb-2 flex items-center gap-2">
@@ -10900,6 +11232,15 @@
                     target.focus({ preventScroll: true });
                     showToast(!stages.length ? 'أبقِ مرحلة واحدة على الأقل' : kind === 'stage' ? 'مرحلة بلا اسم' : 'معلم بلا اسم', 'error'); return;
                 }
+                try {
+                    const newGoalPerDay = readGeneralNumber('psNewGoalPerDay', 'هدف الجديد', false);
+                    const attendancePct = readGeneralNumber('psFollowupAttendance', 'حد متابعة الحضور', false, 100);
+                    const newPct = readGeneralNumber('psFollowupNew', 'حد متابعة الإنجاز', false, 100);
+                    if (newGoalPerDay <= 0) throw new Error('هدف الجديد يجب أن يكون أكبر من صفر');
+                    if (attendancePct < 1 || newPct < 1) throw new Error('حدّا المتابعة من ١ إلى ١٠٠');
+                    if (stages.some(stage => stage.period !== undefined && !['asr', 'maghrib'].includes(stage.period))) throw new Error('فترة المرحلة غير صالحة');
+                    Object.assign(settings, { newGoalPerDay, followupLimits: { ...prog.settings.followupLimits, attendancePct, newPct } });
+                } catch (error) { showToast(error.message, 'error'); return; }
                 const baseline = generalSettingsHalaqaBaseline;
                 let allStudents;
                 try { allStudents = await window.almahraPrograms.getAllStudents('general'); }
@@ -11022,6 +11363,7 @@
                 // بعد إقرار السحابة يقرأ التسميع المعلم الجديد فوراً، ولو تأخر المستمع المحلي.
                 const current = window.almahraPrograms.getCurrentProgram();
                 if (current?.id === prog.id) current.settings = settings;
+                if (typeof generalPerformanceInvalidate === 'function') generalPerformanceInvalidate();
                 if (generalSettingsHalaqaBaseline?.settings === previousSettings) {
                     generalSettingsHalaqaBaseline.settings = settings;
                     generalSettingsHalaqaBaseline.halaqas = structuredClone(settings.halaqas || []);
@@ -11417,6 +11759,7 @@
 
             // تحديث الواجهة كلما تغيّرت البرامج أو المواسم
             window.almahraPrograms.subscribe(() => {
+                if (typeof generalPerformanceInvalidate === 'function') generalPerformanceInvalidate();
                 updateSchoolCalendarAlert();
                 const overlay = document.getElementById('eventPickerOverlay');
                 if (overlay && overlay.classList.contains('flex')) renderEventsList();

@@ -129,6 +129,8 @@ function installReports(h, source = html) {
             vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
         }
         vm.runInContext(between(source, '        // دوال قراءة نقية:', '        function renderHomeDashboard()'), h.ctx);
+        // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.
+        h.ctx.renderGeneralPerformance = () => {};
     }
     for (const name of ['getCumulativeStats', 'computeComplexStats', 'renderHomeDashboard', 'renderReportsTable']) {
         vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);

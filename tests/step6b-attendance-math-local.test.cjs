@@ -46,6 +46,8 @@ function harness(list = [], text = html, program = 'general') {
         dayPoints: d => d?.earnedPoints || 0, generalRecitationTotals: zeroTotals,
         getCumulativeStats: s => ({ tripPoints: 0, sardAyahs: 0, exactPages: 0, quarters: 0, totalAyahs: 0, totalPages: 0, totalRawQuarters: 0 }),
         generalFiveUnits: () => 'كميات وهمية', generalRecitationHtml: () => 'إنجاز وهمي', formatGeneralUnit: n => String(n),
+        // رسوم الجولة الثانية مستقلة عن حاضنة الحضور هذه وتغطيها home-local.
+        renderGeneralPerformance() {},
         initHadithTilt() {}, renderHomeCare() {}, renderHomeLeaders() {}, programBrandName: () => 'برنامج وهمي',
         hbN: n => String(n), hbDigits: s => s, hbCount: n => String(n), hbSetCard() {},
         showToast: msg => state.messages.push(msg),
