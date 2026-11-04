@@ -335,11 +335,32 @@
         /* شارة الحدث الحالي في رأس البرنامج */
         #currentEventBadge {
             display: none; align-items: center; gap: 8px;
-            background: #fffbeb; color: #92400e; border: 1px solid #fcd34d;
-            padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 13px;
+            background: none; color: #13231a; border: 0;
+            padding: 6px 10px; border-radius: 10px; font-weight: 800; font-size: 15px;
             cursor: pointer; transition: all .15s; font-family: 'Cairo', sans-serif;
         }
-        #currentEventBadge:hover { background: #fef3c7; }
+        #currentEventBadge:hover, #currentEventBadge[aria-expanded="true"] { background: #f4f6f5; }
+        .program-switcher { position: relative; }
+        .program-switcher-text { display: flex; flex-direction: column; text-align: start; line-height: 1.3; }
+        .program-switcher-text b { font-weight: 800; white-space: nowrap; }
+        .program-switcher-season { font-size: 12px; font-weight: 600; color: #7b8a82; }
+        .program-switcher-caret { color: #4a5a51; transition: transform .15s; flex: none; }
+        #currentEventBadge[aria-expanded="true"] .program-switcher-caret { transform: rotate(180deg); }
+        .program-switcher-menu {
+            position: absolute; top: calc(100% + 10px); inset-inline-end: 0;
+            width: 240px; max-width: calc(100vw - 24px); padding: 6px; z-index: 30;
+            background: #fff; border: 1px solid #e2e8e4; border-radius: 14px;
+            box-shadow: 0 8px 28px rgba(16,40,24,.14);
+        }
+        .program-switcher-menu button {
+            width: 100%; border: 0; background: none; border-radius: 10px; padding: 10px 12px;
+            display: flex; align-items: center; gap: 10px; text-align: start; cursor: pointer;
+            color: #13231a; font-family: inherit; font-weight: 700; font-size: 15px;
+        }
+        .program-switcher-menu button:hover, .program-switcher-menu button:focus-visible { background: #f4f6f5; }
+        .program-switcher-menu button.current { background: #eef7f1; color: #125c2f; }
+        .program-switcher-check { width: 18px; flex: none; text-align: center; }
+        .program-switcher-menu small { display: block; color: #7b8a82; font-size: 12px; font-weight: 600; }
 
         /* شاشة تسجيل الدخول */
         /* شاشة الدخول: على نِسَب الصورة المرجعية للمالك (مقيسة بنسبة الشاشة)، بهوية جمعية أفضلكم */
@@ -458,6 +479,7 @@
             .ah-sep, #headerGregorian { display: none; }
             #authUserBar { gap: 4px; }
             #currentEventBadge { padding: 6px 8px; gap: 4px; }
+            #currentEventBadge .program-switcher-season { display: none; }
             #authUserInfo { font-size: 10px; padding: 4px; gap: 0; max-width: none; overflow: visible; }
             #authUserInfo > span:first-of-type, #authUserInfo > i { display: none; }
             #authUserInfo > span:last-of-type { flex-shrink: 0; font-size: 9px; padding: 2px 4px; }
@@ -908,7 +930,10 @@
             </span>
         </div>
         <div id="authUserBar">
-            <button id="currentEventBadge" onclick="openEventPicker()" title="تبديل البرنامج"></button>
+            <div id="programSwitcher" class="program-switcher">
+                <button id="currentEventBadge" type="button" onclick="toggleProgramSwitcher()" title="اختيار البرنامج" aria-haspopup="menu" aria-expanded="false" aria-controls="programSwitcherMenu"></button>
+                <div id="programSwitcherMenu" class="program-switcher-menu" role="menu" aria-label="اختيار البرنامج" hidden></div>
+            </div>
             <span id="authUserInfo" class="hidden"></span>
             <button id="authLogoutBtn" class="hidden" onclick="logoutWithGeneralTv()" title="تسجيل الخروج">
                 <i class="fas fa-sign-out-alt"></i>
@@ -1152,9 +1177,6 @@
                 <div class="panel-back-bar no-print">
                     <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
                     <span class="panel-back-title"><i class="fas fa-sliders text-emerald-600 ml-1"></i> البرنامج والمواسم</span>
-                    <button onclick="openEventPicker()" class="mr-auto bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-xl font-bold text-sm flex items-center gap-2 shrink-0">
-                        <i class="fas fa-exchange-alt"></i> تبديل البرنامج
-                    </button>
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-200 p-5" id="psPanelProgramBody">
                     <div class="text-center text-slate-400 font-bold py-8">⏳ جاري التحميل...</div>
@@ -9407,6 +9429,59 @@
         // شاشة اختيار الحدث (البرنامج الصيفي / يوم المراجعة)
         // ================================================================
 
+        function renderProgramSwitcher() {
+            const menu = document.getElementById('programSwitcherMenu');
+            const store = window.almahraPrograms;
+            if (!menu || !store) return;
+            const programs = store.getPrograms();
+            const currentId = store.getCurrentProgram()?.id;
+            menu.innerHTML = Object.keys(store.PROGRAM_DEFS).filter(id => programs[id]).map(id => {
+                const program = programs[id];
+                const season = store.getSeasons(id).find(s => s.id === program.activeSeasonId);
+                const current = id === currentId;
+                return `<button type="button" role="menuitem" class="${current ? 'current' : ''}" onclick="selectProgramFromSwitcher('${id}')">
+                    <span class="program-switcher-check" aria-hidden="true">${current ? '✓' : ''}</span>
+                    <span>${escapeHTML(program.name)}<small>${escapeHTML(season?.name || 'موسم جديد')}</small></span>
+                </button>`;
+            }).join('');
+        }
+
+        function closeProgramSwitcher(restoreFocus = false) {
+            const menu = document.getElementById('programSwitcherMenu');
+            if (menu) menu.hidden = true;
+            const badge = document.getElementById('currentEventBadge');
+            if (badge) {
+                badge.setAttribute('aria-expanded', 'false');
+                if (restoreFocus) badge.focus();
+            }
+        }
+
+        function toggleProgramSwitcher() {
+            const menu = document.getElementById('programSwitcherMenu');
+            if (!menu) return;
+            if (!menu.hidden) { closeProgramSwitcher(); return; }
+            renderProgramSwitcher();
+            menu.hidden = false;
+            document.getElementById('currentEventBadge').setAttribute('aria-expanded', 'true');
+            menu.querySelector('.current')?.focus();
+        }
+
+        function selectProgramFromSwitcher(id) {
+            openProgram(id);
+            closeProgramSwitcher(true);
+        }
+
+        document.addEventListener('click', event => {
+            if (!document.getElementById('programSwitcher')?.contains(event.target)) closeProgramSwitcher();
+        });
+        document.addEventListener('keydown', event => {
+            const menu = document.getElementById('programSwitcherMenu');
+            if (event.key === 'Escape' && menu && !menu.hidden) {
+                event.preventDefault();
+                closeProgramSwitcher(true);
+            }
+        });
+
         function openEventPicker() {
             const overlay = document.getElementById('eventPickerOverlay');
             if (overlay) { overlay.classList.add('flex'); document.body.classList.add('event-not-selected'); }
@@ -9498,12 +9573,9 @@
             badges.forEach(badge => {
                 if (!badge) return;
                 if (prog) {
-                    const def = window.almahraPrograms.PROGRAM_DEFS[prog.id];
                     const archiveTag = isArchived ? ' <span style="background:#e2e8f0;color:#475569;padding:1px 6px;border-radius:6px;font-size:10px;">📦 أرشيف</span>' : '';
-                    badge.innerHTML = `${def?.icon || '📚'} <span>${escapeHTML(prog.name)}</span>${archiveTag} <i class="fas fa-exchange-alt" style="opacity:.6"></i>`;
+                    badge.innerHTML = `<span class="program-switcher-text"><b>${escapeHTML(prog.name)}</b><span class="program-switcher-season">${escapeHTML(season?.name || 'موسم جديد')}</span></span>${archiveTag}<span class="program-switcher-caret" aria-hidden="true">⌄</span>`;
                     badge.style.display = 'flex';
-                    if (isArchived) { badge.style.background = '#f1f5f9'; badge.style.borderColor = '#cbd5e1'; badge.style.color = '#475569'; }
-                    else { badge.style.background = '#fffbeb'; badge.style.borderColor = '#fcd34d'; badge.style.color = '#92400e'; }
                 } else {
                     badge.style.display = 'none';
                 }
@@ -10141,7 +10213,7 @@
 
             const prog = window.almahraPrograms.getCurrentProgram();
             if (!prog) {
-                const msg = '<div class="text-center text-slate-400 font-bold py-8">لم تفتح برنامجاً بعد — اضغط «تبديل البرنامج»</div>';
+                const msg = '<div class="text-center text-slate-400 font-bold py-8">اختر البرنامج من الشريط العلوي</div>';
                 progBox.innerHTML = msg;
                 if (ptsBox) ptsBox.innerHTML = msg;
                 if (tiersBox) tiersBox.innerHTML = msg;
@@ -11319,6 +11391,7 @@
 
                 if (waitTicks > MAX_WAIT_TICKS) {
                     clearInterval(waitForPrograms);
+                    openEventPicker();
                     const list = document.getElementById('epProgramsList');
                     if (list) {
                         list.innerHTML = `
@@ -11330,7 +11403,6 @@
                                 </button>
                             </div>`;
                     }
-                    openEventPicker();
                     return;
                 }
 
@@ -11340,11 +11412,7 @@
                 const savedId = window.almahraPrograms.getSavedProgramId();
                 const programs = window.almahraPrograms.getPrograms();
 
-                if (savedId === 'general' && programs[savedId]) {
-                    openProgram(savedId); // استئناف البرنامج العام فقط
-                } else {
-                    openEventPicker();
-                }
+                openProgram(savedId && Object.hasOwn(programs, savedId) ? savedId : 'general');
             }, 150);
 
             // تحديث الواجهة كلما تغيّرت البرامج أو المواسم
