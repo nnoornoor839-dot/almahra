@@ -1,0 +1,58 @@
+{
+  "source": "home-answer-key.md §1–5, approved 2026-11-03; synthetic names only",
+  "today": "2026-11-22",
+  "season": {
+    "id": "home-synthetic-season",
+    "termStart": "2026-11-01",
+    "termEnd": "2027-01-14",
+    "calendar": [{ "from": "2026-11-08", "to": "2026-11-12", "name": "إجازة الخريف", "kind": "official" }]
+  },
+  "settings": {
+    "workingDays": [0, 1, 2, 3],
+    "stages": [
+      { "id": "primary", "name": "ابتدائي", "period": "asr" },
+      { "id": "middle", "name": "متوسط", "period": "maghrib" },
+      { "id": "secondary", "name": "ثانوي", "period": "maghrib" }
+    ],
+    "teachers": [{ "id": "t1", "name": "عبدالله" }, { "id": "t2", "name": "إبراهيم" }, { "id": "t3", "name": "صالح" }],
+    "halaqas": [
+      { "id": "a", "name": "حلقة أ", "teacherId": "t1", "stageId": "primary", "active": true },
+      { "id": "b", "name": "حلقة ب", "teacherId": "t2", "stageId": "middle", "active": true },
+      { "id": "c", "name": "حلقة ج", "teacherId": "t3", "stageId": "secondary", "active": true }
+    ],
+    "newGoalPerDay": 0.5,
+    "followupAttendancePercent": 85,
+    "followupAchievementPercent": 80
+  },
+  "dates": ["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-22"],
+  "pages": {
+    "3": { "from": [2, 6], "to": [2, 16] },
+    "4": { "from": [2, 17], "to": [2, 24] },
+    "5": { "from": [2, 25], "to": [2, 29] },
+    "6": { "from": [2, 30], "to": [2, 37] }
+  },
+  "students": [
+    { "name": "سعد", "halaqaId": "a", "days": ["ج", "م", "ج", "م", "ج✗", "م✗ + ج", "غ", "غع", "—"] },
+    { "name": "خالد", "halaqaId": "a", "days": ["ج", "م", "ج", "غ", "غ", "غ", "غ", "غ", "—"] },
+    { "name": "فيصل", "halaqaId": "a", "days": ["ج", "م", "ج", "م", "ج", "م", "غ", "غ", "ج"] },
+    { "name": "أحمد", "halaqaId": "b", "days": ["ج", "م", "ج", "م", "ج (ممتاز)", "ج", "م", "غ", "—"] },
+    { "name": "عمر", "halaqaId": "b", "days": ["ج", "—", "ج", "م", "ج", "م", "ج✗ + م✗", "م", "—"] },
+    { "name": "يوسف", "halaqaId": "b", "days": ["ج", "م", "ج", "م", "م", "ج", "م", "ح", "—"] },
+    { "name": "زياد", "halaqaId": "c", "days": ["ج", "م", "ج", "م", "ج", "ج✗", "غ", "م✗", "—"] },
+    { "name": "ماجد", "halaqaId": "c", "days": ["لم يبدأ", "لم يبدأ", "لم يبدأ", "لم يبدأ", "غ", "ج", "م", "م", "ج"] }
+  ],
+  "expected": {
+    "absent": [
+      { "name": "خالد", "days": 5, "text": "غاب ٥ أيام" },
+      { "name": "سعد", "days": 2, "text": "غاب يومين" }
+    ],
+    "stalled": [
+      { "name": "عمر", "days": 3, "text": "منذ ٣ أيام" },
+      { "name": "يوسف", "days": 2, "text": "منذ يومين" },
+      { "name": "زياد", "days": 2, "text": "منذ يومين" }
+    ],
+    "support": [
+      { "name": "زياد", "days": 2, "text": "حلقة ج · في الجديد والمراجعة · «يُعاد» يومين" }
+    ]
+  }
+}

@@ -121,6 +121,15 @@ function installReports(h, source = html) {
         initHadithTilt() {}, renderHomeCare() {}, renderHomeLeaders() {}, programBrandName: () => 'البرنامج العام' });
     h.ctx.window.almahraPrograms.getCurrentProgram = () => ({ name: 'برنامج وهمي' });
     h.ctx.window.almahraPrograms.getCurrentSeason = () => ({ name: 'موسم وهمي' });
+    if (source === html) {
+        h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;
+        for (const name of ['isSeasonCalendarComplete', 'schoolCivilDate', 'isWorkingDay', 'getSchoolDayInfo',
+            'getAttendanceState', 'generalAttendanceStart', 'getStudentHalaqa', 'getGeneralSchoolDates',
+            'getFollowupAbsentees', 'countLabel', 'normalizeSaudiPhone']) {
+            vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
+        }
+        vm.runInContext(between(source, '        // دوال قراءة نقية:', '        function renderHomeDashboard()'), h.ctx);
+    }
     for (const name of ['getCumulativeStats', 'computeComplexStats', 'renderHomeDashboard', 'renderReportsTable']) {
         vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
     }
@@ -433,8 +442,8 @@ test('home, full report, statistics and daily table all format raw general total
     const total = h.run('computeComplexStats()');
     assert.equal(total.pages, 0.25); assert.equal(total.hizbs, 0.5); assert.equal(total.juzs, 0.25);
     h.run('renderHomeDashboard(); renderReportsTable()');
-    assert.match(h.elements.get('homeDashboard').innerHTML, /الأوجه/);
-    assert.match(h.elements.get('homeDashboard').innerHTML, /dc-val">0.25</);
+    // تغيّر بقرار المالك ٢٠٢٦-١١-٠٢ (ت٢٣)؛ تغطيه home-local
+    assert.doesNotMatch(h.elements.get('homeDashboard').innerHTML, /الأوجه/);
     assert.equal(h.elements.get('eqTotalPages').innerText, '0.25');
     assert.equal(h.elements.get('eqTotalHizbs').innerText, '0.5');
     assert.equal(h.elements.get('eqTotalJuzs').innerText, '0.25');

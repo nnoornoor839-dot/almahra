@@ -37,6 +37,7 @@ function harness(list = [], text = html, program = 'general') {
     class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-10T09:00:00Z'])); } }
     const ctx = vm.createContext({ console, Date: Clock, Intl, document: { getElementById: element },
         window: { almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeason: () => state.season,
+            getCurrentSeasonId: () => 'synthetic-season', isCurrentSeasonArchived: () => false,
             getSettings: () => ({ titleRules: state.titleRules }), getCurrentProgram: () => ({ name: 'برنامج وهمي' }) } },
         getProgramSettings: () => state.settings, getActiveCriteria: () => state.settings.criteria,
         getTiers: () => [], tiersFeatureOn: () => false, studentTierId: s => s.stage,
@@ -71,6 +72,13 @@ function harness(list = [], text = html, program = 'general') {
         'buildAchievementText', 'getSeasonLeaders', 'updateThreeKnightsSelects', 'syncFarsDayFromDate');
     if (text === html) install('generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',
         'generalStudentAttendanceLabel', 'generalAttendanceLabel', 'getGeneralAttendanceEligibility', 'generalIncompleteAttendanceHtml');
+    if (text === html) {
+        run("let generalHomeExpanded = { context: '', stalled: false, support: false };");
+        install('getStudentHalaqa', 'countLabel', 'cleanCellText', 'normalizeSaudiPhone',
+            'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
+            'generalHomeDaysLabel', 'generalHomeHalaqaName', 'generalHomeFollowupText', 'generalTodayCardHtml',
+            'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList');
+    }
     const countCalls = name => {
         const original = ctx[name], counter = { calls: 0 };
         ctx[name] = (...args) => { counter.calls++; return original(...args); };
@@ -174,19 +182,23 @@ test('last school day crosses long holidays; board requires a recorded presence 
 test('daily dashboard, reports, last presence and Excel distinguish all three states and holidays; reading never mutates', () => {
     const h = harness([student(1, { '2026-11-01': present(), '2026-11-10': { entries: { e: {} } } }),
         student(2, { '2026-11-01': present(), '2026-11-10': absent('excused') }), student(3, { '2026-11-01': present() })]);
+    h.state.settings.halaqas = [{ id: 'home-active', name: 'حلقة وهمية', active: true }];
+    h.list.forEach(s => { s.halaqaId = 'home-active'; });
     const before = copy(h.list);
     const stats = copy(h.run('computeComplexStats()'));
     assert.equal(stats.presentToday, 1); assert.equal(stats.absentToday, 1); assert.equal(stats.unrecordedToday, 1); assert.equal(stats.todayPct, 50);
     assert.deepEqual(copy(h.run('getTodayAbsentees().map(s => s.id)')), [2]);
     h.run('renderHomeDashboard(); renderReportsTable(); renderAbsenceReport(); exportToExcel()');
-    assert.match(h.element('homeDashboard').innerHTML, /لم يُسجَّل 1/);
+    // تغيّر بقرار المالك ٢٠٢٦-١١-٠٢ (ت٢٣)؛ تغطيه home-local
+    assert.match(h.element('generalTodayCard').innerHTML, /<b>١<\/b><span>لم يُسجَّل<\/span>/);
     assert.match(h.element('reportsTableBody').innerHTML, /لم يُسجَّل/);
     assert.match(h.element('dailyTimelineTableBody').innerHTML, /لم يُسجَّل 1/);
     assert.deepEqual(h.state.exportRows.map(r => r['حالة اليوم']), ['حاضر', 'غائب', 'لم يُسجَّل']);
     assert.equal(h.run('getLastActiveHijri(students[0])'), '2026-11-10');
     h.holiday('2026-11-10');
     h.run('renderHomeDashboard(); renderReportsTable(); renderAbsenceReport(); exportToExcel()');
-    assert.match(h.element('homeDashboard').innerHTML, /إجازة/);
+    // تغيّر بقرار المالك ٢٠٢٦-١١-٠٢ (ت٢٣)؛ تغطيه home-local
+    assert.match(h.element('generalTodayCard').innerHTML, /اليوم إجازة/);
     assert.match(h.element('executiveAttendanceDashboard').innerHTML, /إجازة/);
     assert.match(h.element('dailyTimelineTableBody').innerHTML, /إجازة/);
     assert.deepEqual(h.state.exportRows.map(r => r['حالة اليوم']), ['إجازة', 'إجازة', 'إجازة']);
@@ -279,7 +291,7 @@ test('one updateAllUIs render over about 90 school days keeps calendar calls con
         const calendar = h.countCalls('getWorkingDaysList'), attendance = h.countCalls('calculateStudentAttendance');
         h.run('updateAllUIs()');
         counts.push({ calendar: calendar.calls, attendance: attendance.calls });
-        assert.equal(attendance.calls, 4 * size); // Reports + their statistics + home statistics + one set of options.
+        assert.equal(attendance.calls, 3 * size); // Reports + their statistics + one set of options; home statistics removed by owner decision 2026-11-02 (ت٢٣)
         assert.match(h.element('reportsTableBody').innerHTML, /2026-11-09/);
     }
     assert.equal(counts[0].calendar, counts[1].calendar);

@@ -191,6 +191,67 @@
         }
 
         /* ═══════════ لوحة معلومات المجمع ═══════════ */
+        /* الرئيسية الجديدة معزولة عن رئيسيتي summer وreview-day. */
+        #page-home.general-home {
+            --gh-brand:#125c2f; --gh-brand-600:#259046; --gh-gold:#c9b14b;
+            --gh-bg:#f4f6f5; --gh-surface:#fff; --gh-ink:#13231a; --gh-ink-2:#4a5a51;
+            --gh-muted:#7b8a82; --gh-line:#e2e8e4; --gh-grid:#edf1ee;
+            --gh-warn:#a35a06; --gh-warn-bg:#fff6e5; --gh-alert:#b42318; --gh-alert-bg:#fef1f0;
+            --gh-ok:#1d7a3e; --gh-ok-bg:#eaf6ee;
+            background:var(--gh-bg); color:var(--gh-ink);
+        }
+        .general-home > div { max-width:1240px; }
+        #generalHome { display:flex; flex-direction:column; gap:32px; min-width:0; }
+        #generalHome * { box-sizing:border-box; }
+        .gh-card { background:var(--gh-surface); border:1px solid var(--gh-line); border-radius:16px;
+            box-shadow:0 1px 2px rgba(16,40,24,.04),0 4px 16px rgba(16,40,24,.05);
+            padding:18px 20px; display:flex; flex-direction:column; min-width:0; }
+        .gh-section-title { margin:0 0 12px; font-size:18px; font-weight:800; }
+        .gh-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+        .gh-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+        .gh-icon { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; flex-shrink:0;
+            background:var(--gh-warn-bg); color:var(--gh-warn); }
+        .gh-title { font-weight:800; font-size:15px; }
+        .gh-count { margin-inline-start:auto; font-size:26px; font-weight:900; line-height:1; color:var(--gh-warn); }
+        .gh-alert .gh-icon { background:var(--gh-alert-bg); color:var(--gh-alert); }
+        .gh-alert .gh-count { color:var(--gh-alert); }
+        .gh-hint { color:var(--gh-muted); font-size:12.5px; font-weight:600; margin:0 0 10px; }
+        .gh-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--gh-grid); min-width:0; }
+        .gh-row:first-child { border-top:0; }
+        .gh-main { min-width:0; flex:1; overflow-wrap:anywhere; }
+        .gh-name { font-weight:700; font-size:14px; }
+        .gh-sub { color:var(--gh-muted); font-size:12.5px; font-weight:600; }
+        .gh-tag { font-size:12px; font-weight:800; border-radius:8px; padding:3px 8px;
+            background:var(--gh-warn-bg); color:var(--gh-warn); }
+        .gh-wa { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; flex-shrink:0;
+            background:#e8f8ee; color:#128c4b; border:0; }
+        .gh-wa.off { opacity:.35; }
+        .gh-more { margin-top:auto; padding-top:10px; border:0; background:none; color:var(--gh-brand-600);
+            font-weight:800; font-size:13px; cursor:pointer; text-align:start; }
+        .gh-empty { padding:18px 14px; margin-top:4px; background:var(--gh-ok-bg); color:var(--gh-ok);
+            border-radius:12px; font-weight:700; font-size:14px; }
+        .gh-today-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+        .gh-today-title { font-weight:800; font-size:16px; }
+        .gh-today-sub { color:var(--gh-muted); font-size:12.5px; font-weight:600; }
+        .gh-today-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:12px; }
+        .gh-cell { border-radius:12px; background:var(--gh-bg); padding:12px 14px; text-align:center;
+            border:1.5px solid transparent; min-width:0; }
+        .gh-cell b { display:block; font-size:34px; font-weight:900; line-height:1.15; font-variant-numeric:tabular-nums; }
+        .gh-cell span { display:block; font-weight:800; font-size:14px; color:var(--gh-ink-2); }
+        .gh-cell small { display:block; color:var(--gh-muted); font-size:12px; font-weight:600; }
+        .gh-present b { color:var(--gh-brand); }
+        .gh-unrecorded { background:var(--gh-warn-bg); border-color:#f1d9a8; cursor:pointer; font:inherit; color:inherit; width:100%; }
+        .gh-unrecorded b { color:var(--gh-warn); }
+        .gh-unrecorded:hover { border-color:var(--gh-warn); }
+        .gh-complete { background:var(--gh-ok-bg); }
+        .gh-complete b { color:var(--gh-ok); font-size:26px; padding:4px 0; }
+        #generalHome button:focus-visible, #generalHome a:focus-visible { outline:2px solid var(--gh-brand); outline-offset:3px; }
+        @media (max-width:1019px) { .gh-grid { grid-template-columns:1fr; } }
+        @media (max-width:640px) {
+            #generalHome { gap:24px; }
+            .gh-cell { padding:10px 6px; }
+            .gh-cell b { font-size:28px; }
+        }
         .home-dash { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         @media (min-width: 640px) { .home-dash { grid-template-columns: repeat(3, 1fr); } }
         @media (min-width: 1100px) { .home-dash { grid-template-columns: repeat(6, 1fr); } }
@@ -830,12 +891,12 @@
     <div id="loadingOverlay" class="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
         <i class="fas fa-quran text-9xl text-emerald-500 animate-bounce mb-6"></i>
         <h1 data-program-brand class="text-6xl font-black text-slate-700 mb-4">برنامج المهرة</h1>
-        <p class="text-3xl text-slate-500 font-bold">تهيئة اللوحة الذهبية والمحرك المكاني V25...</p>
+        <p class="text-3xl text-slate-500 font-bold">جارٍ التحميل…</p>
     </div>
 
     <!-- الرأس: صفّ واحد شفاف يطفو فوق الصفحة، ويلبس الأبيض عند النزول -->
     <header id="appHeader" class="app-header no-print">
-        <img class="ah-logo" src="https://i.postimg.cc/HWJkgtqG/shʿar-afdlkm-akhdr.png"
+        <img class="ah-logo" src="./assets/brand/afdalkom-logo-horizontal-color.png"
              alt="شعار جمعية أفضلكم لتعليم القرآن الكريم وعلومه">
         <div class="ah-mid">
             <span data-program-brand class="ah-title">برنامج المهرة</span>
@@ -889,9 +950,15 @@
             <!-- لوحة معلومات المجمع -->
             <div id="schoolCalendarAlert" class="hidden p-4 mb-4 rounded-xl bg-amber-100 text-amber-900 font-bold" role="alert"></div>
             <div id="generalAttendanceTools" class="hidden flex flex-wrap gap-3 no-print">
-                <button onclick="openGeneralAbsenceModal()" class="bg-white text-slate-700 hover:bg-slate-100 py-3 px-6 rounded-xl font-bold text-lg flex items-center gap-2 shadow-md"><i class="fas fa-user-xmark"></i> قائمة الغياب</button>
             </div>
             <div id="generalUnrecordedAlert" class="hidden p-4 rounded-xl bg-amber-100 text-amber-900 font-bold flex flex-wrap gap-3 no-print" role="status"></div>
+            <div id="generalHome" style="display:none">
+                <section id="generalTodayCard" class="gh-card" aria-label="اليوم حتى الآن"></section>
+                <section aria-labelledby="generalFollowupTitle">
+                    <h2 id="generalFollowupTitle" class="gh-section-title">المتابعة</h2>
+                    <div id="generalHomeFollowup" class="gh-grid"></div>
+                </section>
+            </div>
             <div id="homeDashboard" class="home-dash"></div>
 
             <!-- المتابعة والمتصدّرون: يظهران فقط إذا كان في الموسم طلاب -->
@@ -973,6 +1040,14 @@
                 <div class="panel-home-title"><i class="fas fa-cogs text-emerald-600"></i> الإعدادات</div>
                 <div class="panel-home-sub">اختر القسم الذي تريد ضبطه</div>
                 <div class="panel-grid">
+                    <button id="generalSettingsTv" type="button" class="panel-card" style="display:none; --pc-accent:#125c2f; --pc-bg:#eef7f1" onclick="openGeneralTv()">
+                        <span class="pc-icon"><i class="fas fa-tv"></i></span>
+                        <span class="pc-title">شاشة التلفاز</span>
+                    </button>
+                    <button id="generalSettingsWeeklySheet" type="button" class="panel-card" style="display:none; --pc-accent:#125c2f; --pc-bg:#eef7f1" onclick="openGeneralWeeklySheetModal()">
+                        <span class="pc-icon"><i class="fas fa-print"></i></span>
+                        <span class="pc-title">طباعة الأوراق الأسبوعية</span>
+                    </button>
                     <button class="panel-card" style="--pc-accent:#eab308; --pc-bg:#fefce8" onclick="openSettingsSection('setPanelRace')">
                         <span class="pc-icon"><i class="fas fa-bus-alt"></i></span>
                         <span class="pc-title">لوحة السباق</span>
@@ -2706,7 +2781,7 @@
         }
         function updateGeneralAttendanceUI() {
             const visible = isGeneralProgram() && !window.almahraPrograms.isCurrentSeasonArchived();
-            document.getElementById('generalAttendanceTools')?.classList.toggle('hidden', !visible);
+            document.getElementById('generalAttendanceTools')?.classList.add('hidden');
             const bar = document.getElementById('generalUnrecordedAlert');
             if (!bar) return;
             const days = getGeneralUnrecordedDays();
@@ -5653,9 +5728,168 @@
         // لوحة معلومات الرئيسية — مربعات تفاعلية تفتح الشاشة المناسبة عند الضغط
         // أرقامها من computeComplexStats نفسها التي يستعملها قسم «إحصائيات المجمع»
         // ================================================================
+        // دوال قراءة نقية: كل المدخلات وقارئ الحالة وبداية الطالب تُمرّر صراحةً.
+        function generalTodaySummary(studentList, dateStr, settings, schoolInfo, attendanceForDate, startForStudent) {
+            const summary = { holiday: !schoolInfo.isSchoolDay, present: 0, absent: 0, excused: 0, unexcused: 0, unrecorded: 0, total: 0 };
+            if (summary.holiday) return summary;
+            const activeIds = new Set((settings.halaqas || []).filter(h => h.active === true).map(h => h.id));
+            for (const student of studentList) {
+                if (!activeIds.has(student.halaqaId) || dateStr < startForStudent(student)) continue;
+                const status = attendanceForDate(student, dateStr);
+                summary.total++;
+                if (status.state === 'present') summary.present++;
+                else if (status.state === 'absent') {
+                    summary.absent++;
+                    if (status.absence === 'excused') summary.excused++;
+                    if (status.absence === 'unexcused') summary.unexcused++;
+                } else if (status.state === 'unrecorded') summary.unrecorded++;
+            }
+            return summary;
+        }
+
+        function generalStalledMemorization(studentList, schoolDates, dateStr, attendanceForDate, startForStudent) {
+            const dates = [...new Set(schoolDates)].filter(d => d <= dateStr).sort().reverse();
+            return studentList.map(student => {
+                let days = 0;
+                const start = startForStudent(student);
+                for (const date of dates) {
+                    if (date < start) break;
+                    const state = attendanceForDate(student, date).state;
+                    if (state === 'absent' || (state === 'unrecorded' && date === dateStr)) continue;
+                    if (state !== 'present') break;
+                    const acceptedNew = Object.values(student.history?.[date]?.entries || {})
+                        .some(entry => entry.kind === 'new' && entry.grade !== 'repeat');
+                    if (acceptedNew) break;
+                    days++;
+                }
+                return { student, days };
+            }).filter(row => row.days >= 2).sort((a, b) => b.days - a.days);
+        }
+
+        function generalRecitationSupport(studentList, schoolDates, dateStr, startForStudent) {
+            const dates = [...new Set(schoolDates)].filter(d => d <= dateStr).sort().slice(-4);
+            return studentList.map(student => {
+                let days = 0;
+                const kinds = new Set(), start = startForStudent(student);
+                for (const date of dates) {
+                    if (date < start) continue;
+                    const repeats = Object.values(student.history?.[date]?.entries || {}).filter(entry => entry.grade === 'repeat');
+                    if (!repeats.length) continue;
+                    days++;
+                    repeats.forEach(entry => kinds.add(entry.kind));
+                }
+                const kind = kinds.has('new') && kinds.has('review') ? 'الجديد والمراجعة' : kinds.has('new') ? 'الجديد' : 'المراجعة';
+                return { student, days, kind };
+            }).filter(row => row.days >= 2).sort((a, b) => b.days - a.days);
+        }
+
+        function generalHomeDaysLabel(n) {
+            return countLabel(n, 'يوماً واحداً', 'يومين', 'أيام', 'يوماً').replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
+        }
+        function generalHomeHalaqaName(student, settings) {
+            const name = getStudentHalaqa(student, settings)?.name || '';
+            return name ? (/^حلقة(?:\s|$)/.test(name) ? name : 'حلقة ' + name) : 'بلا حلقة';
+        }
+        function generalHomeFollowupText(type, row, settings) {
+            if (type === 'absent') return 'غاب ' + generalHomeDaysLabel(row.streak);
+            if (type === 'stalled') return 'منذ ' + generalHomeDaysLabel(row.days);
+            return `${generalHomeHalaqaName(row.student, settings)} · في ${row.kind} · «يُعاد» ${generalHomeDaysLabel(row.days)}`;
+        }
+        function generalTodayCardHtml(summary) {
+            const num = n => n.toLocaleString('ar-SA');
+            const head = '<div class="gh-today-head"><h2 class="gh-today-title">اليوم حتى الآن</h2><span class="gh-today-sub">يتحدّث مع كل تسجيل</span></div>';
+            if (summary.holiday) return head + '<p class="gh-empty">اليوم إجازة</p>';
+            return head + `<div class="gh-today-grid">
+                <div class="gh-cell gh-present"><b>${num(summary.present)}</b><span>حضر</span><small>من ${num(summary.total)}</small></div>
+                <div class="gh-cell"><b>${num(summary.absent)}</b><span>غاب</span><small>بعذر ${num(summary.excused)} · بغير ${num(summary.unexcused)}</small></div>
+                ${summary.unrecorded
+                    ? `<button class="gh-cell gh-unrecorded" type="button" title="ينقلك إلى «الإنجاز والتحضير»" onclick="goHome('page-students')"><b>${num(summary.unrecorded)}</b><span>لم يُسجَّل</span><small>أكملهم ←</small></button>`
+                    : '<div class="gh-cell gh-complete"><b>✓</b><span>اكتمل التسجيل</span><small>لا أحد ينتظر</small></div>'}
+            </div>`;
+        }
+
+        let generalHomeExpanded = { context: '', stalled: false, support: false };
+        function expandGeneralHomeList(type) {
+            if (!isGeneralProgram() || !['stalled', 'support'].includes(type)) return;
+            generalHomeExpanded[type] = true;
+            renderGeneralHome();
+        }
+        function generalHomeWhatsapp(student, streak) {
+            const phone = normalizeSaudiPhone(student.parentPhone);
+            const daysLabel = n => countLabel(n, 'يوماً واحداً', 'يومين', 'أيام', 'يوماً');
+            // الرسالة نفسها في renderHomeCare؛ فتح واتساب فقط، بلا إرسال أو كتابة.
+            const msg = encodeURIComponent(
+                `السلام عليكم ورحمة الله وبركاته\n`
+                + `ولي أمر ${student.name.split(' ')[0]} الكريم:\n\n`
+                + `نفتقد حضوره في حلقة القرآن منذ ${daysLabel(streak)}، ونأمل منكم المتابعة والتواصل معنا.\n\n`
+                + `جزاكم الله خيراً`
+            );
+            return phone
+                ? `<a class="gh-wa" href="whatsapp://send?phone=${phone}&text=${msg}" title="مراسلة ولي الأمر"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>`
+                : '<span class="gh-wa off" title="لا جوال محفوظ لولي أمره"><i class="fab fa-whatsapp" aria-hidden="true"></i></span>';
+        }
+        function generalHomeFollowupCard(type, list, settings, expanded) {
+            const labels = {
+                absent: ['غائبون متتابعون', 'غابوا يومين دراسيين متتاليين فأكثر', 'لا غائبين متتابعين', 'fa-user-xmark'],
+                stalled: ['متوقفون عن الحفظ', 'حاضرون ولم يسمّعوا جديداً منذ يومين دراسيين فأكثر', 'كل الحاضرين سمّعوا جديداً', 'fa-book-open'],
+                support: ['يحتاجون تثبيت التسميع', 'تقدير «يُعاد» في يومين مختلفين فأكثر خلال آخر 4 أيام دراسية', 'لا تعثّر متكرر في التسميع', 'fa-rotate-right']
+            };
+            const [title, hint, empty, icon] = labels[type];
+            const count = countLabel(list.length, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً');
+            const head = `<div class="gh-head"><span class="gh-icon"><i class="fas ${list.length ? icon : 'fa-circle-check'}" aria-hidden="true"></i></span>
+                <h3 class="gh-title">${title}</h3>${list.length ? `<span class="gh-count" title="${escapeHTML(count)}">${list.length.toLocaleString('ar-SA')}</span>` : ''}</div><p class="gh-hint">${hint}</p>`;
+            const rows = list.slice(0, expanded ? list.length : 3).map(row => {
+                const st = row.student, text = generalHomeFollowupText(type, row, settings);
+                return `<div class="gh-row"><div class="gh-main"><div class="gh-name">${escapeHTML(st.name)}</div>
+                    ${type === 'support' ? `<div class="gh-sub">${escapeHTML(text)}</div>`
+                        : `<div class="gh-sub">${escapeHTML(generalHomeHalaqaName(st, settings))}</div><span class="gh-tag">${escapeHTML(text)}</span>`}</div>
+                    ${type === 'absent' ? generalHomeWhatsapp(st, row.streak) : ''}</div>`;
+            }).join('');
+            const action = type === 'absent' ? "goRecords('recPanelAbsence')" : `expandGeneralHomeList('${type}')`;
+            const more = list.length > 3 && !expanded ? `<button class="gh-more" type="button" onclick="${action}">عرض الكل ←</button>` : '';
+            return `<article class="gh-card ${type === 'absent' && list.length ? 'gh-alert' : ''}">${head}${list.length
+                ? `<div>${rows}</div>${more}` : `<p class="gh-empty">✓ ${empty}</p>`}</article>`;
+        }
+        function renderGeneralHome() {
+            if (!isGeneralProgram()) return;
+            const settings = getProgramSettings(), card = document.getElementById('generalTodayCard');
+            const visible = !window.almahraPrograms.isCurrentSeasonArchived() && isSeasonCalendarComplete();
+            if (card) {
+                card.style.display = visible ? '' : 'none';
+                card.innerHTML = visible ? generalTodayCardHtml(generalTodaySummary(students, todayStr, settings,
+                    getSchoolDayInfo(todayStr), getAttendanceState, generalAttendanceStart)) : '';
+            }
+            const context = window.almahraPrograms.getCurrentSeasonId();
+            if (generalHomeExpanded.context !== context) generalHomeExpanded = { context, stalled: false, support: false };
+            const dates = getGeneralSchoolDates();
+            const lists = {
+                absent: getFollowupAbsentees(),
+                stalled: generalStalledMemorization(students, dates, todayStr, getAttendanceState, generalAttendanceStart),
+                support: generalRecitationSupport(students, dates, todayStr, generalAttendanceStart)
+            };
+            const followup = document.getElementById('generalHomeFollowup');
+            if (followup) followup.innerHTML = Object.entries(lists)
+                .map(([type, list]) => generalHomeFollowupCard(type, list, settings, !!generalHomeExpanded[type])).join('');
+        }
+
         function renderHomeDashboard() {
             const box = document.getElementById('homeDashboard');
             if (!box) return;
+            const general = isGeneralProgram();
+            document.getElementById('page-home')?.classList.toggle('general-home', general);
+            for (const id of ['homeVerse', 'homeDashboard', 'homeLead']) {
+                const el = document.getElementById(id);
+                if (el) el.style.display = general ? 'none' : '';
+            }
+            const generalHome = document.getElementById('generalHome');
+            if (generalHome) generalHome.style.display = general ? '' : 'none';
+            if (general) {
+                const extras = document.getElementById('homeExtras');
+                if (extras) extras.style.display = 'none';
+                box.innerHTML = '';
+                renderGeneralHome();
+                return;
+            }
             initHadithTilt();
 
             // اسم البرنامج والموسم في صدر الصفحة
@@ -9322,6 +9556,10 @@
         // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
         function applyProgramFeatures() {
             document.getElementById('generalTvButton')?.classList.toggle('hidden', !isGeneralProgram());
+            for (const id of ['generalSettingsTv', 'generalSettingsWeeklySheet']) {
+                const el = document.getElementById(id);
+                if (el) el.style.display = isGeneralProgram() ? '' : 'none';
+            }
             if (!window.almahraPrograms) return;
             updateFrontierFixVisibility();
             const general = isGeneralProgram();
