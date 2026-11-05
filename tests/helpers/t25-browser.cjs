@@ -40,6 +40,7 @@ img{display:block;max-width:100%}.flex{display:flex}.flex-col{flex-direction:col
 .flex-grow{flex-grow:1}.gap-5{gap:1.25rem}.w-full{width:100%}.mx-auto{margin-inline:auto}.p-4{padding:1rem}
 .fixed{position:fixed}.inset-0{inset:0}.hidden{display:none}.no-print{print-color-adjust:exact}
 .bottom-0{bottom:0}.left-0{left:0}.right-0{right:0}.flex-1{flex:1 1 0%}.z-50{z-index:50}
+[class~="z-[2000]"]{z-index:2000}
 @media(min-width:768px){.md\\:p-8{padding:2rem}}`;
 async function newPage(browser, { width = 390, program = 'general', today = key.today, list = answerStudents(), holiday = false, hold = false, studentLoadError = false, settings = {} } = {}) {
     const context = await browser.newContext({ viewport: { width, height: 950 } });

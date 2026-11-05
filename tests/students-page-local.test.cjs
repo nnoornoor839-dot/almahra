@@ -134,10 +134,10 @@ test('search by name, English and Arabic number; only one result plus Enter open
 test('answer key: one pure count uses attendance/hasEntries; 2 of 4, absent 1; disabled and other halaqas excluded', () => {
     const h = harness(), before = JSON.stringify(h.list);
     assert.deepEqual(copy(h.run("generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings())")), { recited: 2, total: 4, absent: 1 });
-    assert.equal(h.run("generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))"), 'سمّع ٢ من ٤ · غائب ١');
+    assert.equal(h.run("generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))"), 'سمّع 2 من 4 · غائب 1');
     assert.deepEqual(copy(h.run("generalHalaqaTodayCounts(students, 'off', todayStr, getProgramSettings())")), { recited: 0, total: 0, absent: 0 });
     h.element('generalStudentSearchInput').value = '٢٨'; h.run('renderStudentsGrid()');
-    assert.match(h.element('studentsGrid').innerHTML, /سمّع ٢ من ٤ · غائب ١/); // البحث لا يبدّل مقام الحلقة.
+    assert.match(h.element('studentsGrid').innerHTML, /سمّع 2 من 4 · غائب 1/); // البحث لا يبدّل مقام الحلقة.
     assert.equal(JSON.stringify(h.list), before); assert.equal(h.state.batches.length, 0);
     assert.match(source('generalCardTodayState'), /getAttendanceState/); assert.match(source('generalHalaqaTodayCounts'), /generalCardTodayState/);
 });
@@ -161,8 +161,8 @@ test('groups and names sort, teacher prefix does not duplicate, chips retain sel
     assert.ok(markup.indexOf('أحمد وهمي') < markup.indexOf('بدر وهمي'));
     assert.match(markup, /الأستاذ معلم وهمي/);
     const chips = h.element('generalStudentsHalaqas');
-    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>٧/);
-    assert.match(chips.innerHTML, /ألف <small>٥/);
+    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>7/);
+    assert.match(chips.innerHTML, /ألف <small>5/);
     chips.children.find(e => e.tagName === 'BUTTON' && e.attrs).onclick(); // كل الحلقات.
     h.run("selectGeneralStudentsHalaqa('h1'); renderStudentsGrid()"); assert.equal(h.run('generalStudentsHalaqa'), 'h1');
     h.state.settings.teachers[0].name = 'الأستاذ معلم وهمي'; h.run('renderStudentsGrid()');
@@ -196,7 +196,7 @@ test('bulk present for unrecorded means attendance without recitation; shape equ
     individual.run('openAttendanceEditModal(1); setAttendanceEditChoice(true); saveAttendanceEdit()');
     const attendanceOnly = object => Object.fromEntries(Object.entries(object).filter(([k]) => !k.endsWith('.hijri')));
     assert.deepEqual(attendanceOnly(fields), attendanceOnly(individual.state.patches[0].fields));
-    assert.match(h.state.messages.at(-1).message, /حُفظ: ١ حاضر/);
+    assert.match(h.state.messages.at(-1).message, /حُفظ: 1 حاضر/);
 });
 
 test('bulk absent keeps the 6a write shape and reason/note; no selection never writes', async () => {
@@ -208,7 +208,7 @@ test('bulk absent keeps the 6a write shape and reason/note; no selection never w
     assert.deepEqual(Object.fromEntries(Object.entries(fields).filter(([k]) => !k.endsWith('.hijri'))), {
         [`history.${today}.attended`]: false, [`history.${today}.absence`]: 'unexcused', [`history.${today}.note`]: 'ملاحظة وهمية' });
     assert.equal(h.run('getAttendanceState(students[0], todayStr).state'), 'absent');
-    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب'); h.checkPatches();
+    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب'); h.checkPatches();
 });
 
 test('previous absence becomes present, deletes only absence/note, keeps hijri/criteria/entries; same individual shape', async () => {
@@ -219,7 +219,7 @@ test('previous absence becomes present, deletes only absence/note, keeps hijri/c
     const individual = harness([fake(1, 'طالب وهمي', copy(day))]);
     individual.run('openAttendanceEditModal(1); setAttendanceEditChoice(true); saveAttendanceEdit()');
     assert.deepEqual(h.state.batches[0][0].fields, individual.state.patches[0].fields);
-    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب ١');
+    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب 1');
 });
 
 test('reciting students cannot become absent; new recitation since opening rejects the entire pending batch', async () => {
@@ -248,7 +248,7 @@ test('bulk save waits for cloud before local state, success message and draft re
     assert.equal(h.run('generalAbsenceDraft'), draft);
     await h.save(); assert.equal(h.state.batches.length, 1); assert.equal(h.state.batches[0].length, 4); h.checkPatches();
     release({ success: true }); await pending;
-    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب، وأُزيل غياب ١، وحُفظ: ١ حاضر');
+    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب، وأُزيل غياب 1، وحُفظ: 1 حاضر');
     assert.notEqual(h.run('generalAbsenceDraft'), draft);
     assert.deepEqual(h.list.map(s => s.history[today].attended), [false, false, true, true]);
     for (const id of ['generalAbsenceSave', 'generalAbsenceRows', 'generalAbsenceDate', 'generalAbsenceHalaqa'])
@@ -281,7 +281,7 @@ test('bulk cloud rejection or throw preserves data, draft and choices; retry sen
         resolve({ success: true }); await retry;
         assert.equal(h.list[0].history[today].attended, false); assert.equal(h.list[0].history[today].note, 'ملاحظة جديدة');
         assert.deepEqual(h.list[1].history[today], { attended: true, hijri: 'يبقى' });
-        assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب، وأُزيل غياب ١'); h.checkPatches();
+        assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب، وأُزيل غياب 1'); h.checkPatches();
     }
 });
 
@@ -328,7 +328,7 @@ test('late attendance success after closing updates cards and toast without writ
     release({ success: true }); await pending;
     assert.equal(h.list[0].history[today].attended, true);
     assert.match(h.element('studentsGrid').innerHTML, /gs-present">حاضر/);
-    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ حاضر');
+    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 حاضر');
     assert.deepEqual(attendanceView(h), closedView); assert.equal(h.run('generalAbsenceDraft'), null);
 });
 
@@ -411,7 +411,7 @@ test('real successful quick save clears and focuses search, keeps halaqa and ref
     release({ success: true }); await pending;
     assert.equal(h.element('generalStudentSearchInput').value, ''); assert.equal(h.state.focus, 'generalStudentSearchInput');
     assert.equal(h.run('generalStudentsHalaqa'), 'h1'); assert.match(h.element('studentsGrid').innerHTML, /gs-done">سمّع/);
-    assert.match(h.element('studentsGrid').innerHTML, /سمّع ١ من ١/);
+    assert.match(h.element('studentsGrid').innerHTML, /سمّع 1 من 1/);
     const fail = quickPage(); fail.state.pending = Promise.resolve({ success: false, error: 'فشل وهمي' }); await fail.save();
     assert.equal(fail.element('generalStudentSearchInput').value, 'طالب'); assert.equal(fail.run('generalStudentsHalaqa'), 'h1');
     assert.doesNotMatch(fail.element('studentsGrid').innerHTML, /gs-done/);

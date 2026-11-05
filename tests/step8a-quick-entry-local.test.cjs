@@ -14,7 +14,7 @@ const harness = (s = student()) => rawHarness(s);
 test('imported last verse locks next from first opening; repeat keeps it locked', async () => {
     const h = harness(rawStudent({}, { lastSurah: 78, lastAyah: 11 }));
     assert.equal(h.ctx.document.getElementById('quick_new_fromSurah'), null);
-    assert.equal(h.element('quick_new_start').textContent, 'النبأ ١٢');
+    assert.equal(h.element('quick_new_start').textContent, 'النبأ 12');
     assert.equal(h.run('Object.hasOwn(getProgramSettings(), "features")'), false);
     h.range('new', null, [78, 20]); h.grade('new', 'repeat'); h.preview(); await h.save(); h.reopen();
     assert.equal(h.run('generalQuickEntry.locked'), true);
@@ -71,7 +71,7 @@ test('review over known frontier is blocked without confirmation; accepted same-
         const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));
         h.range('review', [114, 1], [78, end]); h.grade('review'); h.preview(); h.state.confirmed = confirm; await h.save();
         assert.equal(h.state.prompts.length, 0); assert.equal(h.state.writes.length, end === 20 ? 1 : 0);
-        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ ٢٠/);
+        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ 20/);
     }
     for (const grade of ['good','repeat']) {
         const h = harness(student({ a: entry('new', [114, 1], [78, 20]) }));

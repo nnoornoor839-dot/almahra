@@ -445,8 +445,8 @@ test('Riyadh today and both header dates advance at 21:00 UTC; quick entry requi
     const h = harness(); h.state.now = '2026-11-01T22:30:00Z';
     h.run('setupDatesAndTimezone()'); assert.equal(h.run('todayStr'), '2026-11-02');
     for (const [id, locale, options] of [
-        ['hijriDateDisplay', 'ar-SA-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],
-        ['headerGregorian', 'ar-SA', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]
+        ['hijriDateDisplay', 'ar-SA-u-ca-islamic-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],
+        ['headerGregorian', 'ar-SA-u-nu-latn', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]
     ]) {
         const formatted = new Intl.DateTimeFormat(locale, { ...options, timeZone: 'Asia/Riyadh' }).format(new Date(h.state.now));
         assert.ok(h.element(id).innerText.startsWith(formatted));

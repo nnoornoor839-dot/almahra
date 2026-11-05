@@ -112,7 +112,7 @@ test('undo selects current user latest today; one entry path plus derived pointe
     const before = copy(h.list[0]);
     assert.equal(h.target().id, 'second'); h.run('updateGeneralUndoButton()');
     assert.match(h.element('smartUndoBtn').textContent, /تراجع عن: مراجعة/);
-    assert.match(h.element('smartUndoBtn').textContent, /١–١٥.*النقاط: ٤/);
+    assert.match(h.element('smartUndoBtn').textContent, /1–15.*النقاط: 4/);
     await h.undo();
     const fields = h.state.writes[0].fields;
     assert.deepEqual(Object.keys(fields).sort(), ['frontierBase', 'lastDailyBase', `history.${today}.entries.second`, 'lastDailySurah', 'lastDailyAyah', 'lastDailySardRange'].sort());
@@ -131,7 +131,7 @@ test('undo selects current user latest today; one entry path plus derived pointe
     assert.equal(h.target(), null); await h.undo(); assert.equal(h.state.writes.length, 2);
     assert.equal(h.element('smartUndoBtn').disabled, true);
     assert.match(h.element('smartUndoBtn').textContent, /لا يوجد تسجيل لك اليوم/);
-    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*١–١٥ \(النقاط: ٤\)؟$/);
+    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*1–15 \(النقاط: 4\)؟$/);
     assert.match(h.state.messages[0].message, /^تم التراجع عن: مراجعة/);
     assert.equal(h.state.updates, 2);
 });
@@ -139,7 +139,7 @@ test('undo selects current user latest today; one entry path plus derived pointe
 test('undo button, confirmation and success share points label for whole and fractional values', async () => {
     for (const points of [0, 1, 4, 12, 4.5]) {
         const h = harness([student({ only: { ...entry('new', 10), points } })]);
-        const suffix = `(النقاط: ${points.toLocaleString('ar-SA', { useGrouping: false })})`;
+        const suffix = `(النقاط: ${points.toLocaleString('ar-SA-u-nu-latn', { useGrouping: false })})`;
         h.run('updateGeneralUndoButton()');
         const label = h.run('generalUndoLabel(students[0].history[todayStr].entries.only)');
         assert.ok(label.endsWith(suffix));

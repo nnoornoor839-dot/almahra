@@ -121,17 +121,17 @@ function installReports(h, source = html) {
         initHadithTilt() {}, renderHomeCare() {}, renderHomeLeaders() {}, programBrandName: () => 'البرنامج العام' });
     h.ctx.window.almahraPrograms.getCurrentProgram = () => ({ name: 'برنامج وهمي' });
     h.ctx.window.almahraPrograms.getCurrentSeason = () => ({ name: 'موسم وهمي' });
-    if (source === html) {
-        h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;
-        for (const name of ['isSeasonCalendarComplete', 'schoolCivilDate', 'isWorkingDay', 'getSchoolDayInfo',
-            'getAttendanceState', 'generalAttendanceStart', 'getStudentHalaqa', 'getGeneralSchoolDates',
-            'getFollowupAbsentees', 'countLabel', 'normalizeSaudiPhone']) {
-            vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
-        }
-        vm.runInContext(between(source, '        // دوال قراءة نقية:', '        function renderHomeDashboard()'), h.ctx);
-        // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.
-        h.ctx.renderGeneralPerformance = () => {};
+    h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;
+    for (const name of ['isSeasonCalendarComplete', 'schoolCivilDate', 'isWorkingDay', 'getSchoolDayInfo',
+        'getAttendanceState', 'generalAttendanceStart', 'getStudentHalaqa', 'getGeneralSchoolDates',
+        'getFollowupAbsentees', 'countLabel', 'normalizeSaudiPhone']) {
+        if (source.includes(`function ${name}(`)) vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
     }
+    if (source.includes('function renderGeneralHome(')) {
+        vm.runInContext(between(source, '        // دوال قراءة نقية:', '        function renderHomeDashboard()'), h.ctx);
+    }
+    // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.
+    if (source.includes('function renderGeneralPerformance(')) h.ctx.renderGeneralPerformance = () => {};
     for (const name of ['getCumulativeStats', 'computeComplexStats', 'renderHomeDashboard', 'renderReportsTable']) {
         vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);
     }

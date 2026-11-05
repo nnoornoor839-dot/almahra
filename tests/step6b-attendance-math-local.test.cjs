@@ -192,7 +192,7 @@ test('daily dashboard, reports, last presence and Excel distinguish all three st
     assert.deepEqual(copy(h.run('getTodayAbsentees().map(s => s.id)')), [2]);
     h.run('renderHomeDashboard(); renderReportsTable(); renderAbsenceReport(); exportToExcel()');
     // تغيّر بقرار المالك ٢٠٢٦-١١-٠٢ (ت٢٣)؛ تغطيه home-local
-    assert.match(h.element('generalTodayCard').innerHTML, /<b>١<\/b><span>لم يُسجَّل<\/span>/);
+    assert.match(h.element('generalTodayCard').innerHTML, /<b>1<\/b><span>لم يُسجَّل<\/span>/);
     assert.match(h.element('reportsTableBody').innerHTML, /لم يُسجَّل/);
     assert.match(h.element('dailyTimelineTableBody').innerHTML, /لم يُسجَّل 1/);
     assert.deepEqual(h.state.exportRows.map(r => r['حالة اليوم']), ['حاضر', 'غائب', 'لم يُسجَّل']);

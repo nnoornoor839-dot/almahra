@@ -158,7 +158,7 @@ test('الزر يعرض الاسم والموسم والسهم وسمات الو
     const badge = h.element('currentEventBadge').innerHTML;
     assert.match(badge, /<b>البرنامج العام<\/b>/);
     assert.match(badge, /class="program-switcher-season">موسم وهمي general/);
-    assert.match(badge, /class="program-switcher-caret"[^>]*>⌄/);
+    assert.match(badge, /class="program-switcher-caret"[^>]*><i class="fas fa-caret-down"><\/i>/);
     assert.match(html, /id="currentEventBadge"[^>]*aria-haspopup="menu"[^>]*aria-expanded="false"/);
     assert.match(html, /@media \(max-width: 720px\)\s*\{[^@]*?#currentEventBadge \.program-switcher-season \{ display: none; \}/);
 });

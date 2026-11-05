@@ -133,7 +133,7 @@ test('missed list contains past school days of this week only; calendar is read 
     assert.equal(h.run('Object.hasOwn(getProgramSettings(), "features")'), false);
     assert.deepEqual(copy(h.run('getGeneralMissedDays()')), ['2026-11-01', '2026-11-03']);
     h.run('showGeneralMissedDays()'); assert.equal(h.element('generalMissedDays').children.length, 3);
-    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس ٠٥-١١', 'الأحد ٠١-١١', 'الثلاثاء ٠٣-١١']);
+    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس 05-11', 'الأحد 01-11', 'الثلاثاء 03-11']);
     for (const date of ['2026-10-29', '2026-11-02', '2026-11-04', '2026-11-06']) {
         select(h, date); assert.equal(h.run('generalQuickEntry.dateStr'), '2026-11-05');
     }
@@ -151,7 +151,7 @@ test('date selection reads that day criteria, attendance and snapshot; current f
     assert.deepEqual(copy(h.run('criteriaAtOpen.sel')), { late: -2 }); assert.equal(h.preview().criteria.delta, 0);
     assert.deepEqual(copy(h.run('generalQuickSuggestions(students[0])')), suggestions);
     assert.equal(h.run("getAttendanceState(students[0], generalQuickEntry.dateStr).state"), 'absent');
-    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد ٠١-١١');
+    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد 01-11');
     assert.equal(h.element('generalMissedBanner').classList.contains('hidden'), false);
     select(h, '2026-11-05'); assert.deepEqual(copy(h.run('getCriteriaSelection()')), { early: 5 });
     assert.equal(h.element('generalMissedBanner').classList.contains('hidden'), true);
@@ -192,7 +192,7 @@ test('missed save writes only selected date with frozen context, exact preview a
     const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date('2026-11-01T12:00:00'));
     assert.equal(fields['history.2026-11-01.hijri'], hijri);
     assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ: الجديد.*المراجعة.*على يوم الأحد/);
-    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد ٠١-١١. متابعة؟']);
+    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد 01-11. متابعة؟']);
 });
 
 test('absent missed day asks twice, cancellation of either writes nothing; successful save removes absence/note', async () => {
@@ -200,8 +200,8 @@ test('absent missed day asks twice, cancellation of either writes nothing; succe
         const h = dated(student({}, { history: { '2026-11-01': { attended: false, absence: 'excused', note: 'وهمي', entries: {} } } })); select(h);
         h.state.onConfirm = () => { h.state.confirmed = h.state.prompts.length !== cancelAt; };
         await h.save(); assert.equal(h.state.writes.length, cancelAt ? 0 : 1);
-        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد ٠١-١١. متابعة؟');
-        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد ٠١-١١؛ التسجيل يجعله حاضراً. متابعة؟');
+        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد 01-11. متابعة؟');
+        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد 01-11؛ التسجيل يجعله حاضراً. متابعة؟');
         if (!cancelAt) {
             assert.equal(h.s.history['2026-11-01'].attended, true);
             assert.equal('absence' in h.s.history['2026-11-01'], false); assert.equal('note' in h.s.history['2026-11-01'], false);

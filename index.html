@@ -884,6 +884,224 @@
             .gs-tools-row > button { min-height: 44px; width: 100%; }
         }
     </style>
+<style>
+
+body.program-general {
+  --general-brand: #125c2f;
+  --general-ink: #21372b;
+  --general-muted: #5f6d66;
+  --general-canvas: #f5f7f5;
+  --general-surface: #ffffff;
+  --general-line: #dce4de;
+  --general-soft: #edf4ee;
+  --general-pending: #865d19;
+  --general-pending-bg: #faf3e4;
+  --general-below-limit: #a03d38;
+  --general-space-1: 4px;
+  --general-space-2: 8px;
+  --general-space-3: 12px;
+  --general-space-4: 16px;
+  --general-space-6: 24px;
+  --general-space-8: 32px;
+  --general-radius-sm: 8px;
+  --general-radius-md: 12px;
+  --general-radius-lg: 16px;
+  --general-text-xs: 13px;
+  --general-text-sm: 14px;
+  --general-text-md: 16px;
+  --general-text-lg: 20px;
+  --general-text-xl: 28px;
+  --general-text-display: 40px;
+  --general-font: 'Cairo', sans-serif;
+  --general-weight-regular: 400;
+  --general-weight-medium: 600;
+  --general-weight-bold: 700;
+}
+
+/* Approved design, round 1. Every override belongs to general. */
+body.program-general { background:var(--general-canvas); color:var(--general-ink); }
+body.program-general #page-home.general-home {
+  --gh-brand:var(--general-brand); --gh-brand-600:var(--general-brand); --gh-gold:var(--general-muted);
+  --gh-bg:var(--general-canvas); --gh-surface:var(--general-surface); --gh-ink:var(--general-ink);
+  --gh-ink-2:var(--general-muted); --gh-muted:var(--general-muted); --gh-line:var(--general-line); --gh-grid:var(--general-line);
+  --gh-warn:var(--general-pending); --gh-warn-bg:var(--general-pending-bg);
+  --gh-alert:var(--general-below-limit); --gh-alert-bg:var(--general-pending-bg);
+  --gh-ok:var(--general-muted); --gh-ok-bg:var(--general-canvas);
+}
+body.program-general .general-header {
+  height:88px; display:grid; grid-template-columns:106px 1fr auto; grid-template-rows:1fr;
+  gap:20px; align-items:center; padding:0 max(24px, calc((100% - 1152px) / 2));
+  background:var(--general-surface); border-block:1px solid var(--general-line); box-shadow:none;
+  color:var(--general-muted); backdrop-filter:none;
+}
+body.program-general .general-header .ah-logo { grid-column:1; grid-row:1; width:106px; height:48px; }
+body.program-general .general-header #authUserBar { display:contents; }
+body.program-general .general-header #authUserInfo { display:none !important; }
+body.program-general .general-header #programSwitcher {
+  grid-column:2; grid-row:1; justify-self:start; border-inline-start:1px solid var(--general-line); padding-inline-start:20px;
+}
+body.program-general .general-header .ah-mid { grid-column:2; grid-row:1; justify-self:center; margin-inline-start:110px; }
+body.program-general .general-header .ah-date { color:var(--general-muted); font-size:var(--general-text-xs); font-weight:400; gap:8px; overflow:visible; }
+body.program-general .general-header .ah-date i, body.program-general .general-header .ah-sep { color:var(--general-muted); }
+body.program-general .general-header #currentEventBadge {
+  height:44px; padding:0 10px; gap:18px; border-radius:var(--general-radius-sm); background:var(--general-soft); color:var(--general-brand);
+}
+body.program-general .general-header .program-switcher-text b { font-size:var(--general-text-md); line-height:1.4; font-weight:600; }
+body.program-general .general-header .program-switcher-season { display:block; font-size:var(--general-text-xs); line-height:1.5; font-weight:400; color:var(--general-muted); }
+body.program-general .general-header .program-switcher-caret { width:0; height:0; border-inline:5px solid transparent; border-top:7px solid var(--general-brand); }
+body.program-general .general-header .program-switcher-caret i { display:none; }
+body.program-general .general-header :focus-visible { outline:2px solid var(--general-brand); outline-offset:4px; }
+body.program-general .general-header #authLogoutBtn { grid-column:3; grid-row:1; height:44px; padding:0 16px; border:0; background:transparent; color:var(--general-muted); font-size:14px; font-weight:400; }
+body.program-general .general-header #authLogoutBtn:hover { background:var(--general-canvas); }
+body.program-general .general-header #programSwitcherMenu { top:57px; right:8px; width:240px; padding:8px; border:1px solid var(--general-line); border-radius:var(--general-radius-md); box-shadow:0 12px 28px #21372b14; background:var(--general-surface); }
+body.program-general .general-header #programSwitcherMenu::before { content:'تبديل البرنامج'; display:block; padding:4px 12px 8px; color:var(--general-muted); font-size:13px; }
+body.program-general .general-header #programSwitcherMenu button { height:44px; padding:0 16px; border:0; border-radius:8px; font-size:14px; font-weight:400; color:var(--general-ink); display:flex; flex-direction:row-reverse; justify-content:space-between; }
+body.program-general .general-header #programSwitcherMenu button.current { background:var(--general-soft); color:var(--general-brand); font-weight:600; }
+body.program-general .general-header #programSwitcherMenu small { display:none; }
+body.program-general #page-home.general-home, body.program-general #page-students.general-students { padding:28px 24px 112px; background:var(--general-canvas); color:var(--general-ink); }
+body.program-general .general-home > div, body.program-general .general-students > div { max-width:1152px; }
+body.program-general .general-pagehead { margin-bottom:24px; }
+body.program-general .general-headingline { display:flex; align-items:center; gap:16px; }
+body.program-general .general-pagehead h1 { font-size:var(--general-text-xl); line-height:1.5; font-weight:700; }
+body.program-general .general-pagehead p { margin-top:4px; font-size:14px; color:var(--general-muted); font-weight:400; }
+body.program-general .general-help { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--general-line); border-radius:50%; font-size:13px; color:var(--general-muted); font-weight:400; cursor:help; }
+body.program-general #generalHome { gap:32px; }
+body.program-general #generalHome > .general-pagehead { order:0; margin-bottom:-8px; }
+body.program-general #generalPerformance { order:1; position:relative; }
+body.program-general #generalTodayCard { order:2; }
+body.program-general #generalHome > section[aria-labelledby="generalFollowupTitle"] { order:3; }
+body.program-general .general-home .gh-section-title, body.program-general .general-home .gh-today-title { font-size:20px; font-weight:600; margin:0 0 16px; }
+body.program-general .general-home #generalPerformanceTitle { min-height:44px; display:flex; align-items:center; }
+body.program-general .general-home .gh-periods { position:absolute; top:0; left:0; display:flex; gap:8px; background:transparent; padding:0; margin:0; }
+body.program-general .general-home .gh-periods button { height:44px; padding:0 16px; flex:none; border:1px solid var(--general-line); border-radius:8px; background:var(--general-surface); color:var(--general-brand); font-size:14px; font-weight:600; }
+body.program-general .general-home .gh-periods small { display:none; }
+body.program-general .general-home .gh-periods [aria-pressed="true"] { background:var(--general-soft); border-color:var(--general-brand); box-shadow:none; }
+body.program-general .general-home .gh-performance-grid, body.program-general .general-home .gh-grid { gap:24px; align-items:start; }
+body.program-general .general-home .gh-card { padding:24px; border-radius:var(--general-radius-md); border-color:var(--general-line); box-shadow:none; }
+body.program-general .general-home .gh-performance-grid .gh-card { align-self:stretch; }
+body.program-general .general-home .gh-kpi-heading { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+body.program-general .general-home .gh-kpi-label { font-size:14px; font-weight:400; }
+body.program-general .general-home .gh-below { font-size:13px; color:var(--general-below-limit); white-space:nowrap; }
+body.program-general .general-home .gh-kpi-row { gap:12px; margin-top:4px; }
+body.program-general .general-home .gh-kpi-value { font-size:40px; font-weight:600; line-height:1.3; color:var(--general-ink); }
+body.program-general .general-home .gh-kpi-unit, body.program-general .general-home .gh-kpi-sub { font-size:13px; color:var(--general-muted); font-weight:400; }
+body.program-general .general-home .gh-delta, body.program-general .general-home .gh-delta.up, body.program-general .general-home .gh-delta.down { background:transparent; color:var(--general-muted); padding:0; font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-chart { margin-top:24px; }
+body.program-general .general-home .gh-axis { font:400 13px var(--general-font); }
+body.program-general .general-home .gh-chart .gh-bar { fill:var(--general-soft); stroke:var(--general-brand); stroke-width:1; rx:6px; }
+body.program-general .general-home .gh-chart path[fill="url(#gh-attendance-area)"] { fill:none; }
+body.program-general .general-home .gh-chart circle:not(.gh-hover-dot) { fill:var(--general-surface); stroke:var(--general-brand); stroke-width:2; r:3.5px; }
+body.program-general .general-home .gh-chart-note { min-height:44px; margin:8px 0 16px; font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-performance-foot { padding-top:16px; border-color:var(--general-line); display:flex; flex-wrap:wrap; gap:8px 24px; }
+body.program-general .general-home .gh-performance-foot h4 { width:100%; display:flex; justify-content:space-between; font-size:14px; font-weight:600; }
+body.program-general .general-home .gh-performance-foot h4 small { font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-foot-row { flex:1 1 200px; font-size:13px; }
+body.program-general .general-home .gh-foot-row b { color:var(--general-below-limit); font-weight:600; }
+body.program-general .general-home .gh-foot-ok { color:var(--general-muted); font-weight:400; }
+body.program-general .general-home #generalTodayCard { padding:0; background:transparent; border:0; box-shadow:none; }
+body.program-general .general-home .gh-today-head { justify-content:space-between; }
+body.program-general .general-home .gh-today-sub { font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-today-grid { margin:0; gap:0; padding:24px 0; background:var(--general-surface); border:1px solid var(--general-line); border-radius:12px; }
+body.program-general .general-home .gh-cell { padding:0 24px; background:transparent; border:0; border-radius:0; text-align:start; display:flex; align-items:center; justify-content:space-between; }
+body.program-general .general-home .gh-cell + .gh-cell { border-inline-start:1px solid var(--general-line); }
+body.program-general .general-home .gh-cell-value { display:flex; align-items:baseline; gap:12px; }
+body.program-general .general-home .gh-cell b { font-size:40px; font-weight:600; line-height:1.3; color:var(--general-ink); }
+body.program-general .general-home .gh-cell span { font-size:14px; font-weight:400; }
+body.program-general .general-home .gh-cell small { font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-cell i { color:var(--general-muted); font-size:14px; }
+body.program-general .general-home .gh-cell .gh-no-absence { font-size:20px; font-weight:600; }
+body.program-general .general-home .gh-pending-cell { flex-wrap:wrap; }
+body.program-general .general-home .gh-pending-cell > .gh-unrecorded { border:0; border-radius:0; background:transparent; padding:0; display:flex; justify-content:space-between; align-items:center; gap:12px; text-align:start; }
+body.program-general .general-home .gh-unrecorded .gh-cell-value span { color:var(--general-pending); }
+body.program-general .general-home .gh-cell .gh-register-action { height:44px; padding:0 16px; display:flex; align-items:center; white-space:nowrap; background:var(--general-brand); color:var(--general-surface); font-size:14px; font-weight:600; border-radius:8px; }
+body.program-general .general-home .gh-past-day { padding:6px 0; }
+body.program-general .general-home .gh-head { gap:12px; margin-bottom:0; }
+body.program-general .general-home .gh-icon, body.program-general .general-home .gh-alert .gh-icon { width:auto; height:auto; border-radius:0; background:transparent; color:var(--general-muted); font-size:14px; }
+body.program-general .general-home .gh-title { font-size:16px; font-weight:600; }
+body.program-general .general-home .gh-count, body.program-general .general-home .gh-alert .gh-count { font-size:20px; font-weight:600; color:var(--general-muted); }
+body.program-general .general-home .gh-hint { margin:8px 0 0; min-height:48px; font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-row, body.program-general .general-home .gh-row:first-child { padding:12px 0; border-top:1px solid var(--general-line); }
+body.program-general .general-home .gh-name, body.program-general .general-home .gh-sub { font-size:13px; font-weight:400; }
+body.program-general .general-home .gh-tag { padding:3px 10px; font-size:13px; font-weight:400; background:var(--general-pending-bg); color:var(--general-pending); white-space:nowrap; }
+body.program-general .general-home .gh-wa { background:transparent; color:var(--general-muted); }
+body.program-general .general-home .gh-empty { color:var(--general-muted); background:var(--general-canvas); font-weight:400; }
+body.program-general .gs-pagehead { display:none; }
+body.program-general .general-students .gs-pagehead { display:block; }
+body.program-general .general-students #generalStudentsTools { position:sticky; top:88px; z-index:20; padding:16px; margin-bottom:24px; border:1px solid var(--general-line); border-radius:12px; background:var(--general-surface); }
+body.program-general .general-students .gs-tools-row { justify-content:space-between; align-items:center; gap:16px; }
+body.program-general .general-students .gs-search { width:360px; max-width:100%; position:relative; }
+body.program-general .general-students .gs-search i { position:absolute; right:14px; top:15px; color:var(--general-muted); font-size:14px; }
+body.program-general .general-students .gs-tools-row input { width:100%; height:44px; padding:0 40px 0 12px; border:1px solid var(--general-line); border-radius:8px; background:var(--general-surface); color:var(--general-ink); font-size:14px; font-weight:400; }
+body.program-general .general-students .gs-tools-row > button { height:44px; padding:0 16px; border:0; border-radius:8px; background:var(--general-brand); color:var(--general-surface); font-size:14px; font-weight:600; }
+body.program-general .general-students .gs-chips { border-top:1px solid var(--general-line); margin-top:16px; padding-top:16px; gap:8px; }
+body.program-general .general-students .gs-chips button { min-height:44px; padding:0 16px; border:1px solid var(--general-line); border-radius:8px; font-size:14px; font-weight:600; color:var(--general-brand); }
+body.program-general .general-students .gs-chips small { color:var(--general-muted); font-size:13px; font-weight:400; margin-inline-start:6px; }
+body.program-general .general-students .gs-chips button[aria-pressed="true"] { color:var(--general-brand); background:var(--general-soft); border-color:var(--general-brand); }
+body.program-general .general-students .gs-group-head { align-items:center; gap:12px; margin-bottom:12px; }
+body.program-general .general-students .gs-group-head h2 { font-size:16px; font-weight:600; }
+body.program-general .general-students .gs-group-head span { margin:0; color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .general-students .gs-group-head .gs-teacher { font-size:16px; font-weight:400; }
+body.program-general .general-students .gs-group-head .gs-period { margin-inline-start:auto; color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .general-students .gs-table-wrap { overflow:hidden; border:1px solid var(--general-line); border-radius:12px; background:var(--general-surface); }
+body.program-general .general-students .gs-cards { width:100%; display:table; table-layout:fixed; border-collapse:separate; border-spacing:0; }
+body.program-general .general-students .gs-cards th { padding:8px 24px; background:var(--general-canvas); color:var(--general-muted); font-size:13px; font-weight:400; text-align:start; border-bottom:1px solid var(--general-line); }
+body.program-general .general-students .gs-cards th:first-child { width:200px; }
+body.program-general .general-students .gs-cards th:last-child { width:240px; text-align:end; }
+body.program-general .general-students .gs-card { display:table-row; background:transparent; border:0; border-radius:0; box-shadow:none; padding:0; color:var(--general-ink); }
+body.program-general .general-students .gs-card td { height:68px; padding:8px 24px; }
+body.program-general .general-students .gs-card + .gs-card td { border-top:1px solid var(--general-line); }
+body.program-general .general-students .gs-card:hover { background:var(--general-canvas); }
+body.program-general .general-students .gs-name { font-size:16px; font-weight:600; min-height:0; }
+body.program-general .general-students .gs-number { margin-inline-start:12px; color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .general-students .gs-state { display:inline-flex; padding:3px 10px; border:0; border-radius:8px; font-size:13px; font-weight:400; background:var(--general-canvas); color:var(--general-muted); }
+body.program-general .general-students .gs-done { background:var(--general-soft); color:var(--general-brand); }
+body.program-general .general-students .gs-none { background:var(--general-pending-bg); color:var(--general-pending); }
+body.program-general .general-students .gs-actions { justify-content:flex-end; gap:12px; margin:0; }
+body.program-general .general-students .gs-entry, body.program-general .general-students .gs-card.is-done .gs-entry { height:44px; padding:0 16px; flex:none; border:1px solid var(--general-line); border-radius:8px; background:var(--general-surface); color:var(--general-brand); font-size:14px; font-weight:600; }
+body.program-general .general-students .gs-attendance { height:44px; padding:0 16px; border:0; border-radius:8px; background:transparent; color:var(--general-muted); font-size:14px; font-weight:400; }
+body.program-general > nav { height:72px; padding-inline:max(16px, calc((100% - 760px) / 2)); gap:8px; border-top:1px solid var(--general-line); background:var(--general-surface); box-shadow:none; }
+body.program-general > nav .nav-btn { position:relative; height:56px; min-width:0; padding:0; border:0; border-radius:8px; color:var(--general-muted); background:transparent; font-size:13px; font-weight:400; gap:3px; }
+body.program-general > nav .nav-btn i { font-size:14px; margin:0; color:var(--general-muted); }
+body.program-general > nav .nav-btn.active { color:var(--general-brand); background:var(--general-soft); font-weight:600; }
+body.program-general > nav .nav-btn.active::before { content:''; position:absolute; top:-8px; width:32px; height:3px; border-radius:3px; background:var(--general-brand); }
+@media (max-width:1019px) {
+  body.program-general .general-header .ah-mid { margin-inline-start:150px; }
+  body.program-general .general-home .gh-performance-grid { grid-template-columns:1fr; }
+  body.program-general .general-home .gh-grid { grid-template-columns:1fr; }
+}
+@media (max-width:720px) {
+  body.program-general .general-header { height:auto; min-height:88px; padding:8px 16px; grid-template-columns:86px 1fr auto; gap:8px; }
+  body.program-general .general-header .ah-logo { width:86px; height:40px; }
+  body.program-general .general-header #programSwitcher { padding-inline-start:12px; }
+  body.program-general .general-header .ah-mid { grid-column:1 / -1; grid-row:2; margin:0; order:initial; }
+  body.program-general .general-header .ah-date { font-size:12px; }
+  body.program-general .general-header #currentEventBadge { gap:10px; }
+  body.program-general .general-header #authLogoutBtn { padding:0 8px; }
+  body.program-general .general-header #programSwitcherMenu { right:0; }
+  body.program-general #page-home.general-home, body.program-general #page-students.general-students { padding:24px 16px 100px; }
+  body.program-general .general-home .gh-periods { position:static; margin-bottom:16px; flex-wrap:wrap; }
+  body.program-general .general-home .gh-card { padding:16px; }
+  body.program-general .general-home .gh-today-grid { padding:16px 0; }
+  body.program-general .general-home .gh-cell { padding:0 8px; flex-wrap:wrap; }
+  body.program-general .general-home .gh-cell b { font-size:28px; }
+  body.program-general .general-home .gh-cell .gh-no-absence { font-size:16px; }
+  body.program-general .general-home .gh-cell-value { gap:6px; flex-wrap:wrap; }
+  body.program-general .general-home .gh-pending-cell > .gh-unrecorded { flex-wrap:wrap; }
+  body.program-general .general-home .gh-cell .gh-register-action { white-space:normal; font-size:12px; padding:0 8px; }
+  body.program-general .general-home .gh-cell i { display:none; }
+  body.program-general .general-students #generalStudentsTools { top:88px; }
+  body.program-general .general-students .gs-tools-row { flex-wrap:wrap; }
+  body.program-general .general-students .gs-search { width:100%; }
+  body.program-general .general-students .gs-tools-row > button { width:auto; }
+  body.program-general .general-students .gs-table-wrap { overflow-x:auto; }
+  body.program-general .general-students .gs-cards { min-width:560px; }
+  body.program-general .general-students .gs-cards th:first-child { width:160px; }
+  body.program-general .general-students .gs-cards th:last-child { width:240px; }
+  body.program-general .general-students .gs-cards th, body.program-general .general-students .gs-card td { padding-inline:12px; }
+  body.program-general > nav { padding-inline:8px; }
+}
+
+</style>
 </head>
 <body class="min-h-screen flex flex-col custom-scroll auth-not-ready">
 
@@ -1025,6 +1243,7 @@
             </div>
             <div id="generalUnrecordedAlert" class="hidden p-4 rounded-xl bg-amber-100 text-amber-900 font-bold flex flex-wrap gap-3 no-print" role="status"></div>
             <div id="generalHome" style="display:none">
+                <div class="general-pagehead"><div class="general-headingline"><h1>الرئيسية</h1><span class="general-help" title="نظرة على أداء الحلقات، وتسجيل اليوم، ومن يحتاج متابعة.">؟</span></div><p>نظرة على أداء الحلقات، وتسجيل اليوم، ومن يحتاج متابعة.</p></div>
                 <section id="generalTodayCard" class="gh-card" aria-label="اليوم حتى الآن"></section>
                 <section aria-labelledby="generalFollowupTitle">
                     <h2 id="generalFollowupTitle" class="gh-section-title">المتابعة</h2>
@@ -1079,9 +1298,10 @@
     <!-- Students Tab -->
     <div id="page-students" class="tab-content p-6 md:p-10">
         <div class="max-w-[1800px] mx-auto">
+            <div class="general-pagehead gs-pagehead hidden"><div class="general-headingline"><h1>الإنجاز والتحضير</h1><span class="general-help" title="ابحث بالاسم أو الرقم، ثم أدخل الإنجاز أو الحضور.">؟</span></div><p id="generalStudentsSubtitle"></p></div>
             <div id="generalStudentsTools" class="hidden no-print">
                 <div class="gs-tools-row">
-                    <input id="generalStudentSearchInput" type="search" aria-label="ابحث بالاسم أو الرقم" placeholder="ابحث بالاسم أو الرقم…" oninput="renderStudentsGrid()" onkeydown="generalStudentsSearchKeydown(event)">
+                    <div class="gs-search"><i class="fas fa-search" aria-hidden="true"></i><input id="generalStudentSearchInput" type="search" aria-label="ابحث بالاسم أو الرقم" placeholder="ابحث بالاسم أو الرقم…" oninput="renderStudentsGrid()" onkeydown="generalStudentsSearchKeydown(event)"></div>
                     <button type="button" onclick="openGeneralStudentsAttendance()">حضور وغياب الحلقة</button>
                 </div>
                 <div id="generalStudentsHalaqas" class="gs-chips" aria-label="الحلقات"></div>
@@ -1952,7 +2172,7 @@
         <div class="max-w-7xl mx-auto w-full flex flex-col gap-6 relative z-10 my-auto">
             <div class="bg-white rounded-2xl p-3 border-4 border-amber-400 shadow-2xl flex flex-col items-center gap-2">
                 <h4 class="text-slate-800 text-xl md:text-2xl font-black tracking-wide bg-slate-100 px-6 py-2 rounded-full border border-slate-200 flex items-center gap-2">
-                    <i class="fas fa-handshake text-emerald-600"></i> شركاء النجاح والجهات المانحة لجوائز <span data-program-brand>برنامج المهرة</span> ٢ اليومية
+                    <i class="fas fa-handshake text-emerald-600"></i> شركاء النجاح والجهات المانحة لجوائز <span data-program-brand>برنامج المهرة</span> <span data-program-ordinal>٢</span> اليومية
                 </h4>
                 <div class="flex flex-wrap justify-center items-center gap-6 md:gap-10 w-full py-2">
                     <img src="https://i.postimg.cc/vH2MTSbq/Screenshot-20260708-023017-Adobe-Acrobat.jpg" alt="شاورما مكس" class="h-24 md:h-28 lg:h-32 object-contain rounded-xl shadow-md border border-slate-200 transition-transform hover:scale-105">
@@ -2135,7 +2355,7 @@
                     </fieldset>
                 </div>
                 <div id="generalQuickFooter" class="qe-footer">
-                    <div class="qe-total"><strong id="generalQuickTotal">٠</strong><span>نقطة</span></div>
+                    <div class="qe-total"><strong id="generalQuickTotal">0</strong><span>نقطة</span></div>
                     <button id="generalQuickSaveBtn" type="button" onclick="saveGeneralQuickEntry()">حفظ <small>Enter ↵</small></button>
                 </div>
             </div>
@@ -2580,6 +2800,7 @@
             const name = programBrandName();
             document.getElementById('appHeader')?.classList.toggle('general-header', name === 'البرنامج العام');
             document.querySelectorAll('[data-program-brand]').forEach(el => { el.textContent = name; });
+            document.querySelectorAll('[data-program-ordinal]').forEach(el => { el.textContent = name === 'البرنامج العام' ? '2' : '٢'; });
             document.title = name === 'البرنامج العام' ? name : 'برنامج المهرة القرآني المتكامل - V25 الذهبي';
         }
 
@@ -2765,7 +2986,8 @@
             try {
                 hijriDateStr = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
                 gregorianDateStr = new Intl.DateTimeFormat('ar-SA', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
-                document.getElementById('hijriDateDisplay').innerText = hijriDateStr; document.getElementById('headerGregorian').innerText = gregorianDateStr + " م";
+                document.getElementById('hijriDateDisplay').innerText = isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-ca-islamic-nu-latn', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : hijriDateStr;
+                document.getElementById('headerGregorian').innerText = (isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-nu-latn', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : gregorianDateStr) + " م";
             } catch(e) { hijriDateStr = "غير متوفر"; document.getElementById('hijriDateDisplay').innerText = hijriDateStr; }
         }
         function refreshToday() {
@@ -2879,7 +3101,7 @@
             const select = document.getElementById('generalAbsenceHalaqa');
             const previous = halaqaId || select.value;
             select.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)
-                .map(h => `<option value="${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
+                .map(h => `<option value="${escapeHTML(h.id)}">${escapeHTML(isGeneralProgram() ? h.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : h.name)}</option>`).join('');
             if (getProgramSettings().halaqas.some(h => h.id === previous && h.active === true)) select.value = previous;
             const modal = document.getElementById('generalAbsenceModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -3003,7 +3225,7 @@
                 });
                 saved = true;
                 updateAllUIs();
-                showToast([count ? `حُفظ: ${count.toLocaleString('ar-SA')} غائب` : '', removed ? `أُزيل غياب ${removed.toLocaleString('ar-SA')}` : '', presentCount ? `حُفظ: ${presentCount.toLocaleString('ar-SA')} حاضر` : ''].filter(Boolean).join('، و'));
+                showToast([count ? `حُفظ: ${count.toLocaleString('ar-SA-u-nu-latn')} غائب` : '', removed ? `أُزيل غياب ${removed.toLocaleString('ar-SA-u-nu-latn')}` : '', presentCount ? `حُفظ: ${presentCount.toLocaleString('ar-SA-u-nu-latn')} حاضر` : ''].filter(Boolean).join('، و'));
             } catch (err) {
                 showToast('فشل الحفظ السحابي: ' + err.message, 'error');
             } finally {
@@ -3934,8 +4156,8 @@
         };
 
         // أرقام هندية (٣٠) لتطابق تصميم اللوحة، وتنسيق العدّ بصيغة العربية الصحيحة
-        const hbN = (v, digits = 0) => Number(v).toLocaleString('ar-EG', { maximumFractionDigits: digits });
-        const hbDigits = s => String(s).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+        const hbN = (v, digits = 0) => Number(v).toLocaleString(isGeneralProgram() ? 'ar-EG-u-nu-latn' : 'ar-EG', { maximumFractionDigits: digits });
+        const hbDigits = s => isGeneralProgram() ? String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : String(s).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
         // الصيغ: [مفرد، مثنّى، من ٣ إلى ١٠، من ١١ فأكثر]
         const HB_UNITS = {
             student: ['طالب واحد', 'طالبان', 'طلاب', 'طالباً'],
@@ -4185,7 +4407,7 @@
             const progName = window.almahraPrograms?.getCurrentProgram?.()?.name;
             document.getElementById('hbSub').textContent = [
                 progName,
-                boardDay && `${boardDayName} ${boardDay.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' })}`
+                boardDay && `${boardDayName} ${boardDay.toLocaleDateString(isGeneralProgram() ? 'ar-EG-u-nu-latn' : 'ar-EG', { day: 'numeric', month: 'long' })}`
             ].filter(Boolean).join(' · ');
 
             // ═══ ١) فرسان اليوم ═══
@@ -4879,7 +5101,7 @@
             document.getElementById('formTextBody').innerHTML =
                 card(1, FORM_Q_NAME, 'إجابة قصيرة') +
                 card(2, FORM_Q_MEM, 'قائمة منسدلة', `
-                    <div class="text-xs font-bold text-slate-600">الخيارات (٣١ خياراً، كل خيار يبدأ برقم يقرؤه البرنامج):</div>
+                    <div class="text-xs font-bold text-slate-600">الخيارات (${isGeneralProgram() ? '31' : '٣١'} خياراً، كل خيار يبدأ برقم يقرؤه البرنامج):</div>
                     <textarea readonly rows="7" class="w-full text-sm font-bold border border-slate-200 rounded-xl p-2 bg-slate-50 custom-scroll" dir="rtl">${escapeHTML(opts)}</textarea>
                     <button type="button" onclick="copyToClipboard(formOptionsText(), 'الخيارات')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2 rounded-xl"><i class="fas fa-copy"></i> نسخ كل الخيارات</button>
                     <div class="text-xs font-bold text-slate-500">الصقها في خانة الخيار الأول في جوجل، فيحوّل كل سطر إلى خيار مستقل. إن لم يفعل، الصق الأسطر واحداً واحداً.</div>`) +
@@ -5859,11 +6081,11 @@
         }
 
         function generalHomeDaysLabel(n) {
-            return countLabel(n, 'يوماً واحداً', 'يومين', 'أيام', 'يوماً').replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
+            return countLabel(n, 'يوماً واحداً', 'يومين', 'أيام', 'يوماً').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
         }
         function generalHomeHalaqaName(student, settings) {
             const name = getStudentHalaqa(student, settings)?.name || '';
-            return name ? (/^حلقة(?:\s|$)/.test(name) ? name : 'حلقة ' + name).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : 'بلا حلقة';
+            return name ? (/^حلقة(?:\s|$)/.test(name) ? name : 'حلقة ' + name).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : 'بلا حلقة';
         }
         function generalHomeFollowupText(type, row, settings) {
             if (type === 'absent') return 'غاب ' + generalHomeDaysLabel(row.streak);
@@ -5871,15 +6093,15 @@
             return `${generalHomeHalaqaName(row.student, settings)} · في ${row.kind} · «يُعاد» ${generalHomeDaysLabel(row.days)}`;
         }
         function generalTodayCardHtml(summary, pastDays = []) {
-            const num = n => n.toLocaleString('ar-SA');
+            const num = n => n.toLocaleString('ar-SA-u-nu-latn');
             const head = '<div class="gh-today-head"><h2 class="gh-today-title">اليوم حتى الآن</h2><span class="gh-today-sub">يتحدّث مع كل تسجيل</span></div>';
             const past = pastDays.map(({ dateStr, count }, i) => `<button class="gh-past-day" type="button" data-past-index="${i}">و${ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()]} ${num(count)} ←</button>`).join('');
             if (summary.holiday) return head + '<p class="gh-empty">اليوم إجازة</p>' + past;
             return head + `<div class="gh-today-grid">
-                <div class="gh-cell gh-present"><b>${num(summary.present)}</b><span>حضر</span><small>من ${num(summary.total)}</small></div>
-                <div class="gh-cell"><b>${num(summary.absent)}</b><span>غاب</span><small>بعذر ${num(summary.excused)} · بغير ${num(summary.unexcused)}</small></div>
+                <div class="gh-cell gh-present"><div><div class="gh-cell-value"><b>${num(summary.present)}</b><span>حضر</span></div><small>من ${num(summary.total)}</small></div><i class="fas fa-user-check" aria-hidden="true"></i></div>
+                <div class="gh-cell gh-absence">${summary.absent ? '<div class="gh-cell-value"><b>' + num(summary.absent) + '</b><span>غاب</span></div><small>بعذر ' + num(summary.excused) + ' · بغير ' + num(summary.unexcused) + '</small>' : '<span class="gh-no-absence">لا غياب</span>'}<i class="fas fa-user-check" aria-hidden="true"></i></div>
                 <div class="gh-cell gh-pending-cell ${summary.unrecorded ? 'gh-unrecorded' : 'gh-complete'}">${summary.unrecorded
-                    ? `<button class="gh-unrecorded" type="button" title="ينقلك إلى «الإنجاز والتحضير»" onclick="goHome('page-students')"><b>${num(summary.unrecorded)}</b><span>لم يُسجَّل</span><small>أكملهم ←</small></button>`
+                    ? `<button class="gh-unrecorded" type="button" title="ينقلك إلى «الإنجاز والتحضير»" onclick="goHome('page-students')"><div><div class="gh-cell-value"><b>${num(summary.unrecorded)}</b><span>لم يُسجَّل</span></div><small>تسجيل اليوم لم يكتمل</small></div><span class="gh-register-action">أكمل التسجيل ←</span></button>`
                     : '<b>✓</b><span>اكتمل التسجيل</span><small>لا أحد ينتظر</small>'}${past}</div>
             </div>`;
         }
@@ -5908,17 +6130,17 @@
             const labels = {
                 absent: ['غائبون متتابعون', 'غابوا يومين دراسيين متتاليين فأكثر', 'لا غائبين متتابعين', 'fa-user-xmark'],
                 stalled: ['متوقفون عن الحفظ', 'حاضرون ولم يسمّعوا جديداً منذ يومين دراسيين فأكثر', 'كل الحاضرين سمّعوا جديداً', 'fa-book-open'],
-                support: ['يحتاجون تثبيت التسميع', 'تقدير «يُعاد» في يومين مختلفين فأكثر خلال آخر ٤ أيام دراسية', 'لا تعثّر متكرر في التسميع', 'fa-rotate-right']
+                support: ['يحتاجون تثبيت التسميع', 'تقدير «يُعاد» في يومين مختلفين فأكثر خلال آخر 4 أيام دراسية', 'لا تعثّر متكرر في التسميع', 'fa-rotate-right']
             };
             const [title, hint, empty, icon] = labels[type];
-            const count = countLabel(list.length, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+            const count = countLabel(list.length, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
             const head = `<div class="gh-head"><span class="gh-icon"><i class="fas ${list.length ? icon : 'fa-circle-check'}" aria-hidden="true"></i></span>
-                <h3 class="gh-title">${title}</h3>${list.length ? `<span class="gh-count" title="${escapeHTML(count)}">${list.length.toLocaleString('ar-SA')}</span>` : ''}</div><p class="gh-hint">${hint}</p>`;
+                <h3 class="gh-title">${title}</h3>${list.length ? `<span class="gh-count" title="${escapeHTML(count)}">${list.length.toLocaleString('ar-SA-u-nu-latn')}</span>` : ''}</div><p class="gh-hint">${hint}</p>`;
             const rows = list.slice(0, expanded ? list.length : 3).map(row => {
                 const st = row.student, text = generalHomeFollowupText(type, row, settings);
-                return `<div class="gh-row"><div class="gh-main"><div class="gh-name">${escapeHTML(st.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</div>
+                return `<div class="gh-row"><div class="gh-main"><div class="gh-name">${escapeHTML(st.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</div>
                     ${type === 'support' ? `<div class="gh-sub">${escapeHTML(text)}</div>`
-                        : `<div class="gh-sub">${escapeHTML(generalHomeHalaqaName(st, settings))}</div><span class="gh-tag">${escapeHTML(text)}</span>`}</div>
+                        : `<div class="gh-sub">${escapeHTML(generalHomeHalaqaName(st, settings))}</div>`}</div>${type !== 'support' ? `<span class="gh-tag">${escapeHTML(text)}</span>` : ''}
                     ${type === 'absent' ? generalHomeWhatsapp(st, row.streak) : ''}</div>`;
             }).join('');
             const action = type === 'absent' ? "goRecords('recPanelAbsence')" : `expandGeneralHomeList('${type}')`;
@@ -6021,7 +6243,7 @@
                 followup: generalPerformanceFollowup(studentList, settings, config, period, currentRange, readers) };
         }
         function generalPerformanceNumber(value) {
-            return value.toLocaleString('ar-SA', { maximumFractionDigits: 2 });
+            return value.toLocaleString('ar-SA-u-nu-latn', { maximumFractionDigits: 2 });
         }
         function generalPerformancePercent(value) {
             return value === null ? '—' : generalPerformanceNumber(value) + '٪';
@@ -6035,7 +6257,7 @@
         function generalPerformancePeriodsHtml(settings, config, period) {
             return [['all', 'المجمع'], ['asr', 'حلقات العصر'], ['maghrib', 'حلقات المغرب']].map(([id, name]) => {
                 const names = id === 'all' ? 'كل الحلقات' : (settings.stages || []).filter(stage => config.periodOf(stage) === id).map(stage => stage.name).join(' و');
-                return `<button type="button" aria-pressed="${period === id}" onclick="setGeneralPerformancePeriod('${id}')">${name}<small>${escapeHTML((names || '—').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</small></button>`;
+                return `<button type="button" aria-pressed="${period === id}" onclick="setGeneralPerformancePeriod('${id}')">${name}<small>${escapeHTML((names || '—').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</small></button>`;
             }).join('');
         }
         function generalPerformanceFootHtml(rows, settings, field, condition) {
@@ -6043,12 +6265,12 @@
                 ? rows.map(({ halaqa, totals }) => {
                     const name = (settings.teachers || []).find(t => t.id === halaqa.teacherId)?.name || 'غير محدد';
                     const teacher = /^الأستاذ(?:\s|$)/.test(name.trim()) ? name.trim() : 'الأستاذ ' + name.trim();
-                    return `<div class="gh-foot-row"><span>${escapeHTML(halaqa.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))} — ${escapeHTML(teacher.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</span><b>${generalPerformancePercent(totals[field])}</b></div>`;
+                    return `<div class="gh-foot-row"><span>${escapeHTML(halaqa.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))} — ${escapeHTML(teacher.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><b>${generalPerformancePercent(totals[field])}</b></div>`;
                 }).join('') : '<div class="gh-foot-ok">✓ لا حلقة تحت الحد</div>'}</div>`;
         }
         function generalPerformanceDateLabel(value) {
             const date = schoolCivilDate(value);
-            return `${date.getDate().toLocaleString('ar-SA')}/${(date.getMonth() + 1).toLocaleString('ar-SA')}`;
+            return `${date.getDate().toLocaleString('ar-SA-u-nu-latn')}/${(date.getMonth() + 1).toLocaleString('ar-SA-u-nu-latn')}`;
         }
         // SVG يدوي؛ إحداثي الأقدم يميناً. المدى الخالي/الإجازة يقطع المسار.
         function generalPerformanceChart(series, kind, width = 640) {
@@ -6101,7 +6323,7 @@
             markup += `<line class="gh-cross" y1="${PT}" y2="${base}" stroke="var(--gh-ink-2)" stroke-dasharray="2 3" opacity="0"/>
                 <circle class="gh-hover-dot" r="5" fill="var(--gh-brand-600)" stroke="var(--gh-surface)" stroke-width="2" opacity="0"/>`;
             if (!series.length) markup += `<text class="gh-axis" x="${W / 2}" y="${H / 2}" text-anchor="middle">—</text>`;
-            return { points, html: `<div class="gh-chart"><svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${weekly ? 'نسبة تحقق هدف الحفظ الجديد أسبوعياً لآخر ٨ أسابيع' : 'منحنى نسبة الحضور اليومية لآخر ٤ أسابيع'}">${markup}</svg><div class="gh-tip" role="status"></div></div>` };
+            return { points, html: `<div class="gh-chart"><svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${weekly ? 'نسبة تحقق هدف الحفظ الجديد أسبوعياً لآخر 8 أسابيع' : 'منحنى نسبة الحضور اليومية لآخر 4 أسابيع'}">${markup}</svg><div class="gh-tip" role="status"></div></div>` };
         }
         function bindGeneralPerformanceTip(card, points) {
             const svg = card.querySelector('svg'), tip = card.querySelector('.gh-tip');
@@ -6178,16 +6400,16 @@
                 window.almahraPrograms.getCurrentSeason(), { stateOf: getAttendanceState, startOf: generalAttendanceStart, measure: measureEntry, schoolDayInfo: getSchoolDayInfo });
             document.getElementById('generalPerformancePeriods').innerHTML = generalPerformancePeriodsHtml(settings, config, period);
             const attendance = document.getElementById('generalAttendanceCard'), achievement = document.getElementById('generalAchievementCard');
-            attendance.innerHTML = `<div class="gh-kpi-label">نسبة الحضور · آخر ٤ أيام دراسية</div><div class="gh-kpi-row">
+            attendance.innerHTML = `<div class="gh-kpi-heading"><div class="gh-kpi-label">نسبة الحضور · آخر 4 أيام دراسية</div>${model.current.attendancePct !== null && model.current.attendancePct < config.limits.attendancePct ? '<span class="gh-below">أقل من حدّ المتابعة</span>' : ''}</div><div class="gh-kpi-row">
                 <span class="gh-kpi-value">${generalPerformancePercent(model.current.attendancePct)}</span>
                 ${generalPerformanceDeltaHtml(model.attendanceDelta, model.previous.attendancePct)}</div><div id="generalAttendanceChart"></div>
-                <p class="gh-chart-note">آخر ٤ أسابيع دراسية · اليوم قيد التسجيل ولا يدخل الحساب حتى ينتهي</p>
+                <p class="gh-chart-note">آخر 4 أسابيع دراسية · اليوم قيد التسجيل ولا يدخل الحساب حتى ينتهي</p>
                 ${generalPerformanceFootHtml(model.followup.attendance, settings, 'attendancePct', 'حضورها أقل من ' + generalPerformancePercent(config.limits.attendancePct))}`;
-            achievement.innerHTML = `<div class="gh-kpi-label">إنجاز الحفظ الجديد · آخر ٤ أيام دراسية</div><div class="gh-kpi-row">
+            achievement.innerHTML = `<div class="gh-kpi-heading"><div class="gh-kpi-label">إنجاز الحفظ الجديد · آخر 4 أيام دراسية</div>${model.current.newPct !== null && model.current.newPct < config.limits.newPct ? '<span class="gh-below">أقل من حدّ المتابعة</span>' : ''}</div><div class="gh-kpi-row">
                 <span class="gh-kpi-value">${generalPerformancePercent(model.current.newPct)}</span><span class="gh-kpi-unit">من الهدف</span>
                 ${generalPerformanceDeltaHtml(model.achievementDelta, model.previous.newPct)}</div>
                 <div class="gh-kpi-sub">${model.current.newPct === null ? '—' : 'حفظوا ' + generalPerformanceNumber(model.current.raw) + ' أوجه من هدف ' + generalPerformanceNumber(model.current.goal)}</div><div id="generalAchievementChart"></div>
-                <p class="gh-chart-note">نسبة تحقق الهدف أسبوعياً لآخر ٨ أسابيع · الغائب لا يُحسب عليه · «يُعاد» لا يُحسب</p>
+                <p class="gh-chart-note">نسبة تحقق الهدف أسبوعياً لآخر 8 أسابيع · الغائب لا يُحسب عليه · «يُعاد» لا يُحسب</p>
                 ${generalPerformanceFootHtml(model.followup.achievement, settings, 'newPct', 'إنجازها أقل من ' + generalPerformancePercent(config.limits.newPct) + ' من الهدف')}`;
             // كل عرض/تحديث أو تبديل فترة يحسب من جديد؛ اللقطة مخصصة لتغيير أبعاد الرسم فقط.
             section.generalPerformanceSnapshot = { model, context, period, today: todayStr };
@@ -6517,7 +6739,7 @@
                 const start = generalAttendanceStart(student);
                 for (let i = dates.length - 1; i >= 0 && dates[i] >= start; i--) {
                     const date = dates[i];
-                    if (getAttendanceState(student, date).state === 'present') return student.history[date].hijri || date;
+                    if (getAttendanceState(student, date).state === 'present') return (student.history[date].hijri || date).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
                 }
                 return 'لم يحضر بعد';
             }
@@ -6966,8 +7188,8 @@
             }, { recited: 0, total: 0, absent: 0 });
         }
         function generalHalaqaTodayText(counts) {
-            return `سمّع ${counts.recited.toLocaleString('ar-SA')} من ${counts.total.toLocaleString('ar-SA')}` +
-                (counts.absent ? ` · غائب ${counts.absent.toLocaleString('ar-SA')}` : '');
+            return `سمّع ${counts.recited.toLocaleString('ar-SA-u-nu-latn')} من ${counts.total.toLocaleString('ar-SA-u-nu-latn')}` +
+                (counts.absent ? ` · غائب ${counts.absent.toLocaleString('ar-SA-u-nu-latn')}` : '');
         }
         function selectGeneralStudentsHalaqa(halaqaId) {
             generalStudentsHalaqa = halaqaId;
@@ -6986,21 +7208,23 @@
         }
         function generalStudentsCardHtml(student) {
             const state = generalCardTodayState(student, todayStr);
-            return `<article class="gs-card${state.hasEntries ? ' is-done' : ''}">
-                <div class="gs-card-top"><span class="gs-number">${escapeHTML(String(student.id).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</span><span class="gs-state gs-${state.cardState}">${state.label}</span></div>
-                <h3 class="gs-name">${escapeHTML(student.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</h3>
-                <div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div>
-            </article>`;
+            return `<tr class="gs-card${state.hasEntries ? ' is-done' : ''}">
+                <td><span class="gs-name">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class="gs-number">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>
+                <td><span class="gs-state gs-${state.cardState}">${state.label}</span></td>
+                <td><div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div></td>
+            </tr>`;
         }
         function renderGeneralStudentsGrid() {
             const settings = getProgramSettings(), query = document.getElementById('generalStudentSearchInput').value;
+            const subtitle = document.getElementById('generalStudentsSubtitle');
+            if (subtitle) subtitle.textContent = students.length.toLocaleString('ar-SA-u-nu-latn') + ' طلاب · ' + (settings.halaqas || []).filter(h => h.active === true).length.toLocaleString('ar-SA-u-nu-latn') + ' حلقات';
             const halaqas = [...(settings.halaqas || [])].sort((a, b) => a.name.localeCompare(b.name, 'ar'));
             if (generalStudentsHalaqa && !halaqas.some(h => h.id === generalStudentsHalaqa && h.active === true)) generalStudentsHalaqa = '';
             const chips = document.getElementById('generalStudentsHalaqas');
             // معرّف الحلقة يبقى في الذاكرة؛ لا يُحقن داخل شيفرة onclick.
             const chipRows = [{ id: '', name: 'كل الحلقات', count: students.length }, ...halaqas.filter(h => h.active === true)
                 .map(h => ({ ...h, count: students.filter(s => s.halaqaId === h.id).length }))];
-            chips.innerHTML = chipRows.map((h, i) => `<button type="button" aria-pressed="${h.id === generalStudentsHalaqa}" data-index="${i}">${escapeHTML(h.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))} <small>${h.count.toLocaleString('ar-SA')}</small></button>`).join('');
+            chips.innerHTML = chipRows.map((h, i) => `<button type="button" aria-pressed="${h.id === generalStudentsHalaqa}" data-index="${i}">${escapeHTML(h.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))} <small>${h.count.toLocaleString('ar-SA-u-nu-latn')}</small></button>`).join('');
             chips.querySelectorAll('button').forEach((button, i) => { button.onclick = () => selectGeneralStudentsHalaqa(chipRows[i].id); });
             const matches = generalStudentsMatching(students, query, generalStudentsHalaqa);
             const groups = halaqas.map(halaqa => ({ halaqa, list: matches.filter(s => s.halaqaId === halaqa.id) }));
@@ -7010,10 +7234,12 @@
                 const teacherName = teacher?.name ? (/^الأستاذ(?:\s|$)/.test(teacher.name.trim()) ? teacher.name.trim() : 'الأستاذ ' + teacher.name.trim()) : 'معلم غير موجود';
                 const name = halaqa ? (/^حلقة(?:\s|$)/.test(halaqa.name.trim()) ? halaqa.name : 'حلقة ' + halaqa.name) : 'بلا حلقة';
                 const school = getSchoolDayInfo(todayStr);
+                const stage = (settings.stages || []).find(stage => stage.id === halaqa?.stageId);
+                const period = stage ? (['asr', 'maghrib'].includes(stage.period) ? stage.period : stage.id === 'primary' ? 'asr' : 'maghrib') : null;
                 const count = halaqa?.active === true ? (school.isSchoolDay
                     ? generalHalaqaTodayText(generalHalaqaTodayCounts(students, halaqa.id, todayStr, settings))
                     : school.reason === 'holiday' ? 'إجازة' : 'غير دراسي') : 'بلا حلقة نشطة';
-                return `<section class="gs-group"><div class="gs-group-head"><h2>${escapeHTML(name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}${halaqa ? ' · ' + escapeHTML(teacherName.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])) : ''}</h2><span>${count}</span></div><div class="gs-cards">${[...list].sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(generalStudentsCardHtml).join('')}</div></section>`;
+                return `<section class="gs-group"><div class="gs-group-head"><h2>${escapeHTML(name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}${halaqa ? '<span class="gs-teacher"> · ' + escapeHTML(teacherName.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))) + '</span>' : ''}</h2><span class="gs-group-count">${count}</span><small class="gs-period">${period === 'asr' ? 'حلقات العصر' : period === 'maghrib' ? 'حلقات المغرب' : ''}</small></div><div class="gs-table-wrap"><table class="gs-cards"><thead><tr><th scope="col">الطالب</th><th scope="col">الحالة اليوم</th><th scope="col">الإجراءات</th></tr></thead><tbody>${[...list].sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(generalStudentsCardHtml).join('')}</tbody></table></div></section>`;
             }).join('') || '<p class="gs-empty">لا يوجد طلاب مطابقون للبحث</p>';
         }
         function renderStudentsGrid() {
@@ -7226,7 +7452,7 @@
                         <td class="py-3 px-4 font-bold text-slate-800 text-lg">${escapeHTML(s.name)}${absenceBadge}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 bg-slate-50">${isGeneralProgram() ? generalAttendanceLabel(attStats) : `<div class="flex flex-col md:flex-row justify-center items-center gap-2"><span class="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-1.5 rounded shadow-sm border border-emerald-200 whitespace-nowrap"><i class="fas fa-check-circle mr-1 text-emerald-500"></i> ${attStats.actualDays} يوم</span><span class="text-red-600 font-bold bg-red-50/80 px-2 py-1.5 rounded shadow-sm border border-red-200 whitespace-nowrap"><i class="fas fa-times-circle mr-1 text-red-400"></i> ${attStats.absences} يوم</span></div>`}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 bg-orange-50/10 min-w-[280px]">${quranStatsHtml}</td>
-                        <td class="py-3 px-4 text-center border-r border-slate-200 font-bold text-blue-800 text-base bg-blue-50/30">${escapeHTML(s.lastDailySardRange || s.lastSardRange || 'لم يسرد بعد')}</td>
+                        <td class="py-3 px-4 text-center border-r border-slate-200 font-bold text-blue-800 text-base bg-blue-50/30">${escapeHTML(isGeneralProgram() ? (s.lastDailySardRange || s.lastSardRange || 'لم يسرد بعد').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.') : s.lastDailySardRange || s.lastSardRange || 'لم يسرد بعد')}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-200 text-slate-500 text-base">${getLastActiveHijri(s, workingDaysList)}</td>
                         <td class="py-3 px-4 text-center border-r border-slate-300 font-black text-yellow-800 bg-yellow-100/30 text-2xl">
                             ${s.tripPoints}
@@ -7271,7 +7497,7 @@
             if(sortedDates.length > 0) {
                 let firstStudent = students.find(s => s.history[sortedDates[0]] && s.history[sortedDates[0]].hijri); let fH = firstStudent ? firstStudent.history[sortedDates[0]].hijri : sortedDates[0];
                 let lastDate = sortedDates[sortedDates.length-1]; let lastStudent = students.find(s => s.history[lastDate] && s.history[lastDate].hijri); let lH = lastStudent ? lastStudent.history[lastDate].hijri : lastDate;
-                document.getElementById('reportDateSubtitle').innerText = `نطاق التحصيل للبرنامج: من ( ${fH} ) إلى ( ${lH} ) | إجمالي فترات رصد البرنامج: ${allRecordedDates.size} يوم`;
+                document.getElementById('reportDateSubtitle').innerText = `نطاق التحصيل للبرنامج: من ( ${isGeneralProgram() ? fH.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : fH} ) إلى ( ${isGeneralProgram() ? lH.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : lH} ) | إجمالي فترات رصد البرنامج: ${allRecordedDates.size} يوم`;
             } else { document.getElementById('reportDateSubtitle').innerText = "نطاق الفترة: بانتظار بدء الحلقات وتسجيل السرد"; }
             
             let totalJuzs = globalQuarters / 8; let totalHizbs = globalQuarters / 4;
@@ -7375,7 +7601,7 @@
                         '</div><div class="text-sm font-bold">مراجعة: ' + generalFiveUnits(dayObj.general.review) + '</div>';
                     dailyBody.innerHTML += `
                         <tr class="border-b border-slate-200 hover:bg-purple-50/40">
-                            <td class="py-4 px-6 font-bold text-slate-700">${dayObj.hijri || dStr}</td>
+                            <td class="py-4 px-6 font-bold text-slate-700">${isGeneralProgram() ? (dayObj.hijri || dStr).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : dayObj.hijri || dStr}</td>
                             <td class="py-4 px-4 text-center border-r border-slate-200">${attHtml}</td>
                             <td class="py-4 px-4 text-center border-r border-slate-200 text-orange-600 font-black text-2xl">${dayObj.ayahs.toLocaleString('en-US')} آية</td>
                             <td class="py-4 px-4 text-center border-r border-slate-200 bg-slate-50/50 print:bg-transparent">${dParts}</td>
@@ -7942,7 +8168,7 @@
                                onchange="updateCriteriaTotal()">
                         <span class="font-bold text-slate-700">${escapeHTML(c.name)}</span>
                     </div>
-                    <span class="font-black shrink-0 ${neg ? 'text-red-600' : 'text-emerald-600'}">${neg ? '' : '+'}${isGeneralProgram() ? c.points.toLocaleString('ar-SA') : c.points}</span>
+                    <span class="font-black shrink-0 ${neg ? 'text-red-600' : 'text-emerald-600'}">${neg ? '' : '+'}${isGeneralProgram() ? c.points.toLocaleString('ar-SA-u-nu-latn') : c.points}</span>
                 </label>`;
             };
 
@@ -7967,7 +8193,7 @@
             });
             const el = document.getElementById('criteriaTotal');
             if (el) {
-                el.textContent = isGeneralProgram() ? total.toLocaleString('ar-SA') : total;
+                el.textContent = isGeneralProgram() ? total.toLocaleString('ar-SA-u-nu-latn') : total;
                 el.className = total < 0
                     ? 'text-3xl font-black text-red-600 mr-2'
                     : 'text-3xl font-black text-amber-600 mr-2';
@@ -8082,11 +8308,11 @@
         function generalPointLabel(point) {
             const name = quranMeta.surahs.references[point.surah - 1].name.replace('سُورَةُ ', '').replace(/آ/g, 'آ')
                 .replace(/[ـً-ٰٟۖ-ۭ]/g, '').replace(/ٱ/g, 'ا').replace(/إ$/, 'أ');
-            return `${name} ${Number(point.ayah).toLocaleString('ar-SA', { useGrouping: false })}`;
+            return `${name} ${Number(point.ayah).toLocaleString('ar-SA-u-nu-latn', { useGrouping: false })}`;
         }
         const generalQuickEntry = { grades: { new: '', review: '' }, newStart: null, locked: false, previewKey: null, homes: null, context: null, dateStr: null, initial: {}, positionAtOpen: null, needsPosition: false, attempted: false };
         function generalQuickDayName(dateStr) {
-            const dayMonth = `${dateStr.slice(8, 10)}-${dateStr.slice(5, 7)}`.replace(/\d/g, n => '٠١٢٣٤٥٦٧٨٩'[n]);
+            const dayMonth = `${dateStr.slice(8, 10)}-${dateStr.slice(5, 7)}`.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
             return `${ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()]} ${dayMonth}`;
         }
         function getGeneralMissedDays() {
@@ -8371,9 +8597,9 @@
                         if (edge === 'to' && document.getElementById(field).value.trim() === '')
                             error(kind, field, 'آية النهاية فارغة — اكتب آخر آية سمّعها اليوم');
                         else if (!generalValidPoint({ surah: point[0], ayah: point[1] })) {
-                            const n = Number(ref?.numberOfAyahs || 0).toLocaleString('ar-SA', { useGrouping: false });
-                            const name = ref ? generalPointLabel({ surah: point[0], ayah: 1 }).replace(/ ١$/, '') : 'غير صالحة';
-                            error(kind, field, `سورة ${name} فيها ${n} آية — اكتب رقماً من ١ إلى ${n}`);
+                            const n = Number(ref?.numberOfAyahs || 0).toLocaleString('ar-SA-u-nu-latn', { useGrouping: false });
+                            const name = ref ? generalPointLabel({ surah: point[0], ayah: 1 }).replace(/ 1$/, '') : 'غير صالحة';
+                            error(kind, field, `سورة ${name} فيها ${n} آية — اكتب رقماً من 1 إلى ${n}`);
                         }
                     }
                     if (errors.length === count && isFurther(from[0], from[1], to[0], to[1], dir))
@@ -8437,7 +8663,7 @@
             for (const kind of ['new', 'review']) for (const edge of kind === 'new' ? ['to'] : ['from', 'to'])
                 for (const field of ['Surah', 'Ayah']) document.getElementById(`quick_${kind}_${edge}${field}`).disabled = invalidPosition;
             for (const kind of ['new', 'review']) document.getElementById(`quick_${kind}_grades`).querySelectorAll('button').forEach(b => b.disabled = invalidPosition);
-            const num = n => Number(n).toLocaleString('ar-SA', { useGrouping: false, maximumFractionDigits: 1 });
+            const num = n => Number(n).toLocaleString('ar-SA-u-nu-latn', { useGrouping: false, maximumFractionDigits: 1 });
             const summary = ['new', 'review'].map(kind => {
                 const entry = calculation.sections.find(e => e.kind === kind);
                 return entry ? generalQuickEntryLabel(entry) + ' · ' + num(entry.points) : `${kind === 'new' ? 'الجديد' : 'المراجعة'}: لا شيء`;
@@ -8446,7 +8672,7 @@
             document.getElementById('generalQuickPreview').textContent = errors.length ? 'لا يمكن الحفظ: أكمل ما تحته خط أحمر'
                 : 'سيُحفظ: ' + summary.concat('الانضباط ' + (calculation.criteria.delta >= 0 ? '+' : '') + num(calculation.criteria.delta)).join(' | ');
             document.getElementById('generalQuickPreview').classList.toggle('qe-error', errors.length > 0);
-            document.getElementById('generalQuickTotal').textContent = errors.length ? '—' : calculation.total === 0 ? '٠' : num(calculation.total);
+            document.getElementById('generalQuickTotal').textContent = errors.length ? '—' : calculation.total === 0 ? '0' : num(calculation.total);
             const selection = calculation.criteria.selection, criteria = getActiveCriteria();
             const positives = criteria.filter(c => Number(c.points) >= 0), negatives = criteria.filter(c => Number(c.points) < 0 && Object.hasOwn(selection, c.id));
             const missing = positives.filter(c => !Object.hasOwn(selection, c.id));
@@ -8526,7 +8752,7 @@
                     lastDailyAyah: last ? (last.ayah ?? null) : DEL_FIELD,
                     lastDailySardRange: last ? (last.range ?? null) : DEL_FIELD });
             }
-            const disciplineLabel = calculation.criteria.changed ? 'الانضباط ' + calculation.criteria.points.toLocaleString('ar-SA', { useGrouping: false }) : '';
+            const disciplineLabel = calculation.criteria.changed ? 'الانضباط ' + calculation.criteria.points.toLocaleString('ar-SA-u-nu-latn', { useGrouping: false }) : '';
             let savedSummary = calculation.sections.length ? 'حُفظ: ' + calculation.sections.map(e => generalQuickEntryLabel(e, settings)).join('، و')
                 : firstFix ? 'حُفظ موضع الطالب' : disciplineLabel ? 'حُفظ الحضور' : 'حُفظ الحضور فقط';
             if (disciplineLabel) savedSummary += '، و' + disciplineLabel;
@@ -8556,11 +8782,11 @@
             const celModal = document.getElementById('knightCelebrationModal');
             document.getElementById('celebrationTitle').innerText = savedSummary || 'حُفظ الحضور فقط';
             document.getElementById('celebrationName').innerText = escapeHTML(student.name);
-            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded.toLocaleString('ar-SA')} نقطة جديدة مضافة للسباق 🎁`;
+            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded.toLocaleString('ar-SA-u-nu-latn')} نقطة جديدة مضافة للسباق 🎁`;
             const totalEl = document.getElementById('celebrationTotalPointsContainer');
             if (totalEl) {
-                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints.toLocaleString('ar-SA')} نقطة`;
-                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank.toLocaleString('ar-SA')}`;
+                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints.toLocaleString('ar-SA-u-nu-latn')} نقطة`;
+                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank.toLocaleString('ar-SA-u-nu-latn')}`;
                 document.getElementById('celebrationRank').classList.toggle('hidden', getGeneralCelebrationRank(student) === null);
                 totalEl.classList.remove('hidden');
             }
@@ -9268,7 +9494,7 @@
                 .sort((a, b) => (b.entry.at || 0) - (a.entry.at || 0))[0] || null;
         }
         function generalUndoLabel(entry) {
-            const number = n => Number(n).toLocaleString('ar-SA', { useGrouping: false });
+            const number = n => Number(n).toLocaleString('ar-SA-u-nu-latn', { useGrouping: false });
             const surah = n => quranMeta?.surahs.references.find(s => s.number === n)?.name.replace(/^سُورَةُ |^سورة /, '') || number(n);
             const spec = entry.spec;
             const range = spec?.from && spec?.to ? (spec.from[0] === spec.to[0]
@@ -9724,7 +9950,7 @@
             }
             if (id === 'page-records' && typeof updateRecordsBadges === 'function') updateRecordsBadges();
         }
-        function showToast(msg, type='success') { const t = document.getElementById('toastMessage'); document.getElementById('toastText').innerText = msg; if(type === 'error') { t.classList.replace('bg-emerald-600', 'bg-red-600'); } else { t.classList.replace('bg-red-600', 'bg-emerald-600'); } t.classList.remove('hidden', 'opacity-0'); t.classList.add('opacity-100'); setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => t.classList.add('hidden'), 300); }, 2500); }
+        function showToast(msg, type='success') { const t = document.getElementById('toastMessage'); document.getElementById('toastText').innerText = isGeneralProgram() ? String(msg).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.') : msg; if(type === 'error') { t.classList.replace('bg-emerald-600', 'bg-red-600'); } else { t.classList.replace('bg-red-600', 'bg-emerald-600'); } t.classList.remove('hidden', 'opacity-0'); t.classList.add('opacity-100'); setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => t.classList.add('hidden'), 300); }, 2500); }
         
         function exportToExcel() {
             let workingDaysList = getWorkingDaysList(students);
@@ -9779,7 +10005,7 @@
                 const current = id === currentId;
                 return `<button type="button" role="menuitem" class="${current ? 'current' : ''}" onclick="selectProgramFromSwitcher('${id}')">
                     <span class="program-switcher-check" aria-hidden="true">${current ? '✓' : ''}</span>
-                    <span>${escapeHTML(isGeneralProgram() ? program.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : program.name)}<small>${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : season?.name || 'موسم جديد')}</small></span>
+                    <span>${escapeHTML(isGeneralProgram() ? program.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : program.name)}<small>${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : season?.name || 'موسم جديد')}</small></span>
                 </button>`;
             }).join('');
         }
@@ -9903,6 +10129,7 @@
         function updateCurrentEventBadge() {
             if (!window.almahraPrograms) return;
             updateProgramBrand();
+            if (typeof refreshToday === 'function') refreshToday();
             const prog = window.almahraPrograms.getCurrentProgram();
             const season = window.almahraPrograms.getCurrentSeason();
             const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
@@ -9914,7 +10141,7 @@
                 if (!badge) return;
                 if (prog) {
                     const archiveTag = isArchived ? ' <span style="background:#e2e8f0;color:#475569;padding:1px 6px;border-radius:6px;font-size:10px;">📦 أرشيف</span>' : '';
-                    badge.innerHTML = `<span class="program-switcher-text"><b>${escapeHTML(isGeneralProgram() ? prog.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : prog.name)}</b><span class="program-switcher-season">${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : season?.name || 'موسم جديد')}</span></span>${archiveTag}<span class="program-switcher-caret" aria-hidden="true">⌄</span>`;
+                    badge.innerHTML = `<span class="program-switcher-text"><b>${escapeHTML(isGeneralProgram() ? prog.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : prog.name)}</b><span class="program-switcher-season">${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) : season?.name || 'موسم جديد')}</span></span>${archiveTag}<span class="program-switcher-caret" aria-hidden="true">${isGeneralProgram() ? '<i class="fas fa-caret-down"></i>' : '⌄'}</span>`;
                     badge.style.display = 'flex';
                 } else {
                     badge.style.display = 'none';
@@ -10125,7 +10352,7 @@
                 seasonId: window.almahraPrograms.getCurrentSeasonId(), studentId: student.id, sid: student.sid } : null;
             document.getElementById('frontierFixCurrent').textContent = student ? 'حدّ الحفظ الآن: ' + (generalOriginalPosition(student).invalid ? 'موضع غير صالح' : frontier ? generalPointLabel(frontier) : student.frontierFix ? 'لم يحفظ شيئاً بعد' : 'لم يُحدَّد') : '';
             document.getElementById('frontierFixPrevious').textContent = student?.frontierFix
-                ? 'آخر تصحيح: ' + new Date(student.frontierFix.at).toLocaleDateString('ar-SA', { timeZone: 'Asia/Riyadh' }) : '';
+                ? 'آخر تصحيح: ' + new Date(student.frontierFix.at).toLocaleDateString('ar-SA-u-nu-latn', { timeZone: 'Asia/Riyadh' }) : '';
             document.getElementById('frontierFixNone').checked = !!student?.frontierFix && student.frontierFix.surah === null && !frontier;
             document.getElementById('frontierFixSurah').value = frontier?.surah || 114;
             document.getElementById('frontierFixAyah').value = frontier?.ayah || 1;
@@ -10352,7 +10579,7 @@
 
             let totalAyahs = 0;
             students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });
-            set('rcBadgeStats', `${totalAyahs.toLocaleString('ar-EG')} آية`);
+            set('rcBadgeStats', `${totalAyahs.toLocaleString(isGeneralProgram() ? 'ar-EG-u-nu-latn' : 'ar-EG')} آية`);
 
             const days = new Set();
             students.forEach(s => { for (const d in s.history) days.add(d); });
@@ -10676,7 +10903,7 @@
                                 <i class="fas fa-circle-minus"></i> مخالفات
                             </div>
                             <p class="text-xs text-red-700 font-bold mb-3">
-                                تُخصم نقاطها — اكتب الرقم موجباً (٥ = خصم ٥).
+                                تُخصم نقاطها — اكتب الرقم موجباً (${isGeneralProgram() ? '5 = خصم 5' : '٥ = خصم ٥'}).
                                 وعلّم «تحجب اللقب» على ما يُسقط ترشّح الطالب لفارس اليوم والأسبوع.
                             </p>
                             <div id="psCriteriaNegative" class="space-y-2 mb-3"></div>

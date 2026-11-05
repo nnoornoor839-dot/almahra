@@ -86,11 +86,11 @@ function harness(list = answerStudents(), initialToday = key.today, productionHt
         'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
         'generalAttendanceStart', 'getGeneralSchoolDates', 'getWorkingDaysList', 'getConsecutiveAbsenceStreak',
         'getFollowupAbsentees', 'getGeneralUnrecordedDays', 'updateGeneralAttendanceUI', 'renderHomeDashboard');
-    if (productionHtml === html) install('updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
+    install(...['updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
         'generalHomeDaysLabel', 'generalHomeHalaqaName', 'generalHomeFollowupText', 'generalTodayCardHtml',
-        'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList');
-    if (productionHtml === html) install(...[...html.matchAll(/function ((?:generalPerformance|renderGeneralPerformance|setGeneralPerformance|bindGeneralPerformance)\w*)\(/g)].map(m => m[1]));
-    if (productionHtml === html) run(html.match(/window\.addEventListener\('resize', generalPerformanceResize\);/)[0]);
+        'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList'].filter(name => productionHtml.includes(`function ${name}(`)));
+    install(...[...productionHtml.matchAll(/function ((?:generalPerformance|renderGeneralPerformance|setGeneralPerformance|bindGeneralPerformance)\w*)\(/g)].map(m => m[1]));
+    if (productionHtml.includes('function generalPerformanceResize(')) run(productionHtml.match(/window\.addEventListener\('resize', generalPerformanceResize\);/)[0]);
     return { state, list, ctx, run, element, install,
         resize: () => events.get('resize')(), pendingFrames: () => frames.size,
         flushFrame() { const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback()); },
@@ -115,7 +115,7 @@ for (const [type, title] of [['absent', '١ غائبون'], ['stalled', '٢ مت
             text: h.ctx.generalHomeFollowupText(type, row, h.state.settings) }));
         assert.deepEqual(copy(actual), key.expected[type]);
         const markup = h.ctx.generalHomeFollowupCard(type, h.lists()[type], h.state.settings, false);
-        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA')}<`));
+        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA-u-nu-latn')}<`));
         for (const expected of key.expected[type]) assert.ok(markup.includes(expected.name) && markup.includes(expected.text));
         assert.equal(JSON.stringify(h.list), before);
     });
@@ -174,9 +174,10 @@ test('بطاقة اليوم: حضر ٣ من ٦ وغاب ٢ بعذر ١ وبغي�
     assert.deepEqual(h.summary(), { holiday: false, present: 3, absent: 2, excused: 1, unexcused: 1, unrecorded: 1, total: 6 });
     h.run('renderHomeDashboard()');
     const card = h.element('generalTodayCard').innerHTML;
-    assert.match(card, />٣<\/b><span>حضر<\/span><small>من ٦/);
-    assert.match(card, />٢<\/b><span>غاب<\/span><small>بعذر ١ · بغير ١/);
-    h.click(card, 'أكملهم ←'); assert.deepEqual(h.state.navigation, ['page-students']);
+    assert.match(card, />3<\/b><span>حضر<\/span><\/div><small>من 6/);
+    assert.match(card, />2<\/b><span>غاب<\/span><\/div><small>بعذر 1 · بغير 1/);
+    h.click(card, 'أكمل التسجيل ←'); assert.deepEqual(h.state.navigation, ['page-students']);
+    assert.match(card, />1<\/b><span>لم يُسجَّل<\/span>/);
     assert.equal(JSON.stringify(h.list), before);
 });
 test('بطاقة اليوم: الحلقة غير النشطة وبلا حلقة ومن لم يبدأ بعد خارج المجموعة', () => {
@@ -293,7 +294,8 @@ test('التخطيط: ثلاثة أعمدة على الحاسب، عمود دو�
     assert.match(html, /\.gh-grid\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
     assert.match(html, /@media \(max-width:1019px\)\s*\{\s*\.gh-grid\s*\{\s*grid-template-columns:1fr/);
     assert.match(html, /\.gh-today-grid\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
-    assert.equal((html.match(/\.gh-today-grid\s*\{/g) || []).length, 1);
+    assert.equal((html.match(/\.gh-today-grid\s*\{/g) || []).length, 3);
+    assert.equal((html.match(/body\.program-general \.general-home \.gh-today-grid\s*\{/g) || []).length, 2);
     assert.match(html, /\.gh-main\s*\{[^}]*min-width:0[^}]*overflow-wrap:anywhere/);
 });
 
@@ -324,8 +326,8 @@ test('مفتاح الإجابة البطاقة ٦: سطر الفترات من ا
     assert.match(periods, /حلقات المغرب<small>متوسط وثانوي/);
     h.click(periods, 'حلقات المغرب');
     assert.match(h.element('generalPerformancePeriods').innerHTML, /aria-pressed="true"[^>]*>حلقات المغرب/);
-    assert.match(h.element('generalAttendanceCard').innerHTML, /٨٥٪/);
-    assert.match(h.element('generalAchievementCard').innerHTML, /٦٥٪/);
+    assert.match(h.element('generalAttendanceCard').innerHTML, /85٪/);
+    assert.match(h.element('generalAchievementCard').innerHTML, /65٪/);
     h.state.settings.stages[0].name = 'اسم المرحلة الجديد'; h.run('renderGeneralPerformance()');
     assert.match(h.element('generalPerformancePeriods').innerHTML, /اسم المرحلة الجديد/);
     h.state.season.id = 'other'; h.run('renderGeneralPerformance()');
@@ -339,8 +341,8 @@ test('مفتاح الإجابة البطاقة ٧: أ وج في الحضور، �
     assert.deepEqual(model.followup.achievement.map(r => [r.halaqa.id, r.totals.newPct]), performanceKey.achievementFollowup);
     h.run('renderGeneralHome()');
     const attendance = h.element('generalAttendanceCard').innerHTML, achievement = h.element('generalAchievementCard').innerHTML;
-    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من ٨٥٪']) assert.ok(attendance.includes(text));
-    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من ٨٠٪']) assert.ok(achievement.includes(text));
+    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من 85٪']) assert.ok(attendance.includes(text));
+    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من 80٪']) assert.ok(achievement.includes(text));
     h.state.settings.teachers[0].name = 'الأستاذ عبدالله'; h.run('renderGeneralPerformance()');
     assert.doesNotMatch(h.element('generalAttendanceCard').innerHTML, /الأستاذ الأستاذ/);
     h.ctx.setGeneralPerformancePeriod('asr');
@@ -521,12 +523,12 @@ test('تلميح الرسم يعمل بالمؤشر واللمس ولوحة ال
         querySelector: selector => selector === '.gh-cross' ? cross : dot, addEventListener: (type, handler) => { listeners[type] = handler; } };
     h.ctx.bindGeneralPerformanceTip({ querySelector: selector => selector === 'svg' ? svg : tip }, chart.points);
     listeners.pointermove({ clientX: 40 + chart.points[0].x });
-    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /١٠٠٪/); assert.match(tip.innerHTML, /حضر ٧ · غاب ٠/);
+    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /100٪/); assert.match(tip.innerHTML, /حضر 7 · غاب 0/);
     listeners.pointerdown({ clientX: 40 + chart.points[4].x });
     assert.equal(tip.innerHTML, 'إجازة'); assert.equal(dot.values.opacity, '0');
     let prevented = false;
     listeners.keydown({ key: 'ArrowLeft', preventDefault() { prevented = true; } });
-    assert.equal(prevented, true); assert.match(tip.innerHTML, /٧٥٪/);
+    assert.equal(prevented, true); assert.match(tip.innerHTML, /75٪/);
     assert.ok(parseFloat(tip.style.left) >= 75 && parseFloat(tip.style.left) <= 235);
     listeners.pointerleave(); assert.equal(classes.has('on'), false); assert.equal(cross.values.opacity, '0');
 });
@@ -622,8 +624,8 @@ test('تحديث البيانات ثم العرض أو تبديل الفترة �
     const latest = h.element('generalPerformance').generalPerformanceSnapshot;
     assert.notEqual(latest, old); assert.equal(counts.calculations, 1);
     assert.equal(latest.model.current.attendancePct, 69); assert.equal(latest.model.current.newPct, 73);
-    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value">٦٩٪/);
-    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value">٧٣٪/);
+    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value">69٪/);
+    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value">73٪/);
     const actualDraw = h.ctx.renderGeneralPerformanceCharts;
     let drawnModel;
     h.ctx.renderGeneralPerformanceCharts = model => { drawnModel = model; return actualDraw(model); };
@@ -690,7 +692,7 @@ test('الحفظ الحقيقي للإعدادات يجدد الهدف وحدّ�
         h.resize(); h.flushFrame();
         assert.equal(drawnModel, snapshot.model); assert.equal(counts.calculations, 1);
         assert.match(h.element('generalAttendanceCard').innerHTML, /حضورها أقل من/);
-        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value">٣٨٪/);
+        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value">38٪/);
         if (change.id === 'psFollowupAttendance') assert.doesNotMatch(h.element('generalAttendanceCard').innerHTML, /حلقة ج — الأستاذ صالح/);
         if (change.id === 'psFollowupNew') assert.doesNotMatch(h.element('generalAchievementCard').innerHTML, /حلقة ج — الأستاذ صالح/);
     }

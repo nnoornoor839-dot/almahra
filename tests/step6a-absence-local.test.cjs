@@ -130,7 +130,7 @@ test('reciting student is present and disabled, manual present can be corrected;
     assert.equal(typeof fresh.fields['history.2026-11-04.hijri'], 'string');
     assert.equal(h.list[1].history['2026-11-04'].hijri, 'لا يتغير');
     assert.deepEqual(h.list[1].history['2026-11-04'].criteria, { c: true });
-    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب');
+    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب');
     assert.equal(h.element('generalAbsent1').checked, true);
     assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
     await h.run('saveGeneralAbsence()'); assert.equal(h.state.batches.length, 1);
@@ -260,7 +260,7 @@ test('old-date approval survives halaqa changes and saving, but expires when the
 
 test('save message reports saved absences, removals, and mixed changes accurately', async () => {
     for (const [saved, removed, expected] of [
-        [2, 0, 'حُفظ: ٢ غائب'], [0, 1, 'أُزيل غياب ١'], [2, 1, 'حُفظ: ٢ غائب، وأُزيل غياب ١']
+        [2, 0, 'حُفظ: 2 غائب'], [0, 1, 'أُزيل غياب 1'], [2, 1, 'حُفظ: 2 غائب، وأُزيل غياب 1']
     ]) {
         const h = harness([
             student(1, 'أحمد'), student(2, 'بدر'),

@@ -1,0 +1,1537 @@
+{
+  "baseline": "82bf19f",
+  "categories": {
+    "1": "تحويل أرقام فقط",
+    "2": "نص بقرار المالك",
+    "3": "بنية HTML جديدة"
+  },
+  "files": [
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 124,
+          "newLine": 124,
+          "before": [
+            "    if (source === html) {",
+            "        h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;",
+            "        for (const name of ['isSeasonCalendarComplete', 'schoolCivilDate', 'isWorkingDay', 'getSchoolDayInfo',",
+            "            'getAttendanceState', 'generalAttendanceStart', 'getStudentHalaqa', 'getGeneralSchoolDates',",
+            "            'getFollowupAbsentees', 'countLabel', 'normalizeSaudiPhone']) {",
+            "            vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);",
+            "        }"
+          ],
+          "after": [
+            "    h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;",
+            "    for (const name of ['isSeasonCalendarComplete', 'schoolCivilDate', 'isWorkingDay', 'getSchoolDayInfo',",
+            "        'getAttendanceState', 'generalAttendanceStart', 'getStudentHalaqa', 'getGeneralSchoolDates',",
+            "        'getFollowupAbsentees', 'countLabel', 'normalizeSaudiPhone']) {",
+            "        if (source.includes(`function ${name}(`)) vm.runInContext(between(source, `        function ${name}(`, '        function '), h.ctx);",
+            "    }",
+            "    if (source.includes('function renderGeneralHome(')) {"
+          ]
+        },
+        {
+          "oldLine": 132,
+          "newLine": 132,
+          "before": [
+            "        // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
+            "        h.ctx.renderGeneralPerformance = () => {};"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 135,
+          "newLine": 133,
+          "before": [],
+          "after": [
+            "    // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
+            "    if (source.includes('function renderGeneralPerformance(')) h.ctx.renderGeneralPerformance = () => {};"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 53,
+          "newLine": 53,
+          "before": [
+            "            ? /الموضع: آخر آية حفظها النبأ ٢٠/ : /الموضع: لم يحفظ شيئاً بعد/);"
+          ],
+          "after": [
+            "            ? /الموضع: آخر آية حفظها النبأ 20/ : /الموضع: لم يحفظ شيئاً بعد/);"
+          ]
+        },
+        {
+          "oldLine": 64,
+          "newLine": 64,
+          "before": [
+            "    assert.match(h.element('generalQuickPreview').textContent, /الموضع: آخر آية حفظها النبأ ٢٠/);"
+          ],
+          "after": [
+            "    assert.match(h.element('generalQuickPreview').textContent, /الموضع: آخر آية حفظها النبأ 20/);"
+          ]
+        },
+        {
+          "oldLine": 89,
+          "newLine": 89,
+          "before": [
+            "        assert.equal(h.element('generalQuickTotal').textContent, '٠');"
+          ],
+          "after": [
+            "        assert.equal(h.element('generalQuickTotal').textContent, '0');"
+          ]
+        },
+        {
+          "oldLine": 93,
+          "newLine": 93,
+          "before": [
+            "        assert.equal(h.element('generalQuickTotal').textContent, '٠');"
+          ],
+          "after": [
+            "        assert.equal(h.element('generalQuickTotal').textContent, '0');"
+          ]
+        },
+        {
+          "oldLine": 195,
+          "newLine": 195,
+          "before": [
+            "        assert.match(h.element('quick_'+kind+'_message').textContent,/سورة النبأ فيها ٤٠ آية — اكتب رقماً من ١ إلى ٤٠/);"
+          ],
+          "after": [
+            "        assert.match(h.element('quick_'+kind+'_message').textContent,/سورة النبأ فيها 40 آية — اكتب رقماً من 1 إلى 40/);"
+          ]
+        },
+        {
+          "oldLine": 213,
+          "newLine": 213,
+          "before": [
+            "    h.run('fulfillGeneralCriteria()'); assert.match(h.element('generalCriteriaState').textContent,/\\+٨.*استوفى المعايير كلها/);"
+          ],
+          "after": [
+            "    h.run('fulfillGeneralCriteria()'); assert.match(h.element('generalCriteriaState').textContent,/\\+8.*استوفى المعايير كلها/);"
+          ]
+        },
+        {
+          "oldLine": 215,
+          "newLine": 215,
+          "before": [
+            "    assert.match(h.element('generalQuickPreview').textContent,/الجديد: النبأ ٢١ ← النبأ ٣٠ \\(جيد\\).*المراجعة: الناس ١ ← النبأ ٢٥/);"
+          ],
+          "after": [
+            "    assert.match(h.element('generalQuickPreview').textContent,/الجديد: النبأ 21 ← النبأ 30 \\(جيد\\).*المراجعة: الناس 1 ← النبأ 25/);"
+          ]
+        },
+        {
+          "oldLine": 237,
+          "newLine": 237,
+          "before": [
+            "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط ٨/);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط 8/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/t25-browser.cjs",
+      "hunks": [
+        {
+          "oldLine": 43,
+          "newLine": 43,
+          "before": [],
+          "after": [
+            "[class~=\"z-[2000]\"]{z-index:2000}"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 89,
+          "newLine": 89,
+          "before": [
+            "    if (productionHtml === html) install('updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',"
+          ],
+          "after": [
+            "    install(...['updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',"
+          ]
+        },
+        {
+          "oldLine": 91,
+          "newLine": 91,
+          "before": [
+            "        'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList');",
+            "    if (productionHtml === html) install(...[...html.matchAll(/function ((?:generalPerformance|renderGeneralPerformance|setGeneralPerformance|bindGeneralPerformance)\\w*)\\(/g)].map(m => m[1]));",
+            "    if (productionHtml === html) run(html.match(/window\\.addEventListener\\('resize', generalPerformanceResize\\);/)[0]);"
+          ],
+          "after": [
+            "        'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList'].filter(name => productionHtml.includes(`function ${name}(`)));",
+            "    install(...[...productionHtml.matchAll(/function ((?:generalPerformance|renderGeneralPerformance|setGeneralPerformance|bindGeneralPerformance)\\w*)\\(/g)].map(m => m[1]));",
+            "    if (productionHtml.includes('function generalPerformanceResize(')) run(productionHtml.match(/window\\.addEventListener\\('resize', generalPerformanceResize\\);/)[0]);"
+          ]
+        },
+        {
+          "oldLine": 118,
+          "newLine": 118,
+          "before": [
+            "        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA')}<`));"
+          ],
+          "after": [
+            "        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA-u-nu-latn')}<`));"
+          ]
+        },
+        {
+          "oldLine": 177,
+          "newLine": 177,
+          "before": [
+            "    assert.match(card, />٣<\\/b><span>حضر<\\/span><small>من ٦/);",
+            "    assert.match(card, />٢<\\/b><span>غاب<\\/span><small>بعذر ١ · بغير ١/);",
+            "    h.click(card, 'أكملهم ←'); assert.deepEqual(h.state.navigation, ['page-students']);"
+          ],
+          "after": [
+            "    assert.match(card, />3<\\/b><span>حضر<\\/span><\\/div><small>من 6/);",
+            "    assert.match(card, />2<\\/b><span>غاب<\\/span><\\/div><small>بعذر 1 · بغير 1/);",
+            "    h.click(card, 'أكمل التسجيل ←'); assert.deepEqual(h.state.navigation, ['page-students']);",
+            "    assert.match(card, />1<\\/b><span>لم يُسجَّل<\\/span>/);"
+          ]
+        },
+        {
+          "oldLine": 296,
+          "newLine": 297,
+          "before": [
+            "    assert.equal((html.match(/\\.gh-today-grid\\s*\\{/g) || []).length, 1);"
+          ],
+          "after": [
+            "    assert.equal((html.match(/\\.gh-today-grid\\s*\\{/g) || []).length, 3);",
+            "    assert.equal((html.match(/body\\.program-general \\.general-home \\.gh-today-grid\\s*\\{/g) || []).length, 2);"
+          ]
+        },
+        {
+          "oldLine": 327,
+          "newLine": 329,
+          "before": [
+            "    assert.match(h.element('generalAttendanceCard').innerHTML, /٨٥٪/);",
+            "    assert.match(h.element('generalAchievementCard').innerHTML, /٦٥٪/);"
+          ],
+          "after": [
+            "    assert.match(h.element('generalAttendanceCard').innerHTML, /85٪/);",
+            "    assert.match(h.element('generalAchievementCard').innerHTML, /65٪/);"
+          ]
+        },
+        {
+          "oldLine": 342,
+          "newLine": 344,
+          "before": [
+            "    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من ٨٥٪']) assert.ok(attendance.includes(text));",
+            "    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من ٨٠٪']) assert.ok(achievement.includes(text));"
+          ],
+          "after": [
+            "    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من 85٪']) assert.ok(attendance.includes(text));",
+            "    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من 80٪']) assert.ok(achievement.includes(text));"
+          ]
+        },
+        {
+          "oldLine": 524,
+          "newLine": 526,
+          "before": [
+            "    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /١٠٠٪/); assert.match(tip.innerHTML, /حضر ٧ · غاب ٠/);"
+          ],
+          "after": [
+            "    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /100٪/); assert.match(tip.innerHTML, /حضر 7 · غاب 0/);"
+          ]
+        },
+        {
+          "oldLine": 529,
+          "newLine": 531,
+          "before": [
+            "    assert.equal(prevented, true); assert.match(tip.innerHTML, /٧٥٪/);"
+          ],
+          "after": [
+            "    assert.equal(prevented, true); assert.match(tip.innerHTML, /75٪/);"
+          ]
+        },
+        {
+          "oldLine": 625,
+          "newLine": 627,
+          "before": [
+            "    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value\">٦٩٪/);",
+            "    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٧٣٪/);"
+          ],
+          "after": [
+            "    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value\">69٪/);",
+            "    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">73٪/);"
+          ]
+        },
+        {
+          "oldLine": 693,
+          "newLine": 695,
+          "before": [
+            "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٣٨٪/);"
+          ],
+          "after": [
+            "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">38٪/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/program-switcher-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 161,
+          "newLine": 161,
+          "before": [
+            "    assert.match(badge, /class=\"program-switcher-caret\"[^>]*>⌄/);"
+          ],
+          "after": [
+            "    assert.match(badge, /class=\"program-switcher-caret\"[^>]*><i class=\"fas fa-caret-down\"><\\/i>/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/rules/home-answer-key.json",
+      "hunks": [
+        {
+          "oldLine": 46,
+          "newLine": 46,
+          "before": [
+            "      { \"name\": \"خالد\", \"days\": 5, \"text\": \"غاب ٥ أيام\" },"
+          ],
+          "after": [
+            "      { \"name\": \"خالد\", \"days\": 5, \"text\": \"غاب 5 أيام\" },"
+          ]
+        },
+        {
+          "oldLine": 50,
+          "newLine": 50,
+          "before": [
+            "      { \"name\": \"عمر\", \"days\": 3, \"text\": \"منذ ٣ أيام\" },"
+          ],
+          "after": [
+            "      { \"name\": \"عمر\", \"days\": 3, \"text\": \"منذ 3 أيام\" },"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 448,
+          "newLine": 448,
+          "before": [
+            "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
+            "        ['headerGregorian', 'ar-SA', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
+          ],
+          "after": [
+            "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
+            "        ['headerGregorian', 'ar-SA-u-nu-latn', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step6a-absence-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 133,
+          "newLine": 133,
+          "before": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب');"
+          ],
+          "after": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب');"
+          ]
+        },
+        {
+          "oldLine": 263,
+          "newLine": 263,
+          "before": [
+            "        [2, 0, 'حُفظ: ٢ غائب'], [0, 1, 'أُزيل غياب ١'], [2, 1, 'حُفظ: ٢ غائب، وأُزيل غياب ١']"
+          ],
+          "after": [
+            "        [2, 0, 'حُفظ: 2 غائب'], [0, 1, 'أُزيل غياب 1'], [2, 1, 'حُفظ: 2 غائب، وأُزيل غياب 1']"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 195,
+          "newLine": 195,
+          "before": [
+            "    assert.match(h.element('generalTodayCard').innerHTML, /<b>١<\\/b><span>لم يُسجَّل<\\/span>/);"
+          ],
+          "after": [
+            "    assert.match(h.element('generalTodayCard').innerHTML, /<b>1<\\/b><span>لم يُسجَّل<\\/span>/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 115,
+          "newLine": 115,
+          "before": [
+            "    assert.match(h.element('smartUndoBtn').textContent, /١–١٥.*النقاط: ٤/);"
+          ],
+          "after": [
+            "    assert.match(h.element('smartUndoBtn').textContent, /1–15.*النقاط: 4/);"
+          ]
+        },
+        {
+          "oldLine": 134,
+          "newLine": 134,
+          "before": [
+            "    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*١–١٥ \\(النقاط: ٤\\)؟$/);"
+          ],
+          "after": [
+            "    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*1–15 \\(النقاط: 4\\)؟$/);"
+          ]
+        },
+        {
+          "oldLine": 142,
+          "newLine": 142,
+          "before": [
+            "        const suffix = `(النقاط: ${points.toLocaleString('ar-SA', { useGrouping: false })})`;"
+          ],
+          "after": [
+            "        const suffix = `(النقاط: ${points.toLocaleString('ar-SA-u-nu-latn', { useGrouping: false })})`;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 17,
+          "newLine": 17,
+          "before": [
+            "    assert.equal(h.element('quick_new_start').textContent, 'النبأ ١٢');"
+          ],
+          "after": [
+            "    assert.equal(h.element('quick_new_start').textContent, 'النبأ 12');"
+          ]
+        },
+        {
+          "oldLine": 74,
+          "newLine": 74,
+          "before": [
+            "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ ٢٠/);"
+          ],
+          "after": [
+            "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ 20/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 136,
+          "newLine": 136,
+          "before": [
+            "    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس ٠٥-١١', 'الأحد ٠١-١١', 'الثلاثاء ٠٣-١١']);"
+          ],
+          "after": [
+            "    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس 05-11', 'الأحد 01-11', 'الثلاثاء 03-11']);"
+          ]
+        },
+        {
+          "oldLine": 154,
+          "newLine": 154,
+          "before": [
+            "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد ٠١-١١');"
+          ],
+          "after": [
+            "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد 01-11');"
+          ]
+        },
+        {
+          "oldLine": 195,
+          "newLine": 195,
+          "before": [
+            "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد ٠١-١١. متابعة؟']);"
+          ],
+          "after": [
+            "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد 01-11. متابعة؟']);"
+          ]
+        },
+        {
+          "oldLine": 203,
+          "newLine": 203,
+          "before": [
+            "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد ٠١-١١. متابعة؟');",
+            "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد ٠١-١١؛ التسجيل يجعله حاضراً. متابعة؟');"
+          ],
+          "after": [
+            "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد 01-11. متابعة؟');",
+            "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد 01-11؛ التسجيل يجعله حاضراً. متابعة؟');"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 137,
+          "newLine": 137,
+          "before": [
+            "    assert.equal(h.run(\"generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))\"), 'سمّع ٢ من ٤ · غائب ١');"
+          ],
+          "after": [
+            "    assert.equal(h.run(\"generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))\"), 'سمّع 2 من 4 · غائب 1');"
+          ]
+        },
+        {
+          "oldLine": 140,
+          "newLine": 140,
+          "before": [
+            "    assert.match(h.element('studentsGrid').innerHTML, /سمّع ٢ من ٤ · غائب ١/); // البحث لا يبدّل مقام الحلقة."
+          ],
+          "after": [
+            "    assert.match(h.element('studentsGrid').innerHTML, /سمّع 2 من 4 · غائب 1/); // البحث لا يبدّل مقام الحلقة."
+          ]
+        },
+        {
+          "oldLine": 164,
+          "newLine": 164,
+          "before": [
+            "    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>٧/);",
+            "    assert.match(chips.innerHTML, /ألف <small>٥/);"
+          ],
+          "after": [
+            "    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>7/);",
+            "    assert.match(chips.innerHTML, /ألف <small>5/);"
+          ]
+        },
+        {
+          "oldLine": 199,
+          "newLine": 199,
+          "before": [
+            "    assert.match(h.state.messages.at(-1).message, /حُفظ: ١ حاضر/);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message, /حُفظ: 1 حاضر/);"
+          ]
+        },
+        {
+          "oldLine": 211,
+          "newLine": 211,
+          "before": [
+            "    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب'); h.checkPatches();"
+          ],
+          "after": [
+            "    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب'); h.checkPatches();"
+          ]
+        },
+        {
+          "oldLine": 222,
+          "newLine": 222,
+          "before": [
+            "    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب ١');"
+          ],
+          "after": [
+            "    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب 1');"
+          ]
+        },
+        {
+          "oldLine": 251,
+          "newLine": 251,
+          "before": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب، وأُزيل غياب ١، وحُفظ: ١ حاضر');"
+          ],
+          "after": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب، وأُزيل غياب 1، وحُفظ: 1 حاضر');"
+          ]
+        },
+        {
+          "oldLine": 284,
+          "newLine": 284,
+          "before": [
+            "        assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب، وأُزيل غياب ١'); h.checkPatches();"
+          ],
+          "after": [
+            "        assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب، وأُزيل غياب 1'); h.checkPatches();"
+          ]
+        },
+        {
+          "oldLine": 331,
+          "newLine": 331,
+          "before": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ حاضر');"
+          ],
+          "after": [
+            "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 حاضر');"
+          ]
+        },
+        {
+          "oldLine": 414,
+          "newLine": 414,
+          "before": [
+            "    assert.match(h.element('studentsGrid').innerHTML, /سمّع ١ من ١/);"
+          ],
+          "after": [
+            "    assert.match(h.element('studentsGrid').innerHTML, /سمّع 1 من 1/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 55,
+          "newLine": 55,
+          "before": [
+            "        assert.equal(await text(h.page, '#hijriDateDisplay'), 'الأحد، ١٣ جمادى الآخرة ١٤٤٨ هـ');"
+          ],
+          "after": [
+            "        assert.equal(await text(h.page, '#hijriDateDisplay'), 'الأحد، 13 جمادى الآخرة 1448 هـ');"
+          ]
+        },
+        {
+          "oldLine": 66,
+          "newLine": 66,
+          "before": [
+            "        assert.deepEqual(days, ['والثلاثاء ١ ←', 'والإثنين ١ ←']);",
+            "        const button = h.page.getByRole('button', { name: 'والثلاثاء ١ ←', exact: true });"
+          ],
+          "after": [
+            "        assert.deepEqual(days, ['والثلاثاء 1 ←', 'والإثنين 1 ←']);",
+            "        const button = h.page.getByRole('button', { name: 'والثلاثاء 1 ←', exact: true });"
+          ]
+        },
+        {
+          "oldLine": 82,
+          "newLine": 82,
+          "before": [
+            "        assert.ok((await h.page.locator('.gh-past-day').allTextContents()).includes('والثلاثاء ١ ←'));"
+          ],
+          "after": [
+            "        assert.ok((await h.page.locator('.gh-past-day').allTextContents()).includes('والثلاثاء 1 ←'));"
+          ]
+        },
+        {
+          "oldLine": 88,
+          "newLine": 88,
+          "before": [
+            "for (const width of [390, 1280]) test(`ت٢٥-١،٣،٥: عرض ${width} ثلاث خانات، تاريخ كامل، هامش زر وارتفاع ٤٤`, async () => {"
+          ],
+          "after": [
+            "// قرار المالك ٢٠٢٦-١١-٠٥: «ركز على الحاسب فقط»؛ عرض الجوال 390 خارج النطاق.",
+            "for (const width of [1280]) test(`ت٢٥-١،٣،٥: عرض ${width} ثلاث خانات، تاريخ كامل، هامش زر وارتفاع ٤٤`, async () => {"
+          ]
+        },
+        {
+          "oldLine": 93,
+          "newLine": 94,
+          "before": [],
+          "after": [
+            "        if (width === 1280) assert.equal(await h.page.locator('.gh-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 3);"
+          ]
+        },
+        {
+          "oldLine": 97,
+          "newLine": 99,
+          "before": [
+            "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();"
+          ],
+          "after": [
+            "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();"
+          ]
+        },
+        {
+          "oldLine": 105,
+          "newLine": 107,
+          "before": [
+            "test('ت٢٥-٤: أرقام الطالب والموسم والمحاور والتلميحات عربية عبر الدخول والتنقل والمبدل، والبيانات ثابتة', async () => {"
+          ],
+          "after": [
+            "test('ت٢٥-٤: أرقام general للطالب والموسم والمحاور والتلميحات إنجليزية عبر الدخول والتنقل والمبدل، والبيانات ثابتة', async () => {"
+          ]
+        },
+        {
+          "oldLine": 108,
+          "newLine": 110,
+          "before": [
+            "        assert.match(await text(h.page, '#currentEventBadge'), /موسم ٢٠٢٦/);",
+            "        for (const id of ['generalAttendanceCard', 'generalAchievementCard', 'generalHomeFollowup']) assert.doesNotMatch(await text(h.page, '#' + id), /[0-9]/);",
+            "        assert.match(await text(h.page, '#generalAttendanceCard'), /آخر ٤ أيام دراسية[\\s\\S]*آخر ٤ أسابيع/);",
+            "        assert.match(await text(h.page, '#generalAchievementCard'), /آخر ٨ أسابيع/);"
+          ],
+          "after": [
+            "        assert.match(await text(h.page, '#currentEventBadge'), /موسم 2026/);",
+            "        for (const id of ['generalAttendanceCard', 'generalAchievementCard', 'generalHomeFollowup']) {",
+            "            assert.match(await text(h.page, '#' + id), /[0-9]/);",
+            "            assert.doesNotMatch(await text(h.page, '#' + id), /[٠-٩]/);",
+            "        }",
+            "        assert.match(await text(h.page, '#generalAttendanceCard'), /آخر 4 أيام دراسية[\\s\\S]*آخر 4 أسابيع/);",
+            "        assert.match(await text(h.page, '#generalAchievementCard'), /آخر 8 أسابيع/);"
+          ]
+        },
+        {
+          "oldLine": 113,
+          "newLine": 118,
+          "before": [
+            "            assert.match(await text(h.page, '#' + id), /[٠-٩]+\\/[٠-٩]+/);",
+            "            assert.doesNotMatch(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[0-9]/);"
+          ],
+          "after": [
+            "            assert.match(await text(h.page, '#' + id), /[0-9]+\\/[0-9]+/);",
+            "            assert.match(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[0-9]/);",
+            "            assert.doesNotMatch(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[٠-٩]/);"
+          ]
+        },
+        {
+          "oldLine": 117,
+          "newLine": 123,
+          "before": [
+            "        assert.doesNotMatch(await text(h.page, '#programSwitcherMenu'), /[0-9]/);"
+          ],
+          "after": [
+            "        assert.doesNotMatch(await text(h.page, '#programSwitcherMenu'), /[٠-٩]/);"
+          ]
+        },
+        {
+          "oldLine": 119,
+          "newLine": 125,
+          "before": [
+            "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();",
+            "        assert.deepEqual((await h.page.locator('.gs-number').allTextContents()).sort(), ['١','٢','٣','٤','٥','٦','٧','٨']);"
+          ],
+          "after": [
+            "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();",
+            "        assert.deepEqual((await h.page.locator('.gs-number').allTextContents()).sort(), ['1','2','3','4','5','6','7','8']);"
+          ]
+        },
+        {
+          "oldLine": 132,
+          "newLine": 138,
+          "before": [
+            "        assert.deepEqual(await h.page.locator('.gh-past-day').allTextContents(), ['والأربعاء ١ ←', 'والثلاثاء ١ ←', 'والإثنين ١ ←']);"
+          ],
+          "after": [
+            "        assert.deepEqual(await h.page.locator('.gh-past-day').allTextContents(), ['والأربعاء 1 ←', 'والثلاثاء 1 ←', 'والإثنين 1 ←']);"
+          ]
+        },
+        {
+          "oldLine": 145,
+          "newLine": 151,
+          "before": [],
+          "after": [
+            "        assert.match(await text(h.page, '#hijriDateDisplay'), /١٣.*١٤٤٨/);",
+            "        assert.match(await text(h.page, '#headerGregorian'), /٢٢.*٢٠٢٦/);"
+          ]
+        },
+        {
+          "oldLine": 149,
+          "newLine": 157,
+          "before": [
+            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرّب الاحتفال فقط وتظل قيم الحفظ أرقاماً', async () => {"
+          ],
+          "after": [
+            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرض الاحتفال بالأرقام الإنجليزية وتظل قيم الحفظ أرقاماً', async () => {"
+          ]
+        },
+        {
+          "oldLine": 157,
+          "newLine": 165,
+          "before": [
+            "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA')} نقطة`));",
+            "    assert.match(h.element('celebrationTotalPoints').innerText, /١٠٣٫٥/);",
+            "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: ١/);"
+          ],
+          "after": [
+            "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')} نقطة`));",
+            "    assert.match(h.element('celebrationTotalPoints').innerText, /103\\.5/);",
+            "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);"
+          ]
+        },
+        {
+          "oldLine": 180,
+          "newLine": 188,
+          "before": [
+            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض ٢٢٫٥ و١٠٣٫٥ والترتيب ١؛ المعايير عربية والإدخال غربي', async () => {"
+          ],
+          "after": [
+            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض 22.5 و103.5 والترتيب 1؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {"
+          ]
+        },
+        {
+          "oldLine": 188,
+          "newLine": 196,
+          "before": [
+            "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();"
+          ],
+          "after": [
+            "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();"
+          ]
+        },
+        {
+          "oldLine": 194,
+          "newLine": 202,
+          "before": [
+            "        assert.match(await text(h.page, '#criteriaList'), /\\+١٤/);",
+            "        assert.doesNotMatch(await text(h.page, '#criteriaList'), /[0-9]/);",
+            "        assert.equal(await text(h.page, '#criteriaTotal'), '١٤');"
+          ],
+          "after": [
+            "        assert.match(await text(h.page, '#criteriaList'), /\\+14/);",
+            "        assert.doesNotMatch(await text(h.page, '#criteriaList'), /[٠-٩]/);",
+            "        assert.equal(await text(h.page, '#criteriaTotal'), '14');"
+          ]
+        },
+        {
+          "oldLine": 198,
+          "newLine": 206,
+          "before": [
+            "        assert.equal(await text(h.page, '#generalQuickTotal'), '٢٢٫٥');"
+          ],
+          "after": [
+            "        assert.equal(await text(h.page, '#generalQuickTotal'), '22.5');"
+          ]
+        },
+        {
+          "oldLine": 201,
+          "newLine": 209,
+          "before": [
+            "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ ٢٢٫٥ نقطة/);",
+            "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: ١٠٣٫٥ نقطة');",
+            "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: ١/);"
+          ],
+          "after": [
+            "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ 22\\.5 نقطة/);",
+            "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');",
+            "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
+          ]
+        }
+      ]
+    }
+  ],
+  "expectations": [
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 64,
+      "newLine": 64,
+      "category": 1,
+      "before": "    assert.match(h.element('generalQuickPreview').textContent, /الموضع: آخر آية حفظها النبأ ٢٠/);",
+      "after": "    assert.match(h.element('generalQuickPreview').textContent, /الموضع: آخر آية حفظها النبأ 20/);"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 89,
+      "newLine": 89,
+      "category": 1,
+      "before": "        assert.equal(h.element('generalQuickTotal').textContent, '٠');",
+      "after": "        assert.equal(h.element('generalQuickTotal').textContent, '0');"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 93,
+      "newLine": 93,
+      "category": 1,
+      "before": "        assert.equal(h.element('generalQuickTotal').textContent, '٠');",
+      "after": "        assert.equal(h.element('generalQuickTotal').textContent, '0');"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 195,
+      "newLine": 195,
+      "category": 1,
+      "before": "        assert.match(h.element('quick_'+kind+'_message').textContent,/سورة النبأ فيها ٤٠ آية — اكتب رقماً من ١ إلى ٤٠/);",
+      "after": "        assert.match(h.element('quick_'+kind+'_message').textContent,/سورة النبأ فيها 40 آية — اكتب رقماً من 1 إلى 40/);"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 213,
+      "newLine": 213,
+      "category": 1,
+      "before": "    h.run('fulfillGeneralCriteria()'); assert.match(h.element('generalCriteriaState').textContent,/\\+٨.*استوفى المعايير كلها/);",
+      "after": "    h.run('fulfillGeneralCriteria()'); assert.match(h.element('generalCriteriaState').textContent,/\\+8.*استوفى المعايير كلها/);"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 215,
+      "newLine": 215,
+      "category": 1,
+      "before": "    assert.match(h.element('generalQuickPreview').textContent,/الجديد: النبأ ٢١ ← النبأ ٣٠ \\(جيد\\).*المراجعة: الناس ١ ← النبأ ٢٥/);",
+      "after": "    assert.match(h.element('generalQuickPreview').textContent,/الجديد: النبأ 21 ← النبأ 30 \\(جيد\\).*المراجعة: الناس 1 ← النبأ 25/);"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 237,
+      "newLine": 237,
+      "category": 1,
+      "before": "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط ٨/);",
+      "after": "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط 8/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 118,
+      "newLine": 118,
+      "category": 1,
+      "before": "        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA')}<`));",
+      "after": "        assert.match(markup, new RegExp(`gh-count[^>]*>${key.expected[type].length.toLocaleString('ar-SA-u-nu-latn')}<`));"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 177,
+      "newLine": 177,
+      "category": 3,
+      "before": "    assert.match(card, />٣<\\/b><span>حضر<\\/span><small>من ٦/);",
+      "after": "    assert.match(card, />3<\\/b><span>حضر<\\/span><\\/div><small>من 6/);",
+      "valuesBefore": [
+        "حضر 3",
+        "من 6"
+      ],
+      "valuesAfter": [
+        "حضر 3",
+        "من 6"
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 178,
+      "newLine": 178,
+      "category": 3,
+      "before": "    assert.match(card, />٢<\\/b><span>غاب<\\/span><small>بعذر ١ · بغير ١/);",
+      "after": "    assert.match(card, />2<\\/b><span>غاب<\\/span><\\/div><small>بعذر 1 · بغير 1/);",
+      "valuesBefore": [
+        "غاب 2",
+        "بعذر 1",
+        "بغير 1"
+      ],
+      "valuesAfter": [
+        "غاب 2",
+        "بعذر 1",
+        "بغير 1"
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 179,
+      "newLine": 179,
+      "category": 2,
+      "before": "    h.click(card, 'أكملهم ←'); assert.deepEqual(h.state.navigation, ['page-students']);",
+      "after": "    h.click(card, 'أكمل التسجيل ←'); assert.deepEqual(h.state.navigation, ['page-students']);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 174,
+      "newLine": 180,
+      "category": 3,
+      "before": "    assert.deepEqual(h.summary(), { holiday: false, present: 3, absent: 2, excused: 1, unexcused: 1, unrecorded: 1, total: 6 });",
+      "after": "    assert.match(card, />1<\\/b><span>لم يُسجَّل<\\/span>/);",
+      "valuesBefore": [
+        "unrecorded: 1 في h.summary()"
+      ],
+      "valuesAfter": [
+        "unrecorded: 1 في h.summary()",
+        "لم يُسجَّل 1 في HTML"
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 296,
+      "newLine": 297,
+      "category": 3,
+      "before": "    assert.equal((html.match(/\\.gh-today-grid\\s*\\{/g) || []).length, 1);",
+      "after": "    assert.equal((html.match(/\\.gh-today-grid\\s*\\{/g) || []).length, 3);",
+      "valuesBefore": [
+        "ظهور محدد gh-today-grid مرة واحدة",
+        "3 أعمدة في CSS عند 1280"
+      ],
+      "valuesAfter": [
+        "ظهور المحدد 3 مرات: قاعدة عامة وتجاوزان معزولان",
+        "3 أعمدة في CSS عند 1280، وفحص فعلي في المتصفح"
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 296,
+      "newLine": 298,
+      "category": 3,
+      "before": "    assert.equal((html.match(/\\.gh-today-grid\\s*\\{/g) || []).length, 1);",
+      "after": "    assert.equal((html.match(/body\\.program-general \\.general-home \\.gh-today-grid\\s*\\{/g) || []).length, 2);",
+      "valuesBefore": [
+        "ظهور محدد gh-today-grid مرة واحدة"
+      ],
+      "valuesAfter": [
+        "تجاوزان تحت body.program-general .general-home"
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 327,
+      "newLine": 329,
+      "category": 1,
+      "before": "    assert.match(h.element('generalAttendanceCard').innerHTML, /٨٥٪/);",
+      "after": "    assert.match(h.element('generalAttendanceCard').innerHTML, /85٪/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 328,
+      "newLine": 330,
+      "category": 1,
+      "before": "    assert.match(h.element('generalAchievementCard').innerHTML, /٦٥٪/);",
+      "after": "    assert.match(h.element('generalAchievementCard').innerHTML, /65٪/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 342,
+      "newLine": 344,
+      "category": 1,
+      "before": "    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من ٨٥٪']) assert.ok(attendance.includes(text));",
+      "after": "    for (const text of ['حلقة أ — الأستاذ عبدالله', 'حلقة ج — الأستاذ صالح', 'حضورها أقل من 85٪']) assert.ok(attendance.includes(text));"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 343,
+      "newLine": 345,
+      "category": 1,
+      "before": "    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من ٨٠٪']) assert.ok(achievement.includes(text));",
+      "after": "    for (const text of ['حلقة ب — الأستاذ إبراهيم', 'حلقة ج — الأستاذ صالح', 'إنجازها أقل من 80٪']) assert.ok(achievement.includes(text));"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 524,
+      "newLine": 526,
+      "category": 1,
+      "before": "    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /١٠٠٪/); assert.match(tip.innerHTML, /حضر ٧ · غاب ٠/);",
+      "after": "    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /100٪/); assert.match(tip.innerHTML, /حضر 7 · غاب 0/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 529,
+      "newLine": 531,
+      "category": 1,
+      "before": "    assert.equal(prevented, true); assert.match(tip.innerHTML, /٧٥٪/);",
+      "after": "    assert.equal(prevented, true); assert.match(tip.innerHTML, /75٪/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 625,
+      "newLine": 627,
+      "category": 1,
+      "before": "    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value\">٦٩٪/);",
+      "after": "    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value\">69٪/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 626,
+      "newLine": 628,
+      "category": 1,
+      "before": "    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٧٣٪/);",
+      "after": "    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">73٪/);"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 693,
+      "newLine": 695,
+      "category": 1,
+      "before": "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٣٨٪/);",
+      "after": "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">38٪/);"
+    },
+    {
+      "file": "tests/program-switcher-local.test.cjs",
+      "oldLine": 161,
+      "newLine": 161,
+      "category": 2,
+      "before": "    assert.match(badge, /class=\"program-switcher-caret\"[^>]*>⌄/);",
+      "after": "    assert.match(badge, /class=\"program-switcher-caret\"[^>]*><i class=\"fas fa-caret-down\"><\\/i>/);"
+    },
+    {
+      "file": "tests/rules/home-answer-key.json",
+      "oldLine": 46,
+      "newLine": 46,
+      "category": 1,
+      "before": "      { \"name\": \"خالد\", \"days\": 5, \"text\": \"غاب ٥ أيام\" },",
+      "after": "      { \"name\": \"خالد\", \"days\": 5, \"text\": \"غاب 5 أيام\" },"
+    },
+    {
+      "file": "tests/rules/home-answer-key.json",
+      "oldLine": 50,
+      "newLine": 50,
+      "category": 1,
+      "before": "      { \"name\": \"عمر\", \"days\": 3, \"text\": \"منذ ٣ أيام\" },",
+      "after": "      { \"name\": \"عمر\", \"days\": 3, \"text\": \"منذ 3 أيام\" },"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 448,
+      "newLine": 448,
+      "category": 1,
+      "before": "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
+      "after": "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 449,
+      "newLine": 449,
+      "category": 1,
+      "before": "        ['headerGregorian', 'ar-SA', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]",
+      "after": "        ['headerGregorian', 'ar-SA-u-nu-latn', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
+    },
+    {
+      "file": "tests/step6a-absence-local.test.cjs",
+      "oldLine": 133,
+      "newLine": 133,
+      "category": 1,
+      "before": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب');",
+      "after": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب');"
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "oldLine": 195,
+      "newLine": 195,
+      "category": 1,
+      "before": "    assert.match(h.element('generalTodayCard').innerHTML, /<b>١<\\/b><span>لم يُسجَّل<\\/span>/);",
+      "after": "    assert.match(h.element('generalTodayCard').innerHTML, /<b>1<\\/b><span>لم يُسجَّل<\\/span>/);"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 115,
+      "newLine": 115,
+      "category": 1,
+      "before": "    assert.match(h.element('smartUndoBtn').textContent, /١–١٥.*النقاط: ٤/);",
+      "after": "    assert.match(h.element('smartUndoBtn').textContent, /1–15.*النقاط: 4/);"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 134,
+      "newLine": 134,
+      "category": 1,
+      "before": "    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*١–١٥ \\(النقاط: ٤\\)؟$/);",
+      "after": "    assert.match(h.state.prompts[0], /^التراجع عن: مراجعة، .*1–15 \\(النقاط: 4\\)؟$/);"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 142,
+      "newLine": 142,
+      "category": 1,
+      "before": "        const suffix = `(النقاط: ${points.toLocaleString('ar-SA', { useGrouping: false })})`;",
+      "after": "        const suffix = `(النقاط: ${points.toLocaleString('ar-SA-u-nu-latn', { useGrouping: false })})`;"
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 17,
+      "newLine": 17,
+      "category": 1,
+      "before": "    assert.equal(h.element('quick_new_start').textContent, 'النبأ ١٢');",
+      "after": "    assert.equal(h.element('quick_new_start').textContent, 'النبأ 12');"
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 74,
+      "newLine": 74,
+      "category": 1,
+      "before": "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ ٢٠/);",
+      "after": "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ 20/);"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 136,
+      "newLine": 136,
+      "category": 1,
+      "before": "    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس ٠٥-١١', 'الأحد ٠١-١١', 'الثلاثاء ٠٣-١١']);",
+      "after": "    assert.deepEqual(h.element('generalMissedDays').children.map(button => button.textContent), ['الخميس 05-11', 'الأحد 01-11', 'الثلاثاء 03-11']);"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 154,
+      "newLine": 154,
+      "category": 1,
+      "before": "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد ٠١-١١');",
+      "after": "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد 01-11');"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 195,
+      "newLine": 195,
+      "category": 1,
+      "before": "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد ٠١-١١. متابعة؟']);",
+      "after": "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد 01-11. متابعة؟']);"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 203,
+      "newLine": 203,
+      "category": 1,
+      "before": "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد ٠١-١١. متابعة؟');",
+      "after": "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد 01-11. متابعة؟');"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 204,
+      "newLine": 204,
+      "category": 1,
+      "before": "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد ٠١-١١؛ التسجيل يجعله حاضراً. متابعة؟');",
+      "after": "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد 01-11؛ التسجيل يجعله حاضراً. متابعة؟');"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 137,
+      "newLine": 137,
+      "category": 1,
+      "before": "    assert.equal(h.run(\"generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))\"), 'سمّع ٢ من ٤ · غائب ١');",
+      "after": "    assert.equal(h.run(\"generalHalaqaTodayText(generalHalaqaTodayCounts(students, 'h1', todayStr, getProgramSettings()))\"), 'سمّع 2 من 4 · غائب 1');"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 140,
+      "newLine": 140,
+      "category": 1,
+      "before": "    assert.match(h.element('studentsGrid').innerHTML, /سمّع ٢ من ٤ · غائب ١/); // البحث لا يبدّل مقام الحلقة.",
+      "after": "    assert.match(h.element('studentsGrid').innerHTML, /سمّع 2 من 4 · غائب 1/); // البحث لا يبدّل مقام الحلقة."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 164,
+      "newLine": 164,
+      "category": 1,
+      "before": "    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>٧/);",
+      "after": "    assert.match(chips.innerHTML, /^<button[^>]*>كل الحلقات <small>7/);"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 165,
+      "newLine": 165,
+      "category": 1,
+      "before": "    assert.match(chips.innerHTML, /ألف <small>٥/);",
+      "after": "    assert.match(chips.innerHTML, /ألف <small>5/);"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 199,
+      "newLine": 199,
+      "category": 1,
+      "before": "    assert.match(h.state.messages.at(-1).message, /حُفظ: ١ حاضر/);",
+      "after": "    assert.match(h.state.messages.at(-1).message, /حُفظ: 1 حاضر/);"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 211,
+      "newLine": 211,
+      "category": 1,
+      "before": "    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب'); h.checkPatches();",
+      "after": "    assert.deepEqual(h.list[1].history, {}); assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب'); h.checkPatches();"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 222,
+      "newLine": 222,
+      "category": 1,
+      "before": "    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب ١');",
+      "after": "    assert.equal(h.state.messages.at(-1).message, 'أُزيل غياب 1');"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 251,
+      "newLine": 251,
+      "category": 1,
+      "before": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ٢ غائب، وأُزيل غياب ١، وحُفظ: ١ حاضر');",
+      "after": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 2 غائب، وأُزيل غياب 1، وحُفظ: 1 حاضر');"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 284,
+      "newLine": 284,
+      "category": 1,
+      "before": "        assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ غائب، وأُزيل غياب ١'); h.checkPatches();",
+      "after": "        assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 غائب، وأُزيل غياب 1'); h.checkPatches();"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 331,
+      "newLine": 331,
+      "category": 1,
+      "before": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: ١ حاضر');",
+      "after": "    assert.equal(h.state.messages.at(-1).message, 'حُفظ: 1 حاضر');"
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 414,
+      "newLine": 414,
+      "category": 1,
+      "before": "    assert.match(h.element('studentsGrid').innerHTML, /سمّع ١ من ١/);",
+      "after": "    assert.match(h.element('studentsGrid').innerHTML, /سمّع 1 من 1/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 55,
+      "newLine": 55,
+      "category": 1,
+      "before": "        assert.equal(await text(h.page, '#hijriDateDisplay'), 'الأحد، ١٣ جمادى الآخرة ١٤٤٨ هـ');",
+      "after": "        assert.equal(await text(h.page, '#hijriDateDisplay'), 'الأحد، 13 جمادى الآخرة 1448 هـ');"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 66,
+      "newLine": 66,
+      "category": 1,
+      "before": "        assert.deepEqual(days, ['والثلاثاء ١ ←', 'والإثنين ١ ←']);",
+      "after": "        assert.deepEqual(days, ['والثلاثاء 1 ←', 'والإثنين 1 ←']);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 82,
+      "newLine": 82,
+      "category": 1,
+      "before": "        assert.ok((await h.page.locator('.gh-past-day').allTextContents()).includes('والثلاثاء ١ ←'));",
+      "after": "        assert.ok((await h.page.locator('.gh-past-day').allTextContents()).includes('والثلاثاء 1 ←'));"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": null,
+      "newLine": 93,
+      "category": 3,
+      "before": null,
+      "after": "        if (width === 1280) assert.equal(await h.page.locator('.gh-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 3);",
+      "valuesBefore": [
+        "3 أعمدة في CSS في home-local:293"
+      ],
+      "valuesAfter": [
+        "3 أعمدة محسوبة فعليًا عند عرض 1280"
+      ]
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 97,
+      "newLine": 98,
+      "category": 2,
+      "before": "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();",
+      "after": "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 108,
+      "newLine": 109,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#currentEventBadge'), /موسم ٢٠٢٦/);",
+      "after": "        assert.match(await text(h.page, '#currentEventBadge'), /موسم 2026/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 109,
+      "newLine": 111,
+      "category": 1,
+      "before": "        for (const id of ['generalAttendanceCard', 'generalAchievementCard', 'generalHomeFollowup']) assert.doesNotMatch(await text(h.page, '#' + id), /[0-9]/);",
+      "after": "            assert.match(await text(h.page, '#' + id), /[0-9]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 109,
+      "newLine": 112,
+      "category": 1,
+      "before": "        for (const id of ['generalAttendanceCard', 'generalAchievementCard', 'generalHomeFollowup']) assert.doesNotMatch(await text(h.page, '#' + id), /[0-9]/);",
+      "after": "            assert.doesNotMatch(await text(h.page, '#' + id), /[٠-٩]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 110,
+      "newLine": 114,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#generalAttendanceCard'), /آخر ٤ أيام دراسية[\\s\\S]*آخر ٤ أسابيع/);",
+      "after": "        assert.match(await text(h.page, '#generalAttendanceCard'), /آخر 4 أيام دراسية[\\s\\S]*آخر 4 أسابيع/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 111,
+      "newLine": 115,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#generalAchievementCard'), /آخر ٨ أسابيع/);",
+      "after": "        assert.match(await text(h.page, '#generalAchievementCard'), /آخر 8 أسابيع/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 113,
+      "newLine": 117,
+      "category": 1,
+      "before": "            assert.match(await text(h.page, '#' + id), /[٠-٩]+\\/[٠-٩]+/);",
+      "after": "            assert.match(await text(h.page, '#' + id), /[0-9]+\\/[0-9]+/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 114,
+      "newLine": 118,
+      "category": 1,
+      "before": "            assert.doesNotMatch(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[0-9]/);",
+      "after": "            assert.match(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[0-9]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 114,
+      "newLine": 119,
+      "category": 1,
+      "before": "            assert.doesNotMatch(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[0-9]/);",
+      "after": "            assert.doesNotMatch(await h.page.locator('#' + id + ' svg').getAttribute('aria-label'), /[٠-٩]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 117,
+      "newLine": 122,
+      "category": 1,
+      "before": "        assert.doesNotMatch(await text(h.page, '#programSwitcherMenu'), /[0-9]/);",
+      "after": "        assert.doesNotMatch(await text(h.page, '#programSwitcherMenu'), /[٠-٩]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 119,
+      "newLine": 124,
+      "category": 2,
+      "before": "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();",
+      "after": "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 120,
+      "newLine": 125,
+      "category": 1,
+      "before": "        assert.deepEqual((await h.page.locator('.gs-number').allTextContents()).sort(), ['١','٢','٣','٤','٥','٦','٧','٨']);",
+      "after": "        assert.deepEqual((await h.page.locator('.gs-number').allTextContents()).sort(), ['1','2','3','4','5','6','7','8']);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 132,
+      "newLine": 137,
+      "category": 1,
+      "before": "        assert.deepEqual(await h.page.locator('.gh-past-day').allTextContents(), ['والأربعاء ١ ←', 'والثلاثاء ١ ←', 'والإثنين ١ ←']);",
+      "after": "        assert.deepEqual(await h.page.locator('.gh-past-day').allTextContents(), ['والأربعاء 1 ←', 'والثلاثاء 1 ←', 'والإثنين 1 ←']);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": null,
+      "newLine": 150,
+      "category": 1,
+      "before": null,
+      "after": "        assert.match(await text(h.page, '#hijriDateDisplay'), /١٣.*١٤٤٨/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": null,
+      "newLine": 151,
+      "category": 1,
+      "before": null,
+      "after": "        assert.match(await text(h.page, '#headerGregorian'), /٢٢.*٢٠٢٦/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 157,
+      "newLine": 164,
+      "category": 1,
+      "before": "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA')} نقطة`));",
+      "after": "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')} نقطة`));"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 158,
+      "newLine": 165,
+      "category": 1,
+      "before": "    assert.match(h.element('celebrationTotalPoints').innerText, /١٠٣٫٥/);",
+      "after": "    assert.match(h.element('celebrationTotalPoints').innerText, /103\\.5/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 159,
+      "newLine": 166,
+      "category": 1,
+      "before": "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: ١/);",
+      "after": "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 188,
+      "newLine": 195,
+      "category": 2,
+      "before": "        await h.page.getByRole('button', { name: 'أكملهم ←', exact: false }).click();",
+      "after": "        await h.page.getByRole('button', { name: 'أكمل التسجيل ←', exact: false }).click();"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 194,
+      "newLine": 201,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#criteriaList'), /\\+١٤/);",
+      "after": "        assert.match(await text(h.page, '#criteriaList'), /\\+14/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 195,
+      "newLine": 202,
+      "category": 1,
+      "before": "        assert.doesNotMatch(await text(h.page, '#criteriaList'), /[0-9]/);",
+      "after": "        assert.doesNotMatch(await text(h.page, '#criteriaList'), /[٠-٩]/);",
+      "policy": "general: English digits present, Arabic absent; summer/review-day: existing Arabic date values retained"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 196,
+      "newLine": 203,
+      "category": 1,
+      "before": "        assert.equal(await text(h.page, '#criteriaTotal'), '١٤');",
+      "after": "        assert.equal(await text(h.page, '#criteriaTotal'), '14');"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 198,
+      "newLine": 205,
+      "category": 1,
+      "before": "        assert.equal(await text(h.page, '#generalQuickTotal'), '٢٢٫٥');",
+      "after": "        assert.equal(await text(h.page, '#generalQuickTotal'), '22.5');"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 201,
+      "newLine": 208,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ ٢٢٫٥ نقطة/);",
+      "after": "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ 22\\.5 نقطة/);"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 202,
+      "newLine": 209,
+      "category": 1,
+      "before": "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: ١٠٣٫٥ نقطة');",
+      "after": "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');"
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 203,
+      "newLine": 210,
+      "category": 1,
+      "before": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: ١/);",
+      "after": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
+    }
+  ],
+  "ownerScopeEdits": [
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "change": "for (const width of [390, 1280]) → [1280]",
+      "reason": "قرار المالك ٢٠٢٦-١١-٠٥: «ركز على الحاسب فقط»، فعرض الجوال 390 خارج النطاق",
+      "by": "المدير"
+    }
+  ]
+}
