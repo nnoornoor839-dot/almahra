@@ -95,7 +95,8 @@ test('both sections produce one request, frozen context and exact preview sum in
         assert.equal(e.iv.every(Number.isInteger), true);
     }
     assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 10) * 10) / 10);
-    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\+ ${preview.total} نقطة`));
+    // نقرأ القيمة المعروضة بصيغتي الأرقام؛ العدد المتوقع نفسه بلا تعديل.
+    assert.match(h.element('celebrationPoints').innerText.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.'), new RegExp(`\\+ ${preview.total} نقطة`));
     assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), false);
     assert.equal(h.element('smartModal').classList.contains('hidden'), true);
     const fields = h.state.writes[0].fields, last = copy(h.run('computeLastDaily(students[0])'));

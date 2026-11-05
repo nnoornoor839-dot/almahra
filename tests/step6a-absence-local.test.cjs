@@ -205,8 +205,8 @@ test('alert counts only school days this week through today, active halaqas and 
     assert.deepEqual(copy(h.run('getGeneralUnrecordedDays()')), [
         { dateStr: '2026-11-01', count: 1 }, { dateStr: '2026-11-03', count: 2 }, { dateStr: '2026-11-04', count: 3 }]);
     h.run('updateGeneralAttendanceUI()');
-    assert.match(h.element('generalUnrecordedAlert').innerHTML, /openGeneralAbsenceModal\('2026-11-03'\)/);
-    assert.doesNotMatch(h.element('generalUnrecordedAlert').innerHTML, /2026-11-02|2026-11-05|2026-10-29/);
+    assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
+    assert.equal(h.element('generalUnrecordedAlert').innerHTML, '');
     for (const s of h.list) for (const date of ['2026-11-01', '2026-11-03', '2026-11-04']) s.history[date] = { attended: true };
     h.run('updateGeneralAttendanceUI()'); assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
     h.state.season.calendar = undefined; assert.deepEqual(copy(h.run('getGeneralUnrecordedDays()')), []);
@@ -214,9 +214,13 @@ test('alert counts only school days this week through today, active halaqas and 
 
 test('updateAllUIs refreshes the alert, refreshToday updates it after midnight and a new Sunday drops the old week', () => {
     const h = harness([student(1, 'طالب', { history: { '2026-10-29': {} } })]); h.install('updateAllUIs');
-    h.run('updateAllUIs()'); assert.match(h.element('generalUnrecordedAlert').innerHTML, /2026-11-04/);
+    h.run('updateAllUIs()'); assert.equal(h.element('generalUnrecordedAlert').innerHTML, '');
+    assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
+    assert.match(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-04/);
     h.state.now = '2026-11-05T00:30:00Z'; h.run('refreshToday()');
-    assert.match(h.element('generalUnrecordedAlert').innerHTML, /2026-11-05/);
+    assert.equal(h.element('generalUnrecordedAlert').innerHTML, '');
+    assert.equal(h.element('generalUnrecordedAlert').classList.contains('hidden'), true);
+    assert.match(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-05/);
     h.state.now = '2026-11-08T00:30:00Z'; h.run('refreshToday()');
     assert.deepEqual(copy(h.run('getGeneralUnrecordedDays()')), [{ dateStr: '2026-11-08', count: 1 }]);
 });

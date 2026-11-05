@@ -52,7 +52,7 @@ function harness(list = answerStudents(), initialToday = key.today, productionHt
     const element = id => {
         if (elements.has(id)) return elements.get(id);
         const classes = new Set();
-        const el = { id, style: {}, dataset: {}, innerHTML: '', textContent: '', value: '', querySelector: () => null,
+        const el = { id, style: {}, dataset: {}, innerHTML: '', textContent: '', value: '', querySelector: () => null, querySelectorAll: () => [],
             classList: { add: (...names) => names.forEach(n => classes.add(n)), remove: (...names) => names.forEach(n => classes.delete(n)),
                 contains: n => classes.has(n), toggle(n, on = !classes.has(n)) { if (on) classes.add(n); else classes.delete(n); } } };
         elements.set(id, el); return el;
@@ -86,7 +86,7 @@ function harness(list = answerStudents(), initialToday = key.today, productionHt
         'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
         'generalAttendanceStart', 'getGeneralSchoolDates', 'getWorkingDaysList', 'getConsecutiveAbsenceStreak',
         'getFollowupAbsentees', 'getGeneralUnrecordedDays', 'updateGeneralAttendanceUI', 'renderHomeDashboard');
-    if (productionHtml === html) install('generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
+    if (productionHtml === html) install('updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
         'generalHomeDaysLabel', 'generalHomeHalaqaName', 'generalHomeFollowupText', 'generalTodayCardHtml',
         'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList');
     if (productionHtml === html) install(...[...html.matchAll(/function ((?:generalPerformance|renderGeneralPerformance|setGeneralPerformance|bindGeneralPerformance)\w*)\(/g)].map(m => m[1]));
@@ -206,14 +206,18 @@ test('بطاقة اليوم تُخفى في المؤرشف والتقويم ال
     for (const text of ['لا غائبين متتابعين', 'كل الحاضرين سمّعوا جديداً', 'لا تعثّر متكرر في التسميع'])
         assert.ok(h.element('generalHomeFollowup').innerHTML.includes(text));
 });
-test('التنبيه يبقى كما كان: اليوم والأيام السابقة من الأسبوع نفسه', () => {
+test('ت٢٥: الشريط مخفي دائماً؛ مصدر الأيام يبقى لليوم والأيام السابقة من الأسبوع نفسه', () => {
     const h = harness([{ name: 'وهمي', halaqaId: 'a', history: { '2026-11-15': { attended: true } } }], '2026-11-18');
     h.run('updateGeneralAttendanceUI()'); const bar = h.element('generalUnrecordedAlert');
-    assert.equal(bar.classList.contains('hidden'), false);
-    assert.match(bar.innerHTML, /2026-11-17/); assert.match(bar.innerHTML, /2026-11-18.*اليوم/);
+    assert.equal(bar.classList.contains('hidden'), true);
+    assert.equal(bar.innerHTML, '');
+    assert.match(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-17/);
+    assert.match(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-18/);
     h.run(`todayStr = '${key.today}'; updateGeneralAttendanceUI()`);
-    assert.equal(bar.classList.contains('hidden'), false);
-    assert.match(bar.innerHTML, /2026-11-22.*اليوم/); assert.doesNotMatch(bar.innerHTML, /2026-11-17/);
+    assert.equal(bar.classList.contains('hidden'), true);
+    assert.equal(bar.innerHTML, '');
+    assert.match(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-22/);
+    assert.doesNotMatch(JSON.stringify(h.run('getGeneralUnrecordedDays()')), /2026-11-17/);
 });
 test('٣ أسطر ثم عرض الكل؛ الغياب للسجل والمتوقفون والتثبيت يتوسعون في موضعهم', () => {
     for (const type of ['absent', 'stalled', 'support']) {

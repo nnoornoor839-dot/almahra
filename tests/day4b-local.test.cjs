@@ -32,7 +32,7 @@ function harness() {
     const elements = new Map(), listeners = new Map(), readers = [];
     const state = { program: 'general', season: 'season-one', ready: true, readOnly: false, messages: [], calls: [], legacy: 0, uuids: 0, settings: copy(settings) };
     const document = { getElementById(id) {
-        if (!elements.has(id)) elements.set(id, { disabled: false, innerHTML: '', textContent: '', value: '', style: {},
+        if (!elements.has(id)) elements.set(id, { disabled: false, innerHTML: '', textContent: '', value: '', style: {}, querySelectorAll: () => [],
             classList: { replace() {}, add() {}, remove() {}, toggle() {} }, click() {} });
         return elements.get(id);
     } };

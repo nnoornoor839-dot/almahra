@@ -29,7 +29,7 @@ function harness(list = [], text = html, program = 'general') {
         titleRules: { requireSard: false, weeklyAttendancePct: 75 }, messages: [], sheets: [] };
     const elements = new Map();
     const element = id => {
-        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', style: {},
+        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', style: {}, querySelectorAll: () => [],
             classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } } });
         return elements.get(id);
     };
@@ -76,8 +76,8 @@ function harness(list = [], text = html, program = 'general') {
         'generalStudentAttendanceLabel', 'generalAttendanceLabel', 'getGeneralAttendanceEligibility', 'generalIncompleteAttendanceHtml');
     if (text === html) {
         run("let generalHomeExpanded = { context: '', stalled: false, support: false };");
-        install('getStudentHalaqa', 'countLabel', 'cleanCellText', 'normalizeSaudiPhone',
-            'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
+        install('getStudentHalaqa', 'getGeneralUnrecordedDays', 'countLabel', 'cleanCellText', 'normalizeSaudiPhone',
+            'updateHomeProgramVisibility', 'generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
             'generalHomeDaysLabel', 'generalHomeHalaqaName', 'generalHomeFollowupText', 'generalTodayCardHtml',
             'generalHomeWhatsapp', 'generalHomeFollowupCard', 'renderGeneralHome', 'expandGeneralHomeList');
     }

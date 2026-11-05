@@ -243,6 +243,10 @@
         .gh-unrecorded { background:var(--gh-warn-bg); border-color:#f1d9a8; cursor:pointer; font:inherit; color:inherit; width:100%; }
         .gh-unrecorded b { color:var(--gh-warn); }
         .gh-unrecorded:hover { border-color:var(--gh-warn); }
+        .gh-pending-cell { padding:0; overflow-wrap:anywhere; }
+        .gh-pending-cell > .gh-unrecorded { border:0; border-radius:10px; padding:12px 8px; }
+        .gh-past-day { display:block; width:100%; padding:6px 4px; font-size:12px; font-weight:700; color:var(--gh-warn); }
+        .gh-past-day:hover { text-decoration:underline; }
         .gh-complete { background:var(--gh-ok-bg); }
         .gh-complete b { color:var(--gh-ok); font-size:26px; padding:4px 0; }
         #generalHome button:focus-visible, #generalHome a:focus-visible { outline:2px solid var(--gh-brand); outline-offset:3px; }
@@ -519,6 +523,11 @@
             #authUserInfo > span:last-of-type { flex-shrink: 0; font-size: 9px; padding: 2px 4px; }
             .ah-logout-txt { display: none; }
             #authLogoutBtn { padding: 7px 10px; }
+            .app-header.general-header { flex-wrap:wrap; padding-block:8px; }
+            .general-header .ah-mid { order:3; flex-basis:100%; }
+            .general-header .ah-date { justify-content:center; overflow:visible; font-size:12px; }
+            .general-header #authUserBar { margin-inline-start:auto; }
+            .general-header ~ .general-students #generalStudentsTools { top:76px; }
         }
 
         .tab-content { display: none; }
@@ -854,11 +863,15 @@
         .gs-absent { background: transparent; color: #4a5a51; }
         .gs-name { font-size: 18px; font-weight: 800; line-height: 1.45; min-height: 2.9em; overflow-wrap: anywhere; }
         .gs-actions { display: flex; gap: 8px; margin-top: auto; }
-        .gs-entry { min-width: 0; flex: 1; height: 44px; border: 1.5px solid #259046; border-radius: 12px; background: #259046; color: white; font-size: 16px; font-weight: 800; }
+        .gs-entry { min-width: 0; flex: 1; height: 44px; padding: 0 12px; border: 1.5px solid #259046; border-radius: 12px; background: #259046; color: white; font-size: 16px; font-weight: 800; }
         .gs-attendance { height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #b9c5be; background: white; color: #4a5a51; font-size: 14px; font-weight: 800; }
         .gs-card.is-done .gs-entry { background: white; color: #259046; }
         .gs-entry:focus-visible, .gs-attendance:focus-visible { outline: 3px solid #125c2f; outline-offset: 2px; }
         .gs-empty { padding: 40px 0; text-align: center; color: #4a5a51; }
+        .general-header .ah-title[data-program-brand] { display:none; }
+        #page-home:not(.home-ready) #homeVerse,
+        #page-home:not(.home-ready) #homeDashboard,
+        #page-home:not(.home-ready) #homeLead { display:none; }
         .gs-att-choices { display: flex; gap: 16px; font-weight: 700; }
         @media (max-width: 1020px) { .gs-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 780px) { .gs-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -2565,6 +2578,7 @@
 
         function updateProgramBrand() {
             const name = programBrandName();
+            document.getElementById('appHeader')?.classList.toggle('general-header', name === 'البرنامج العام');
             document.querySelectorAll('[data-program-brand]').forEach(el => { el.textContent = name; });
             document.title = name === 'البرنامج العام' ? name : 'برنامج المهرة القرآني المتكامل - V25 الذهبي';
         }
@@ -2848,12 +2862,8 @@
             document.getElementById('generalAttendanceTools')?.classList.add('hidden');
             const bar = document.getElementById('generalUnrecordedAlert');
             if (!bar) return;
-            const days = getGeneralUnrecordedDays();
-            bar.classList.toggle('hidden', !days.length);
-            bar.innerHTML = days.map(({ dateStr, count }) => {
-                const label = dateStr === todayStr ? 'اليوم' : ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()];
-                return `<button class="underline" onclick="openGeneralAbsenceModal('${dateStr}')">${label}: ${count.toLocaleString('ar-SA')} لم يُسجَّلوا${dateStr === todayStr ? ' بعد' : ''}</button>`;
-            }).join('<span aria-hidden="true">·</span>');
+            bar.classList.add('hidden');
+            bar.innerHTML = '';
             if (!visible) closeGeneralAbsenceModal();
         }
 
@@ -5853,23 +5863,24 @@
         }
         function generalHomeHalaqaName(student, settings) {
             const name = getStudentHalaqa(student, settings)?.name || '';
-            return name ? (/^حلقة(?:\s|$)/.test(name) ? name : 'حلقة ' + name) : 'بلا حلقة';
+            return name ? (/^حلقة(?:\s|$)/.test(name) ? name : 'حلقة ' + name).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : 'بلا حلقة';
         }
         function generalHomeFollowupText(type, row, settings) {
             if (type === 'absent') return 'غاب ' + generalHomeDaysLabel(row.streak);
             if (type === 'stalled') return 'منذ ' + generalHomeDaysLabel(row.days);
             return `${generalHomeHalaqaName(row.student, settings)} · في ${row.kind} · «يُعاد» ${generalHomeDaysLabel(row.days)}`;
         }
-        function generalTodayCardHtml(summary) {
+        function generalTodayCardHtml(summary, pastDays = []) {
             const num = n => n.toLocaleString('ar-SA');
             const head = '<div class="gh-today-head"><h2 class="gh-today-title">اليوم حتى الآن</h2><span class="gh-today-sub">يتحدّث مع كل تسجيل</span></div>';
-            if (summary.holiday) return head + '<p class="gh-empty">اليوم إجازة</p>';
+            const past = pastDays.map(({ dateStr, count }, i) => `<button class="gh-past-day" type="button" data-past-index="${i}">و${ALL_DAY_NAMES[schoolCivilDate(dateStr).getDay()]} ${num(count)} ←</button>`).join('');
+            if (summary.holiday) return head + '<p class="gh-empty">اليوم إجازة</p>' + past;
             return head + `<div class="gh-today-grid">
                 <div class="gh-cell gh-present"><b>${num(summary.present)}</b><span>حضر</span><small>من ${num(summary.total)}</small></div>
                 <div class="gh-cell"><b>${num(summary.absent)}</b><span>غاب</span><small>بعذر ${num(summary.excused)} · بغير ${num(summary.unexcused)}</small></div>
-                ${summary.unrecorded
-                    ? `<button class="gh-cell gh-unrecorded" type="button" title="ينقلك إلى «الإنجاز والتحضير»" onclick="goHome('page-students')"><b>${num(summary.unrecorded)}</b><span>لم يُسجَّل</span><small>أكملهم ←</small></button>`
-                    : '<div class="gh-cell gh-complete"><b>✓</b><span>اكتمل التسجيل</span><small>لا أحد ينتظر</small></div>'}
+                <div class="gh-cell gh-pending-cell ${summary.unrecorded ? 'gh-unrecorded' : 'gh-complete'}">${summary.unrecorded
+                    ? `<button class="gh-unrecorded" type="button" title="ينقلك إلى «الإنجاز والتحضير»" onclick="goHome('page-students')"><b>${num(summary.unrecorded)}</b><span>لم يُسجَّل</span><small>أكملهم ←</small></button>`
+                    : '<b>✓</b><span>اكتمل التسجيل</span><small>لا أحد ينتظر</small>'}${past}</div>
             </div>`;
         }
 
@@ -5897,15 +5908,15 @@
             const labels = {
                 absent: ['غائبون متتابعون', 'غابوا يومين دراسيين متتاليين فأكثر', 'لا غائبين متتابعين', 'fa-user-xmark'],
                 stalled: ['متوقفون عن الحفظ', 'حاضرون ولم يسمّعوا جديداً منذ يومين دراسيين فأكثر', 'كل الحاضرين سمّعوا جديداً', 'fa-book-open'],
-                support: ['يحتاجون تثبيت التسميع', 'تقدير «يُعاد» في يومين مختلفين فأكثر خلال آخر 4 أيام دراسية', 'لا تعثّر متكرر في التسميع', 'fa-rotate-right']
+                support: ['يحتاجون تثبيت التسميع', 'تقدير «يُعاد» في يومين مختلفين فأكثر خلال آخر ٤ أيام دراسية', 'لا تعثّر متكرر في التسميع', 'fa-rotate-right']
             };
             const [title, hint, empty, icon] = labels[type];
-            const count = countLabel(list.length, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً');
+            const count = countLabel(list.length, 'طالب واحد', 'طالبان', 'طلاب', 'طالباً').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
             const head = `<div class="gh-head"><span class="gh-icon"><i class="fas ${list.length ? icon : 'fa-circle-check'}" aria-hidden="true"></i></span>
                 <h3 class="gh-title">${title}</h3>${list.length ? `<span class="gh-count" title="${escapeHTML(count)}">${list.length.toLocaleString('ar-SA')}</span>` : ''}</div><p class="gh-hint">${hint}</p>`;
             const rows = list.slice(0, expanded ? list.length : 3).map(row => {
                 const st = row.student, text = generalHomeFollowupText(type, row, settings);
-                return `<div class="gh-row"><div class="gh-main"><div class="gh-name">${escapeHTML(st.name)}</div>
+                return `<div class="gh-row"><div class="gh-main"><div class="gh-name">${escapeHTML(st.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</div>
                     ${type === 'support' ? `<div class="gh-sub">${escapeHTML(text)}</div>`
                         : `<div class="gh-sub">${escapeHTML(generalHomeHalaqaName(st, settings))}</div><span class="gh-tag">${escapeHTML(text)}</span>`}</div>
                     ${type === 'absent' ? generalHomeWhatsapp(st, row.streak) : ''}</div>`;
@@ -6024,7 +6035,7 @@
         function generalPerformancePeriodsHtml(settings, config, period) {
             return [['all', 'المجمع'], ['asr', 'حلقات العصر'], ['maghrib', 'حلقات المغرب']].map(([id, name]) => {
                 const names = id === 'all' ? 'كل الحلقات' : (settings.stages || []).filter(stage => config.periodOf(stage) === id).map(stage => stage.name).join(' و');
-                return `<button type="button" aria-pressed="${period === id}" onclick="setGeneralPerformancePeriod('${id}')">${name}<small>${escapeHTML(names || '—')}</small></button>`;
+                return `<button type="button" aria-pressed="${period === id}" onclick="setGeneralPerformancePeriod('${id}')">${name}<small>${escapeHTML((names || '—').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</small></button>`;
             }).join('');
         }
         function generalPerformanceFootHtml(rows, settings, field, condition) {
@@ -6032,12 +6043,12 @@
                 ? rows.map(({ halaqa, totals }) => {
                     const name = (settings.teachers || []).find(t => t.id === halaqa.teacherId)?.name || 'غير محدد';
                     const teacher = /^الأستاذ(?:\s|$)/.test(name.trim()) ? name.trim() : 'الأستاذ ' + name.trim();
-                    return `<div class="gh-foot-row"><span>${escapeHTML(halaqa.name)} — ${escapeHTML(teacher)}</span><b>${generalPerformancePercent(totals[field])}</b></div>`;
+                    return `<div class="gh-foot-row"><span>${escapeHTML(halaqa.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))} — ${escapeHTML(teacher.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</span><b>${generalPerformancePercent(totals[field])}</b></div>`;
                 }).join('') : '<div class="gh-foot-ok">✓ لا حلقة تحت الحد</div>'}</div>`;
         }
         function generalPerformanceDateLabel(value) {
             const date = schoolCivilDate(value);
-            return `${date.getDate()}/${date.getMonth() + 1}`;
+            return `${date.getDate().toLocaleString('ar-SA')}/${(date.getMonth() + 1).toLocaleString('ar-SA')}`;
         }
         // SVG يدوي؛ إحداثي الأقدم يميناً. المدى الخالي/الإجازة يقطع المسار.
         function generalPerformanceChart(series, kind, width = 640) {
@@ -6090,7 +6101,7 @@
             markup += `<line class="gh-cross" y1="${PT}" y2="${base}" stroke="var(--gh-ink-2)" stroke-dasharray="2 3" opacity="0"/>
                 <circle class="gh-hover-dot" r="5" fill="var(--gh-brand-600)" stroke="var(--gh-surface)" stroke-width="2" opacity="0"/>`;
             if (!series.length) markup += `<text class="gh-axis" x="${W / 2}" y="${H / 2}" text-anchor="middle">—</text>`;
-            return { points, html: `<div class="gh-chart"><svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${weekly ? 'نسبة تحقق هدف الحفظ الجديد أسبوعياً لآخر 8 أسابيع' : 'منحنى نسبة الحضور اليومية لآخر 4 أسابيع'}">${markup}</svg><div class="gh-tip" role="status"></div></div>` };
+            return { points, html: `<div class="gh-chart"><svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${weekly ? 'نسبة تحقق هدف الحفظ الجديد أسبوعياً لآخر ٨ أسابيع' : 'منحنى نسبة الحضور اليومية لآخر ٤ أسابيع'}">${markup}</svg><div class="gh-tip" role="status"></div></div>` };
         }
         function bindGeneralPerformanceTip(card, points) {
             const svg = card.querySelector('svg'), tip = card.querySelector('.gh-tip');
@@ -6167,16 +6178,16 @@
                 window.almahraPrograms.getCurrentSeason(), { stateOf: getAttendanceState, startOf: generalAttendanceStart, measure: measureEntry, schoolDayInfo: getSchoolDayInfo });
             document.getElementById('generalPerformancePeriods').innerHTML = generalPerformancePeriodsHtml(settings, config, period);
             const attendance = document.getElementById('generalAttendanceCard'), achievement = document.getElementById('generalAchievementCard');
-            attendance.innerHTML = `<div class="gh-kpi-label">نسبة الحضور · آخر 4 أيام دراسية</div><div class="gh-kpi-row">
+            attendance.innerHTML = `<div class="gh-kpi-label">نسبة الحضور · آخر ٤ أيام دراسية</div><div class="gh-kpi-row">
                 <span class="gh-kpi-value">${generalPerformancePercent(model.current.attendancePct)}</span>
                 ${generalPerformanceDeltaHtml(model.attendanceDelta, model.previous.attendancePct)}</div><div id="generalAttendanceChart"></div>
-                <p class="gh-chart-note">آخر 4 أسابيع دراسية · اليوم قيد التسجيل ولا يدخل الحساب حتى ينتهي</p>
+                <p class="gh-chart-note">آخر ٤ أسابيع دراسية · اليوم قيد التسجيل ولا يدخل الحساب حتى ينتهي</p>
                 ${generalPerformanceFootHtml(model.followup.attendance, settings, 'attendancePct', 'حضورها أقل من ' + generalPerformancePercent(config.limits.attendancePct))}`;
-            achievement.innerHTML = `<div class="gh-kpi-label">إنجاز الحفظ الجديد · آخر 4 أيام دراسية</div><div class="gh-kpi-row">
+            achievement.innerHTML = `<div class="gh-kpi-label">إنجاز الحفظ الجديد · آخر ٤ أيام دراسية</div><div class="gh-kpi-row">
                 <span class="gh-kpi-value">${generalPerformancePercent(model.current.newPct)}</span><span class="gh-kpi-unit">من الهدف</span>
                 ${generalPerformanceDeltaHtml(model.achievementDelta, model.previous.newPct)}</div>
                 <div class="gh-kpi-sub">${model.current.newPct === null ? '—' : 'حفظوا ' + generalPerformanceNumber(model.current.raw) + ' أوجه من هدف ' + generalPerformanceNumber(model.current.goal)}</div><div id="generalAchievementChart"></div>
-                <p class="gh-chart-note">نسبة تحقق الهدف أسبوعياً لآخر 8 أسابيع · الغائب لا يُحسب عليه · «يُعاد» لا يُحسب</p>
+                <p class="gh-chart-note">نسبة تحقق الهدف أسبوعياً لآخر ٨ أسابيع · الغائب لا يُحسب عليه · «يُعاد» لا يُحسب</p>
                 ${generalPerformanceFootHtml(model.followup.achievement, settings, 'newPct', 'إنجازها أقل من ' + generalPerformancePercent(config.limits.newPct) + ' من الهدف')}`;
             // كل عرض/تحديث أو تبديل فترة يحسب من جديد؛ اللقطة مخصصة لتغيير أبعاد الرسم فقط.
             section.generalPerformanceSnapshot = { model, context, period, today: todayStr };
@@ -6190,8 +6201,13 @@
             const visible = !window.almahraPrograms.isCurrentSeasonArchived() && isSeasonCalendarComplete();
             if (card) {
                 card.style.display = visible ? '' : 'none';
+                const pastDays = visible ? getGeneralUnrecordedDays().filter(day => day.dateStr !== todayStr).reverse() : [];
                 card.innerHTML = visible ? generalTodayCardHtml(generalTodaySummary(students, todayStr, settings,
-                    getSchoolDayInfo(todayStr), getAttendanceState, generalAttendanceStart)) : '';
+                    getSchoolDayInfo(todayStr), getAttendanceState, generalAttendanceStart), pastDays) : '';
+                // التاريخ في الذاكرة فقط، كما في أزرار الحلقات.
+                card.querySelectorAll('[data-past-index]').forEach((button, i) => {
+                    button.onclick = () => openGeneralAbsenceModal(pastDays[i].dateStr);
+                });
             }
             const context = window.almahraPrograms.getCurrentSeasonId();
             if (generalHomeExpanded.context !== context) generalHomeExpanded = { context, stalled: false, support: false };
@@ -6207,17 +6223,25 @@
             renderGeneralPerformance();
         }
 
-        function renderHomeDashboard() {
-            const box = document.getElementById('homeDashboard');
-            if (!box) return;
-            const general = isGeneralProgram();
+        function updateHomeProgramVisibility() {
+            const known = !!window.almahraPrograms?.getCurrentProgram();
+            const general = known && isGeneralProgram();
+            document.getElementById('page-home')?.classList.toggle('home-ready', known);
             document.getElementById('page-home')?.classList.toggle('general-home', general);
-            for (const id of ['homeVerse', 'homeDashboard', 'homeLead']) {
+            for (const id of ['homeVerse', 'homeDashboard', 'homeLead', 'homeExtras']) {
                 const el = document.getElementById(id);
-                if (el) el.style.display = general ? 'none' : '';
+                if (el) el.style.display = !known || general ? 'none' : '';
             }
             const generalHome = document.getElementById('generalHome');
             if (generalHome) generalHome.style.display = general ? '' : 'none';
+            return known;
+        }
+
+        function renderHomeDashboard() {
+            const box = document.getElementById('homeDashboard');
+            if (!box) return;
+            if (!updateHomeProgramVisibility()) return;
+            const general = isGeneralProgram();
             if (general) {
                 const extras = document.getElementById('homeExtras');
                 if (extras) extras.style.display = 'none';
@@ -6963,8 +6987,8 @@
         function generalStudentsCardHtml(student) {
             const state = generalCardTodayState(student, todayStr);
             return `<article class="gs-card${state.hasEntries ? ' is-done' : ''}">
-                <div class="gs-card-top"><span class="gs-number">${escapeHTML(String(student.id))}</span><span class="gs-state gs-${state.cardState}">${state.label}</span></div>
-                <h3 class="gs-name">${escapeHTML(student.name)}</h3>
+                <div class="gs-card-top"><span class="gs-number">${escapeHTML(String(student.id).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</span><span class="gs-state gs-${state.cardState}">${state.label}</span></div>
+                <h3 class="gs-name">${escapeHTML(student.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}</h3>
                 <div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div>
             </article>`;
         }
@@ -6976,7 +7000,7 @@
             // معرّف الحلقة يبقى في الذاكرة؛ لا يُحقن داخل شيفرة onclick.
             const chipRows = [{ id: '', name: 'كل الحلقات', count: students.length }, ...halaqas.filter(h => h.active === true)
                 .map(h => ({ ...h, count: students.filter(s => s.halaqaId === h.id).length }))];
-            chips.innerHTML = chipRows.map((h, i) => `<button type="button" aria-pressed="${h.id === generalStudentsHalaqa}" data-index="${i}">${escapeHTML(h.name)} <small>${h.count.toLocaleString('ar-SA')}</small></button>`).join('');
+            chips.innerHTML = chipRows.map((h, i) => `<button type="button" aria-pressed="${h.id === generalStudentsHalaqa}" data-index="${i}">${escapeHTML(h.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))} <small>${h.count.toLocaleString('ar-SA')}</small></button>`).join('');
             chips.querySelectorAll('button').forEach((button, i) => { button.onclick = () => selectGeneralStudentsHalaqa(chipRows[i].id); });
             const matches = generalStudentsMatching(students, query, generalStudentsHalaqa);
             const groups = halaqas.map(halaqa => ({ halaqa, list: matches.filter(s => s.halaqaId === halaqa.id) }));
@@ -6989,7 +7013,7 @@
                 const count = halaqa?.active === true ? (school.isSchoolDay
                     ? generalHalaqaTodayText(generalHalaqaTodayCounts(students, halaqa.id, todayStr, settings))
                     : school.reason === 'holiday' ? 'إجازة' : 'غير دراسي') : 'بلا حلقة نشطة';
-                return `<section class="gs-group"><div class="gs-group-head"><h2>${escapeHTML(name)}${halaqa ? ' · ' + escapeHTML(teacherName) : ''}</h2><span>${count}</span></div><div class="gs-cards">${[...list].sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(generalStudentsCardHtml).join('')}</div></section>`;
+                return `<section class="gs-group"><div class="gs-group-head"><h2>${escapeHTML(name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]))}${halaqa ? ' · ' + escapeHTML(teacherName.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])) : ''}</h2><span>${count}</span></div><div class="gs-cards">${[...list].sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(generalStudentsCardHtml).join('')}</div></section>`;
             }).join('') || '<p class="gs-empty">لا يوجد طلاب مطابقون للبحث</p>';
         }
         function renderStudentsGrid() {
@@ -7918,7 +7942,7 @@
                                onchange="updateCriteriaTotal()">
                         <span class="font-bold text-slate-700">${escapeHTML(c.name)}</span>
                     </div>
-                    <span class="font-black shrink-0 ${neg ? 'text-red-600' : 'text-emerald-600'}">${neg ? '' : '+'}${c.points}</span>
+                    <span class="font-black shrink-0 ${neg ? 'text-red-600' : 'text-emerald-600'}">${neg ? '' : '+'}${isGeneralProgram() ? c.points.toLocaleString('ar-SA') : c.points}</span>
                 </label>`;
             };
 
@@ -7943,7 +7967,7 @@
             });
             const el = document.getElementById('criteriaTotal');
             if (el) {
-                el.textContent = total;
+                el.textContent = isGeneralProgram() ? total.toLocaleString('ar-SA') : total;
                 el.className = total < 0
                     ? 'text-3xl font-black text-red-600 mr-2'
                     : 'text-3xl font-black text-amber-600 mr-2';
@@ -8532,11 +8556,11 @@
             const celModal = document.getElementById('knightCelebrationModal');
             document.getElementById('celebrationTitle').innerText = savedSummary || 'حُفظ الحضور فقط';
             document.getElementById('celebrationName').innerText = escapeHTML(student.name);
-            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded} نقطة جديدة مضافة للسباق 🎁`;
+            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded.toLocaleString('ar-SA')} نقطة جديدة مضافة للسباق 🎁`;
             const totalEl = document.getElementById('celebrationTotalPointsContainer');
             if (totalEl) {
-                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints} نقطة`;
-                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank}`;
+                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints.toLocaleString('ar-SA')} نقطة`;
+                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank.toLocaleString('ar-SA')}`;
                 document.getElementById('celebrationRank').classList.toggle('hidden', getGeneralCelebrationRank(student) === null);
                 totalEl.classList.remove('hidden');
             }
@@ -9755,7 +9779,7 @@
                 const current = id === currentId;
                 return `<button type="button" role="menuitem" class="${current ? 'current' : ''}" onclick="selectProgramFromSwitcher('${id}')">
                     <span class="program-switcher-check" aria-hidden="true">${current ? '✓' : ''}</span>
-                    <span>${escapeHTML(program.name)}<small>${escapeHTML(season?.name || 'موسم جديد')}</small></span>
+                    <span>${escapeHTML(isGeneralProgram() ? program.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : program.name)}<small>${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : season?.name || 'موسم جديد')}</small></span>
                 </button>`;
             }).join('');
         }
@@ -9860,6 +9884,8 @@
             }
         }
 
+        window.addEventListener('almahra-program-changed', updateHomeProgramVisibility);
+
         function openProgram(programId) {
             if (!window.almahraPrograms) return;
             const ok = window.almahraPrograms.openProgram(programId);
@@ -9888,7 +9914,7 @@
                 if (!badge) return;
                 if (prog) {
                     const archiveTag = isArchived ? ' <span style="background:#e2e8f0;color:#475569;padding:1px 6px;border-radius:6px;font-size:10px;">📦 أرشيف</span>' : '';
-                    badge.innerHTML = `<span class="program-switcher-text"><b>${escapeHTML(prog.name)}</b><span class="program-switcher-season">${escapeHTML(season?.name || 'موسم جديد')}</span></span>${archiveTag}<span class="program-switcher-caret" aria-hidden="true">⌄</span>`;
+                    badge.innerHTML = `<span class="program-switcher-text"><b>${escapeHTML(isGeneralProgram() ? prog.name.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : prog.name)}</b><span class="program-switcher-season">${escapeHTML(isGeneralProgram() ? (season?.name || 'موسم جديد').replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : season?.name || 'موسم جديد')}</span></span>${archiveTag}<span class="program-switcher-caret" aria-hidden="true">⌄</span>`;
                     badge.style.display = 'flex';
                 } else {
                     badge.style.display = 'none';
