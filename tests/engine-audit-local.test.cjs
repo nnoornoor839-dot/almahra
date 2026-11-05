@@ -49,6 +49,7 @@ function observe(h) {
   }
   return { writes: h.state.writes.length, entries: added(h).map(e => ({ ...e, measured: copy(QuranMeasure.measure({ iv: e.iv ? Array.from({ length: e.iv.length / 2 }, (_, i) => e.iv.slice(i * 2, i * 2 + 2)) : QuranMeasure.specToIntervals({ spec: e.spec }) })) })),
     prompts: copy(h.state.prompts), messages: copy(h.state.messages), preview: h.element('generalQuickPreview').textContent,
+    fieldMessages: Object.fromEntries(['new', 'review'].map(kind => [kind, h.element(`quick_${kind}_message`).textContent])),
     celebration: h.state.confetti ? h.element('celebrationPoints').innerText : null,
     modalOpen: h.element('smartModal').classList.contains('flex'), ...snap };
 }
@@ -123,7 +124,7 @@ async function main() {
     for (const kind of ['new', 'review']) for (const [name, from, to] of [['reverse-ayah', [s, 20], [s, 10]], ['reverse-surah', [s, 1], [nextS(s, dir === 'up' ? 'down' : 'up'), 1]]]) {
       await check(`reverse/${dir}/${kind}/${name}`, 'CONTROL', 'المقطع المقلوب يُرفض مع ذكر القسم', async () => {
         const h = open(fixture(dir, 'legacy', 19)); setRange(h, kind, from, to); h.grade(kind, 'excellent'); return save(h);
-      }, a => { noWrite(a); assert.match(a.messages.at(-1).message, /قبل البداية/); });
+      }, a => { noWrite(a); assert.match(a.fieldMessages[kind], /قبل البداية/); });
     }
     for (const kind of ['new', 'review']) await check(`surah-change/${dir}/${kind}`, 'OBSERVATION', 'تغيير سورة النهاية يفرّغ آيتها', async () => {
       const h = open(fixture(dir)); h.element(`quick_${kind}_toSurah`).value = String(ns); h.run(`quickSurahChanged('${kind}', 'to')`);
@@ -174,7 +175,7 @@ async function main() {
     }, a => { assert.deepEqual(a.once.frontier, point(s, 30)); assert.deepEqual(a.twice.frontier, point(s, 20)); assert.equal(Object.keys(a.st.history[today].entries).length, 1); assert.equal(a.st.history[today].attended, true); assert.equal(a.st.history[today].criteriaPoints, 8); });
     for (const bad of ['blank', 'over', 'reversed']) await check(`message/${dir}/${bad}`, 'F14', 'رسالة الخطأ تحدد هل الآية فارغة أو خارج السورة أو النهاية قبل البداية، مع ذكر الاتجاه عند الحاجة', async () => {
       const h = open(fixture(dir, 'legacy', 19)); setRange(h, 'new', [s, 20], [s, bad === 'blank' ? '' : bad === 'over' ? 999 : 10]); h.grade('new', 'excellent'); return save(h);
-    }, a => { noWrite(a); assert.match(a.messages.at(-1).message, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });
+    }, a => { noWrite(a); assert.match(a.fieldMessages.new, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });
     await check(`undo-legacy/${dir}`, 'F05', 'طالب قديم بلا frontierBase: التراجع عن آخر جديد يرجع إلى موضعه المسجّل 10', async () => {
       const st = fixture(dir, 'legacy', 10); st.history[today].entries.n = entry('new', [s, 11], [s, 20], 'excellent', 100);
       const h = open(st); await h.run('undoLastGeneralEntry()'); return { ...observe(h), student: copy(st) };

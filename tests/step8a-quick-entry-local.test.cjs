@@ -118,7 +118,7 @@ test('second grade click retains selection; explicit clear resets section; unuse
     h.run("clearGeneralQuickSection('new')"); h.preview(); await h.save();
     assert.equal(savedEntries(h).length, 0); assert.equal(h.s.history[today].attended, true);
     assert.equal(('history.' + today + '.criteria') in h.state.writes[0].fields, false);
-    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ الحضور فقط');
+    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: الحضور فقط');
     const changed = harness(); changed.run('fulfillGeneralCriteria()'); const p = changed.preview(); await changed.save();
     assert.equal(savedEntries(changed).length, 0); assert.equal(changed.s.history[today].criteriaPoints, 8);
     assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);
@@ -135,7 +135,7 @@ test('new-row correction and after hint share a separate row outside the start f
     for (const fixture of [student(), rawStudent()]) {
         const h = harness(fixture), markup = h.element('generalQuickPanels').innerHTML;
         const newRow = markup.match(/<section id="quick_new_row"[^>]*>([\s\S]*?)<\/section>/)[1];
-        const startField = newRow.match(/<div class="qe-field"><label>من 🔒<\/label>([\s\S]*?)<p id="quick_new_start" class="qe-locked"><\/p><\/div>/)[1];
+        const startField = newRow.match(/<div class="qe-field"><label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"><\/i><\/label>([\s\S]*?)<p id="quick_new_start" class="qe-locked"><\/p><\/div>/)[1];
         assert.doesNotMatch(startField, /quick_new_after|openGeneralFrontierFixFromQuick/);
         assert.equal(startField.includes('class="qe-position"'), h.run('generalQuickEntry.needsPosition'));
         assert.match(newRow, /<div class="qe-below"><button type="button" onclick="openGeneralFrontierFixFromQuick\(\)" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع<\/button><p id="quick_new_after" class="qe-hint"><\/p><\/div>\s*<p id="quick_new_message"/);
@@ -228,7 +228,7 @@ test('undo and reopen refresh locked start; frontier movement since open refuses
     const h = harness(student({ a: entry('new', [114, 1], [78, 10]) }));
     h.range('new', null, [78, 15]); h.grade('new'); h.preview();
     h.s.history[today].entries.other = entry('new', [78, 11], [78, 12], 'good', 2);
-    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /تغيّر آخر جديد/);
+    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.element('quick_new_message').textContent, /تغيّر آخر جديد/);
     await h.run('undoLastGeneralEntry()'); assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 78, ayah: 11 });
 });
 

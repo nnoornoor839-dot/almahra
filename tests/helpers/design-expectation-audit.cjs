@@ -26,6 +26,17 @@ function changes(file) {
 const digits = line => line.replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
     .replaceAll('٫', '.').replaceAll("'ar-SA'", "'ar-SA-u-nu-latn'").replaceAll("'ar-SA-u-ca-islamic'", "'ar-SA-u-ca-islamic-nu-latn'")
     .replace("preview.total.toLocaleString('ar-SA-u-nu-latn')", "preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')");
-const ownerText = line => line.replaceAll('أكملهم ←', 'أكمل التسجيل ←')
+const ownerText = (line, round = 1) => round === 2
+    ? line.replace("    const newToast = \"showToast(savedSummary.replace(/^حُفظ: /, `حُفظ ل${student.name}: `) + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";", "    const newToast = \"showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";")
+        .replace('حُفظ: ', 'حُفظ لطالب وهمي: ')
+        .replace('حُفظ موضع الطالب', 'حُفظ لطالب وهمي: موضع الطالب')
+        .replace('حُفظ الحضور فقط', 'حُفظ لطالب وهمي: الحضور فقط')
+        .replace('حُفظ الحضور، والانضباط ٨', 'حُفظ لطالب وهمي: الحضور، والانضباط 8')
+        .replace("h.element('generalQuickSaveBtn').textContent,/Enter/", "h.element('generalQuickSaveBtn').innerHTML,/<small>Enter ↵<\\/small>/")
+        .replace('a.messages.at(-1).message, /قبل البداية/', 'a.fieldMessages[kind], /قبل البداية/')
+        .replace("a.messages.at(-1).message, bad === 'blank'", "a.fieldMessages.new, bad === 'blank'")
+        .replace('h.state.messages.at(-1).message, /تغيّر آخر جديد/', "h.element('quick_new_message').textContent, /تغيّر آخر جديد/")
+        .replace('<label>من 🔒<\\/label>', '<label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"><\\/i><\\/label>')
+    : line.replaceAll('أكملهم ←', 'أكمل التسجيل ←')
     .replace('>⌄/', '><i class="fas fa-caret-down"><\\/i>/');
 module.exports = { root, baseline, changes, digits, ownerText };

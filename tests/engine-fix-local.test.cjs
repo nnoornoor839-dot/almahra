@@ -41,7 +41,7 @@ for (const initial of [null, [78,20]]) for (const withSection of [false,true]) t
     assert.equal(h.run('hasGeneralAcceptedNew(students[0])'), true);
     const end = withSection ? initial ? [78,25] : [114,6] : initial;
     assert.deepEqual(copy(h.run('computeFrontier(students[0])')), end ? { surah:end[0], ayah:end[1] } : null);
-    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ: الجديد/ : /حُفظ موضع الطالب/);
+    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ لطالب وهمي: الجديد/ : /حُفظ لطالب وهمي: موضع الطالب/);
 });
 
 test('position alone preserves today absence, reason and note; preview includes the position actually saved', async () => {
@@ -54,7 +54,7 @@ test('position alone preserves today absence, reason and note; preview includes 
         await h.save();
         assert.deepEqual(Object.keys(h.state.writes[0].fields), ['frontierFix']);
         assert.deepEqual(h.s.history[today], day);
-        assert.equal(h.state.messages.at(-1).message, 'حُفظ موضع الطالب');
+        assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: موضع الطالب');
     }
 });
 
@@ -216,7 +216,7 @@ test('summary, discipline disclosure, success, Enter and button share real calcu
     h.ctx.key={key:'Enter',target:{tagName:'INPUT'},preventDefault(){h.state.prevented=true;}};
     h.run('generalQuickKeydown(key)'); await new Promise(resolve=>setImmediate(resolve));
     assert.equal(h.state.prevented,true); assert.equal(h.state.writes.length,1);
-    assert.match(h.state.messages.at(-1).message,/حُفظ: الجديد:.*، والمراجعة:/);
+    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الجديد:.*، والمراجعة:/);
     assert.equal(savedEntries(h).length,2);
 });
 
@@ -231,10 +231,10 @@ test('review pointer skips repeat and orders dates before at, then cycles at fro
 
 test('discipline-only success names the discipline actually saved; Enter hint survives undo-button refresh', async () => {
     const h=harness(known()); h.run('fulfillGeneralCriteria()'); h.preview();
-    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').textContent,/Enter/);
+    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').innerHTML,/<small>Enter ↵<\/small>/);
     await h.save(); assert.equal(h.state.writes.length,1); assert.equal(savedEntries(h).length,0);
     assert.equal(h.state.writes[0].fields['history.'+today+'.criteriaPoints'],8);
-    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط 8/);
+    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الحضور، والانضباط 8/);
     assert.doesNotMatch(h.state.messages.at(-1).message,/الحضور فقط/);
 });
 

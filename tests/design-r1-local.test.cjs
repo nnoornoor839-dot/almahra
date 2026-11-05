@@ -111,7 +111,12 @@ test('design r1: historical Arabic hijri is converted at display only; export an
 test('design r2: every expectation edit has an exact reviewed diff and owner-approved category', () => {
     const { changes, digits, ownerText } = require('./helpers/design-expectation-audit.cjs');
     const audit = require('./rules/design-expectation-audit.json');
-    const names = cp.execFileSync('git', ['diff', '--name-only', '--', 'tests'], { cwd: root, encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
+    const designFiles = ['tests/design-r1-local.test.cjs', 'tests/design-r2-local.test.cjs',
+        'tests/helpers/design-expectation-audit.cjs', 'tests/rules/design-expectation-audit.json'];
+    const baselineDesignFiles = cp.execFileSync('git', ['ls-tree', '-r', '--name-only', '82bf19f', '--', ...designFiles],
+        { cwd: root, encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
+    const names = cp.execFileSync('git', ['diff', '--name-only', '82bf19f', '--', 'tests'], { cwd: root, encoding: 'utf8' })
+        .trim().split(/\r?\n/).filter(Boolean).filter(file => !designFiles.includes(file) || baselineDesignFiles.includes(file));
     assert.deepEqual(names.sort(), audit.files.map(row => row.file).sort(), 'all edited tracked test files are audited');
     for (const file of audit.files) {
         assert.deepEqual(changes(file.file), file, file.file);
@@ -120,12 +125,16 @@ test('design r2: every expectation edit has an exact reviewed diff and owner-app
         }
     }
     for (const row of audit.expectations) {
-        assert.ok([1, 2, 3].includes(row.category), `${row.file}:${row.newLine}`);
+        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);
         if (row.category === 1 && !row.policy) {
             const normalized = digits(row.before).replaceAll('103.5/', '103\\.5/').replaceAll('22.5 نقطة/', '22\\.5 نقطة/');
             assert.equal(row.after, normalized, 'same values and precision, changed numeral representation only');
         } else if (row.category === 2) assert.equal(row.after, ownerText(row.before));
         else if (row.category === 3) assert.ok(row.valuesBefore.length && row.valuesAfter.length, 'structural changes document both sets of values');
+        else if (row.category === 4) {
+            assert.notEqual(row.after, row.before, 'round two owner text must change');
+            assert.equal(row.after, ownerText(row.before, 2), 'only the approved round two success prefix, lock markup or inline error location changes');
+        }
     }
     assert.ok(audit.expectations.length > 0);
 });

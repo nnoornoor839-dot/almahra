@@ -191,7 +191,7 @@ test('missed save writes only selected date with frozen context, exact preview a
     assert.deepEqual(h.state.calendar, season); assert.equal(h.state.knightWrites, 0); assert.equal(h.s.lastDailySurah, 114); assert.equal(h.s.lastDailyAyah, 6);
     const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date('2026-11-01T12:00:00'));
     assert.equal(fields['history.2026-11-01.hijri'], hijri);
-    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ: الجديد.*المراجعة.*على يوم الأحد/);
+    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ لطالب وهمي: الجديد.*المراجعة.*على يوم الأحد/);
     assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد 01-11. متابعة؟']);
 });
 

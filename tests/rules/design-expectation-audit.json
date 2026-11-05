@@ -3,7 +3,8 @@
   "categories": {
     "1": "تحويل أرقام فقط",
     "2": "نص بقرار المالك",
-    "3": "بنية HTML جديدة"
+    "3": "بنية HTML جديدة",
+    "4": "نص بقرار المالك في الجولة الثانية"
   },
   "files": [
     {
@@ -52,8 +53,51 @@
       ]
     },
     {
+      "file": "tests/engine-audit-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 52,
+          "newLine": 52,
+          "before": [],
+          "after": [
+            "    fieldMessages: Object.fromEntries(['new', 'review'].map(kind => [kind, h.element(`quick_${kind}_message`).textContent])),"
+          ]
+        },
+        {
+          "oldLine": 126,
+          "newLine": 127,
+          "before": [
+            "      }, a => { noWrite(a); assert.match(a.messages.at(-1).message, /قبل البداية/); });"
+          ],
+          "after": [
+            "      }, a => { noWrite(a); assert.match(a.fieldMessages[kind], /قبل البداية/); });"
+          ]
+        },
+        {
+          "oldLine": 177,
+          "newLine": 178,
+          "before": [
+            "    }, a => { noWrite(a); assert.match(a.messages.at(-1).message, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });"
+          ],
+          "after": [
+            "    }, a => { noWrite(a); assert.match(a.fieldMessages.new, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });"
+          ]
+        }
+      ]
+    },
+    {
       "file": "tests/engine-fix-local.test.cjs",
       "hunks": [
+        {
+          "oldLine": 44,
+          "newLine": 44,
+          "before": [
+            "    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ: الجديد/ : /حُفظ موضع الطالب/);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ لطالب وهمي: الجديد/ : /حُفظ لطالب وهمي: موضع الطالب/);"
+          ]
+        },
         {
           "oldLine": 53,
           "newLine": 53,
@@ -62,6 +106,16 @@
           ],
           "after": [
             "            ? /الموضع: آخر آية حفظها النبأ 20/ : /الموضع: لم يحفظ شيئاً بعد/);"
+          ]
+        },
+        {
+          "oldLine": 57,
+          "newLine": 57,
+          "before": [
+            "        assert.equal(h.state.messages.at(-1).message, 'حُفظ موضع الطالب');"
+          ],
+          "after": [
+            "        assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: موضع الطالب');"
           ]
         },
         {
@@ -125,13 +179,33 @@
           ]
         },
         {
+          "oldLine": 219,
+          "newLine": 219,
+          "before": [
+            "    assert.match(h.state.messages.at(-1).message,/حُفظ: الجديد:.*، والمراجعة:/);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الجديد:.*، والمراجعة:/);"
+          ]
+        },
+        {
+          "oldLine": 234,
+          "newLine": 234,
+          "before": [
+            "    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').textContent,/Enter/);"
+          ],
+          "after": [
+            "    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').innerHTML,/<small>Enter ↵<\\/small>/);"
+          ]
+        },
+        {
           "oldLine": 237,
           "newLine": 237,
           "before": [
             "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط ٨/);"
           ],
           "after": [
-            "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط 8/);"
+            "    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الحضور، والانضباط 8/);"
           ]
         }
       ]
@@ -434,6 +508,36 @@
           "after": [
             "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ 20/);"
           ]
+        },
+        {
+          "oldLine": 121,
+          "newLine": 121,
+          "before": [
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ الحضور فقط');"
+          ],
+          "after": [
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: الحضور فقط');"
+          ]
+        },
+        {
+          "oldLine": 138,
+          "newLine": 138,
+          "before": [
+            "        const startField = newRow.match(/<div class=\"qe-field\"><label>من 🔒<\\/label>([\\s\\S]*?)<p id=\"quick_new_start\" class=\"qe-locked\"><\\/p><\\/div>/)[1];"
+          ],
+          "after": [
+            "        const startField = newRow.match(/<div class=\"qe-field\"><label>من <i class=\"fas fa-lock qe-lock-icon\" aria-hidden=\"true\"><\\/i><\\/label>([\\s\\S]*?)<p id=\"quick_new_start\" class=\"qe-locked\"><\\/p><\\/div>/)[1];"
+          ]
+        },
+        {
+          "oldLine": 231,
+          "newLine": 231,
+          "before": [
+            "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /تغيّر آخر جديد/);"
+          ],
+          "after": [
+            "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.element('quick_new_message').textContent, /تغيّر آخر جديد/);"
+          ]
         }
       ]
     },
@@ -461,12 +565,14 @@
           ]
         },
         {
-          "oldLine": 195,
-          "newLine": 195,
+          "oldLine": 194,
+          "newLine": 194,
           "before": [
+            "    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ: الجديد.*المراجعة.*على يوم الأحد/);",
             "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد ٠١-١١. متابعة؟']);"
           ],
           "after": [
+            "    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ لطالب وهمي: الجديد.*المراجعة.*على يوم الأحد/);",
             "    assert.deepEqual(h.state.prompts, ['سيُحفظ على يوم الأحد 01-11. متابعة؟']);"
           ]
         },
@@ -826,6 +932,15 @@
   "expectations": [
     {
       "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 44,
+      "newLine": 44,
+      "category": 4,
+      "before": "    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ: الجديد/ : /حُفظ موضع الطالب/);",
+      "after": "    assert.match(h.state.messages.at(-1).message, withSection ? /حُفظ لطالب وهمي: الجديد/ : /حُفظ لطالب وهمي: موضع الطالب/);",
+      "reason": "قرار المالك، إصلاحا مراجعة Fable للجولة الثانية: إظهار اسم الطالب في كل تأكيد حفظ؛ دون تغيير القيم أو سلوك الحفظ والتراجع."
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
       "oldLine": 64,
       "newLine": 64,
       "category": 1,
@@ -874,11 +989,20 @@
     },
     {
       "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 219,
+      "newLine": 219,
+      "category": 4,
+      "before": "    assert.match(h.state.messages.at(-1).message,/حُفظ: الجديد:.*، والمراجعة:/);",
+      "after": "    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الجديد:.*، والمراجعة:/);"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
       "oldLine": 237,
       "newLine": 237,
-      "category": 1,
+      "category": 4,
       "before": "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط ٨/);",
-      "after": "    assert.match(h.state.messages.at(-1).message,/حُفظ الحضور، والانضباط 8/);"
+      "after": "    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الحضور، والانضباط 8/);",
+      "reason": "قرار المالك، إصلاحا مراجعة Fable للجولة الثانية: إظهار اسم الطالب في كل تأكيد حفظ؛ دون تغيير القيم أو سلوك الحفظ والتراجع."
     },
     {
       "file": "tests/home-local.test.cjs",
@@ -1144,6 +1268,14 @@
       "after": "        if (end > 20) assert.match(h.element('quick_review_message').textContent, /المراجعة تتعدّى محفوظه.*النبأ 20/);"
     },
     {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 138,
+      "newLine": 138,
+      "category": 4,
+      "before": "        const startField = newRow.match(/<div class=\"qe-field\"><label>من 🔒<\\/label>([\\s\\S]*?)<p id=\"quick_new_start\" class=\"qe-locked\"><\\/p><\\/div>/)[1];",
+      "after": "        const startField = newRow.match(/<div class=\"qe-field\"><label>من <i class=\"fas fa-lock qe-lock-icon\" aria-hidden=\"true\"><\\/i><\\/label>([\\s\\S]*?)<p id=\"quick_new_start\" class=\"qe-locked\"><\\/p><\\/div>/)[1];"
+    },
+    {
       "file": "tests/step8b-fix-missed-local.test.cjs",
       "oldLine": 136,
       "newLine": 136,
@@ -1158,6 +1290,14 @@
       "category": 1,
       "before": "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد ٠١-١١');",
       "after": "    assert.equal(h.element('generalMissedLabel').textContent, 'تسجيل على يوم الأحد 01-11');"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 194,
+      "newLine": 194,
+      "category": 4,
+      "before": "    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ: الجديد.*المراجعة.*على يوم الأحد/);",
+      "after": "    assert.equal(h.state.confetti, 0); assert.match(h.state.messages.at(-1).message, /حُفظ لطالب وهمي: الجديد.*المراجعة.*على يوم الأحد/);"
     },
     {
       "file": "tests/step8b-fix-missed-local.test.cjs",
@@ -1524,6 +1664,69 @@
       "category": 1,
       "before": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: ١/);",
       "after": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
+    },
+    {
+      "file": "tests/engine-audit-local.test.cjs",
+      "oldLine": 126,
+      "newLine": 127,
+      "category": 4,
+      "before": "      }, a => { noWrite(a); assert.match(a.messages.at(-1).message, /قبل البداية/); });",
+      "after": "      }, a => { noWrite(a); assert.match(a.fieldMessages[kind], /قبل البداية/); });",
+      "reason": "قرار المالك، الاتجاه البند ٨، ٢٠٢٦-١١-٠٥: الخطأ بجانب الخانة لا في رسالتين؛ فحص رسالة الصف بدلاً من الشريط"
+    },
+    {
+      "file": "tests/engine-audit-local.test.cjs",
+      "oldLine": 177,
+      "newLine": 178,
+      "category": 4,
+      "before": "    }, a => { noWrite(a); assert.match(a.messages.at(-1).message, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });",
+      "after": "    }, a => { noWrite(a); assert.match(a.fieldMessages.new, bad === 'blank' ? /آية النهاية فارغة/ : bad === 'over' ? /فيها.*آية/ : /قبل البداية.*ترتيب حفظه/); });",
+      "reason": "قرار المالك، الاتجاه البند ٨، ٢٠٢٦-١١-٠٥: الخطأ بجانب الخانة لا في رسالتين؛ فحص رسالة الصف بدلاً من الشريط"
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 231,
+      "newLine": 231,
+      "category": 4,
+      "before": "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /تغيّر آخر جديد/);",
+      "after": "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.element('quick_new_message').textContent, /تغيّر آخر جديد/);",
+      "reason": "قرار المالك، الاتجاه البند ٨، ٢٠٢٦-١١-٠٥: الخطأ بجانب الخانة لا في رسالتين؛ فحص رسالة الصف بدلاً من الشريط"
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 57,
+      "newLine": 57,
+      "before": "        assert.equal(h.state.messages.at(-1).message, 'حُفظ موضع الطالب');",
+      "category": 4,
+      "after": "        assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: موضع الطالب');",
+      "reason": "قرار المالك، إصلاحا مراجعة Fable للجولة الثانية: إظهار اسم الطالب في كل تأكيد حفظ؛ دون تغيير القيم أو سلوك الحفظ والتراجع."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 121,
+      "newLine": 121,
+      "before": "    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ الحضور فقط');",
+      "category": 4,
+      "after": "    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: الحضور فقط');",
+      "reason": "قرار المالك، إصلاحا مراجعة Fable للجولة الثانية: إظهار اسم الطالب في كل تأكيد حفظ؛ دون تغيير القيم أو سلوك الحفظ والتراجع."
+    },
+    {
+      "file": "tests/engine-fix-local.test.cjs",
+      "oldLine": 234,
+      "newLine": 234,
+      "category": 4,
+      "before": "    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').textContent,/Enter/);",
+      "after": "    h.run('updateGeneralUndoButton()'); assert.match(h.element('generalQuickSaveBtn').innerHTML,/<small>Enter ↵<\\/small>/);",
+      "reason": "قرار المالك، إصلاح زر الحفظ في الجولة الثانية: فحص بنية <small>Enter ↵</small> المطابقة للقالب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 22,
+      "newLine": 22,
+      "category": 4,
+      "before": "    const newToast = \"showToast(savedSummary.replace(/^حُفظ: /, `حُفظ ل${student.name}: `) + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";",
+      "after": "    const newToast = \"showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";",
+      "reason": "قرار المالك، إصلاح تأكيدات الجولة الثانية: تحديث النص المرجعي لمصدر الدالة ليضيف الاسم في صيغ الملخص الأربع فقط."
     }
   ],
   "ownerScopeEdits": [

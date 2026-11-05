@@ -1102,6 +1102,82 @@ body.program-general > nav .nav-btn.active::before { content:''; position:absolu
 }
 
 </style>
+<style id="general-quick-design">
+/* Approved general quick entry: presentation only; legacy modal rules stay intact. */
+body.program-general #smartModal.smart-general { background:rgb(24 36 29 / 48%); backdrop-filter:none; }
+body.program-general .smart-general > div { max-width:1152px; color:var(--general-ink); background:var(--general-surface); border-color:var(--general-line); border-radius:var(--general-radius-lg); box-shadow:0 24px 80px #14291c33; }
+body.program-general .smart-general .qe-head { border-color:var(--general-line); }
+body.program-general .smart-general .qe-close { color:var(--general-muted); border-color:var(--general-line); background:transparent; font-weight:400; }
+body.program-general .smart-general .qe-who strong { font-weight:700; }
+body.program-general .smart-general .qe-who span,
+body.program-general .smart-general .qe-field > label { color:var(--general-muted); }
+body.program-general .smart-general #generalMissedDayBtn { background:var(--general-surface); color:var(--general-muted); border-color:var(--general-line); border-radius:var(--general-radius-sm); min-height:44px; }
+body.program-general .smart-general #generalMissedDays { background:var(--general-surface); color:var(--general-ink); border-color:var(--general-line); }
+body.program-general .smart-general .qe-row { border:0; border-radius:0; background:transparent; }
+body.program-general .smart-general .qe-row + .qe-row { border-top:1px solid var(--general-line); }
+body.program-general .smart-general .qe-row.qe-used { background:color-mix(in srgb, var(--general-soft) 45%, white); }
+body.program-general .smart-general .qe-row h3 { font-size:18px; font-weight:700; }
+body.program-general .smart-general .qe-pair { grid-template-columns:minmax(0, 1fr) 72px; gap:8px; }
+body.program-general .smart-general .qe-pair input,
+body.program-general .smart-general .qe-pair select { height:44px; border:1px solid var(--general-line); border-radius:var(--general-radius-sm); background:var(--general-surface); color:var(--general-ink); font-weight:400; }
+body.program-general .smart-general .qe-pair select { font-size:16px; padding:0 12px; }
+body.program-general .smart-general .qe-pair input { min-width:64px; font-size:18px; padding:0 4px; font-variant-numeric:tabular-nums; }
+body.program-general .smart-general .qe-pair input::placeholder { color:var(--general-muted); opacity:.6; font-size:14px; }
+body.program-general .smart-general .qe-locked { height:44px; padding:0; border:0; background:transparent; color:var(--general-muted); font-weight:400; }
+body.program-general .smart-general .qe-lock-icon { font-size:11px; color:var(--general-muted); }
+body.program-general .smart-general .qe-position { background:transparent; border-color:var(--general-pending); }
+body.program-general .smart-general .qe-grades { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:6px; }
+body.program-general .smart-general .qe-grade { position:relative; height:44px; padding:0 5px; white-space:nowrap; font-size:14px; font-weight:600 !important; color:var(--general-ink); background:var(--general-surface); border:1px solid var(--general-line); border-radius:var(--general-radius-sm); }
+body.program-general .smart-general .qe-row:not(.qe-used) .qe-grade { opacity:.48; }
+body.program-general .smart-general .qe-grade[aria-pressed=true] { opacity:1; color:var(--general-surface); background:var(--general-brand); border-color:var(--general-brand); }
+body.program-general .smart-general .qe-grade[aria-pressed=true]::before { content:'✓'; position:absolute; inset-inline-start:4px; }
+body.program-general .smart-general .qe-clear,
+body.program-general .smart-general .qe-fix,
+body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }
+body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }
+body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }
+body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }
+body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }
+body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }
+body.program-general .smart-general .qe-criteria-bar { gap:16px; }
+body.program-general .smart-general .qe-criteria-bar > b { width:80px; font-size:16px; font-weight:700; }
+body.program-general .smart-general #generalCriteriaAllBtn { min-height:44px; border-color:var(--general-pending); color:var(--general-pending); background:var(--general-surface); font-size:14px; font-weight:600; }
+body.program-general .smart-general #generalCriteriaAllBtn[aria-pressed=true] { background:var(--general-pending); color:var(--general-surface); }
+body.program-general .smart-general #generalCriteriaState,
+body.program-general .smart-general #generalCriteriaExceptions { color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .smart-general .qe-summary { min-height:50px; padding:12px 0 16px; border:0; border-radius:0; background:transparent; color:var(--general-muted); font-size:13px; }
+body.program-general .smart-general .qe-summary.qe-error { color:var(--general-below-limit); background:transparent; outline:none !important; }
+body.program-general .smart-general .qe-footer { gap:24px; border-color:var(--general-line); background:var(--general-surface); }
+body.program-general .smart-general .qe-total { min-width:112px !important; gap:8px; }
+body.program-general .smart-general .qe-total strong { color:var(--general-ink); font-size:28px; font-weight:600; font-variant-numeric:tabular-nums; }
+body.program-general .smart-general .qe-total span { color:var(--general-muted); font-size:13px; }
+body.program-general .smart-general #generalQuickSaveBtn { height:52px; border-radius:var(--general-radius-sm); background:var(--general-brand); color:var(--general-surface); font-size:18px; font-weight:700; }
+body.program-general .smart-general #generalQuickSaveBtn small { display:inline-block; margin-inline-start:12px; font-size:12px; font-weight:400; direction:ltr; }
+body.program-general .smart-general #smartUndoBtn { border-color:var(--general-line); color:var(--general-muted); background:var(--general-surface); font-size:11px; font-weight:400; }
+body.program-general .smart-general #smartUndoBtn:disabled { opacity:.55; }
+body.program-general #toastMessage.bg-emerald-600 { top:148px; left:max(24px, calc((100vw - 1152px) / 2)); transform:none; max-width:calc(100vw - 48px); padding:14px 20px; border:1px solid var(--general-brand); border-radius:var(--general-radius-md); background:var(--general-surface); color:var(--general-brand); font-size:14px; font-weight:400; box-shadow:0 8px 24px #21372b14; }
+body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058'; }
+@media (min-width:1101px) {
+  body.program-general .smart-general .qe-head { height:84px; padding:0 24px; gap:16px; }
+  body.program-general .smart-general .qe-body { padding:0 24px; }
+  body.program-general .smart-general .qe-fields,
+  body.program-general .smart-general #generalQuickPanels { gap:0; }
+  body.program-general .smart-general .qe-row { grid-template-columns:80px minmax(0, 1fr) minmax(0, 1fr) 312px 76px; gap:8px 16px; align-items:start; min-height:148px; padding:24px 0 16px; }
+  body.program-general .smart-general .qe-row h3,
+  body.program-general .smart-general .qe-grades,
+  body.program-general .smart-general .qe-clear { margin-top:27px; min-height:44px; }
+  body.program-general .smart-general .qe-field > label { line-height:21px; margin-bottom:6px; }
+  body.program-general .smart-general .qe-row.qe-used { box-shadow:12px 0 color-mix(in srgb, var(--general-soft) 45%, white), -12px 0 color-mix(in srgb, var(--general-soft) 45%, white); }
+  body.program-general .smart-general .qe-footer { padding:16px 24px; }
+}
+@media (max-width:600px) {
+  body.program-general .smart-general > div { border-radius:0; }
+  body.program-general .smart-general .qe-below { grid-column:1 / -1; }
+  body.program-general .smart-general .qe-pair { grid-template-columns:minmax(0, 1fr) 64px; gap:4px; }
+  body.program-general .smart-general .qe-pair select { font-size:14px; padding:0 3px; }
+  body.program-general .smart-general .qe-footer { gap:8px; }
+}
+</style>
 </head>
 <body class="min-h-screen flex flex-col custom-scroll auth-not-ready">
 
@@ -8455,7 +8531,7 @@ body.program-general > nav .nav-btn.active::before { content:''; position:absolu
             const rangeFields = (kind, edge) => `<div class="qe-field"><label for="quick_${kind}_${edge}Surah">${edge === 'from' ? 'من' : 'إلى'}</label><div class="qe-pair"><select aria-label="سورة ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select><input aria-label="آية ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" placeholder="الآية" oninput="updateGeneralQuickPreview()"></div></div>`;
             document.getElementById('generalQuickPanels').innerHTML = ['new', 'review'].map(kind => `<section id="quick_${kind}_row" class="qe-row qe-${kind}">
                 <h3>${kind === 'new' ? 'الجديد' : 'المراجعة'}</h3>
-                ${kind === 'new' ? `<div class="qe-field"><label>من 🔒</label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p></div>` : rangeFields(kind, 'from')}
+                ${kind === 'new' ? `<div class="qe-field"><label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"></i></label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p></div>` : rangeFields(kind, 'from')}
                 ${rangeFields(kind, 'to')}<div id="quick_${kind}_grades" class="qe-grades" aria-label="تقدير ${kind === 'new' ? 'الجديد' : 'المراجعة'}"></div>
                 <button id="quick_${kind}_clear" type="button" class="qe-clear" onclick="clearGeneralQuickSection('${kind}')">مسح القسم</button>
                 ${kind === 'new' ? '<div class="qe-below"><button type="button" onclick="openGeneralFrontierFixFromQuick()" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع</button><p id="quick_new_after" class="qe-hint"></p></div>' : ''}
@@ -8705,7 +8781,9 @@ body.program-general > nav .nav-btn.active::before { content:''; position:absolu
                 const field = document.getElementById(calculation.errors[0].field);
                 if (field?.id === 'quick_new_start') field.setAttribute('tabindex', '-1');
                 (field?.querySelectorAll('button')[0] || field)?.focus();
-                showToast(calculation.errors.map(e => e.message).join(' · '), 'error'); return;
+                const unplacedErrors = calculation.errors.filter(e => !e.field);
+                if (unplacedErrors.length) showToast(unplacedErrors.map(e => e.message).join(' · '), 'error');
+                return;
             }
             if (generalQuickEntry.needsPosition && !calculation.position.valid) {
                 generalQuickEntry.attempted = true; updateGeneralQuickPreview();
@@ -8766,7 +8844,7 @@ body.program-general > nav .nav-btn.active::before { content:''; position:absolu
                 generalUndoInProgress = false;
                 closeSmartModal();
                 search?.focus();
-                showToast(savedSummary + (missed ? ` — على يوم ${dayName}` : ''), 'success');
+                showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');
                 if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);
                 if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);
             } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }
@@ -9509,7 +9587,8 @@ body.program-general > nav .nav-btn.active::before { content:''; position:absolu
             const quickSave = document.getElementById('generalQuickSaveBtn'), quickFields = document.getElementById('generalQuickFields');
             if (quickSave) {
                 quickSave.disabled = !!generalUndoInProgress || isWriteLockedView();
-                quickSave.textContent = generalUndoInProgress === 'save' ? 'جارٍ الحفظ…' : 'حفظ (Enter ↵)';
+                if (generalUndoInProgress === 'save') quickSave.textContent = 'جارٍ الحفظ…';
+                else quickSave.innerHTML = 'حفظ <small>Enter ↵</small>';
             }
             if (quickFields) quickFields.disabled = !!generalUndoInProgress;
             const row = document.getElementById('smartUndoRow'), button = document.getElementById('smartUndoBtn');
