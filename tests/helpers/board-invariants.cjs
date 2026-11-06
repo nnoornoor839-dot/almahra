@@ -1,7 +1,18 @@
 const assert = require('node:assert/strict');
+function beforeKnightsRound2(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    if (file !== 'index.html' || !text.includes('function getWeekNominations(')) return text;
+    const approved = require('../rules/design-expectation-audit.json').knightsRound2ProductionChanges;
+    const lines = text.split('\n');
+    for (const hunk of [...(approved?.find(row => row.file === file)?.hunks || [])].reverse()) {
+        assert.deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after, file + ': exact round 2a change');
+        lines.splice(hunk.newLine - 1, hunk.after.length, ...hunk.before);
+    }
+    return lines.join('\n');
+}
 // استثناءات حرفية باعتماد المالك ٢٠٢٦-١١-٠٦؛ لا تُسقط دالة أو ملفاً من القفل.
 function beforeKnights(text, file = 'index.html') {
-    text = text.replaceAll('\r\n', '\n');
+    text = beforeKnightsRound2(text, file);
     const marker = { 'index.html': 'function dayAcceptedWeightTenths(', 'data-store.js': 'data.joinedOn =',
         'programs-store.js': 'const mergeEntry =', 'tv.js': 'فارس اليوم (مؤقت حتى الحسم)', 'tv.html': '.card.day-knight .stage' }[file];
     if (!marker || !text.includes(marker)) return text;
@@ -41,4 +52,4 @@ function beforeBoard(text, file = 'index.html') {
     }
     return text;
 }
-module.exports = { beforeBoard, beforeKnights };
+module.exports = { beforeBoard, beforeKnights, beforeKnightsRound2 };
