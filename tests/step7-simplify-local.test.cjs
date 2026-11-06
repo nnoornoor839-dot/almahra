@@ -103,7 +103,7 @@ test('general defaults are off; legacy programs and migrateSettings are unchange
         assert.equal(result.changed, false, id); assert.deepEqual(result.settings, before); assert.deepEqual(settings, before);
     }
     assert.equal(source('migrateSettings', store), source('migrateSettings', oldStore));
-    assert.equal(store.replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')
+    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')
         .replace('pomodoro: false, tiers: false', 'pomodoro: true, tiers: false'), oldStore);
 });
 

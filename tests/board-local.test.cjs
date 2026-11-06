@@ -102,7 +102,7 @@ test('الاحتفال +22.5 لماجد، زياد الثالث ولو كان ا
         h.ctx.id = id; h.ctx.added = key.celebrations[id].added;
         h.run('sendGeneralTvCelebration(students.find(s => s.id === id), added)');
         const { type, id: eventId, name, ...actual } = h.sent.at(-1);
-        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, key.celebrations[id]);
+        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, { ...key.celebrations[id], prep: false });
     }
     h.run("cancelGeneralTvCelebration(students.find(s => s.id === 'majed'))");
     assert.equal(h.sent.at(-1).type, 'cancel'); assert.equal(h.sent.at(-1).id, h.sent[0].id);

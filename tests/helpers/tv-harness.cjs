@@ -5,10 +5,10 @@ const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8'
 function installTv(run, install) {
     run(html.match(/const generalTv = .*;/)[0]);
     install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',
-        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',
+        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',
         'generalTvContext', 'generalTvReady', 'postGeneralTv', 'sendGeneralTvSnapshot', 'clearGeneralTv', 'enableGeneralTv',
         'initGeneralTv', 'openGeneralTv', 'sendGeneralTvCelebration', 'cancelGeneralTvCelebration', 'readGeneralTvPrayer');
-    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa'])
+    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])
         if (!run(`typeof ${name} === 'function'`)) install(name);
 }
 // قفل العرض الكامل كان للجولتين السابقتين؛ الآن يبقى قفل المنطق والاعتماديات المحلية.

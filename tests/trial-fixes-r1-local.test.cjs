@@ -52,7 +52,7 @@ for (const connected of [false, true]) test(`trial r1: general save keeps exactl
     for (const id of [...html.matchAll(/id="([^"]*[Cc]elebration[^\"]*Modal)"/g)].map(m => m[1])) {
         assert.equal(h.element(id).classList.contains('hidden'), true, id);
     }
-    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib' }]);
+    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib', prep: false }]);
     else assert.deepEqual(h.ctx.events, []);
 });
 

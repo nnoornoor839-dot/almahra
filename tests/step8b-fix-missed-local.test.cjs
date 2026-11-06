@@ -269,5 +269,5 @@ test('summer/review-day frontier ignores frontierFix and matches 83da984; protec
     const legacy = text => text.slice(text.indexOf('            <div id="smartDailySection"'), text.indexOf('            <div id="smartMasterySection"'));
     assert.equal(legacy(html), legacy(base));
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js'])
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\r\n', '\n'));
+        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\r\n', '\n'));
 });

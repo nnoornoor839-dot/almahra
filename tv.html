@@ -110,6 +110,9 @@
 .cele-name { font-size:128px; font-weight:700; line-height:1.2; }
 /* أكبر عنصر: كبسولة ذهبية مصمتة (المرجع 11) */
 .cele-added { font-size:150px; font-weight:700; line-height:1.15; color:var(--tv-bg); background:var(--tv-gold); border-radius:999px; padding:4px 96px 20px; margin:20px 0 12px; box-shadow:0 12px 40px #0006; }
+.cele-prep { font-size:44px; color:var(--tv-gold); line-height:1.3; }
+.prep-column { display:grid; grid-template-rows:repeat(10,minmax(0,1fr)); min-height:0; }
+.prep-week .leader { grid-template-columns:minmax(0,1fr) 130px; }
 .cele-meta { display:flex; gap:28px; margin-top:16px; }
 .cele-meta div { font-size:58px; font-weight:600; background:var(--tv-surface); border:2px solid var(--tv-line); border-radius:999px; padding:0 48px; line-height:100px; }
 /* القصاصات: دفعة قصيرة مرة واحدة عند البداية، على الطرفين وفي الشريط العلوي فقط، بعيداً عن الاسم والنقاط */
@@ -168,6 +171,7 @@ svg { width:1em; height:1em; fill:currentColor; flex-shrink:0; }
         <div class="confetti" id="confetti" aria-hidden="true"></div>
         <div class="cele-icon"><svg aria-hidden="true"><use href="#icon-clap"></use></svg></div>
         <strong class="cele-name" id="celeName"></strong><strong class="cele-added num" id="celeAdded"></strong>
+        <p class="cele-prep" id="celePrep" hidden></p>
         <div class="cele-meta num"><div id="celeTotal"></div><div id="celeRank"></div></div>
     </section>
     <section id="prayer" class="overlay prayer" hidden><div class="prayer-icon"><svg aria-hidden="true"><use href="#icon-mosque"></use></svg></div><strong id="prayerText"></strong></section>

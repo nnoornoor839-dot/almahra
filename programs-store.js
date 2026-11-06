@@ -115,6 +115,7 @@ export const PROGRAM_DEFS = {
             knightsRules: { disciplinePct: 70, achievementPct: 30 },
             featuredHalaqa: { weeklyAttendancePct: 75 },
             criteria: [
+                { id: 'homeprep', name: 'التحضير المنزلي', points: 10, enabled: true, optIn: true },
                 { id: 'early', name: 'الحضور المبكر', points: 5, enabled: true },
                 { id: 'manners', name: 'حسن الخلق والأدب', points: 5, enabled: true },
                 { id: 'uniform', name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },

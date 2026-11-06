@@ -127,11 +127,13 @@ function harness(s = student()) {
     run(`let students = [fixture], currentEditingStudentId = 1, todayStr = '${today}', hijriDateStr = 'وهمي', currentSardType = 'review';
         let selectedMinor = null, selectedJuzs = []; const endAyahTouched = { end: false, examEnd: false };
         let generalUndoInProgress = false; const criteriaAtOpen = { sel: null }; const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
+    run(html.match(/const HOMEPREP_SCOPE = .*;/)[0]);
+    run(html.match(/const HOMEPREP_MIN_PERCENT = .*;/)[0]);
     run(html.match(/const generalQuickEntry = .*;/)[0]);
     run(html.match(/const generalFrontierFix = .*;/)[0]);
     run(html.match(/const ALL_DAY_NAMES = .*;/)[0]);
     for (const name of ['ivPairs', 'measureEntry', 'rangeLabelOf', 'newEntryId']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
-    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
+    install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
         'generalQuickDateBlocked', 'readGeneralQuickPosition', 'generalQuickPositionChanged', 'clearGeneralQuickSection', 'toggleGeneralCriteriaExceptions', 'generalQuickKeydown', 'generalQuickEntryLabel',
         'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
         'roundPointTotal', 'dayStats', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',

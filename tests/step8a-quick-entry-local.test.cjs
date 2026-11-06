@@ -379,6 +379,6 @@ test('inline production script parses and prohibited files are byte-for-byte at 
     }
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js']) {
         const old = cp.execFileSync('git', ['show', `e93084d:${file}`], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), old, file);
+        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), old, file);
     }
 });

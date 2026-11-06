@@ -386,7 +386,7 @@ test('scope: all existing writes, points, settings and deferred group readers re
     assert.equal(html.match(/const dayPoints = .*;/)[0], baseline.match(/const dayPoints = .*;/)[0]);
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js']) {
         // الخطوة ٧ غيّرت افتراضي الذهبية والبومودورو في general فقط.
-        let current = fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+        let current = require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file);
         if (file === 'programs-store.js') current = current
             .replace('newMemorization: true, review: true, goldenBoard: false, attendance: true,', 'newMemorization: true, review: true, goldenBoard: true, attendance: true,')
             .replace('groups: false, pomodoro: false, tiers: false', 'groups: false, pomodoro: true, tiers: false');

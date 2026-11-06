@@ -6,7 +6,8 @@
     "3": "بنية HTML جديدة",
     "4": "نص بقرار المالك في الجولة الثانية",
     "5": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦",
-    "6": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦"
+    "6": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦"
   },
   "files": [
     {
@@ -216,8 +217,27 @@
       "file": "tests/helpers/quick-entry-harness.cjs",
       "hunks": [
         {
+          "oldLine": 130,
+          "newLine": 130,
+          "before": [],
+          "after": [
+            "    run(html.match(/const HOMEPREP_SCOPE = .*;/)[0]);",
+            "    run(html.match(/const HOMEPREP_MIN_PERCENT = .*;/)[0]);"
+          ]
+        },
+        {
+          "oldLine": 134,
+          "newLine": 136,
+          "before": [
+            "    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ],
+          "after": [
+            "    install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ]
+        },
+        {
           "oldLine": 145,
-          "newLine": 145,
+          "newLine": 147,
           "before": [],
           "after": [
             "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
@@ -225,7 +245,7 @@
         },
         {
           "oldLine": 146,
-          "newLine": 147,
+          "newLine": 149,
           "before": [
             "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
           ],
@@ -235,7 +255,7 @@
         },
         {
           "oldLine": 165,
-          "newLine": 166,
+          "newLine": 168,
           "before": [
             "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
           ],
@@ -275,7 +295,7 @@
           ],
           "after": [
             "    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',",
-            "        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',"
+            "        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',"
           ]
         },
         {
@@ -283,7 +303,7 @@
           "newLine": 11,
           "before": [],
           "after": [
-            "    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa'])",
+            "    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])",
             "        if (!run(`typeof ${name} === 'function'`)) install(name);"
           ]
         },
@@ -394,6 +414,16 @@
           ]
         },
         {
+          "oldLine": 488,
+          "newLine": 490,
+          "before": [
+            "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ],
+          "after": [
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ]
+        },
+        {
           "oldLine": 524,
           "newLine": 526,
           "before": [
@@ -489,6 +519,16 @@
           "after": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
           ]
+        },
+        {
+          "oldLine": 710,
+          "newLine": 710,
+          "before": [
+            "    const restored = programsStore.replaceAll('\\r\\n', '\\n')"
+          ],
+          "after": [
+            "    const restored = require('./helpers/board-invariants.cjs').beforeBoard(programsStore, 'programs-store.js')"
+          ]
         }
       ]
     },
@@ -518,6 +558,16 @@
           "after": [
             "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
             "        ['headerGregorian', 'ar-SA-u-nu-latn', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
+          ]
+        },
+        {
+          "oldLine": 544,
+          "newLine": 544,
+          "before": [
+            "    const withoutCalendar = store.replace(/    \\/\\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\\.[\\s\\S]*?(?=    \\/\\/ تحديث إعدادات البرنامج)/, '')"
+          ],
+          "after": [
+            "    const withoutCalendar = require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace(/    \\/\\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\\.[\\s\\S]*?(?=    \\/\\/ تحديث إعدادات البرنامج)/, '')"
           ]
         }
       ]
@@ -559,12 +609,32 @@
           "after": [
             "    assert.match(h.element('generalTodayCard').innerHTML, /<b>1<\\/b><span>لم يُسجَّل<\\/span>/);"
           ]
+        },
+        {
+          "oldLine": 389,
+          "newLine": 389,
+          "before": [
+            "        let current = fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "        let current = require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
         }
       ]
     },
     {
       "file": "tests/step7-simplify-local.test.cjs",
       "hunks": [
+        {
+          "oldLine": 106,
+          "newLine": 106,
+          "before": [
+            "    assert.equal(store.replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')"
+          ],
+          "after": [
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')"
+          ]
+        },
         {
           "oldLine": 115,
           "newLine": 115,
@@ -722,6 +792,16 @@
           "after": [
             "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);"
           ]
+        },
+        {
+          "oldLine": 383,
+          "newLine": 382,
+          "before": [
+            "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), old, file);"
+          ],
+          "after": [
+            "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), old, file);"
+          ]
         }
       ]
     },
@@ -770,6 +850,16 @@
           "after": [
             "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد 01-11. متابعة؟');",
             "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد 01-11؛ التسجيل يجعله حاضراً. متابعة؟');"
+          ]
+        },
+        {
+          "oldLine": 272,
+          "newLine": 272,
+          "before": [
+            "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ],
+          "after": [
+            "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ]
         }
       ]
@@ -848,9 +938,10 @@
           ],
           "after": [
             "    for (const stage of s.stages) {",
-            "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'risingStars'].sort());",
+            "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
             "        for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);",
             "        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+            "        for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);",
             "        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);",
             "    }",
             "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
@@ -858,7 +949,7 @@
         },
         {
           "oldLine": 147,
-          "newLine": 153,
+          "newLine": 154,
           "before": [
             "    h.state.approved.splice(0); assert.equal(h.snapshot().dayKnights[0].names.length, 3);"
           ],
@@ -868,7 +959,7 @@
         },
         {
           "oldLine": 149,
-          "newLine": 155,
+          "newLine": 156,
           "before": [
             "    assert.deepEqual(h.snapshot().dayKnights, [{ stage: 'كل الطلاب', names: ['طالب وهمي ثالث2'] }]);"
           ],
@@ -880,17 +971,17 @@
         },
         {
           "oldLine": 207,
-          "newLine": 215,
+          "newLine": 216,
           "before": [
             "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank'].sort());"
           ],
           "after": [
-            "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period'].sort());"
+            "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period', 'prep'].sort());"
           ]
         },
         {
           "oldLine": 257,
-          "newLine": 265,
+          "newLine": 266,
           "before": [
             "    state.receive({ type: 'snapshot', leaders: [{ name: 'وهمي', points: 1, rank: 1 }] });",
             "    return { state, timers, time: n => { time = n; }, event: id => state.receive({ type: 'celebrate', id, name: 'وهمي', added: 1, total: 1, rank: null }) };"
@@ -902,7 +993,7 @@
         },
         {
           "oldLine": 277,
-          "newLine": 285,
+          "newLine": 286,
           "before": [
             "        h.state.receive({ type: 'snapshot', risingStars: [{ name: 'وهمي' }] }); assert.equal(h.state.view().slides.length, 1);"
           ],
@@ -912,7 +1003,7 @@
         },
         {
           "oldLine": 281,
-          "newLine": 289,
+          "newLine": 290,
           "before": [
             "test('slides skip empty sections, keep four ordered kinds, cap stars at three, keep all tied leaders together and pause under overlays', () => {"
           ],
@@ -922,7 +1013,7 @@
         },
         {
           "oldLine": 283,
-          "newLine": 291,
+          "newLine": 292,
           "before": [
             "    const snapshot = { leaders: Array.from({ length: 13 }, () => ({ name: 'وهمي', rank: 10 })), dayKnights: [{ stage: 'أ', names: [] }, { stage: 'ب', names: ['وهمي'] }],",
             "        weekKnights: [{ stage: 'ب', names: ['وهمي'] }], risingStars: Array.from({ length: 5 }, () => ({ name: 'وهمي' })) };",
@@ -939,8 +1030,18 @@
           ]
         },
         {
+          "oldLine": 318,
+          "newLine": 327,
+          "before": [
+            "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), original.toString('utf8').replaceAll('\\r\\n', '\\n'));"
+          ],
+          "after": [
+            "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), original.toString('utf8').replaceAll('\\r\\n', '\\n'));"
+          ]
+        },
+        {
           "oldLine": 337,
-          "newLine": 345,
+          "newLine": 346,
           "before": [
             "        leaders: [{ name: '<img src=x onerror=alert(1)>', points: 7, rank: 1 },",
             "            ...Array.from({ length: 12 }, (_, i) => ({ name: `طالب وهمي ${i}`, points: 1, rank: 10 }))] };"
@@ -952,7 +1053,7 @@
         },
         {
           "oldLine": 341,
-          "newLine": 349,
+          "newLine": 350,
           "before": [
             "    const leaders = el('slides').children[0].children[1];",
             "    assert.equal(leaders.children.length, 13);",
@@ -969,6 +1070,14 @@
             "    const row = board.children[0].children[1];",
             "    assert.equal(row.children[1].textContent, snapshot.stages[0].board[0].name);",
             "    assert.match(el('resultsDate').textContent, /29-10/);",
+            "    channel.onmessage({ data: { ...snapshot, stages: [{ name: 'ابتدائي', period: 'asr',",
+            "        prepWeek: [{ name: '<b>اسم حرفي</b>', points: 20 }] }] } });",
+            "    const prep = el('slides').children[0].children[2];",
+            "    assert.equal(prep.children.length, 2);",
+            "    assert.equal(prep.children[0].children.length, 10);",
+            "    const prepRow = prep.children[0].children[0];",
+            "    assert.deepEqual(prepRow.children.map(c => c.textContent), ['<b>اسم حرفي</b>', '20']);",
+            "    assert.equal(prep.children[0].children[1].children.length, 0);",
             "    channel.onmessage({ data: { type: 'celebrate', id: 'one', period: 'asr', name: '<script>literal</script>', added: 5, total: 12, rank: null } });"
           ]
         }
@@ -2744,6 +2853,116 @@
       "category": 6,
       "reason": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "85f098e"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 105,
+      "newLine": 105,
+      "before": "        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, key.celebrations[id]);",
+      "after": "        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, { ...key.celebrations[id], prep: false });",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 490,
+      "newLine": 490,
+      "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "oldLine": 269,
+      "newLine": 269,
+      "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 106,
+      "newLine": 106,
+      "before": "    assert.equal(store.replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 382,
+      "newLine": 382,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), old, file);",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), old, file);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 272,
+      "newLine": 272,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 143,
+      "newLine": 143,
+      "before": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'risingStars'].sort());",
+      "after": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 215,
+      "newLine": 216,
+      "before": "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period'].sort());",
+      "after": "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period', 'prep'].sort());",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 326,
+      "newLine": 327,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), original.toString('utf8').replaceAll('\\r\\n', '\\n'));",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), original.toString('utf8').replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/trial-fixes-r1-local.test.cjs",
+      "oldLine": 55,
+      "newLine": 55,
+      "before": "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib' }]);",
+      "after": "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib', prep: false }]);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
     }
   ],
   "ownerScopeEdits": [
@@ -2799,7 +3018,7 @@
             "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
           ]
         },
         {
@@ -2813,7 +3032,12 @@
             "    for (const row of audit.trialFixes) {",
             "        const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
             "        assert.deepEqual(changesFrom(row.file, audit.trialBaseline), row, row.file);",
-            "    }"
+            "    }",
+            "    for (const row of audit.expectations.filter(row => row.category === 7)) {",
+            "        assert.equal(row.reason, audit.categories['7']);",
+            "        assert.equal(row.reviewBaseline, '1e4152b');",
+            "    }",
+            "    assert.deepEqual(audit.homeprepExpectationChanges, audit.expectations.filter(row => row.category === 7));"
           ]
         }
       ]
@@ -2966,8 +3190,27 @@
       "file": "tests/helpers/quick-entry-harness.cjs",
       "hunks": [
         {
+          "oldLine": 130,
+          "newLine": 130,
+          "before": [],
+          "after": [
+            "    run(html.match(/const HOMEPREP_SCOPE = .*;/)[0]);",
+            "    run(html.match(/const HOMEPREP_MIN_PERCENT = .*;/)[0]);"
+          ]
+        },
+        {
+          "oldLine": 134,
+          "newLine": 136,
+          "before": [
+            "    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ],
+          "after": [
+            "    install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ]
+        },
+        {
           "oldLine": 145,
-          "newLine": 145,
+          "newLine": 147,
           "before": [],
           "after": [
             "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
@@ -2975,7 +3218,7 @@
         },
         {
           "oldLine": 146,
-          "newLine": 147,
+          "newLine": 149,
           "before": [
             "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
           ],
@@ -2985,7 +3228,7 @@
         },
         {
           "oldLine": 165,
-          "newLine": 166,
+          "newLine": 168,
           "before": [
             "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
           ],
@@ -3044,6 +3287,16 @@
           "after": [
             "        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));"
           ]
+        },
+        {
+          "oldLine": 264,
+          "newLine": 269,
+          "before": [
+            "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ],
+          "after": [
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ]
         }
       ]
     },
@@ -3058,6 +3311,16 @@
           ],
           "after": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
+          ]
+        },
+        {
+          "oldLine": 710,
+          "newLine": 710,
+          "before": [
+            "    const restored = programsStore.replaceAll('\\r\\n', '\\n')"
+          ],
+          "after": [
+            "    const restored = require('./helpers/board-invariants.cjs').beforeBoard(programsStore, 'programs-store.js')"
           ]
         }
       ]
@@ -3149,6 +3412,16 @@
           ],
           "after": [
             "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 383,
+          "newLine": 382,
+          "before": [
+            "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), old, file);"
+          ],
+          "after": [
+            "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), old, file);"
           ]
         }
       ]
@@ -4232,7 +4505,19 @@
             "        assert.ok([1, 2, 3, 4, 5].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+          ]
+        },
+        {
+          "oldLine": 145,
+          "newLine": 146,
+          "before": [],
+          "after": [
+            "    for (const row of audit.expectations.filter(row => row.category === 7)) {",
+            "        assert.equal(row.reason, audit.categories['7']);",
+            "        assert.equal(row.reviewBaseline, '1e4152b');",
+            "    }",
+            "    assert.deepEqual(audit.homeprepExpectationChanges, audit.expectations.filter(row => row.category === 7));"
           ]
         }
       ]
@@ -4292,8 +4577,27 @@
       "file": "tests/helpers/quick-entry-harness.cjs",
       "hunks": [
         {
+          "oldLine": 130,
+          "newLine": 130,
+          "before": [],
+          "after": [
+            "    run(html.match(/const HOMEPREP_SCOPE = .*;/)[0]);",
+            "    run(html.match(/const HOMEPREP_MIN_PERCENT = .*;/)[0]);"
+          ]
+        },
+        {
+          "oldLine": 134,
+          "newLine": 136,
+          "before": [
+            "    install('generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ],
+          "after": [
+            "    install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ]
+        },
+        {
           "oldLine": 145,
-          "newLine": 145,
+          "newLine": 147,
           "before": [],
           "after": [
             "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
@@ -4301,7 +4605,7 @@
         },
         {
           "oldLine": 165,
-          "newLine": 166,
+          "newLine": 168,
           "before": [
             "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
           ],
@@ -4338,6 +4642,16 @@
           ],
           "after": [
             "    }, require('./helpers/board-invariants.cjs').beforeBoard(html));"
+          ]
+        },
+        {
+          "oldLine": 269,
+          "newLine": 269,
+          "before": [
+            "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+          ],
+          "after": [
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ]
         }
       ]
@@ -4420,7 +4734,7 @@
             "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 2 }]);"
           ],
           "after": [
-            "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib' }]);"
+            "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib', prep: false }]);"
           ]
         },
         {
@@ -5190,6 +5504,951 @@
       "category": 6,
       "reason": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "85f098e"
+    }
+  ],
+  "homeprepProductionChanges": [
+    {
+      "file": "index.html",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b",
+      "hunks": [
+        {
+          "before": [
+            "                        <div id=\"generalQuickPanels\"></div>",
+            "                        <p id=\"generalQuickReviewReminder\" class=\"qe-review-reminder\" aria-live=\"polite\" hidden></p>",
+            "                        <div class=\"qe-criteria\">",
+            "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalCriteriaState\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+            "                            <div id=\"generalCriteriaHost\" hidden></div>",
+            "                        </div>",
+            "                        <p id=\"generalQuickPreview\" class=\"qe-summary\" aria-live=\"polite\"></p>"
+          ],
+          "after": [
+            "                        <div id=\"generalQuickPanels\"></div>",
+            "                        <p id=\"generalQuickReviewReminder\" class=\"qe-review-reminder\" aria-live=\"polite\" hidden></p>",
+            "                        <div class=\"qe-criteria\">",
+            "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalOptInHost\"></span><span id=\"generalCriteriaState\" aria-live=\"polite\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+            "                            <div id=\"generalCriteriaHost\" hidden></div>",
+            "                        </div>",
+            "                        <p id=\"generalQuickPreview\" class=\"qe-summary\" aria-live=\"polite\"></p>"
+          ]
+        },
+        {
+          "before": [
+            "            const rank = period && getGeneralTvBoard(period).find(e => e.student.id === student.id)?.rank;",
+            "            return rank && rank <= 10 ? rank : null;",
+            "        }",
+            "        function getGeneralTvSnapshot() {",
+            "            if (!isGeneralProgram()) return null;",
+            "            const boardDate = getBoardDate(), date = boardDate || todayStr;"
+          ],
+          "after": [
+            "            const rank = period && getGeneralTvBoard(period).find(e => e.student.id === student.id)?.rank;",
+            "            return rank && rank <= 10 ? rank : null;",
+            "        }",
+            "        function getHomePrepWeek(period) {",
+            "            const { startStr, endStr } = getBoardWeekRange();",
+            "            const dates = getWorkingDatesInRange(startStr, endStr), allNames = students.map(s => s.name);",
+            "            return students.filter(s => getGeneralTvPeriod(s) === period).map(s => ({",
+            "                name: tvDisplayName(s.name, allNames),",
+            "                points: roundPointTotal(dates.reduce((sum, date) => sum + (s.history?.[date]?.criteria?.homeprep || 0), 0))",
+            "            })).filter(row => row.points > 0).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, 'ar'));",
+            "        }",
+            "        function getGeneralTvSnapshot() {",
+            "            if (!isGeneralProgram()) return null;",
+            "            const boardDate = getBoardDate(), date = boardDate || todayStr;"
+          ]
+        },
+        {
+          "before": [
+            "                        }).filter(e => e.names.length),",
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),",
+            "                        risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))",
+            "                    };",
+            "                })"
+          ],
+          "after": [
+            "                        }).filter(e => e.names.length),",
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),",
+            "                        prepWeek: getHomePrepWeek(period),",
+            "                        risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))",
+            "                    };",
+            "                })"
+          ]
+        },
+        {
+          "before": [
+            "            generalTv.window = opened;",
+            "            initGeneralTv(); enableGeneralTv(); sendGeneralTvSnapshot();",
+            "        }",
+            "        function sendGeneralTvCelebration(student, added) {",
+            "            if (!generalTv.enabled || !generalTvReady() || added <= 0) return;",
+            "            const id = window.crypto?.randomUUID?.() || 'tv-' + Date.now() + '-' + (++generalTv.serial);",
+            "            const message = { type: 'celebrate', id, name: tvDisplayName(student.name, students.map(s => s.name)),",
+            "                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student), period: getGeneralTvPeriod(student) };",
+            "            if (postGeneralTv(message)) generalTv.events.set(student.id, id);",
+            "        }",
+            "        function cancelGeneralTvCelebration(student) {"
+          ],
+          "after": [
+            "            generalTv.window = opened;",
+            "            initGeneralTv(); enableGeneralTv(); sendGeneralTvSnapshot();",
+            "        }",
+            "        function sendGeneralTvCelebration(student, added, prep = false) {",
+            "            if (!generalTv.enabled || !generalTvReady() || added <= 0) return;",
+            "            const id = window.crypto?.randomUUID?.() || 'tv-' + Date.now() + '-' + (++generalTv.serial);",
+            "            const message = { type: 'celebrate', id, name: tvDisplayName(student.name, students.map(s => s.name)),",
+            "                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student), period: getGeneralTvPeriod(student), prep };",
+            "            if (postGeneralTv(message)) generalTv.events.set(student.id, id);",
+            "        }",
+            "        function cancelGeneralTvCelebration(student) {"
+          ]
+        },
+        {
+          "before": [
+            "        // ⭐ حدّا الغياب المتتالي — مصدر واحد تقرأ منه كل الشاشات فلا تتضارب أرقامها:",
+            "        //  • بحاجة متابعة: يومان فأكثر — تنبيه مبكّر للتواصل مع ولي الأمر",
+            "        //  • منقطع: ثلاثة أيام فأكثر — وهو وحده الذي يُستثنى من نسبة حضور النشطين في الإحصاءات",
+            "        const FOLLOWUP_MIN_STREAK = 2;",
+            "        const CHRONIC_MIN_STREAK = 3;",
+            ""
+          ],
+          "after": [
+            "        // ⭐ حدّا الغياب المتتالي — مصدر واحد تقرأ منه كل الشاشات فلا تتضارب أرقامها:",
+            "        //  • بحاجة متابعة: يومان فأكثر — تنبيه مبكّر للتواصل مع ولي الأمر",
+            "        //  • منقطع: ثلاثة أيام فأكثر — وهو وحده الذي يُستثنى من نسبة حضور النشطين في الإحصاءات",
+            "        const HOMEPREP_SCOPE = 'all';",
+            "        const HOMEPREP_MIN_PERCENT = 75;",
+            "        function homePrepQualifies(dayEntries, sections, settings) {",
+            "            const all = [...dayEntries, ...sections].filter(e => e.kind === 'new' || e.kind === 'review');",
+            "            const pool = HOMEPREP_SCOPE === 'new' ? all.filter(e => e.kind === 'new') : all;",
+            "            if (pool.length === 0) return false;",
+            "            const pct = id => settings.grades.find(g => g.id === id)?.percent ?? 0;",
+            "            return pool.every(e => pct(e.grade) >= HOMEPREP_MIN_PERCENT);",
+            "        }",
+            "        const FOLLOWUP_MIN_STREAK = 2;",
+            "        const CHRONIC_MIN_STREAK = 3;",
+            ""
+          ]
+        },
+        {
+          "before": [
+            "            if (!dayRec) return false;",
+            "            const crit = dayRec.criteria || {};",
+            "            const required = getDisciplineCriteriaIds();",
+            "            if (required.length === 0) return Object.values(crit).some(v => (v || 0) > 0);",
+            "            return required.every(id => (crit[id] || 0) > 0);",
+            "        }",
+            ""
+          ],
+          "after": [
+            "            if (!dayRec) return false;",
+            "            const crit = dayRec.criteria || {};",
+            "            const required = getDisciplineCriteriaIds();",
+            "            if (required.length === 0) {",
+            "                const optInIds = new Set(isGeneralProgram() ? getActiveCriteria().filter(c => c.optIn).map(c => c.id) : []);",
+            "                return Object.entries(crit).some(([id, v]) => (v || 0) > 0 && !optInIds.has(id));",
+            "            }",
+            "            return required.every(id => (crit[id] || 0) > 0);",
+            "        }",
+            ""
+          ]
+        },
+        {
+          "before": [
+            "            if (!box || !section) return;",
+            "",
+            "            const criteria = getActiveCriteria();",
+            "            if (criteria.length === 0) { section.style.display = 'none'; return; }",
+            "            section.style.display = '';",
+            "",
+            "            // معايير الطالب في اليوم المختار (إن وُجدت).",
+            "            const todayRec = student?.history?.[dateStr] || {};",
+            "            const saved = todayRec.criteria || {};",
+            "",
+            "            const positives = criteria.filter(c => (c.points || 0) >= 0);",
+            "            const negatives = criteria.filter(c => (c.points || 0) < 0);",
+            "",
+            "            const rowHtml = (c) => {"
+          ],
+          "after": [
+            "            if (!box || !section) return;",
+            "",
+            "            const criteria = getActiveCriteria();",
+            "            if (criteria.length === 0) { section.style.display = 'none'; const host = document.getElementById('generalOptInHost'); if (host) host.innerHTML = ''; return; }",
+            "            section.style.display = '';",
+            "",
+            "            // معايير الطالب في اليوم المختار (إن وُجدت).",
+            "            const todayRec = student?.history?.[dateStr] || {};",
+            "            const saved = todayRec.criteria || {};",
+            "",
+            "            const optIns = isGeneralProgram() ? criteria.filter(c => c.optIn) : [];",
+            "            const optInHost = document.getElementById('generalOptInHost');",
+            "            if (optInHost) optInHost.innerHTML = optIns.map(c => `<input type=\"checkbox\" hidden class=\"crit-box\" data-optin=\"true\" data-cid=\"${escapeHTML(c.id)}\" data-pts=\"${c.points}\" ${saved[c.id] !== undefined ? 'checked' : ''}><button type=\"button\" id=\"${c.id === 'homeprep' ? 'generalHomePrepBtn' : 'generalOptIn_' + escapeHTML(c.id)}\" data-optin=\"true\" onclick=\"toggleGeneralOptIn(this)\" data-cid=\"${escapeHTML(c.id)}\" aria-pressed=\"${saved[c.id] !== undefined}\">🏠 ${escapeHTML(c.name)}</button>`).join('');",
+            "            const positives = criteria.filter(c => (c.points || 0) >= 0 && !optIns.includes(c));",
+            "            const negatives = criteria.filter(c => (c.points || 0) < 0);",
+            "",
+            "            const rowHtml = (c) => {"
+          ]
+        },
+        {
+          "before": [
+            "            else if (Number(input.value) > max) input.value = max;",
+            "            updateGeneralQuickPreview();",
+            "        }",
+            "        function fulfillGeneralCriteria() {",
+            "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+            "            resetGeneralQuickReviewConfirmation();",
+            "            const boxes = [...document.querySelectorAll('.crit-box')];",
+            "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+            "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });",
+            "            updateCriteriaTotal();"
+          ],
+          "after": [
+            "            else if (Number(input.value) > max) input.value = max;",
+            "            updateGeneralQuickPreview();",
+            "        }",
+            "        function toggleGeneralOptIn(button) {",
+            "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+            "            resetGeneralQuickReviewConfirmation();",
+            "            const box = [...document.querySelectorAll('.crit-box')].find(cb => cb.dataset.cid === button.dataset.cid);",
+            "            if (box) box.checked = !box.checked;",
+            "            updateCriteriaTotal();",
+            "        }",
+            "        function fulfillGeneralCriteria() {",
+            "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+            "            resetGeneralQuickReviewConfirmation();",
+            "            const boxes = [...document.querySelectorAll('.crit-box')].filter(cb => cb.dataset.optin !== 'true');",
+            "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+            "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });",
+            "            updateCriteriaTotal();"
+          ]
+        },
+        {
+          "before": [
+            "                sections.push(entry);",
+            "            }",
+            "            const criteria = generalCriteriaChange(student);",
+            "            const total = roundPointTotal(sections.reduce((sum, entry) => sum + entry.points, 0) + criteria.delta);",
+            "            return { sections, criteria, total, errors, used, frontier, position,",
+            "                key: JSON.stringify([sections, criteria.selection, criteria.delta, total, position, errors]) };"
+          ],
+          "after": [
+            "                sections.push(entry);",
+            "            }",
+            "            const criteria = generalCriteriaChange(student);",
+            "            const dayEntries = Object.values(student.history?.[generalQuickEntry.dateStr || todayStr]?.entries || {});",
+            "            if ((criteria.selection.homeprep || 0) > 0 && !homePrepQualifies(dayEntries, sections, settings))",
+            "                error('criteria', 'generalHomePrepBtn', 'التحضير المنزلي يحتاج تسميعاً بتقدير جيد جداً فأعلى في كل أقسام اليوم');",
+            "            const total = roundPointTotal(sections.reduce((sum, entry) => sum + entry.points, 0) + criteria.delta);",
+            "            return { sections, criteria, total, errors, used, frontier, position,",
+            "                key: JSON.stringify([sections, criteria.selection, criteria.delta, total, position, errors]) };"
+          ]
+        },
+        {
+          "before": [
+            "            document.getElementById('generalQuickPreview').classList.toggle('qe-error', errors.length > 0);",
+            "            document.getElementById('generalQuickTotal').textContent = errors.length ? '—' : calculation.total === 0 ? '0' : num(calculation.total);",
+            "            const selection = calculation.criteria.selection, criteria = getActiveCriteria();",
+            "            const positives = criteria.filter(c => Number(c.points) >= 0), negatives = criteria.filter(c => Number(c.points) < 0 && Object.hasOwn(selection, c.id));",
+            "            const missing = positives.filter(c => !Object.hasOwn(selection, c.id));",
+            "            const rated = Object.keys(selection).length > 0;",
+            "            document.getElementById('generalCriteriaAllBtn').setAttribute('aria-pressed', String(positives.length > 0 && missing.length === 0));"
+          ],
+          "after": [
+            "            document.getElementById('generalQuickPreview').classList.toggle('qe-error', errors.length > 0);",
+            "            document.getElementById('generalQuickTotal').textContent = errors.length ? '—' : calculation.total === 0 ? '0' : num(calculation.total);",
+            "            const selection = calculation.criteria.selection, criteria = getActiveCriteria();",
+            "            const positives = criteria.filter(c => Number(c.points) >= 0 && !c.optIn), negatives = criteria.filter(c => Number(c.points) < 0 && Object.hasOwn(selection, c.id));",
+            "            const missing = positives.filter(c => !Object.hasOwn(selection, c.id));",
+            "            const rated = Object.keys(selection).length > 0;",
+            "            document.getElementById('generalCriteriaAllBtn').setAttribute('aria-pressed', String(positives.length > 0 && missing.length === 0));"
+          ]
+        },
+        {
+          "before": [
+            "                : (calculation.criteria.points >= 0 ? '+' : '') + num(calculation.criteria.points)",
+            "                    + (missing.length ? ' · لم يستوفِ: ' + missing.map(c => c.name).join('، ') : ' · استوفى المعايير كلها')",
+            "                    + (negatives.length ? ' · مخالفات: ' + negatives.map(c => c.name).join('، ') : '');",
+            "            return calculation;",
+            "        }",
+            "        async function saveGeneralQuickEntry() {"
+          ],
+          "after": [
+            "                : (calculation.criteria.points >= 0 ? '+' : '') + num(calculation.criteria.points)",
+            "                    + (missing.length ? ' · لم يستوفِ: ' + missing.map(c => c.name).join('، ') : ' · استوفى المعايير كلها')",
+            "                    + (negatives.length ? ' · مخالفات: ' + negatives.map(c => c.name).join('، ') : '');",
+            "            const crit = errors.filter(e => e.kind === 'criteria');",
+            "            for (const c of criteria.filter(c => c.optIn)) {",
+            "                const button = document.getElementById(c.id === 'homeprep' ? 'generalHomePrepBtn' : 'generalOptIn_' + c.id);",
+            "                if (!button) continue;",
+            "                button.setAttribute('aria-pressed', String(Object.hasOwn(selection, c.id)));",
+            "                const invalid = crit.some(e => e.field === button.id);",
+            "                button.classList.toggle('qe-error', invalid);",
+            "                button.setAttribute('aria-invalid', String(invalid));",
+            "            }",
+            "            if (crit.length) document.getElementById('generalCriteriaState').textContent = crit[0].message;",
+            "            return calculation;",
+            "        }",
+            "        async function saveGeneralQuickEntry() {"
+          ]
+        },
+        {
+          "before": [
+            "                const field = document.getElementById(calculation.errors[0].field);",
+            "                if (field?.id === 'quick_new_start') field.setAttribute('tabindex', '-1');",
+            "                (field?.querySelectorAll('button')[0] || field)?.focus();",
+            "                const unplacedErrors = calculation.errors.filter(e => !e.field);",
+            "                if (unplacedErrors.length) showToast(unplacedErrors.map(e => e.message).join(' · '), 'error');",
+            "                return;",
+            "            }"
+          ],
+          "after": [
+            "                const field = document.getElementById(calculation.errors[0].field);",
+            "                if (field?.id === 'quick_new_start') field.setAttribute('tabindex', '-1');",
+            "                (field?.querySelectorAll('button')[0] || field)?.focus();",
+            "                const unplacedErrors = calculation.errors.filter(e => !e.field || e.kind === 'criteria');",
+            "                if (unplacedErrors.length) showToast(unplacedErrors.map(e => e.message).join(' · '), 'error');",
+            "                return;",
+            "            }"
+          ]
+        },
+        {
+          "before": [
+            "                search?.focus();",
+            "                showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');",
+            "                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);",
+            "                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);",
+            "            } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }",
+            "        }",
+            "        function openSmartModal(id) {"
+          ],
+          "after": [
+            "                search?.focus();",
+            "                showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');",
+            "                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);",
+            "                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total, (calculation.criteria.selection.homeprep || 0) > 0);",
+            "            } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }",
+            "        }",
+            "        function openSmartModal(id) {"
+          ]
+        },
+        {
+          "before": [
+            "            const criteriaLine = (label, list) => list.length",
+            "                ? `<div class=\"gws-criteria\"><b>${label}</b> ${list.map(c => `<span>${e(c.name)}</span>`).join(' · ')}</div>` : '';",
+            "            const discipline = `<div class=\"gws-rule\"><span class=\"gws-box\"></span> استوفى كل المعايير</div>`",
+            "                + criteriaLine('فاته:', criteria.filter(c => Number(c.points) > 0))",
+            "                + criteriaLine('وقع منه:', criteria.filter(c => Number(c.points) < 0));",
+            "            const absence = (settings.absence || []).map(a => `«${e('غائب ' + a.name)}»`).join(' / ');",
+            "            return `<section class=\"general-weekly-sheet\" dir=\"rtl\">"
+          ],
+          "after": [
+            "            const criteriaLine = (label, list) => list.length",
+            "                ? `<div class=\"gws-criteria\"><b>${label}</b> ${list.map(c => `<span>${e(c.name)}</span>`).join(' · ')}</div>` : '';",
+            "            const discipline = `<div class=\"gws-rule\"><span class=\"gws-box\"></span> استوفى كل المعايير</div>`",
+            "                + criteria.filter(c => c.optIn).map(c => `<div class=\"gws-rule\"><span class=\"gws-box\"></span> ${e(c.name)}</div>`).join('')",
+            "                + criteriaLine('فاته:', criteria.filter(c => Number(c.points) > 0 && !c.optIn))",
+            "                + criteriaLine('وقع منه:', criteria.filter(c => Number(c.points) < 0));",
+            "            const absence = (settings.absence || []).map(a => `«${e('غائب ' + a.name)}»`).join(' / ');",
+            "            return `<section class=\"general-weekly-sheet\" dir=\"rtl\">"
+          ]
+        },
+        {
+          "before": [
+            "                updateGeneralUndoButton(); return;",
+            "            }",
+            "            if (!schoolDayReady) { updateGeneralUndoButton(); return; }",
+            "            const fields = pinBaseFields(student);",
+            "            fields[`history.${todayStr}.entries.${target.id}`] = DEL_FIELD;",
+            "            const after = structuredClone(student);"
+          ],
+          "after": [
+            "                updateGeneralUndoButton(); return;",
+            "            }",
+            "            if (!schoolDayReady) { updateGeneralUndoButton(); return; }",
+            "            const day = student.history?.[dateStr];",
+            "            const remaining = Object.entries(day?.entries || {}).filter(([id]) => id !== target.id).map(([, entry]) => entry);",
+            "            if ((day?.criteria?.homeprep || 0) > 0 && !homePrepQualifies(remaining, [], getProgramSettings())) {",
+            "                showToast('ألغِ «التحضير المنزلي» واحفظ، ثم تراجع', 'error'); return;",
+            "            }",
+            "            const fields = pinBaseFields(student);",
+            "            fields[`history.${todayStr}.entries.${target.id}`] = DEL_FIELD;",
+            "            const after = structuredClone(student);"
+          ]
+        },
+        {
+          "before": [
+            "                            <button type=\"button\" onclick=\"addCriterionRow('positive')\" class=\"bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm\">",
+            "                                <i class=\"fas fa-plus\"></i> إضافة معيار إيجابي",
+            "                            </button>",
+            "                        </div>",
+            "                        <div class=\"bg-red-50 border-2 border-red-200 rounded-2xl p-4\">",
+            "                            <div class=\"font-black text-red-800 mb-1 flex items-center gap-2\">"
+          ],
+          "after": [
+            "                            <button type=\"button\" onclick=\"addCriterionRow('positive')\" class=\"bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm\">",
+            "                                <i class=\"fas fa-plus\"></i> إضافة معيار إيجابي",
+            "                            </button>",
+            "                            ${isGeneralProgram() ? `<button type=\"button\" onclick=\"addCriterionRow('positive', 'homeprep')\" class=\"bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold py-2 px-5 rounded-xl text-sm\">🏠 إضافة التحضير المنزلي</button>` : ''}",
+            "                        </div>",
+            "                        <div class=\"bg-red-50 border-2 border-red-200 rounded-2xl p-4\">",
+            "                            <div class=\"font-black text-red-800 mb-1 flex items-center gap-2\">"
+          ]
+        },
+        {
+          "before": [
+            "                    <label class=\"flex items-center gap-2 cursor-pointer px-1\" title=\"لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم\">",
+            "                        <input type=\"checkbox\" class=\"crit-disc w-5 h-5 rounded accent-teal-600\" ${c.disciplineCriterion === true ? 'checked' : ''}>",
+            "                        <span class=\"text-xs font-bold text-teal-700\">شرطٌ للانضباط</span>",
+            "                    </label>`}",
+            "                    <button type=\"button\" onclick=\"if (canWriteView()) this.closest('.crit-row').remove()\"",
+            "                            class=\"bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0\" title=\"حذف\">",
+            "                        <i class=\"fas fa-trash text-sm\"></i>"
+          ],
+          "after": [
+            "                    <label class=\"flex items-center gap-2 cursor-pointer px-1\" title=\"لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم\">",
+            "                        <input type=\"checkbox\" class=\"crit-disc w-5 h-5 rounded accent-teal-600\" ${c.disciplineCriterion === true ? 'checked' : ''}>",
+            "                        <span class=\"text-xs font-bold text-teal-700\">شرطٌ للانضباط</span>",
+            "                    </label>",
+            "                    ${isGeneralProgram() ? `<label class=\"flex items-center gap-2 cursor-pointer px-1\"><input type=\"checkbox\" class=\"crit-optin w-5 h-5 rounded accent-emerald-600\" ${c.optIn === true ? 'checked' : ''}><span class=\"text-xs font-bold text-slate-600\">يُؤشَّر عند تحققه فقط</span></label>` : ''} `}",
+            "                    <button type=\"button\" onclick=\"if (canWriteView()) this.closest('.crit-row').remove()\"",
+            "                            class=\"bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0\" title=\"حذف\">",
+            "                        <i class=\"fas fa-trash text-sm\"></i>"
+          ]
+        },
+        {
+          "before": [
+            "                </div>`;",
+            "        }",
+            "",
+            "        function addCriterionRow(kind) {",
+            "            if (!canWriteView()) return;",
+            "            const box = document.getElementById(kind === 'negative' ? 'psCriteriaNegative' : 'psCriteriaPositive');",
+            "            if (!box) return;",
+            "            box.querySelector('.crit-empty')?.remove();",
+            "            const newId = (kind === 'negative' ? 'n_' : 'p_') + Date.now().toString(36);",
+            "            const defaults = kind === 'negative' ? 5 : 3;",
+            "            box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: defaults, enabled: true }, 0, kind));"
+          ],
+          "after": [
+            "                </div>`;",
+            "        }",
+            "",
+            "        function addCriterionRow(kind, preset = null) {",
+            "            if (!canWriteView()) return;",
+            "            const box = document.getElementById(kind === 'negative' ? 'psCriteriaNegative' : 'psCriteriaPositive');",
+            "            if (!box) return;",
+            "            box.querySelector('.crit-empty')?.remove();",
+            "            if (preset === 'homeprep' && isGeneralProgram() && kind === 'positive') {",
+            "                if (box.querySelector('[data-cid=\"homeprep\"]')) return;",
+            "                box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: 'homeprep', name: 'التحضير المنزلي', points: 10, enabled: true, optIn: true }, 0, kind));",
+            "                return;",
+            "            }",
+            "            const newId = (kind === 'negative' ? 'n_' : 'p_') + Date.now().toString(36);",
+            "            const defaults = kind === 'negative' ? 5 : 3;",
+            "            box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: defaults, enabled: true }, 0, kind));"
+          ]
+        },
+        {
+          "before": [
+            "                    enabled: !!r.querySelector('.crit-on')?.checked",
+            "                };",
+            "                if (isNeg) item.blocksTitles = !!r.querySelector('.crit-block')?.checked;",
+            "                else item.disciplineCriterion = !!r.querySelector('.crit-disc')?.checked;",
+            "                out.push(item);",
+            "            });",
+            "            return out;"
+          ],
+          "after": [
+            "                    enabled: !!r.querySelector('.crit-on')?.checked",
+            "                };",
+            "                if (isNeg) item.blocksTitles = !!r.querySelector('.crit-block')?.checked;",
+            "                else {",
+            "                    item.disciplineCriterion = !!r.querySelector('.crit-disc')?.checked;",
+            "                    if (isGeneralProgram()) item.optIn = !!r.querySelector('.crit-optin')?.checked;",
+            "                }",
+            "                out.push(item);",
+            "            });",
+            "            return out;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "programs-store.js",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b",
+      "hunks": [
+        {
+          "before": [
+            "            knightsRules: { disciplinePct: 70, achievementPct: 30 },",
+            "            featuredHalaqa: { weeklyAttendancePct: 75 },",
+            "            criteria: [",
+            "                { id: 'early', name: 'الحضور المبكر', points: 5, enabled: true },",
+            "                { id: 'manners', name: 'حسن الخلق والأدب', points: 5, enabled: true },",
+            "                { id: 'uniform', name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },"
+          ],
+          "after": [
+            "            knightsRules: { disciplinePct: 70, achievementPct: 30 },",
+            "            featuredHalaqa: { weeklyAttendancePct: 75 },",
+            "            criteria: [",
+            "                { id: 'homeprep', name: 'التحضير المنزلي', points: 10, enabled: true, optIn: true },",
+            "                { id: 'early', name: 'الحضور المبكر', points: 5, enabled: true },",
+            "                { id: 'manners', name: 'حسن الخلق والأدب', points: 5, enabled: true },",
+            "                { id: 'uniform', name: 'الالتزام بالزي الرسمي', points: 3, enabled: true },"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.js",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b",
+      "hunks": [
+        {
+          "before": [
+            "        const items = (stage[kind] || []).filter(item => item.names?.length);",
+            "        if (items.length) slides.push({ kind, title, items });",
+            "    }",
+            "    if (stage.risingStars?.length) slides.push({ kind: 'risingStars', title: '🚀 النجم الصاعد', items: stage.risingStars.slice(0, 3) });",
+            "    return slides;",
+            "}"
+          ],
+          "after": [
+            "        const items = (stage[kind] || []).filter(item => item.names?.length);",
+            "        if (items.length) slides.push({ kind, title, items });",
+            "    }",
+            "    const prep = stage.prepWeek || [], prepPages = Math.ceil(prep.length / 20);",
+            "    for (let page = 1; page <= prepPages; page++) slides.push({ kind: 'prepWeek',",
+            "        title: '🏠 أهل التحضير هذا الأسبوع', page, pages: prepPages, items: prep.slice((page - 1) * 20, page * 20) });",
+            "    if (stage.risingStars?.length) slides.push({ kind: 'risingStars', title: '🚀 النجم الصاعد', items: stage.risingStars.slice(0, 3) });",
+            "    return slides;",
+            "}"
+          ]
+        },
+        {
+          "before": [
+            "            const rank = event.rank > 0 && event.rank <= 10 ? event.rank : null;",
+            "            el('celeRank').textContent = rank == null ? '' : 'الترتيب: ' + ar(rank);",
+            "            el('celeRank').hidden = rank == null;",
+            "        }",
+            "        if (view.current && !view.prayer && celebrationId !== view.current.id) burst();",
+            "        celebrationId = view.prayer ? null : view.current?.id || null;"
+          ],
+          "after": [
+            "            const rank = event.rank > 0 && event.rank <= 10 ? event.rank : null;",
+            "            el('celeRank').textContent = rank == null ? '' : 'الترتيب: ' + ar(rank);",
+            "            el('celeRank').hidden = rank == null;",
+            "            el('celePrep').textContent = 'أحسنت تحضير وردك 🏠';",
+            "            el('celePrep').hidden = !event.prep;",
+            "        }",
+            "        if (view.current && !view.prayer && celebrationId !== view.current.id) burst();",
+            "        celebrationId = view.prayer ? null : view.current?.id || null;"
+          ]
+        },
+        {
+          "before": [
+            "            el('slides').replaceChildren(); el('dots').replaceChildren(); sections = [];",
+            "            view.slides.forEach((slide, index) => {",
+            "                const section = node('section', 'slide'), heading = node('div', 'slide-title'), badge = node('span', 'slide-icon');",
+            "                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\\S+\\s/u, ''))); section.append(heading);",
+            "                const body = node('div', slide.kind === 'board' ? 'board' : 'cards');",
+            "                if (slide.kind === 'board') {",
+            "                    section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));"
+          ],
+          "after": [
+            "            el('slides').replaceChildren(); el('dots').replaceChildren(); sections = [];",
+            "            view.slides.forEach((slide, index) => {",
+            "                const section = node('section', 'slide'), heading = node('div', 'slide-title'), badge = node('span', 'slide-icon');",
+            "                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\\S+\\s/u, ''))); section.append(heading);",
+            "                const body = node('div', slide.kind === 'board' ? 'board' : 'cards');",
+            "                if (slide.kind === 'board') {",
+            "                    section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));"
+          ]
+        },
+        {
+          "before": [
+            "                        }",
+            "                        body.append(column);",
+            "                    }",
+            "                } else slide.items.forEach(item => {",
+            "                    const card = node('div', 'card'), cardBody = node('div', 'card-body');",
+            "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));"
+          ],
+          "after": [
+            "                        }",
+            "                        body.append(column);",
+            "                    }",
+            "                } else if (slide.kind === 'prepWeek') {",
+            "                    section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));",
+            "                    body.className = 'board prep-week';",
+            "                    for (let c = 0; c < 2; c++) {",
+            "                        const column = node('div', 'prep-column');",
+            "                        for (let r = 0; r < 10; r++) {",
+            "                            const row = node('div', 'leader'), item = slide.items[c * 10 + r];",
+            "                            if (item) {",
+            "                                const label = node('span', 'name', item.name); protectName(label);",
+            "                                row.append(label, node('b', 'points', ar(item.points)));",
+            "                            }",
+            "                            column.append(row);",
+            "                        }",
+            "                        body.append(column);",
+            "                    }",
+            "                } else slide.items.forEach(item => {",
+            "                    const card = node('div', 'card'), cardBody = node('div', 'card-body');",
+            "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.html",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b",
+      "hunks": [
+        {
+          "before": [
+            ".cele-name { font-size:128px; font-weight:700; line-height:1.2; }",
+            "/* أكبر عنصر: كبسولة ذهبية مصمتة (المرجع 11) */",
+            ".cele-added { font-size:150px; font-weight:700; line-height:1.15; color:var(--tv-bg); background:var(--tv-gold); border-radius:999px; padding:4px 96px 20px; margin:20px 0 12px; box-shadow:0 12px 40px #0006; }",
+            ".cele-meta { display:flex; gap:28px; margin-top:16px; }",
+            ".cele-meta div { font-size:58px; font-weight:600; background:var(--tv-surface); border:2px solid var(--tv-line); border-radius:999px; padding:0 48px; line-height:100px; }",
+            "/* القصاصات: دفعة قصيرة مرة واحدة عند البداية، على الطرفين وفي الشريط العلوي فقط، بعيداً عن الاسم والنقاط */"
+          ],
+          "after": [
+            ".cele-name { font-size:128px; font-weight:700; line-height:1.2; }",
+            "/* أكبر عنصر: كبسولة ذهبية مصمتة (المرجع 11) */",
+            ".cele-added { font-size:150px; font-weight:700; line-height:1.15; color:var(--tv-bg); background:var(--tv-gold); border-radius:999px; padding:4px 96px 20px; margin:20px 0 12px; box-shadow:0 12px 40px #0006; }",
+            ".cele-prep { font-size:44px; color:var(--tv-gold); line-height:1.3; }",
+            ".prep-column { display:grid; grid-template-rows:repeat(10,minmax(0,1fr)); min-height:0; }",
+            ".prep-week .leader { grid-template-columns:minmax(0,1fr) 130px; }",
+            ".cele-meta { display:flex; gap:28px; margin-top:16px; }",
+            ".cele-meta div { font-size:58px; font-weight:600; background:var(--tv-surface); border:2px solid var(--tv-line); border-radius:999px; padding:0 48px; line-height:100px; }",
+            "/* القصاصات: دفعة قصيرة مرة واحدة عند البداية، على الطرفين وفي الشريط العلوي فقط، بعيداً عن الاسم والنقاط */"
+          ]
+        },
+        {
+          "before": [
+            "        <div class=\"confetti\" id=\"confetti\" aria-hidden=\"true\"></div>",
+            "        <div class=\"cele-icon\"><svg aria-hidden=\"true\"><use href=\"#icon-clap\"></use></svg></div>",
+            "        <strong class=\"cele-name\" id=\"celeName\"></strong><strong class=\"cele-added num\" id=\"celeAdded\"></strong>",
+            "        <div class=\"cele-meta num\"><div id=\"celeTotal\"></div><div id=\"celeRank\"></div></div>",
+            "    </section>",
+            "    <section id=\"prayer\" class=\"overlay prayer\" hidden><div class=\"prayer-icon\"><svg aria-hidden=\"true\"><use href=\"#icon-mosque\"></use></svg></div><strong id=\"prayerText\"></strong></section>"
+          ],
+          "after": [
+            "        <div class=\"confetti\" id=\"confetti\" aria-hidden=\"true\"></div>",
+            "        <div class=\"cele-icon\"><svg aria-hidden=\"true\"><use href=\"#icon-clap\"></use></svg></div>",
+            "        <strong class=\"cele-name\" id=\"celeName\"></strong><strong class=\"cele-added num\" id=\"celeAdded\"></strong>",
+            "        <p class=\"cele-prep\" id=\"celePrep\" hidden></p>",
+            "        <div class=\"cele-meta num\"><div id=\"celeTotal\"></div><div id=\"celeRank\"></div></div>",
+            "    </section>",
+            "    <section id=\"prayer\" class=\"overlay prayer\" hidden><div class=\"prayer-icon\"><svg aria-hidden=\"true\"><use href=\"#icon-mosque\"></use></svg></div><strong id=\"prayerText\"></strong></section>"
+          ]
+        }
+      ]
+    }
+  ],
+  "homeprepExpectationChanges": [
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 105,
+      "newLine": 105,
+      "before": "        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, key.celebrations[id]);",
+      "after": "        assert.equal(type, 'celebrate'); assert.ok(eventId); assert.deepEqual(actual, { ...key.celebrations[id], prep: false });",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 490,
+      "newLine": 490,
+      "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "oldLine": 269,
+      "newLine": 269,
+      "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 106,
+      "newLine": 106,
+      "before": "    assert.equal(store.replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 382,
+      "newLine": 382,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), old, file);",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), old, file);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8b-fix-missed-local.test.cjs",
+      "oldLine": 272,
+      "newLine": 272,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), cp.execFileSync('git', ['show', `83da984:${file}`], { encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 143,
+      "newLine": 143,
+      "before": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'risingStars'].sort());",
+      "after": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 215,
+      "newLine": 216,
+      "before": "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period'].sort());",
+      "after": "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period', 'prep'].sort());",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 326,
+      "newLine": 327,
+      "before": "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), original.toString('utf8').replaceAll('\\r\\n', '\\n'));",
+      "after": "        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), original.toString('utf8').replaceAll('\\r\\n', '\\n'));",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/trial-fixes-r1-local.test.cjs",
+      "oldLine": 55,
+      "newLine": 55,
+      "before": "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib' }]);",
+      "after": "    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib', prep: false }]);",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "1e4152b"
+    }
+  ],
+  "homeprepKeyChanges": {
+    "file": "tests/rules/homeprep-answer-key.json",
+    "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "proof": "node tests/helpers/homeprep-key-diff.cjs .cache/homeprep-answer-key.before.json tests/rules/homeprep-answer-key.json",
+    "beforeSha256": "18fef302ad9c6ba77b3de931dac153c9bbc3bc9389638148aa9bb98eafcc853b",
+    "afterSha256": "04ff5202829c63859b5a75437de866ea90b5e42d388d36b576ccdae5bac9a8f5",
+    "allowed": [
+      "prepWeek",
+      "afterFaris",
+      "students[].prep",
+      "newScope.sultan.prep",
+      "newScope.maghrib",
+      "undo.after.badrRank (2 -> 3)",
+      "verbatimAnswerKey (Badr rank correction only)"
+    ],
+    "changes": [
+      {
+        "path": "students.1.prep",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "students.2.prep",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "students.5.prep",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "students.6.prep",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "prepWeek.asr",
+        "before": [
+          "بدر",
+          "سلطان",
+          "عادل"
+        ],
+        "after": [
+          {
+            "name": "بدر",
+            "points": 20
+          },
+          {
+            "name": "سلطان",
+            "points": 20
+          },
+          {
+            "name": "حمزة",
+            "points": 10
+          },
+          {
+            "name": "راشد",
+            "points": 10
+          },
+          {
+            "name": "عادل",
+            "points": 10
+          },
+          {
+            "name": "فارس",
+            "points": 10
+          }
+        ]
+      },
+      {
+        "path": "prepWeek.maghrib",
+        "before": [],
+        "after": [
+          {
+            "name": "ناصر",
+            "points": 10
+          }
+        ]
+      },
+      {
+        "path": "afterFaris",
+        "before": [
+          "بدر",
+          "سلطان",
+          "عادل",
+          "فارس"
+        ],
+        "after": [
+          {
+            "name": "بدر",
+            "points": 20
+          },
+          {
+            "name": "سلطان",
+            "points": 20
+          },
+          {
+            "name": "فارس",
+            "points": 20
+          },
+          {
+            "name": "حمزة",
+            "points": 10
+          },
+          {
+            "name": "راشد",
+            "points": 10
+          },
+          {
+            "name": "عادل",
+            "points": 10
+          }
+        ]
+      },
+      {
+        "path": "undo.after.badrRank",
+        "before": 2,
+        "after": 3
+      },
+      {
+        "path": "newScope.sultan.prep",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "newScope.maghrib",
+        "before": [
+          "ناصر"
+        ],
+        "after": [
+          {
+            "name": "ناصر",
+            "points": 20
+          }
+        ]
+      },
+      {
+        "path": "verbatimAnswerKey",
+        "before": "3. يتراجع ← يُحذف جم وحده؛ يبقى `early` ← ي٥ = 5 + 10 = **15**، الأسبوع **95**، الموسم **125**، فينزل تحت سلطان (130): **سلطان 1، بدر 2**، والاحتفال يُلغى (`cancel`).",
+        "after": "3. يتراجع ← يُحذف جم وحده؛ يبقى `early` ← ي٥ = 5 + 10 = **15**، الأسبوع **95**، الموسم **125**، فينزل تحت سلطان (130): **سلطان 1، بدر 3**، والاحتفال يُلغى (`cancel`)."
+      }
+    ]
+  },
+  "homeprepLocalExpectationChanges": [
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "        assert.match(h.element('generalQuickPreview').textContent,/7.5.*الانضباط -10/);",
+      "after": "        assert.match(h.element('generalQuickPreview').textContent.replace(/[\\u061c\\u200e\\u200f]/g, ''),/7.5.*الانضباط -10/);",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "    assert.deepEqual(h.snapshot().stages[1].prepWeek, scope === 'all' ? [] : key.newScope.maghrib);",
+      "after": "    assert.deepEqual(h.snapshot().stages[1].prepWeek, scope === 'all' ? key.prepWeek.maghrib : key.newScope.maghrib);",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "    assert.ok(!h.snapshot().stages[0].prepWeek.includes('بدر'));",
+      "after": "    assert.deepEqual(h.snapshot().stages[0].prepWeek.find(r => r.name === 'بدر'), { name: 'بدر', points: 10 });",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "    assert.deepEqual(h.snapshot().stages[0].prepWeek,['عادل']);",
+      "after": "    assert.deepEqual(h.snapshot().stages[0].prepWeek,[{ name: 'عادل', points: 10 }]);\n    h.list[4].history[key.days[3]] = { attended: false, criteria: { homeprep: 7 } };\n    h.list[4].history[key.today].criteria.homeprep = 13;\n    h.list[4].history[key.days[0]] = { criteria: { homeprep: 100 } };\n    h.list[4].history['2026-11-18'] = { criteria: { homeprep: 100 } };\n    assert.deepEqual(h.snapshot().stages[0].prepWeek, [{ name: 'عادل', points: 20 }]);",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "    assert.ok(!snapshot.stages[0].prepWeek.includes('سلطان'));",
+      "after": "    assert.deepEqual(snapshot.stages[0].prepWeek, [\n        { name: 'بدر', points: 20 }, { name: 'حمزة', points: 10 }, { name: 'راشد', points: 10 },\n        { name: 'سلطان', points: 10 }, { name: 'عادل', points: 10 }, { name: 'فارس', points: 10 }]);",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "    assert.doesNotMatch(prepRender,/item\\.rank|item\\.points|item\\.week/); assert.match(prepRender,/c < 2/); assert.match(prepRender,/r < 10/);",
+      "after": "    assert.doesNotMatch(prepRender,/item\\.rank|item\\.week/); assert.match(prepRender,/ar\\(item\\.points\\)/); assert.match(prepRender,/c < 2/); assert.match(prepRender,/r < 10/);",
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "pre-draft-3 working file"
     }
   ]
 }

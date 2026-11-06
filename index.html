@@ -2427,7 +2427,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <div id="generalQuickPanels"></div>
                         <p id="generalQuickReviewReminder" class="qe-review-reminder" aria-live="polite" hidden></p>
                         <div class="qe-criteria">
-                            <div class="qe-criteria-bar"><b>الانضباط</b><button id="generalCriteriaAllBtn" type="button" onclick="fulfillGeneralCriteria()">✓ استوفى المعايير</button><span id="generalCriteriaState"></span><button id="generalCriteriaExceptions" type="button" aria-expanded="false" onclick="toggleGeneralCriteriaExceptions()">استثناءات ▾</button></div>
+                            <div class="qe-criteria-bar"><b>الانضباط</b><button id="generalCriteriaAllBtn" type="button" onclick="fulfillGeneralCriteria()">✓ استوفى المعايير</button><span id="generalOptInHost"></span><span id="generalCriteriaState" aria-live="polite"></span><button id="generalCriteriaExceptions" type="button" aria-expanded="false" onclick="toggleGeneralCriteriaExceptions()">استثناءات ▾</button></div>
                             <div id="generalCriteriaHost" hidden></div>
                         </div>
                         <p id="generalQuickPreview" class="qe-summary" aria-live="polite"></p>
@@ -4393,6 +4393,14 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const rank = period && getGeneralTvBoard(period).find(e => e.student.id === student.id)?.rank;
             return rank && rank <= 10 ? rank : null;
         }
+        function getHomePrepWeek(period) {
+            const { startStr, endStr } = getBoardWeekRange();
+            const dates = getWorkingDatesInRange(startStr, endStr), allNames = students.map(s => s.name);
+            return students.filter(s => getGeneralTvPeriod(s) === period).map(s => ({
+                name: tvDisplayName(s.name, allNames),
+                points: roundPointTotal(dates.reduce((sum, date) => sum + (s.history?.[date]?.criteria?.homeprep || 0), 0))
+            })).filter(row => row.points > 0).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, 'ar'));
+        }
         function getGeneralTvSnapshot() {
             if (!isGeneralProgram()) return null;
             const boardDate = getBoardDate(), date = boardDate || todayStr;
@@ -4423,6 +4431,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         }).filter(e => e.names.length),
                         weekKnights: group.map(t => ({ stage: t.name,
                             names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),
+                        prepWeek: getHomePrepWeek(period),
                         risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))
                     };
                 })
@@ -4477,11 +4486,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             generalTv.window = opened;
             initGeneralTv(); enableGeneralTv(); sendGeneralTvSnapshot();
         }
-        function sendGeneralTvCelebration(student, added) {
+        function sendGeneralTvCelebration(student, added, prep = false) {
             if (!generalTv.enabled || !generalTvReady() || added <= 0) return;
             const id = window.crypto?.randomUUID?.() || 'tv-' + Date.now() + '-' + (++generalTv.serial);
             const message = { type: 'celebrate', id, name: tvDisplayName(student.name, students.map(s => s.name)),
-                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student), period: getGeneralTvPeriod(student) };
+                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student), period: getGeneralTvPeriod(student), prep };
             if (postGeneralTv(message)) generalTv.events.set(student.id, id);
         }
         function cancelGeneralTvCelebration(student) {
@@ -7178,6 +7187,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // ⭐ حدّا الغياب المتتالي — مصدر واحد تقرأ منه كل الشاشات فلا تتضارب أرقامها:
         //  • بحاجة متابعة: يومان فأكثر — تنبيه مبكّر للتواصل مع ولي الأمر
         //  • منقطع: ثلاثة أيام فأكثر — وهو وحده الذي يُستثنى من نسبة حضور النشطين في الإحصاءات
+        const HOMEPREP_SCOPE = 'all';
+        const HOMEPREP_MIN_PERCENT = 75;
+        function homePrepQualifies(dayEntries, sections, settings) {
+            const all = [...dayEntries, ...sections].filter(e => e.kind === 'new' || e.kind === 'review');
+            const pool = HOMEPREP_SCOPE === 'new' ? all.filter(e => e.kind === 'new') : all;
+            if (pool.length === 0) return false;
+            const pct = id => settings.grades.find(g => g.id === id)?.percent ?? 0;
+            return pool.every(e => pct(e.grade) >= HOMEPREP_MIN_PERCENT);
+        }
         const FOLLOWUP_MIN_STREAK = 2;
         const CHRONIC_MIN_STREAK = 3;
 
@@ -8090,7 +8108,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!dayRec) return false;
             const crit = dayRec.criteria || {};
             const required = getDisciplineCriteriaIds();
-            if (required.length === 0) return Object.values(crit).some(v => (v || 0) > 0);
+            if (required.length === 0) {
+                const optInIds = new Set(isGeneralProgram() ? getActiveCriteria().filter(c => c.optIn).map(c => c.id) : []);
+                return Object.entries(crit).some(([id, v]) => (v || 0) > 0 && !optInIds.has(id));
+            }
             return required.every(id => (crit[id] || 0) > 0);
         }
 
@@ -8364,14 +8385,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!box || !section) return;
 
             const criteria = getActiveCriteria();
-            if (criteria.length === 0) { section.style.display = 'none'; return; }
+            if (criteria.length === 0) { section.style.display = 'none'; const host = document.getElementById('generalOptInHost'); if (host) host.innerHTML = ''; return; }
             section.style.display = '';
 
             // معايير الطالب في اليوم المختار (إن وُجدت).
             const todayRec = student?.history?.[dateStr] || {};
             const saved = todayRec.criteria || {};
 
-            const positives = criteria.filter(c => (c.points || 0) >= 0);
+            const optIns = isGeneralProgram() ? criteria.filter(c => c.optIn) : [];
+            const optInHost = document.getElementById('generalOptInHost');
+            if (optInHost) optInHost.innerHTML = optIns.map(c => `<input type="checkbox" hidden class="crit-box" data-optin="true" data-cid="${escapeHTML(c.id)}" data-pts="${c.points}" ${saved[c.id] !== undefined ? 'checked' : ''}><button type="button" id="${c.id === 'homeprep' ? 'generalHomePrepBtn' : 'generalOptIn_' + escapeHTML(c.id)}" data-optin="true" onclick="toggleGeneralOptIn(this)" data-cid="${escapeHTML(c.id)}" aria-pressed="${saved[c.id] !== undefined}">🏠 ${escapeHTML(c.name)}</button>`).join('');
+            const positives = criteria.filter(c => (c.points || 0) >= 0 && !optIns.includes(c));
             const negatives = criteria.filter(c => (c.points || 0) < 0);
 
             const rowHtml = (c) => {
@@ -8773,10 +8797,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             else if (Number(input.value) > max) input.value = max;
             updateGeneralQuickPreview();
         }
+        function toggleGeneralOptIn(button) {
+            if (!isGeneralProgram() || generalUndoInProgress) return;
+            resetGeneralQuickReviewConfirmation();
+            const box = [...document.querySelectorAll('.crit-box')].find(cb => cb.dataset.cid === button.dataset.cid);
+            if (box) box.checked = !box.checked;
+            updateCriteriaTotal();
+        }
         function fulfillGeneralCriteria() {
             if (!isGeneralProgram() || generalUndoInProgress) return;
             resetGeneralQuickReviewConfirmation();
-            const boxes = [...document.querySelectorAll('.crit-box')];
+            const boxes = [...document.querySelectorAll('.crit-box')].filter(cb => cb.dataset.optin !== 'true');
             const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);
             boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });
             updateCriteriaTotal();
@@ -8843,6 +8874,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 sections.push(entry);
             }
             const criteria = generalCriteriaChange(student);
+            const dayEntries = Object.values(student.history?.[generalQuickEntry.dateStr || todayStr]?.entries || {});
+            if ((criteria.selection.homeprep || 0) > 0 && !homePrepQualifies(dayEntries, sections, settings))
+                error('criteria', 'generalHomePrepBtn', 'التحضير المنزلي يحتاج تسميعاً بتقدير جيد جداً فأعلى في كل أقسام اليوم');
             const total = roundPointTotal(sections.reduce((sum, entry) => sum + entry.points, 0) + criteria.delta);
             return { sections, criteria, total, errors, used, frontier, position,
                 key: JSON.stringify([sections, criteria.selection, criteria.delta, total, position, errors]) };
@@ -8908,7 +8942,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.getElementById('generalQuickPreview').classList.toggle('qe-error', errors.length > 0);
             document.getElementById('generalQuickTotal').textContent = errors.length ? '—' : calculation.total === 0 ? '0' : num(calculation.total);
             const selection = calculation.criteria.selection, criteria = getActiveCriteria();
-            const positives = criteria.filter(c => Number(c.points) >= 0), negatives = criteria.filter(c => Number(c.points) < 0 && Object.hasOwn(selection, c.id));
+            const positives = criteria.filter(c => Number(c.points) >= 0 && !c.optIn), negatives = criteria.filter(c => Number(c.points) < 0 && Object.hasOwn(selection, c.id));
             const missing = positives.filter(c => !Object.hasOwn(selection, c.id));
             const rated = Object.keys(selection).length > 0;
             document.getElementById('generalCriteriaAllBtn').setAttribute('aria-pressed', String(positives.length > 0 && missing.length === 0));
@@ -8916,6 +8950,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 : (calculation.criteria.points >= 0 ? '+' : '') + num(calculation.criteria.points)
                     + (missing.length ? ' · لم يستوفِ: ' + missing.map(c => c.name).join('، ') : ' · استوفى المعايير كلها')
                     + (negatives.length ? ' · مخالفات: ' + negatives.map(c => c.name).join('، ') : '');
+            const crit = errors.filter(e => e.kind === 'criteria');
+            for (const c of criteria.filter(c => c.optIn)) {
+                const button = document.getElementById(c.id === 'homeprep' ? 'generalHomePrepBtn' : 'generalOptIn_' + c.id);
+                if (!button) continue;
+                button.setAttribute('aria-pressed', String(Object.hasOwn(selection, c.id)));
+                const invalid = crit.some(e => e.field === button.id);
+                button.classList.toggle('qe-error', invalid);
+                button.setAttribute('aria-invalid', String(invalid));
+            }
+            if (crit.length) document.getElementById('generalCriteriaState').textContent = crit[0].message;
             return calculation;
         }
         async function saveGeneralQuickEntry() {
@@ -8939,7 +8983,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 const field = document.getElementById(calculation.errors[0].field);
                 if (field?.id === 'quick_new_start') field.setAttribute('tabindex', '-1');
                 (field?.querySelectorAll('button')[0] || field)?.focus();
-                const unplacedErrors = calculation.errors.filter(e => !e.field);
+                const unplacedErrors = calculation.errors.filter(e => !e.field || e.kind === 'criteria');
                 if (unplacedErrors.length) showToast(unplacedErrors.map(e => e.message).join(' · '), 'error');
                 return;
             }
@@ -9014,7 +9058,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 search?.focus();
                 showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');
                 if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);
-                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);
+                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total, (calculation.criteria.selection.homeprep || 0) > 0);
             } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }
         }
         function openSmartModal(id) {
@@ -9425,7 +9469,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const criteriaLine = (label, list) => list.length
                 ? `<div class="gws-criteria"><b>${label}</b> ${list.map(c => `<span>${e(c.name)}</span>`).join(' · ')}</div>` : '';
             const discipline = `<div class="gws-rule"><span class="gws-box"></span> استوفى كل المعايير</div>`
-                + criteriaLine('فاته:', criteria.filter(c => Number(c.points) > 0))
+                + criteria.filter(c => c.optIn).map(c => `<div class="gws-rule"><span class="gws-box"></span> ${e(c.name)}</div>`).join('')
+                + criteriaLine('فاته:', criteria.filter(c => Number(c.points) > 0 && !c.optIn))
                 + criteriaLine('وقع منه:', criteria.filter(c => Number(c.points) < 0));
             const absence = (settings.absence || []).map(a => `«${e('غائب ' + a.name)}»`).join(' / ');
             return `<section class="general-weekly-sheet" dir="rtl">
@@ -9759,6 +9804,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 updateGeneralUndoButton(); return;
             }
             if (!schoolDayReady) { updateGeneralUndoButton(); return; }
+            const day = student.history?.[dateStr];
+            const remaining = Object.entries(day?.entries || {}).filter(([id]) => id !== target.id).map(([, entry]) => entry);
+            if ((day?.criteria?.homeprep || 0) > 0 && !homePrepQualifies(remaining, [], getProgramSettings())) {
+                showToast('ألغِ «التحضير المنزلي» واحفظ، ثم تراجع', 'error'); return;
+            }
             const fields = pinBaseFields(student);
             fields[`history.${todayStr}.entries.${target.id}`] = DEL_FIELD;
             const after = structuredClone(student);
@@ -11122,6 +11172,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             <button type="button" onclick="addCriterionRow('positive')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm">
                                 <i class="fas fa-plus"></i> إضافة معيار إيجابي
                             </button>
+                            ${isGeneralProgram() ? `<button type="button" onclick="addCriterionRow('positive', 'homeprep')" class="bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold py-2 px-5 rounded-xl text-sm">🏠 إضافة التحضير المنزلي</button>` : ''}
                         </div>
                         <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-4">
                             <div class="font-black text-red-800 mb-1 flex items-center gap-2">
@@ -11578,7 +11629,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <label class="flex items-center gap-2 cursor-pointer px-1" title="لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم">
                         <input type="checkbox" class="crit-disc w-5 h-5 rounded accent-teal-600" ${c.disciplineCriterion === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-teal-700">شرطٌ للانضباط</span>
-                    </label>`}
+                    </label>
+                    ${isGeneralProgram() ? `<label class="flex items-center gap-2 cursor-pointer px-1"><input type="checkbox" class="crit-optin w-5 h-5 rounded accent-emerald-600" ${c.optIn === true ? 'checked' : ''}><span class="text-xs font-bold text-slate-600">يُؤشَّر عند تحققه فقط</span></label>` : ''} `}
                     <button type="button" onclick="if (canWriteView()) this.closest('.crit-row').remove()"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
@@ -11586,11 +11638,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 </div>`;
         }
 
-        function addCriterionRow(kind) {
+        function addCriterionRow(kind, preset = null) {
             if (!canWriteView()) return;
             const box = document.getElementById(kind === 'negative' ? 'psCriteriaNegative' : 'psCriteriaPositive');
             if (!box) return;
             box.querySelector('.crit-empty')?.remove();
+            if (preset === 'homeprep' && isGeneralProgram() && kind === 'positive') {
+                if (box.querySelector('[data-cid="homeprep"]')) return;
+                box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: 'homeprep', name: 'التحضير المنزلي', points: 10, enabled: true, optIn: true }, 0, kind));
+                return;
+            }
             const newId = (kind === 'negative' ? 'n_' : 'p_') + Date.now().toString(36);
             const defaults = kind === 'negative' ? 5 : 3;
             box.insertAdjacentHTML('beforeend', criterionRowHtml({ id: newId, name: '', points: defaults, enabled: true }, 0, kind));
@@ -11610,7 +11667,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     enabled: !!r.querySelector('.crit-on')?.checked
                 };
                 if (isNeg) item.blocksTitles = !!r.querySelector('.crit-block')?.checked;
-                else item.disciplineCriterion = !!r.querySelector('.crit-disc')?.checked;
+                else {
+                    item.disciplineCriterion = !!r.querySelector('.crit-disc')?.checked;
+                    if (isGeneralProgram()) item.optIn = !!r.querySelector('.crit-optin')?.checked;
+                }
                 out.push(item);
             });
             return out;

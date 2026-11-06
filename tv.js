@@ -37,6 +37,9 @@ function makeSlides(snapshot, period) {
         const items = (stage[kind] || []).filter(item => item.names?.length);
         if (items.length) slides.push({ kind, title, items });
     }
+    const prep = stage.prepWeek || [], prepPages = Math.ceil(prep.length / 20);
+    for (let page = 1; page <= prepPages; page++) slides.push({ kind: 'prepWeek',
+        title: '🏠 أهل التحضير هذا الأسبوع', page, pages: prepPages, items: prep.slice((page - 1) * 20, page * 20) });
     if (stage.risingStars?.length) slides.push({ kind: 'risingStars', title: '🚀 النجم الصاعد', items: stage.risingStars.slice(0, 3) });
     return slides;
 }
@@ -193,6 +196,8 @@ if (typeof document !== 'undefined') {
             const rank = event.rank > 0 && event.rank <= 10 ? event.rank : null;
             el('celeRank').textContent = rank == null ? '' : 'الترتيب: ' + ar(rank);
             el('celeRank').hidden = rank == null;
+            el('celePrep').textContent = 'أحسنت تحضير وردك 🏠';
+            el('celePrep').hidden = !event.prep;
         }
         if (view.current && !view.prayer && celebrationId !== view.current.id) burst();
         celebrationId = view.prayer ? null : view.current?.id || null;
@@ -201,7 +206,7 @@ if (typeof document !== 'undefined') {
             el('slides').replaceChildren(); el('dots').replaceChildren(); sections = [];
             view.slides.forEach((slide, index) => {
                 const section = node('section', 'slide'), heading = node('div', 'slide-title'), badge = node('span', 'slide-icon');
-                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
+                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
                 const body = node('div', slide.kind === 'board' ? 'board' : 'cards');
                 if (slide.kind === 'board') {
                     section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));
@@ -218,6 +223,21 @@ if (typeof document !== 'undefined') {
                                 const week = node('b', 'week', '+' + ar(item.week)); week.setAttribute('dir', 'ltr');
                                 row.append(node('b', 'rank', rank), node('span', 'name', item.name), node('b', 'points', ar(item.points)), week);
                                 protectName(row.children[1]);
+                            }
+                            column.append(row);
+                        }
+                        body.append(column);
+                    }
+                } else if (slide.kind === 'prepWeek') {
+                    section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));
+                    body.className = 'board prep-week';
+                    for (let c = 0; c < 2; c++) {
+                        const column = node('div', 'prep-column');
+                        for (let r = 0; r < 10; r++) {
+                            const row = node('div', 'leader'), item = slide.items[c * 10 + r];
+                            if (item) {
+                                const label = node('span', 'name', item.name); protectName(label);
+                                row.append(label, node('b', 'points', ar(item.points)));
                             }
                             column.append(row);
                         }

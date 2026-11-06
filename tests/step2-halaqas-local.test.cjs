@@ -707,7 +707,7 @@ test('absent halaqas are read as empty without mutating settings or adding a def
     }
     const baseline = cp.execFileSync('git', ['show', '9628c9c:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
     // Step5 adds the calendar method; step7 changes only the two general feature defaults.
-    const restored = programsStore.replaceAll('\r\n', '\n')
+    const restored = require('./helpers/board-invariants.cjs').beforeBoard(programsStore, 'programs-store.js')
         .replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '')
         .replace('newMemorization: true, review: true, goldenBoard: false, attendance: true,', 'newMemorization: true, review: true, goldenBoard: true, attendance: true,')
         .replace('groups: false, pomodoro: false, tiers: false', 'groups: false, pomodoro: true, tiers: false')

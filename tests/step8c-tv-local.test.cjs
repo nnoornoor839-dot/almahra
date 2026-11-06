@@ -140,9 +140,10 @@ test('snapshot has exactly allowed keys, approved crowned first only, per-stage 
     assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'stages'].sort());
     assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);
     for (const stage of s.stages) {
-        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'risingStars'].sort());
+        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());
         for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
         for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
+        for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
         for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
     }
     assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
@@ -212,7 +213,7 @@ test('real quick save celebrates only after cloud success, never failed, zero or
     const pending = h.save(); assert.equal(sent.length, 0);
     release({ success: true }); await pending;
     assert.equal(sent.length, 1); assert.equal(sent[0].type, 'celebrate');
-    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period'].sort());
+    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period', 'prep'].sort());
     h.state.pending = null; await h.run('undoLastGeneralEntry()');
     assert.deepEqual(sent[1], { type: 'cancel', id: sent[0].id });
     for (const mode of ['failed', 'zero', 'missed']) {
@@ -323,7 +324,7 @@ test('TV page has only two local scripts, no storage/cloud/external resources or
     assert.match(source('saveGeneralQuickEntry'), /if \(!missed && calculation.total > 0\) sendGeneralTvCelebration/);
     for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js']) {
         const original = cp.execFileSync('git', ['show', `0f1c43e:${file}`], { cwd: root });
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), original.toString('utf8').replaceAll('\r\n', '\n'));
+        assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file), original.toString('utf8').replaceAll('\r\n', '\n'));
     }
 });
 
@@ -352,6 +353,14 @@ test('actual TV browser script boots offline, renders message text literally and
     const row = board.children[0].children[1];
     assert.equal(row.children[1].textContent, snapshot.stages[0].board[0].name);
     assert.match(el('resultsDate').textContent, /29-10/);
+    channel.onmessage({ data: { ...snapshot, stages: [{ name: 'ابتدائي', period: 'asr',
+        prepWeek: [{ name: '<b>اسم حرفي</b>', points: 20 }] }] } });
+    const prep = el('slides').children[0].children[2];
+    assert.equal(prep.children.length, 2);
+    assert.equal(prep.children[0].children.length, 10);
+    const prepRow = prep.children[0].children[0];
+    assert.deepEqual(prepRow.children.map(c => c.textContent), ['<b>اسم حرفي</b>', '20']);
+    assert.equal(prep.children[0].children[1].children.length, 0);
     channel.onmessage({ data: { type: 'celebrate', id: 'one', period: 'asr', name: '<script>literal</script>', added: 5, total: 12, rank: null } });
     assert.equal(el('celeName').textContent, '<script>literal</script>'); assert.equal(el('celeRank').textContent, '');
     channel.onmessage({ data: { type: 'cancel', id: 'one' } }); assert.equal(el('celebration').hidden, true);
