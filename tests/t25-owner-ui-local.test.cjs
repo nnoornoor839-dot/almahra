@@ -205,6 +205,9 @@ test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يبقي رسال�
         assert.equal(await h.page.locator('#quick_new_toAyah').inputValue(), '6');
         assert.equal(await text(h.page, '#generalQuickTotal'), '22.5');
         await h.page.locator('#generalQuickSaveBtn').click();
+        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);
+        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);
+        await h.page.locator('#generalQuickSaveBtn').click();
         await h.page.locator('#smartModal').waitFor({ state: 'hidden' });
         assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);
         assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);

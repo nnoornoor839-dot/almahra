@@ -142,6 +142,7 @@ function harness(s = student()) {
         'applyFieldsLocally', 'canWriteHistory', 'commitGeneralStudentPatch', 'computeLastReview', 'hasGeneralAcceptedNew', 'generalNextPoint',
         'generalQuickContext', 'generalQuickContextMatches', 'invalidateGeneralQuickEntry',
         'generalQuickSuggestions', 'generalPointLabel', 'moveGeneralQuickSections', 'initGeneralQuickEntry', 'renderGeneralQuickGrades',
+        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',
         'quickSurahChanged', 'fulfillGeneralCriteria', 'generalCriteriaChange', 'calculateGeneralQuickEntry', 'updateGeneralQuickPreview',
         'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
         'renderCriteriaList', 'updateCriteriaTotal', 'updateGrandTotal', 'updateGeneralUndoButton', 'getGeneralUndoTarget', 'generalUndoLabel',
@@ -162,7 +163,13 @@ function harness(s = student()) {
     return { state, s, ctx, run, install, element, range, grade, legacy, modal,
         changed: () => listeners.get('almahra-program-changed')(),
         preview: () => { run('updateGeneralQuickPreview()'); return copy(run('calculateGeneralQuickEntry(students[0])')); },
-        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };
+        pressSave: () => run('saveGeneralQuickEntry()'),
+        // اختبارات الحفظ السابقة تكمل التأكيد الجديد؛ اختبارات الجولة ٢ تستعمل pressSave لكل ضغطة.
+        save: () => {
+            const first = run('saveGeneralQuickEntry()');
+            return !element('generalQuickReviewReminder').hidden && run('!generalUndoInProgress && generalQuickEntry.noReviewConfirmation')
+                ? run('saveGeneralQuickEntry()') : first;
+        }, reopen: () => run('openSmartModal(1)') };
 }
 const savedEntries = h => Object.entries(h.state.writes[0].fields).filter(([key]) => key.includes('.entries.')).map(([, entry]) => entry);
 

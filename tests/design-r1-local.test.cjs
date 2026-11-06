@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const cp = require('node:child_process');
 const path = require('node:path');
 const { newPage, answerStudents, root } = require('./helpers/t25-browser.cjs');
+const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');
 const { html, source, harness, student } = require('./helpers/quick-entry-harness.cjs');
 const { tvInvariant } = require('./helpers/tv-harness.cjs');
 let browser;
@@ -88,7 +89,7 @@ test('design r1: saved hijri stays Arabic, registration numbers are Latin and pe
     // Round two owns the registration's structure and style.
     const quick = text => text.match(/<div id="generalQuickSection"[\s\S]*?(?=<div id="smartUndoRow")/)?.[0];
     assert.ok(quick(html) && quick(baseline));
-    assert.equal(quick(html).replace('>0</strong>', '>٠</strong>'), quick(baseline));
+    assert.equal(quick(beforeRound2).replace('>0</strong>', '>٠</strong>'), quick(baseline));
 });
 
 test('design r1: historical Arabic hijri is converted at display only; export and WhatsApp builders remain identical', async () => {

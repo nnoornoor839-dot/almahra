@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { harness, student, source, html, root, copy } = require('./helpers/quick-entry-harness.cjs');
 const { newPage, answerStudents } = require('./helpers/t25-browser.cjs');
+const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');
 const baseline = cp.execFileSync('git', ['show', '82bf19f:index.html'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
 const head = cp.execFileSync('git', ['show', 'a597c11:index.html'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
 let browser;
@@ -19,7 +20,7 @@ after(async () => { await browser?.close(); });
 test('trial r1: only local celebration orchestration changes; TV files, message, guards, persistence and calculations stay literal', () => {
     const oldCall = 'if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);';
     const disconnect = 'if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);';
-    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));
+    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));
     assert.doesNotMatch(html, /celebrateGeneralQuickEntry|الاحتفال على التلفاز/);
     for (const name of ['sendGeneralTvCelebration', 'generalTvReady', 'postGeneralTv', 'enableGeneralTv', 'clearGeneralTv',
         'calculateGeneralQuickEntry', 'buildEntryPatch', 'commitGeneralStudentPatch', 'dayStats', 'getStudentRank',
@@ -110,6 +111,9 @@ for (const connected of [false, true]) test(`trial r1 browser: saving never acti
         }, connected);
         await h.page.locator('#quick_new_toAyah').fill('6');
         await h.page.locator('#quick_new_grades').getByRole('button', { name: 'جيد', exact: true }).click();
+        await h.page.locator('#generalQuickSaveBtn').click();
+        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);
+        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);
         await h.page.locator('#generalQuickSaveBtn').click();
         await h.page.locator('#smartModal').waitFor({ state: 'hidden' });
         const state = await h.page.evaluate(() => window.__trial);

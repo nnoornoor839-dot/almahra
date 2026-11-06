@@ -215,13 +215,37 @@
       "file": "tests/helpers/quick-entry-harness.cjs",
       "hunks": [
         {
+          "oldLine": 145,
+          "newLine": 145,
+          "before": [],
+          "after": [
+            "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
+          ]
+        },
+        {
           "oldLine": 146,
-          "newLine": 146,
+          "newLine": 147,
           "before": [
             "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
           ],
           "after": [
             "        'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
+          ]
+        },
+        {
+          "oldLine": 165,
+          "newLine": 166,
+          "before": [
+            "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
+          ],
+          "after": [
+            "        pressSave: () => run('saveGeneralQuickEntry()'),",
+            "        // اختبارات الحفظ السابقة تكمل التأكيد الجديد؛ اختبارات الجولة ٢ تستعمل pressSave لكل ضغطة.",
+            "        save: () => {",
+            "            const first = run('saveGeneralQuickEntry()');",
+            "            return !element('generalQuickReviewReminder').hidden && run('!generalUndoInProgress && generalQuickEntry.noReviewConfirmation')",
+            "                ? run('saveGeneralQuickEntry()') : first;",
+            "        }, reopen: () => run('openSmartModal(1)') };"
           ]
         }
       ]
@@ -442,6 +466,19 @@
           ],
           "after": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 106,
+          "newLine": 106,
+          "before": [],
+          "after": [
+            "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
           ]
         }
       ]
@@ -1117,6 +1154,9 @@
             "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: ١/);"
           ],
           "after": [
+            "        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);",
+            "        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);",
+            "        await h.page.locator('#generalQuickSaveBtn').click();",
             "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });",
             "        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);",
             "        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);"
@@ -2202,6 +2242,61 @@
       "before": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);",
       "after": "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });\n        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);\n        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);",
       "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 34,
+      "newLine": 35,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "ownerTrialBaseline": "3ac67eb",
+      "before": "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));",
+      "after": "    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 41,
+      "newLine": 42,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "ownerTrialBaseline": "3ac67eb",
+      "before": "        assert.equal(source(name), source(name, original), name);",
+      "after": "        assert.equal(source(name, beforeRound2), source(name, original), name);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 281,
+      "newLine": 283,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "ownerTrialBaseline": "3ac67eb",
+      "before": "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name), source(name, original), name);",
+      "after": "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name, beforeRound2), source(name, original), name);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق."
+    },
+    {
+      "file": "tests/trial-fixes-r1-local.test.cjs",
+      "oldLine": 22,
+      "newLine": 23,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "ownerTrialBaseline": "3ac67eb",
+      "before": "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));",
+      "after": "    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق."
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 91,
+      "newLine": 92,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "ownerTrialBaseline": "3ac67eb",
+      "before": "    assert.equal(quick(html).replace('>0</strong>', '>٠</strong>'), quick(baseline));",
+      "after": "    assert.equal(quick(beforeRound2).replace('>0</strong>', '>٠</strong>'), quick(baseline));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق."
     }
   ],
   "ownerScopeEdits": [
@@ -2233,8 +2328,26 @@
       "file": "tests/design-r1-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 8,
+          "newLine": 8,
+          "before": [],
+          "after": [
+            "const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');"
+          ]
+        },
+        {
+          "oldLine": 91,
+          "newLine": 92,
+          "before": [
+            "    assert.equal(quick(html).replace('>0</strong>', '>٠</strong>'), quick(baseline));"
+          ],
+          "after": [
+            "    assert.equal(quick(beforeRound2).replace('>0</strong>', '>٠</strong>'), quick(baseline));"
+          ]
+        },
+        {
           "oldLine": 127,
-          "newLine": 127,
+          "newLine": 128,
           "before": [
             "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
@@ -2244,7 +2357,7 @@
         },
         {
           "oldLine": 138,
-          "newLine": 138,
+          "newLine": 139,
           "before": [],
           "after": [
             "    for (const row of audit.expectations.filter(row => row.category === 5)) {",
@@ -2262,8 +2375,16 @@
       "file": "tests/design-r2-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');"
+          ]
+        },
+        {
           "oldLine": 22,
-          "newLine": 22,
+          "newLine": 23,
           "before": [],
           "after": [
             "    const oldCelebration = '                if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);';",
@@ -2272,27 +2393,29 @@
         },
         {
           "oldLine": 32,
-          "newLine": 34,
+          "newLine": 35,
           "before": [
             "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast));"
           ],
           "after": [
-            "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));"
+            "    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));"
           ]
         },
         {
           "oldLine": 38,
-          "newLine": 40,
+          "newLine": 41,
           "before": [
-            "        'celebrateGeneralQuickEntry', 'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {"
+            "        'celebrateGeneralQuickEntry', 'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {",
+            "        assert.equal(source(name), source(name, original), name);"
           ],
           "after": [
-            "        'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {"
+            "        'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {",
+            "        assert.equal(source(name, beforeRound2), source(name, original), name);"
           ]
         },
         {
           "oldLine": 93,
-          "newLine": 95,
+          "newLine": 96,
           "before": [
             "        for (const name of ['initGeneralQuickEntry', 'saveGeneralQuickEntry']) h.run(source(name, original));"
           ],
@@ -2302,7 +2425,7 @@
         },
         {
           "oldLine": 126,
-          "newLine": 128,
+          "newLine": 129,
           "before": [
             "test('r2: confirmation names Saad while the celebration text and points remain unchanged', async () => {"
           ],
@@ -2312,7 +2435,7 @@
         },
         {
           "oldLine": 131,
-          "newLine": 133,
+          "newLine": 134,
           "before": [
             "        assert.equal(after.h.element(id).innerText, before.h.element(id).innerText, id);",
             "        assert.equal(after.h.element(id).innerHTML, before.h.element(id).innerHTML, id);"
@@ -2324,7 +2447,7 @@
         },
         {
           "oldLine": 134,
-          "newLine": 136,
+          "newLine": 137,
           "before": [
             "    assert.match(after.h.element('celebrationTitle').innerText, /^حُفظ: /);",
             "    assert.equal(after.h.state.confetti, before.h.state.confetti);"
@@ -2337,13 +2460,31 @@
         },
         {
           "oldLine": 157,
-          "newLine": 160,
+          "newLine": 161,
           "before": [
             "    if (calculation.total > 0) assert.equal(h.element('celebrationTitle').innerText,",
             "        kind === 'new' ? `حُفظ: ${summary}` : 'حُفظ الحضور، والانضباط 8');"
           ],
           "after": [
             "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        },
+        {
+          "oldLine": 180,
+          "newLine": 183,
+          "before": [],
+          "after": [
+            "            saveGeneralQuickEntry(); // الضغطة الأولى تعرض تنبيه المراجعة قبل اختبار انتظار الحفظ."
+          ]
+        },
+        {
+          "oldLine": 279,
+          "newLine": 283,
+          "before": [
+            "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name), source(name, original), name);"
+          ],
+          "after": [
+            "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name, beforeRound2), source(name, original), name);"
           ]
         }
       ]
@@ -2378,13 +2519,37 @@
       "file": "tests/helpers/quick-entry-harness.cjs",
       "hunks": [
         {
+          "oldLine": 145,
+          "newLine": 145,
+          "before": [],
+          "after": [
+            "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
+          ]
+        },
+        {
           "oldLine": 146,
-          "newLine": 146,
+          "newLine": 147,
           "before": [
             "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
           ],
           "after": [
             "        'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
+          ]
+        },
+        {
+          "oldLine": 165,
+          "newLine": 166,
+          "before": [
+            "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
+          ],
+          "after": [
+            "        pressSave: () => run('saveGeneralQuickEntry()'),",
+            "        // اختبارات الحفظ السابقة تكمل التأكيد الجديد؛ اختبارات الجولة ٢ تستعمل pressSave لكل ضغطة.",
+            "        save: () => {",
+            "            const first = run('saveGeneralQuickEntry()');",
+            "            return !element('generalQuickReviewReminder').hidden && run('!generalUndoInProgress && generalQuickEntry.noReviewConfirmation')",
+            "                ? run('saveGeneralQuickEntry()') : first;",
+            "        }, reopen: () => run('openSmartModal(1)') };"
           ]
         }
       ]
@@ -2392,6 +2557,16 @@
     {
       "file": "tests/reports-local.test.cjs",
       "hunks": [
+        {
+          "oldLine": 13,
+          "newLine": 13,
+          "before": [
+            "const initial = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });"
+          ],
+          "after": [
+            "const initial = cp.execFileSync('git', ['show', 'a597c11:index.html'], { cwd: root, encoding: 'utf8' });"
+          ]
+        },
         {
           "oldLine": 257,
           "newLine": 257,
@@ -2436,6 +2611,19 @@
           ],
           "after": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 106,
+          "newLine": 106,
+          "before": [],
+          "after": [
+            "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
           ]
         }
       ]
@@ -2625,6 +2813,9 @@
             "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
           ],
           "after": [
+            "        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);",
+            "        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);",
+            "        await h.page.locator('#generalQuickSaveBtn').click();",
             "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });",
             "        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);",
             "        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);"
@@ -2677,8 +2868,72 @@
         ]
       },
       {
+        "oldLine": 1136,
+        "newLine": 1137,
+        "before": [
+          "body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }",
+          "body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }",
+          "body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }",
+          "body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }",
+          "body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }",
+          "body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }"
+        ],
+        "after": [
+          "body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }",
+          "body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }",
+          "body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }",
+          "body.program-general .smart-general .qe-review-reminder { color:var(--general-pending); font-size:13px; line-height:22px; }",
+          "body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }",
+          "body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }",
+          "body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }"
+        ]
+      },
+      {
+        "oldLine": 2413,
+        "newLine": 2415,
+        "before": [
+          "                <button id=\"tabExamPrepBtn\" onclick=\"switchSmartTab('examprep')\" class=\"flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent\"><i class=\"fas fa-graduation-cap\"></i> الاستعداد للاختبار</button>",
+          "            </div>",
+          "",
+          "            <div id=\"generalQuickSection\" class=\"hidden\" dir=\"rtl\" onkeydown=\"generalQuickKeydown(event)\">",
+          "                <div class=\"qe-head\">",
+          "                    <button type=\"button\" class=\"qe-close\" onclick=\"closeSmartModal()\" aria-label=\"إغلاق\">×</button>",
+          "                    <div class=\"qe-who\"><strong id=\"generalQuickName\"></strong><span id=\"generalQuickWho\"></span></div>"
+        ],
+        "after": [
+          "                <button id=\"tabExamPrepBtn\" onclick=\"switchSmartTab('examprep')\" class=\"flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent\"><i class=\"fas fa-graduation-cap\"></i> الاستعداد للاختبار</button>",
+          "            </div>",
+          "",
+          "            <div id=\"generalQuickSection\" class=\"hidden\" dir=\"rtl\" onkeydown=\"generalQuickKeydown(event)\" oninput=\"resetGeneralQuickReviewConfirmation()\" onchange=\"resetGeneralQuickReviewConfirmation()\">",
+          "                <div class=\"qe-head\">",
+          "                    <button type=\"button\" class=\"qe-close\" onclick=\"closeSmartModal()\" aria-label=\"إغلاق\">×</button>",
+          "                    <div class=\"qe-who\"><strong id=\"generalQuickName\"></strong><span id=\"generalQuickWho\"></span></div>"
+        ]
+      },
+      {
+        "oldLine": 2423,
+        "newLine": 2425,
+        "before": [
+          "                    <fieldset id=\"generalQuickFields\" class=\"qe-fields\">",
+          "                        <div id=\"generalMissedBanner\" class=\"hidden\"><span id=\"generalMissedLabel\"></span><button type=\"button\" onclick=\"selectGeneralQuickDate(todayStr)\">رجوع لليوم</button></div>",
+          "                        <div id=\"generalQuickPanels\"></div>",
+          "                        <div class=\"qe-criteria\">",
+          "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalCriteriaState\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+          "                            <div id=\"generalCriteriaHost\" hidden></div>"
+        ],
+        "after": [
+          "                    <fieldset id=\"generalQuickFields\" class=\"qe-fields\">",
+          "                        <div id=\"generalMissedBanner\" class=\"hidden\"><span id=\"generalMissedLabel\"></span><button type=\"button\" onclick=\"selectGeneralQuickDate(todayStr)\">رجوع لليوم</button></div>",
+          "                        <div id=\"generalQuickPanels\"></div>",
+          "                        <p id=\"generalQuickReviewReminder\" class=\"qe-review-reminder\" aria-live=\"polite\" hidden></p>",
+          "                        <div class=\"qe-criteria\">",
+          "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalCriteriaState\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+          "                            <div id=\"generalCriteriaHost\" hidden></div>"
+        ]
+      },
+      {
         "oldLine": 6888,
-        "newLine": 6889,
+        "newLine": 6891,
         "before": [
           "        function openPointsBreakdownModal(studentId) {",
           "            const student = students.find(s => s.id === studentId); if (!student) return;",
@@ -2701,7 +2956,7 @@
       },
       {
         "oldLine": 7393,
-        "newLine": 7395,
+        "newLine": 7397,
         "before": [
           "        function generalStudentsCardHtml(student) {",
           "            const state = generalCardTodayState(student, todayStr);",
@@ -2723,7 +2978,7 @@
       },
       {
         "oldLine": 7486,
-        "newLine": 7488,
+        "newLine": 7490,
         "before": [
           "                container.innerHTML += `",
           "                    <div class=\"bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2\">",
@@ -2745,7 +3000,7 @@
       },
       {
         "oldLine": 7549,
-        "newLine": 7551,
+        "newLine": 7553,
         "before": [
           "                        <div class=\"text-xs font-black text-amber-600 mb-2\">${p.score === 1 ? 'تطابق تام محتمل' : 'تشابه محتمل'} (${Math.round(p.score * 100)}%)</div>",
           "                        <div class=\"grid grid-cols-1 sm:grid-cols-2 gap-3\">",
@@ -2774,8 +3029,186 @@
         ]
       },
       {
+        "oldLine": 8605,
+        "newLine": 8609,
+        "before": [
+          "        // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.",
+          "        function invalidateGeneralQuickEntry() {",
+          "            if (!generalQuickEntry.context) return;",
+          "            generalQuickEntry.context = null;",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            closeSmartModal(true);"
+        ],
+        "after": [
+          "        // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.",
+          "        function invalidateGeneralQuickEntry() {",
+          "            if (!generalQuickEntry.context) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            generalQuickEntry.context = null;",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            closeSmartModal(true);"
+        ]
+      },
+      {
+        "oldLine": 8621,
+        "newLine": 8626,
+        "before": [
+          "            }",
+          "        }",
+          "        function initGeneralQuickEntry(student, dateStr = todayStr) {",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            const suggestions = generalQuickSuggestions(student);",
+          "            Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,"
+        ],
+        "after": [
+          "            }",
+          "        }",
+          "        function initGeneralQuickEntry(student, dateStr = todayStr) {",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            const suggestions = generalQuickSuggestions(student);",
+          "            Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,"
+        ]
+      },
+      {
+        "oldLine": 8687,
+        "newLine": 8693,
+        "before": [
+          "        }",
+          "        function clearGeneralQuickSection(kind) {",
+          "            if (generalUndoInProgress) return;",
+          "            generalQuickEntry.grades[kind] = '';",
+          "            const values = generalQuickEntry.initial[kind]; let index = 0;",
+          "            for (const edge of ['from', 'to']) for (const field of ['Surah', 'Ayah']) {"
+        ],
+        "after": [
+          "        }",
+          "        function clearGeneralQuickSection(kind) {",
+          "            if (generalUndoInProgress) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            generalQuickEntry.grades[kind] = '';",
+          "            const values = generalQuickEntry.initial[kind]; let index = 0;",
+          "            for (const edge of ['from', 'to']) for (const field of ['Surah', 'Ayah']) {"
+        ]
+      },
+      {
+        "oldLine": 8721,
+        "newLine": 8728,
+        "before": [
+          "                    button.className = 'qe-grade';",
+          "                    button.setAttribute('aria-pressed', String(selected));",
+          "                    button.onclick = () => {",
+          "                        generalQuickEntry.grades[kind] = grade.id;",
+          "                        renderGeneralQuickGrades(); updateGeneralQuickPreview();",
+          "                    };"
+        ],
+        "after": [
+          "                    button.className = 'qe-grade';",
+          "                    button.setAttribute('aria-pressed', String(selected));",
+          "                    button.onclick = () => {",
+          "                        resetGeneralQuickReviewConfirmation();",
+          "                        generalQuickEntry.grades[kind] = grade.id;",
+          "                        renderGeneralQuickGrades(); updateGeneralQuickPreview();",
+          "                    };"
+        ]
+      },
+      {
+        "oldLine": 8739,
+        "newLine": 8747,
+        "before": [
+          "        }",
+          "        function fulfillGeneralCriteria() {",
+          "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+          "            const boxes = [...document.querySelectorAll('.crit-box')];",
+          "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+          "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });"
+        ],
+        "after": [
+          "        }",
+          "        function fulfillGeneralCriteria() {",
+          "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            const boxes = [...document.querySelectorAll('.crit-box')];",
+          "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+          "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });"
+        ]
+      },
+      {
+        "oldLine": 8814,
+        "newLine": 8823,
+        "before": [
+          "            const point = pair => generalPointLabel({ surah: pair[0], ayah: pair[1] });",
+          "            return `${entry.kind === 'new' ? 'الجديد' : 'المراجعة'}: ${point(entry.spec.from)} ← ${point(entry.spec.to)} (${settings.grades.find(g => g.id === entry.grade)?.name || ''})`;",
+          "        }",
+          "        function updateGeneralQuickPreview() {",
+          "            if (!isGeneralProgram() || document.getElementById('generalQuickSection')?.dataset.ready !== 'true') return;",
+          "            const student = students.find(s => s.id === currentEditingStudentId);",
+          "            if (!student || !document.getElementById('quick_new_toSurah')) return;",
+          "            const calculation = calculateGeneralQuickEntry(student), { errors, used, position } = calculation;",
+          "            const invalidPosition = generalOriginalPosition(student).invalid;",
+          "            generalQuickEntry.previewKey = calculation.key;",
+          "            const start = position.valid ? generalNextPoint(position.point, student.direction) : null;"
+        ],
+        "after": [
+          "            const point = pair => generalPointLabel({ surah: pair[0], ayah: pair[1] });",
+          "            return `${entry.kind === 'new' ? 'الجديد' : 'المراجعة'}: ${point(entry.spec.from)} ← ${point(entry.spec.to)} (${settings.grades.find(g => g.id === entry.grade)?.name || ''})`;",
+          "        }",
+          "        function resetGeneralQuickReviewConfirmation() {",
+          "            generalQuickEntry.noReviewConfirmation = null;",
+          "            const reminder = document.getElementById('generalQuickReviewReminder');",
+          "            reminder.hidden = true;",
+          "            reminder.textContent = '';",
+          "        }",
+          "        function generalQuickReviewConfirmationKey() {",
+          "            return JSON.stringify([currentEditingStudentId, generalQuickEntry.dateStr,",
+          "                generalQuickSectionValues('new'), generalQuickSectionValues('review'), generalQuickEntry.grades,",
+          "                generalQuickPositionValues(), getCriteriaSelection()]);",
+          "        }",
+          "        function updateGeneralQuickPreview() {",
+          "            if (!isGeneralProgram() || document.getElementById('generalQuickSection')?.dataset.ready !== 'true') return;",
+          "            const student = students.find(s => s.id === currentEditingStudentId);",
+          "            if (!student || !document.getElementById('quick_new_toSurah')) return;",
+          "            const calculation = calculateGeneralQuickEntry(student), { errors, used, position } = calculation;",
+          "            if (generalQuickEntry.noReviewConfirmation && (errors.length",
+          "                || generalQuickEntry.noReviewConfirmation !== generalQuickReviewConfirmationKey())) resetGeneralQuickReviewConfirmation();",
+          "            const invalidPosition = generalOriginalPosition(student).invalid;",
+          "            generalQuickEntry.previewKey = calculation.key;",
+          "            const start = position.valid ? generalNextPoint(position.point, student.direction) : null;"
+        ]
+      },
+      {
+        "oldLine": 8900,
+        "newLine": 8922,
+        "before": [
+          "            if (calculation.key !== generalQuickEntry.previewKey) {",
+          "                updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;",
+          "            }",
+          "            const dayName = missed ? generalQuickDayName(dateStr) : '';",
+          "            const positionOnly = generalQuickEntry.needsPosition && !calculation.sections.length && !calculation.criteria.changed;",
+          "            if (missed && !confirm(`سيُحفظ على يوم ${dayName}. متابعة؟`)) return;"
+        ],
+        "after": [
+          "            if (calculation.key !== generalQuickEntry.previewKey) {",
+          "                updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;",
+          "            }",
+          "            if (calculation.sections.some(entry => entry.kind === 'new') && !calculation.sections.some(entry => entry.kind === 'review')) {",
+          "                const confirmation = generalQuickReviewConfirmationKey();",
+          "                if (generalQuickEntry.noReviewConfirmation !== confirmation) {",
+          "                    generalQuickEntry.noReviewConfirmation = confirmation;",
+          "                    const reminder = document.getElementById('generalQuickReviewReminder');",
+          "                    reminder.textContent = `لم تُدخل مراجعة ل${student.name}. اضغط Enter مرة أخرى للحفظ بلا مراجعة.`;",
+          "                    reminder.hidden = false;",
+          "                    return;",
+          "                }",
+          "            }",
+          "            const dayName = missed ? generalQuickDayName(dateStr) : '';",
+          "            const positionOnly = generalQuickEntry.needsPosition && !calculation.sections.length && !calculation.criteria.changed;",
+          "            if (missed && !confirm(`سيُحفظ على يوم ${dayName}. متابعة؟`)) return;"
+        ]
+      },
+      {
         "oldLine": 8953,
-        "newLine": 8955,
+        "newLine": 8985,
         "before": [
           "                closeSmartModal();",
           "                search?.focus();",
@@ -2827,8 +3260,30 @@
         ]
       },
       {
+        "oldLine": 9046,
+        "newLine": 9053,
+        "before": [
+          "            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();",
+          "        }",
+          "        ",
+          "        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }",
+          "        ",
+          "        function saveSmartProgress() {",
+          "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }"
+        ],
+        "after": [
+          "            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();",
+          "        }",
+          "        ",
+          "        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; if (isGeneralProgram()) resetGeneralQuickReviewConfirmation(); document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }",
+          "        ",
+          "        function saveSmartProgress() {",
+          "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }"
+        ]
+      },
+      {
         "oldLine": 9175,
-        "newLine": 9152,
+        "newLine": 9182,
         "before": [
           "                return `",
           "                <div class=\"bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-3\">",
@@ -2850,7 +3305,7 @@
       },
       {
         "oldLine": 10112,
-        "newLine": 10089,
+        "newLine": 10119,
         "before": [
           "        }",
           "        function confirmDelete(id) {",
@@ -2875,7 +3330,7 @@
       },
       {
         "oldLine": 11851,
-        "newLine": 11831,
+        "newLine": 11861,
         "before": [
           "            list.innerHTML = shown.map(s => `",
           "                <div class=\"bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2\" data-sid=\"${s.id}\">",
@@ -2897,7 +3352,7 @@
       },
       {
         "oldLine": 11978,
-        "newLine": 11958,
+        "newLine": 11988,
         "before": [
           "            document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';",
           "            box.innerHTML = list.map(s => `",
@@ -2918,5 +3373,463 @@
         ]
       }
     ]
-  }
+  },
+  "trialRound2ProductionChanges": {
+    "file": "index.html",
+    "category": 5,
+    "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦",
+    "hunks": [
+      {
+        "oldLine": 1137,
+        "newLine": 1137,
+        "before": [
+          "body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }",
+          "body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }",
+          "body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }",
+          "body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }",
+          "body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }",
+          "body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }"
+        ],
+        "after": [
+          "body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }",
+          "body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }",
+          "body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }",
+          "body.program-general .smart-general .qe-review-reminder { color:var(--general-pending); font-size:13px; line-height:22px; }",
+          "body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }",
+          "body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }",
+          "body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }"
+        ]
+      },
+      {
+        "oldLine": 2414,
+        "newLine": 2415,
+        "before": [
+          "                <button id=\"tabExamPrepBtn\" onclick=\"switchSmartTab('examprep')\" class=\"flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent\"><i class=\"fas fa-graduation-cap\"></i> الاستعداد للاختبار</button>",
+          "            </div>",
+          "",
+          "            <div id=\"generalQuickSection\" class=\"hidden\" dir=\"rtl\" onkeydown=\"generalQuickKeydown(event)\">",
+          "                <div class=\"qe-head\">",
+          "                    <button type=\"button\" class=\"qe-close\" onclick=\"closeSmartModal()\" aria-label=\"إغلاق\">×</button>",
+          "                    <div class=\"qe-who\"><strong id=\"generalQuickName\"></strong><span id=\"generalQuickWho\"></span></div>"
+        ],
+        "after": [
+          "                <button id=\"tabExamPrepBtn\" onclick=\"switchSmartTab('examprep')\" class=\"flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent\"><i class=\"fas fa-graduation-cap\"></i> الاستعداد للاختبار</button>",
+          "            </div>",
+          "",
+          "            <div id=\"generalQuickSection\" class=\"hidden\" dir=\"rtl\" onkeydown=\"generalQuickKeydown(event)\" oninput=\"resetGeneralQuickReviewConfirmation()\" onchange=\"resetGeneralQuickReviewConfirmation()\">",
+          "                <div class=\"qe-head\">",
+          "                    <button type=\"button\" class=\"qe-close\" onclick=\"closeSmartModal()\" aria-label=\"إغلاق\">×</button>",
+          "                    <div class=\"qe-who\"><strong id=\"generalQuickName\"></strong><span id=\"generalQuickWho\"></span></div>"
+        ]
+      },
+      {
+        "oldLine": 2424,
+        "newLine": 2425,
+        "before": [
+          "                    <fieldset id=\"generalQuickFields\" class=\"qe-fields\">",
+          "                        <div id=\"generalMissedBanner\" class=\"hidden\"><span id=\"generalMissedLabel\"></span><button type=\"button\" onclick=\"selectGeneralQuickDate(todayStr)\">رجوع لليوم</button></div>",
+          "                        <div id=\"generalQuickPanels\"></div>",
+          "                        <div class=\"qe-criteria\">",
+          "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalCriteriaState\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+          "                            <div id=\"generalCriteriaHost\" hidden></div>"
+        ],
+        "after": [
+          "                    <fieldset id=\"generalQuickFields\" class=\"qe-fields\">",
+          "                        <div id=\"generalMissedBanner\" class=\"hidden\"><span id=\"generalMissedLabel\"></span><button type=\"button\" onclick=\"selectGeneralQuickDate(todayStr)\">رجوع لليوم</button></div>",
+          "                        <div id=\"generalQuickPanels\"></div>",
+          "                        <p id=\"generalQuickReviewReminder\" class=\"qe-review-reminder\" aria-live=\"polite\" hidden></p>",
+          "                        <div class=\"qe-criteria\">",
+          "                            <div class=\"qe-criteria-bar\"><b>الانضباط</b><button id=\"generalCriteriaAllBtn\" type=\"button\" onclick=\"fulfillGeneralCriteria()\">✓ استوفى المعايير</button><span id=\"generalCriteriaState\"></span><button id=\"generalCriteriaExceptions\" type=\"button\" aria-expanded=\"false\" onclick=\"toggleGeneralCriteriaExceptions()\">استثناءات ▾</button></div>",
+          "                            <div id=\"generalCriteriaHost\" hidden></div>"
+        ]
+      },
+      {
+        "oldLine": 8607,
+        "newLine": 8609,
+        "before": [
+          "        // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.",
+          "        function invalidateGeneralQuickEntry() {",
+          "            if (!generalQuickEntry.context) return;",
+          "            generalQuickEntry.context = null;",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            closeSmartModal(true);"
+        ],
+        "after": [
+          "        // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.",
+          "        function invalidateGeneralQuickEntry() {",
+          "            if (!generalQuickEntry.context) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            generalQuickEntry.context = null;",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            closeSmartModal(true);"
+        ]
+      },
+      {
+        "oldLine": 8623,
+        "newLine": 8626,
+        "before": [
+          "            }",
+          "        }",
+          "        function initGeneralQuickEntry(student, dateStr = todayStr) {",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            const suggestions = generalQuickSuggestions(student);",
+          "            Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,"
+        ],
+        "after": [
+          "            }",
+          "        }",
+          "        function initGeneralQuickEntry(student, dateStr = todayStr) {",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            document.getElementById('generalQuickSection').dataset.ready = 'false';",
+          "            const suggestions = generalQuickSuggestions(student);",
+          "            Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,"
+        ]
+      },
+      {
+        "oldLine": 8689,
+        "newLine": 8693,
+        "before": [
+          "        }",
+          "        function clearGeneralQuickSection(kind) {",
+          "            if (generalUndoInProgress) return;",
+          "            generalQuickEntry.grades[kind] = '';",
+          "            const values = generalQuickEntry.initial[kind]; let index = 0;",
+          "            for (const edge of ['from', 'to']) for (const field of ['Surah', 'Ayah']) {"
+        ],
+        "after": [
+          "        }",
+          "        function clearGeneralQuickSection(kind) {",
+          "            if (generalUndoInProgress) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            generalQuickEntry.grades[kind] = '';",
+          "            const values = generalQuickEntry.initial[kind]; let index = 0;",
+          "            for (const edge of ['from', 'to']) for (const field of ['Surah', 'Ayah']) {"
+        ]
+      },
+      {
+        "oldLine": 8723,
+        "newLine": 8728,
+        "before": [
+          "                    button.className = 'qe-grade';",
+          "                    button.setAttribute('aria-pressed', String(selected));",
+          "                    button.onclick = () => {",
+          "                        generalQuickEntry.grades[kind] = grade.id;",
+          "                        renderGeneralQuickGrades(); updateGeneralQuickPreview();",
+          "                    };"
+        ],
+        "after": [
+          "                    button.className = 'qe-grade';",
+          "                    button.setAttribute('aria-pressed', String(selected));",
+          "                    button.onclick = () => {",
+          "                        resetGeneralQuickReviewConfirmation();",
+          "                        generalQuickEntry.grades[kind] = grade.id;",
+          "                        renderGeneralQuickGrades(); updateGeneralQuickPreview();",
+          "                    };"
+        ]
+      },
+      {
+        "oldLine": 8741,
+        "newLine": 8747,
+        "before": [
+          "        }",
+          "        function fulfillGeneralCriteria() {",
+          "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+          "            const boxes = [...document.querySelectorAll('.crit-box')];",
+          "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+          "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });"
+        ],
+        "after": [
+          "        }",
+          "        function fulfillGeneralCriteria() {",
+          "            if (!isGeneralProgram() || generalUndoInProgress) return;",
+          "            resetGeneralQuickReviewConfirmation();",
+          "            const boxes = [...document.querySelectorAll('.crit-box')];",
+          "            const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);",
+          "            boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });"
+        ]
+      },
+      {
+        "oldLine": 8816,
+        "newLine": 8823,
+        "before": [
+          "            const point = pair => generalPointLabel({ surah: pair[0], ayah: pair[1] });",
+          "            return `${entry.kind === 'new' ? 'الجديد' : 'المراجعة'}: ${point(entry.spec.from)} ← ${point(entry.spec.to)} (${settings.grades.find(g => g.id === entry.grade)?.name || ''})`;",
+          "        }",
+          "        function updateGeneralQuickPreview() {",
+          "            if (!isGeneralProgram() || document.getElementById('generalQuickSection')?.dataset.ready !== 'true') return;",
+          "            const student = students.find(s => s.id === currentEditingStudentId);",
+          "            if (!student || !document.getElementById('quick_new_toSurah')) return;",
+          "            const calculation = calculateGeneralQuickEntry(student), { errors, used, position } = calculation;",
+          "            const invalidPosition = generalOriginalPosition(student).invalid;",
+          "            generalQuickEntry.previewKey = calculation.key;",
+          "            const start = position.valid ? generalNextPoint(position.point, student.direction) : null;"
+        ],
+        "after": [
+          "            const point = pair => generalPointLabel({ surah: pair[0], ayah: pair[1] });",
+          "            return `${entry.kind === 'new' ? 'الجديد' : 'المراجعة'}: ${point(entry.spec.from)} ← ${point(entry.spec.to)} (${settings.grades.find(g => g.id === entry.grade)?.name || ''})`;",
+          "        }",
+          "        function resetGeneralQuickReviewConfirmation() {",
+          "            generalQuickEntry.noReviewConfirmation = null;",
+          "            const reminder = document.getElementById('generalQuickReviewReminder');",
+          "            reminder.hidden = true;",
+          "            reminder.textContent = '';",
+          "        }",
+          "        function generalQuickReviewConfirmationKey() {",
+          "            return JSON.stringify([currentEditingStudentId, generalQuickEntry.dateStr,",
+          "                generalQuickSectionValues('new'), generalQuickSectionValues('review'), generalQuickEntry.grades,",
+          "                generalQuickPositionValues(), getCriteriaSelection()]);",
+          "        }",
+          "        function updateGeneralQuickPreview() {",
+          "            if (!isGeneralProgram() || document.getElementById('generalQuickSection')?.dataset.ready !== 'true') return;",
+          "            const student = students.find(s => s.id === currentEditingStudentId);",
+          "            if (!student || !document.getElementById('quick_new_toSurah')) return;",
+          "            const calculation = calculateGeneralQuickEntry(student), { errors, used, position } = calculation;",
+          "            if (generalQuickEntry.noReviewConfirmation && (errors.length",
+          "                || generalQuickEntry.noReviewConfirmation !== generalQuickReviewConfirmationKey())) resetGeneralQuickReviewConfirmation();",
+          "            const invalidPosition = generalOriginalPosition(student).invalid;",
+          "            generalQuickEntry.previewKey = calculation.key;",
+          "            const start = position.valid ? generalNextPoint(position.point, student.direction) : null;"
+        ]
+      },
+      {
+        "oldLine": 8902,
+        "newLine": 8922,
+        "before": [
+          "            if (calculation.key !== generalQuickEntry.previewKey) {",
+          "                updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;",
+          "            }",
+          "            const dayName = missed ? generalQuickDayName(dateStr) : '';",
+          "            const positionOnly = generalQuickEntry.needsPosition && !calculation.sections.length && !calculation.criteria.changed;",
+          "            if (missed && !confirm(`سيُحفظ على يوم ${dayName}. متابعة؟`)) return;"
+        ],
+        "after": [
+          "            if (calculation.key !== generalQuickEntry.previewKey) {",
+          "                updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;",
+          "            }",
+          "            if (calculation.sections.some(entry => entry.kind === 'new') && !calculation.sections.some(entry => entry.kind === 'review')) {",
+          "                const confirmation = generalQuickReviewConfirmationKey();",
+          "                if (generalQuickEntry.noReviewConfirmation !== confirmation) {",
+          "                    generalQuickEntry.noReviewConfirmation = confirmation;",
+          "                    const reminder = document.getElementById('generalQuickReviewReminder');",
+          "                    reminder.textContent = `لم تُدخل مراجعة ل${student.name}. اضغط Enter مرة أخرى للحفظ بلا مراجعة.`;",
+          "                    reminder.hidden = false;",
+          "                    return;",
+          "                }",
+          "            }",
+          "            const dayName = missed ? generalQuickDayName(dateStr) : '';",
+          "            const positionOnly = generalQuickEntry.needsPosition && !calculation.sections.length && !calculation.criteria.changed;",
+          "            if (missed && !confirm(`سيُحفظ على يوم ${dayName}. متابعة؟`)) return;"
+        ]
+      },
+      {
+        "oldLine": 9023,
+        "newLine": 9053,
+        "before": [
+          "            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();",
+          "        }",
+          "        ",
+          "        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }",
+          "        ",
+          "        function saveSmartProgress() {",
+          "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }"
+        ],
+        "after": [
+          "            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();",
+          "        }",
+          "        ",
+          "        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; if (isGeneralProgram()) resetGeneralQuickReviewConfirmation(); document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }",
+          "        ",
+          "        function saveSmartProgress() {",
+          "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }"
+        ]
+      }
+    ]
+  },
+  "trialRound2Baseline": "3ac67eb",
+  "trialRound2Reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: الجولة ٢، تنبيه قبل حفظ الجديد دون مراجعة في general؛ استثناء حرفي للواجهة وتكييف خطوات التأكيد في الاختبارات، دون تغيير أي رقم متوقع أو بيانات محفوظة. تثبيت مرجع التقارير عند a597c11 بدلاً من HEAD المتحرك ليبقى قفل الجولة ١ صالحاً بعد commit السابق.",
+  "trialRound2Fixes": [
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 8,
+          "newLine": 8,
+          "before": [],
+          "after": [
+            "const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');"
+          ]
+        },
+        {
+          "oldLine": 91,
+          "newLine": 92,
+          "before": [
+            "    assert.equal(quick(html).replace('>0</strong>', '>٠</strong>'), quick(baseline));"
+          ],
+          "after": [
+            "    assert.equal(quick(beforeRound2).replace('>0</strong>', '>٠</strong>'), quick(baseline));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');"
+          ]
+        },
+        {
+          "oldLine": 34,
+          "newLine": 35,
+          "before": [
+            "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));"
+          ],
+          "after": [
+            "    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));"
+          ]
+        },
+        {
+          "oldLine": 41,
+          "newLine": 42,
+          "before": [
+            "        assert.equal(source(name), source(name, original), name);"
+          ],
+          "after": [
+            "        assert.equal(source(name, beforeRound2), source(name, original), name);"
+          ]
+        },
+        {
+          "oldLine": 182,
+          "newLine": 183,
+          "before": [],
+          "after": [
+            "            saveGeneralQuickEntry(); // الضغطة الأولى تعرض تنبيه المراجعة قبل اختبار انتظار الحفظ."
+          ]
+        },
+        {
+          "oldLine": 281,
+          "newLine": 283,
+          "before": [
+            "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name), source(name, original), name);"
+          ],
+          "after": [
+            "    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name, beforeRound2), source(name, original), name);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/quick-entry-harness.cjs",
+      "hunks": [
+        {
+          "oldLine": 145,
+          "newLine": 145,
+          "before": [],
+          "after": [
+            "        'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',"
+          ]
+        },
+        {
+          "oldLine": 165,
+          "newLine": 166,
+          "before": [
+            "        save: () => run('saveGeneralQuickEntry()'), reopen: () => run('openSmartModal(1)') };"
+          ],
+          "after": [
+            "        pressSave: () => run('saveGeneralQuickEntry()'),",
+            "        // اختبارات الحفظ السابقة تكمل التأكيد الجديد؛ اختبارات الجولة ٢ تستعمل pressSave لكل ضغطة.",
+            "        save: () => {",
+            "            const first = run('saveGeneralQuickEntry()');",
+            "            return !element('generalQuickReviewReminder').hidden && run('!generalUndoInProgress && generalQuickEntry.noReviewConfirmation')",
+            "                ? run('saveGeneralQuickEntry()') : first;",
+            "        }, reopen: () => run('openSmartModal(1)') };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 13,
+          "newLine": 13,
+          "before": [
+            "const initial = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });"
+          ],
+          "after": [
+            "const initial = cp.execFileSync('git', ['show', 'a597c11:index.html'], { cwd: root, encoding: 'utf8' });"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 106,
+          "newLine": 106,
+          "before": [],
+          "after": [
+            "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 208,
+          "newLine": 208,
+          "before": [],
+          "after": [
+            "        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);",
+            "        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);",
+            "        await h.page.locator('#generalQuickSaveBtn').click();"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/trial-fixes-r1-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [],
+          "after": [
+            "const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');"
+          ]
+        },
+        {
+          "oldLine": 22,
+          "newLine": 23,
+          "before": [
+            "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));"
+          ],
+          "after": [
+            "    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', head).replace(oldCall, disconnect));"
+          ]
+        },
+        {
+          "oldLine": 114,
+          "newLine": 115,
+          "before": [],
+          "after": [
+            "        assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);",
+            "        assert.equal(await h.page.locator('#generalQuickReviewReminder').isVisible(), true);",
+            "        await h.page.locator('#generalQuickSaveBtn').click();"
+          ]
+        }
+      ]
+    }
+  ],
+  "trialRound2NewFiles": [
+    "tests/helpers/trial-r2-invariants.cjs",
+    "tests/trial-fixes-r2-local.test.cjs"
+  ]
 }

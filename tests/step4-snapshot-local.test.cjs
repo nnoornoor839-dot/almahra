@@ -103,6 +103,7 @@ const stampedEntry = h => h.state.writes.find(w => w.kind === 'patch').args[1]['
 test('general quick sard stamps all three fields from one settings snapshot despite stale student copies', async () => {
     const h = quickHarness(quickStudent({}, { frontierFix: { surah: null, ayah: null, at: 0 }, stage: 'g2', teacherId: 't2' }));
     h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();
+    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية.
     const first = copy(h.state.settings), second = copy(first); let reads = 0;
     second.halaqas[0].stageId = 'g2'; second.halaqas[0].teacherId = 't2';
     h.ctx.window.almahraPrograms.getSettings = () => ++reads === 1 ? first : second;

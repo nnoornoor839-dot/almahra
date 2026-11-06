@@ -10,7 +10,7 @@ const { answerStudents } = require('./helpers/t25-browser.cjs');
 const home = require('./rules/home-answer-key.json');
 const key = require('./rules/reports-answer-key.json');
 const baseline = cp.execFileSync('git', ['show', '82bf19f:index.html'], { cwd: root, encoding: 'utf8' });
-const initial = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });
+const initial = cp.execFileSync('git', ['show', 'a597c11:index.html'], { cwd: root, encoding: 'utf8' });
 const range = { ...key.period, today: key.today };
 const early = { from: '2026-11-01', to: '2026-11-04', today: key.today };
 

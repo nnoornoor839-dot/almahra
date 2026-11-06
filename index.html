@@ -1137,6 +1137,7 @@ body.program-general .smart-general .qe-fix,
 body.program-general .smart-general .qe-hint { color:var(--general-muted); font-size:12px; font-weight:400; text-underline-offset:4px; }
 body.program-general .smart-general .qe-below { grid-column:2 / -1; gap:4px 20px; }
 body.program-general .smart-general .qe-message { color:var(--general-below-limit); font-size:12px; line-height:22px; }
+body.program-general .smart-general .qe-review-reminder { color:var(--general-pending); font-size:13px; line-height:22px; }
 body.program-general .smart-general .qe-error { outline-color:var(--general-below-limit) !important; }
 body.program-general .smart-general .qe-pair .qe-error { border-color:var(--general-below-limit); }
 body.program-general .smart-general .qe-criteria { border:0; border-top:1px solid var(--general-line); border-radius:0; padding:20px 0; background:transparent; }
@@ -2414,7 +2415,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 <button id="tabExamPrepBtn" onclick="switchSmartTab('examprep')" class="flex-1 py-3 rounded-xl font-black text-lg md:text-xl text-slate-500 hover:text-slate-700 transition-all bg-transparent"><i class="fas fa-graduation-cap"></i> الاستعداد للاختبار</button>
             </div>
 
-            <div id="generalQuickSection" class="hidden" dir="rtl" onkeydown="generalQuickKeydown(event)">
+            <div id="generalQuickSection" class="hidden" dir="rtl" onkeydown="generalQuickKeydown(event)" oninput="resetGeneralQuickReviewConfirmation()" onchange="resetGeneralQuickReviewConfirmation()">
                 <div class="qe-head">
                     <button type="button" class="qe-close" onclick="closeSmartModal()" aria-label="إغلاق">×</button>
                     <div class="qe-who"><strong id="generalQuickName"></strong><span id="generalQuickWho"></span></div>
@@ -2424,6 +2425,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <fieldset id="generalQuickFields" class="qe-fields">
                         <div id="generalMissedBanner" class="hidden"><span id="generalMissedLabel"></span><button type="button" onclick="selectGeneralQuickDate(todayStr)">رجوع لليوم</button></div>
                         <div id="generalQuickPanels"></div>
+                        <p id="generalQuickReviewReminder" class="qe-review-reminder" aria-live="polite" hidden></p>
                         <div class="qe-criteria">
                             <div class="qe-criteria-bar"><b>الانضباط</b><button id="generalCriteriaAllBtn" type="button" onclick="fulfillGeneralCriteria()">✓ استوفى المعايير</button><span id="generalCriteriaState"></span><button id="generalCriteriaExceptions" type="button" aria-expanded="false" onclick="toggleGeneralCriteriaExceptions()">استثناءات ▾</button></div>
                             <div id="generalCriteriaHost" hidden></div>
@@ -8607,6 +8609,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // يشمل الحدث تبديل الموسم أيضاً؛ يبطل النموذج حتى أثناء انتظار السحابة.
         function invalidateGeneralQuickEntry() {
             if (!generalQuickEntry.context) return;
+            resetGeneralQuickReviewConfirmation();
             generalQuickEntry.context = null;
             document.getElementById('generalQuickSection').dataset.ready = 'false';
             closeSmartModal(true);
@@ -8623,6 +8626,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
         }
         function initGeneralQuickEntry(student, dateStr = todayStr) {
+            resetGeneralQuickReviewConfirmation();
             document.getElementById('generalQuickSection').dataset.ready = 'false';
             const suggestions = generalQuickSuggestions(student);
             Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,
@@ -8689,6 +8693,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function clearGeneralQuickSection(kind) {
             if (generalUndoInProgress) return;
+            resetGeneralQuickReviewConfirmation();
             generalQuickEntry.grades[kind] = '';
             const values = generalQuickEntry.initial[kind]; let index = 0;
             for (const edge of ['from', 'to']) for (const field of ['Surah', 'Ayah']) {
@@ -8723,6 +8728,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     button.className = 'qe-grade';
                     button.setAttribute('aria-pressed', String(selected));
                     button.onclick = () => {
+                        resetGeneralQuickReviewConfirmation();
                         generalQuickEntry.grades[kind] = grade.id;
                         renderGeneralQuickGrades(); updateGeneralQuickPreview();
                     };
@@ -8741,6 +8747,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function fulfillGeneralCriteria() {
             if (!isGeneralProgram() || generalUndoInProgress) return;
+            resetGeneralQuickReviewConfirmation();
             const boxes = [...document.querySelectorAll('.crit-box')];
             const allPositive = boxes.filter(cb => Number(cb.dataset.pts) >= 0).every(cb => cb.checked);
             boxes.forEach(cb => { cb.checked = !allPositive && Number(cb.dataset.pts) >= 0; });
@@ -8816,11 +8823,24 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const point = pair => generalPointLabel({ surah: pair[0], ayah: pair[1] });
             return `${entry.kind === 'new' ? 'الجديد' : 'المراجعة'}: ${point(entry.spec.from)} ← ${point(entry.spec.to)} (${settings.grades.find(g => g.id === entry.grade)?.name || ''})`;
         }
+        function resetGeneralQuickReviewConfirmation() {
+            generalQuickEntry.noReviewConfirmation = null;
+            const reminder = document.getElementById('generalQuickReviewReminder');
+            reminder.hidden = true;
+            reminder.textContent = '';
+        }
+        function generalQuickReviewConfirmationKey() {
+            return JSON.stringify([currentEditingStudentId, generalQuickEntry.dateStr,
+                generalQuickSectionValues('new'), generalQuickSectionValues('review'), generalQuickEntry.grades,
+                generalQuickPositionValues(), getCriteriaSelection()]);
+        }
         function updateGeneralQuickPreview() {
             if (!isGeneralProgram() || document.getElementById('generalQuickSection')?.dataset.ready !== 'true') return;
             const student = students.find(s => s.id === currentEditingStudentId);
             if (!student || !document.getElementById('quick_new_toSurah')) return;
             const calculation = calculateGeneralQuickEntry(student), { errors, used, position } = calculation;
+            if (generalQuickEntry.noReviewConfirmation && (errors.length
+                || generalQuickEntry.noReviewConfirmation !== generalQuickReviewConfirmationKey())) resetGeneralQuickReviewConfirmation();
             const invalidPosition = generalOriginalPosition(student).invalid;
             generalQuickEntry.previewKey = calculation.key;
             const start = position.valid ? generalNextPoint(position.point, student.direction) : null;
@@ -8901,6 +8921,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             if (calculation.key !== generalQuickEntry.previewKey) {
                 updateGeneralQuickPreview(); showToast('تغيّرت النقاط؛ راجع المعاينة ثم احفظ', 'error'); return;
+            }
+            if (calculation.sections.some(entry => entry.kind === 'new') && !calculation.sections.some(entry => entry.kind === 'review')) {
+                const confirmation = generalQuickReviewConfirmationKey();
+                if (generalQuickEntry.noReviewConfirmation !== confirmation) {
+                    generalQuickEntry.noReviewConfirmation = confirmation;
+                    const reminder = document.getElementById('generalQuickReviewReminder');
+                    reminder.textContent = `لم تُدخل مراجعة ل${student.name}. اضغط Enter مرة أخرى للحفظ بلا مراجعة.`;
+                    reminder.hidden = false;
+                    return;
+                }
             }
             const dayName = missed ? generalQuickDayName(dateStr) : '';
             const positionOnly = generalQuickEntry.needsPosition && !calculation.sections.length && !calculation.criteria.changed;
@@ -9023,7 +9053,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();
         }
         
-        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
+        function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; if (isGeneralProgram()) resetGeneralQuickReviewConfirmation(); document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
         
         function saveSmartProgress() {
             if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }

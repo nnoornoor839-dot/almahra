@@ -7,6 +7,7 @@ const path = require('node:path');
 const { harness, student, copy, source, html, root, today, savedEntries } = require('./helpers/quick-entry-harness.cjs');
 const { newPage } = require('./helpers/t25-browser.cjs');
 const { tvInvariant } = require('./helpers/tv-harness.cjs');
+const { beforeRound2 } = require('./helpers/trial-r2-invariants.cjs');
 const original = cp.execFileSync('git', ['show', '50a97dc:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8e6 });
 const fixture = () => student({}, { name: 'سعد', direction: 'down', lastSurah: 2, lastAyah: 29,
     history: { [today]: { entries: {}, criteria: { late: -2 }, criteriaPoints: -2, absence: 'excused', note: 'وهمي' } } });
@@ -31,14 +32,14 @@ test('r2: save, calculation and validation keep the baseline source except the a
         '                return;'
     ].join('\n');
     assert.ok(source('saveGeneralQuickEntry', original).includes(oldErrorToast));
-    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));
+    assert.equal(source('saveGeneralQuickEntry', beforeRound2), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));
     assert.equal(source('updateGeneralUndoButton'), source('updateGeneralUndoButton', original).replace(
         "                quickSave.textContent = generalUndoInProgress === 'save' ? 'جارٍ الحفظ…' : 'حفظ (Enter ↵)';",
         "                if (generalUndoInProgress === 'save') quickSave.textContent = 'جارٍ الحفظ…';\n                else quickSave.innerHTML = 'حفظ <small>Enter ↵</small>';"));
     for (const name of ['renderGeneralQuickGrades', 'updateGeneralQuickPreview', 'calculateGeneralQuickEntry',
         'buildEntryPatch', 'commitGeneralStudentPatch', 'readGeneralQuickPosition',
         'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {
-        assert.equal(source(name), source(name, original), name);
+        assert.equal(source(name, beforeRound2), source(name, original), name);
     }
     for (const file of ['general-points.js', 'tv.js', 'tv.html']) {
         assert.equal(tvInvariant(file, fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n')),
@@ -179,6 +180,7 @@ test('r2: save button keeps template markup after saving and undo, including pen
             window.almahraData.patchStudent = (...args) => new Promise(resolve => {
                 window.__finishPatch = () => resolve(patch(...args));
             });
+            saveGeneralQuickEntry(); // الضغطة الأولى تعرض تنبيه المراجعة قبل اختبار انتظار الحفظ.
             window.__saving = saveGeneralQuickEntry();
         });
         assert.equal(await button.textContent(), 'جارٍ الحفظ…');
@@ -278,7 +280,7 @@ test('r2: general presentation uses one surface, stable controls, inline errors 
 test('r2: summer and review-day keep their modal markup, functions and styles', async () => {
     const legacy = text => text.slice(text.indexOf('            <div id="smartDailySection"'), text.indexOf('            <div id="smartMasterySection"'));
     assert.equal(legacy(html), legacy(original));
-    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name), source(name, original), name);
+    for (const name of ['saveSmartProgress', 'openSmartModal', 'closeSmartModal', 'switchSmartTab', 'updateSmartSimplification']) assert.equal(source(name, beforeRound2), source(name, original), name);
     for (const program of ['summer', 'review-day']) {
         const h = await newPage(browser, { width:1280, program });
         try {
