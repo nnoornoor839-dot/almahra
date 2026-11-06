@@ -266,7 +266,7 @@ test('د: summer وreview-day بلا تغيير؛ الواجهة والحفظ و
     for (const name of ['renderReportsTable', 'computeComplexStats', 'generalRecitationTotals', 'getAttendanceState',
         'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));
     const store = fs.readFileSync(root + '/programs-store.js', 'utf8');
-    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'));
+    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'));
     const ctx = vm.createContext({});
     const defs = store.slice(store.indexOf('export const PROGRAM_DEFS'), store.indexOf('// الحالة الداخلية')).replace('export ', '');
     vm.runInContext(defs + '\n' + source('fillTierMinJuz', store) + '\n' + source('migrateSettings', store) + '\nconst SETTINGS_VERSION = 4;', ctx);

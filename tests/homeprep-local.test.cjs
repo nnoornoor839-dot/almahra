@@ -293,3 +293,81 @@ test('weekly sheet optIn independent box; settings preset id and optIn roundtrip
     for(const name of ['dayStats','getCumulativeStats','summarizeRange','getCriteriaSelection','getDisciplineCriteriaIds','getGeneralTvBoard','getGeneralCelebrationRank','resetStudentToday','buildEntryPatch','commitGeneralStudentPatch'])
         assert.equal(source(name),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);
 });
+
+
+test('browser: general opt-in has distinct pressed colors, checkmark, hover, focus and red rejection', async () => {
+    const path = require('node:path');
+    const { newPage } = require('./helpers/t25-browser.cjs');
+    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,
+        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+    const browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+    try {
+        for (const width of [390, 1280]) {
+            const h = await newPage(browser, { width, today: key.today, settings: key.settings,
+                list: [student({}, { id: 1, sid: 'synthetic-homeprep', halaqaId: 'a', lastSurah: 2, lastAyah: 29, history: {} })] });
+            try {
+                await h.page.evaluate(() => openSmartModal(1));
+                const button = h.page.locator('#generalHomePrepBtn');
+                const style = () => button.evaluate(el => {
+                    const css = getComputedStyle(el);
+                    return { bg: css.backgroundColor, color: css.color, border: css.borderTopColor,
+                        borderWidth: css.borderTopWidth, height: el.getBoundingClientRect().height,
+                        check: getComputedStyle(el, '::before').content, shadow: css.boxShadow,
+                        outline: css.outlineColor, outlineWidth: css.outlineWidth, outlineStyle: css.outlineStyle };
+                });
+                assert.equal(await button.getAttribute('aria-pressed'), 'false');
+                const unpressed = await style();
+                assert.ok(unpressed.height >= 36);
+                assert.equal(unpressed.borderWidth, '1px');
+                await button.hover();
+                assert.notEqual((await style()).shadow, unpressed.shadow);
+                await h.page.mouse.move(0, 0);
+                await button.focus();
+                await h.page.keyboard.press('Tab');
+                await h.page.keyboard.press('Shift+Tab');
+                assert.equal(await button.evaluate(el => el.matches(':focus-visible')), true);
+                assert.ok(parseFloat((await style()).outlineWidth) >= 2);
+                assert.equal((await style()).outlineStyle, 'solid');
+                await h.page.locator('#quick_new_toAyah').fill('37');
+                await h.page.locator('#quick_new_grades').getByRole('button', { name: 'ممتاز', exact: true }).click();
+                await button.click();
+                assert.equal(await button.getAttribute('aria-pressed'), 'true');
+                assert.equal(await button.getAttribute('aria-invalid'), 'false');
+                const pressed = await style();
+                assert.notEqual(pressed.bg, unpressed.bg);
+                assert.notEqual(pressed.color, unpressed.color);
+                assert.match(pressed.check, /✓/);
+                const grade = await h.page.locator('#quick_new_grades [aria-pressed="true"]').evaluate(el => {
+                    const css = getComputedStyle(el); return { bg: css.backgroundColor, color: css.color };
+                });
+                assert.deepEqual({ bg: pressed.bg, color: pressed.color }, grade);
+                const generic = await button.evaluate(el => {
+                    const other = el.cloneNode(true); other.id = 'syntheticOptIn'; el.after(other);
+                    const css = getComputedStyle(other);
+                    const result = { bg: css.backgroundColor, color: css.color, check: getComputedStyle(other, '::before').content };
+                    other.remove(); return result;
+                });
+                assert.deepEqual(generic, { bg: pressed.bg, color: pressed.color, check: pressed.check });
+                await h.page.locator('#quick_new_grades').getByRole('button', { name: 'جيد', exact: true }).click();
+                assert.equal(await button.getAttribute('aria-invalid'), 'true');
+                const rejected = await style();
+                assert.equal(rejected.color, 'rgb(160, 61, 56)');
+                assert.equal(rejected.border, rejected.color);
+                assert.equal(rejected.outline, rejected.color);
+                assert.notEqual(rejected.bg, pressed.bg);
+                await button.hover();
+                assert.equal((await style()).color, rejected.color);
+                assert.equal((await style()).border, rejected.border);
+                await button.click();
+                assert.equal(await button.getAttribute('aria-pressed'), 'false');
+                assert.equal(await button.getAttribute('aria-invalid'), 'false');
+                const restored = await style();
+                assert.equal(restored.bg, unpressed.bg);
+                assert.equal(restored.color, unpressed.color);
+                assert.doesNotMatch(restored.check, /✓/);
+                assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);
+                assert.deepEqual(h.errors, []);
+            } finally { await h.close(); }
+        }
+    } finally { await browser.close(); }
+});

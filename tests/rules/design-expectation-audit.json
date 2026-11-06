@@ -420,7 +420,7 @@
             "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ],
           "after": [
-            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ]
         },
         {
@@ -2879,7 +2879,7 @@
       "oldLine": 490,
       "newLine": 490,
       "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
-      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
@@ -2889,7 +2889,7 @@
       "oldLine": 269,
       "newLine": 269,
       "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
-      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
@@ -3295,7 +3295,7 @@
             "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ],
           "after": [
-            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ]
         }
       ]
@@ -4651,7 +4651,7 @@
             "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ],
           "after": [
-            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
+            "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ]
         }
       ]
@@ -5514,6 +5514,30 @@
       "hunks": [
         {
           "before": [
+            "body.program-general .smart-general .qe-criteria-bar > b { width:80px; font-size:16px; font-weight:700; }",
+            "body.program-general .smart-general #generalCriteriaAllBtn { min-height:44px; border-color:var(--general-pending); color:var(--general-pending); background:var(--general-surface); font-size:14px; font-weight:600; }",
+            "body.program-general .smart-general #generalCriteriaAllBtn[aria-pressed=true] { background:var(--general-pending); color:var(--general-surface); }",
+            "body.program-general .smart-general #generalCriteriaState,",
+            "body.program-general .smart-general #generalCriteriaExceptions { color:var(--general-muted); font-size:13px; font-weight:400; }",
+            "body.program-general .smart-general .qe-summary { min-height:50px; padding:12px 0 16px; border:0; border-radius:0; background:transparent; color:var(--general-muted); font-size:13px; }"
+          ],
+          "after": [
+            "body.program-general .smart-general .qe-criteria-bar > b { width:80px; font-size:16px; font-weight:700; }",
+            "body.program-general .smart-general #generalCriteriaAllBtn { min-height:44px; border-color:var(--general-pending); color:var(--general-pending); background:var(--general-surface); font-size:14px; font-weight:600; }",
+            "body.program-general .smart-general #generalCriteriaAllBtn[aria-pressed=true] { background:var(--general-pending); color:var(--general-surface); }",
+            "body.program-general .smart-general button[data-optin=\"true\"] { min-height:44px; min-width:36px; padding:8px 12px; border:1px solid var(--general-line); border-radius:var(--general-radius-sm); background:var(--general-surface); color:var(--general-ink); font-size:14px; font-weight:600; }",
+            "body.program-general .smart-general button[data-optin=\"true\"][aria-pressed=\"true\"] { background:var(--general-brand); color:var(--general-surface); border-color:var(--general-brand); }",
+            "body.program-general .smart-general button[data-optin=\"true\"][aria-pressed=\"true\"]::before { content:'✓\\00a0'; }",
+            "body.program-general .smart-general button[data-optin=\"true\"]:hover { box-shadow:inset 0 0 0 1px currentColor; }",
+            "body.program-general .smart-general button[data-optin=\"true\"]:focus-visible { outline:2px solid var(--general-brand) !important; outline-offset:2px; }",
+            "body.program-general .smart-general button[data-optin=\"true\"]:is(.qe-error, [aria-invalid=\"true\"]) { color:var(--general-below-limit); background:var(--qe-error-bg); border-color:var(--general-below-limit); outline-color:var(--general-below-limit) !important; }",
+            "body.program-general .smart-general #generalCriteriaState,",
+            "body.program-general .smart-general #generalCriteriaExceptions { color:var(--general-muted); font-size:13px; font-weight:400; }",
+            "body.program-general .smart-general .qe-summary { min-height:50px; padding:12px 0 16px; border:0; border-radius:0; background:transparent; color:var(--general-muted); font-size:13px; }"
+          ]
+        },
+        {
+          "before": [
             "                        <div id=\"generalQuickPanels\"></div>",
             "                        <p id=\"generalQuickReviewReminder\" class=\"qe-review-reminder\" aria-live=\"polite\" hidden></p>",
             "                        <div class=\"qe-criteria\">",
@@ -6177,7 +6201,7 @@
       "oldLine": 490,
       "newLine": 490,
       "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
-      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
@@ -6187,7 +6211,7 @@
       "oldLine": 269,
       "newLine": 269,
       "before": "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
-      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
@@ -6449,6 +6473,26 @@
       "after": "    assert.doesNotMatch(prepRender,/item\\.rank|item\\.week/); assert.match(prepRender,/ar\\(item\\.points\\)/); assert.match(prepRender,/c < 2/); assert.match(prepRender,/r < 10/);",
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "pre-draft-3 working file"
+    }
+  ],
+  "homeprepButtonExpectationChanges": [
+    {
+      "file": "tests/home-local.test.cjs",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "7776742",
+      "before": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "explanation": "تثبيت المرجع التاريخي بعد اعتماد التحضير المنزلي؛ الطرف الحالي يُعاد حرفياً إلى 1e4152b، فلا يقارن مع HEAD المتحرك الذي يتضمن التغيير المعتمد."
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "category": 7,
+      "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "7776742",
+      "before": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
+      "explanation": "تثبيت المرجع التاريخي بعد اعتماد التحضير المنزلي؛ الطرف الحالي يُعاد حرفياً إلى 1e4152b، فلا يقارن مع HEAD المتحرك الذي يتضمن التغيير المعتمد."
     }
   ]
 }
