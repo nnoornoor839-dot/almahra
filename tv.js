@@ -21,22 +21,29 @@ function activePrayer(periods, now) {
     return periods.find(p => +now >= p.start && +now < p.end)?.name || null;
 }
 
-function makeSlides(snapshot) {
+function boardPeriod(periods, now) {
+    return +now < periods[0].start ? 'asr' : 'maghrib';
+}
+
+function makeSlides(snapshot, period) {
     if (!snapshot) return [];
+    const stage = snapshot.stages?.find(s => s.period === period);
+    if (!stage) return [];
     const slides = [];
-    const leaders = snapshot.leaders || [];
-    if (leaders.length) slides.push({ kind: 'leaders', title: '🏆 المتصدرون في المجمع', items: leaders });
+    const board = stage.board || [], pages = Math.ceil(board.length / 20);
+    for (let page = 1; page <= pages; page++) slides.push({ kind: 'board',
+        title: '🏆 لوحة النقاط — ' + stage.name, page, pages, items: board.slice((page - 1) * 20, page * 20) });
     for (const [kind, title] of [['dayKnights', '⭐ فرسان اليوم'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {
-        const items = (snapshot[kind] || []).filter(item => item.names?.length);
+        const items = (stage[kind] || []).filter(item => item.names?.length);
         if (items.length) slides.push({ kind, title, items });
     }
-    if (snapshot.risingStars?.length) slides.push({ kind: 'risingStars', title: '🚀 النجم الصاعد', items: snapshot.risingStars.slice(0, 3) });
+    if (stage.risingStars?.length) slides.push({ kind: 'risingStars', title: '🚀 النجم الصاعد', items: stage.risingStars.slice(0, 3) });
     return slides;
 }
 
 function createTvState({ now = Date.now, schedule = setTimeout, unschedule = clearTimeout, changed = () => {} } = {}) {
     let snapshot = null, current = null, timer = null, prayer = null, lastMessage = now();
-    let slides = [], slide = 0;
+    let slides = [], slide = 0, period = 'asr', date = null;
     const queue = [], seen = new Set();
     function stopCurrent() {
         if (timer !== null) unschedule(timer);
@@ -61,11 +68,11 @@ function createTvState({ now = Date.now, schedule = setTimeout, unschedule = cle
             lastMessage = now();
             if (message.type === 'clear' || message.type === 'bye') clear();
             if (message.type === 'snapshot') {
-                snapshot = message; slides = makeSlides(message); slide = slides.length ? slide % slides.length : 0;
+                snapshot = message; slides = makeSlides(message, period); slide = slides.length ? slide % slides.length : 0;
             }
             if (message.type === 'celebrate' && message.id && !seen.has(message.id)) {
                 seen.add(message.id);
-                if (!prayer && snapshot && queue.length < 3) { queue.push(message); next(); }
+                if (!prayer && snapshot && message.period === period && queue.length < 3) { queue.push(message); next(); }
             }
             if (message.type === 'cancel') {
                 seen.add(message.id);
@@ -73,6 +80,13 @@ function createTvState({ now = Date.now, schedule = setTimeout, unschedule = cle
                 if (index >= 0) queue.splice(index, 1);
                 if (current?.id === message.id) { stopCurrent(); next(); }
             }
+            changed();
+        },
+        setPeriod(nextPeriod, nextDate) {
+            if (nextPeriod === period && nextDate === date) return;
+            period = nextPeriod; date = nextDate;
+            queue.length = 0; stopCurrent();
+            slides = makeSlides(snapshot, period); slide = 0;
             changed();
         },
         setPrayer(name) {
@@ -83,11 +97,11 @@ function createTvState({ now = Date.now, schedule = setTimeout, unschedule = cle
         },
         checkConnection() { if (now() - lastMessage >= 90000) { clear(); changed(); } },
         advance() { if (!prayer && !current && slides.length) { slide = (slide + 1) % slides.length; changed(); } },
-        view() { return { snapshot, current, prayer, slides, slide, pending: queue.length }; }
+        view() { return { snapshot, current, prayer, slides, slide, period, pending: queue.length }; }
     };
 }
 
-if (typeof module !== 'undefined') module.exports = { riyadhDate, prayerPeriods, activePrayer, makeSlides, createTvState };
+if (typeof module !== 'undefined') module.exports = { riyadhDate, prayerPeriods, activePrayer, boardPeriod, makeSlides, createTvState };
 
 if (typeof document !== 'undefined') {
     // قرار المالك 6: أرقام لاتينية في شاشة البرنامج العام كلها.
@@ -121,13 +135,12 @@ if (typeof document !== 'undefined') {
         if (!document.createRange) return;
         const scale = el('tv').getBoundingClientRect().width / 1920;
         document.querySelectorAll('.leader .name').forEach(name => {
-            name.classList.remove('fit', 'two'); name.style.removeProperty('--fit');
+            name.classList.remove('fit'); name.style.removeProperty('--fit');
             const range = document.createRange(); range.selectNodeContents(name);
-            const width = range.getBoundingClientRect().width / scale, room = name.clientWidth;
+            const width = range.getBoundingClientRect().width / scale, room = name.clientWidth - 10;
             if (!room || width <= room) return;
-            const size = Math.floor(75 * room / width);
-            if (size >= 60) { name.style.setProperty('--fit', size + 'px'); name.classList.add('fit'); }
-            else name.classList.add('two');
+            const size = Math.max(1, Math.floor(42 * room / width));
+            name.style.setProperty('--fit', size + 'px'); name.classList.add('fit');
         });
     }
     function fitScreen() {
@@ -162,7 +175,7 @@ if (typeof document !== 'undefined') {
             box.append(piece);
         }
     }
-    let renderedSnapshot = null, sections = [], celebrationId = null;
+    let renderedSnapshot = null, renderedPeriod = null, sections = [], celebrationId = null;
     function render() {
         const view = state.view();
         const paused = !!view.prayer || !!view.current;
@@ -177,28 +190,39 @@ if (typeof document !== 'undefined') {
             protectName(el('celeName'));
             el('celeAdded').textContent = '+ ' + ar(event.added) + ' نقطة';
             el('celeTotal').textContent = 'المجموع: ' + ar(event.total) + ' نقطة';
-            el('celeRank').textContent = event.rank == null ? '' : 'الترتيب: ' + ar(event.rank);
-            el('celeRank').hidden = event.rank == null;
+            const rank = event.rank > 0 && event.rank <= 10 ? event.rank : null;
+            el('celeRank').textContent = rank == null ? '' : 'الترتيب: ' + ar(rank);
+            el('celeRank').hidden = rank == null;
         }
         if (view.current && !view.prayer && celebrationId !== view.current.id) burst();
         celebrationId = view.prayer ? null : view.current?.id || null;
-        if (renderedSnapshot !== view.snapshot) {
-            renderedSnapshot = view.snapshot;
+        if (renderedSnapshot !== view.snapshot || renderedPeriod !== view.period) {
+            renderedSnapshot = view.snapshot; renderedPeriod = view.period;
             el('slides').replaceChildren(); el('dots').replaceChildren(); sections = [];
             view.slides.forEach((slide, index) => {
                 const section = node('section', 'slide'), heading = node('div', 'slide-title'), badge = node('span', 'slide-icon');
-                badge.append(icon(slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
-                const body = node('div', slide.kind === 'leaders' ? 'board' : 'cards');
-                if (slide.kind === 'leaders') {
-                    // ترتيب عمودي: نصف القائمة مقرّباً لأعلى يميناً، ثم الباقون يساراً.
-                    body.style.gridTemplateRows = `repeat(${Math.ceil(slide.items.length / 2)}, 1fr)`;
-                    body.style.setProperty?.('--board-rows', Math.ceil(slide.items.length / 2));
-                    slide.items.forEach(item => {
-                        const row = node('div', 'leader' + (item.rank <= 3 ? ' top' + item.rank : ''));
-                        row.append(node('b', 'rank', ar(item.rank)), node('span', 'name', item.name), node('b', 'points', ar(item.points)));
-                        protectName(row.children[1]);
-                        body.append(row);
-                    });
+                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
+                const body = node('div', slide.kind === 'board' ? 'board' : 'cards');
+                if (slide.kind === 'board') {
+                    section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));
+                    // عشرة صفوف في الأيمن أولاً، ثم عشرة في الأيسر، حتى في الصفحة الأخيرة.
+                    for (let c = 0; c < 2; c++) {
+                        const column = node('div', 'board-column'), header = node('div', 'board-header');
+                        header.append(node('span', ''), node('span', '', 'الاسم'), node('span', '', 'نقاط الموسم'), node('span', '', 'هذا الأسبوع'));
+                        column.append(header);
+                        for (let r = 0; r < 10; r++) {
+                            const item = slide.items[c * 10 + r];
+                            const row = node('div', 'leader' + (item?.rank > 0 && item.rank <= 3 ? ' top' + item.rank : ''));
+                            if (item) {
+                                const rank = item.rank > 0 && item.rank <= 10 ? ar(item.rank) : '';
+                                const week = node('b', 'week', '+' + ar(item.week)); week.setAttribute('dir', 'ltr');
+                                row.append(node('b', 'rank', rank), node('span', 'name', item.name), node('b', 'points', ar(item.points)), week);
+                                protectName(row.children[1]);
+                            }
+                            column.append(row);
+                        }
+                        body.append(column);
+                    }
                 } else slide.items.forEach(item => {
                     const card = node('div', 'card'), cardBody = node('div', 'card-body');
                     if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));
@@ -233,6 +257,7 @@ if (typeof document !== 'undefined') {
         const now = new Date(), prayer = latestPrayer;
         const key = riyadhDate(now) + ':' + (prayer.maghribMinutes ?? 20) + ':' + (prayer.ishaMinutes ?? 30);
         if (key !== prayerKey) { periods = prayerPeriods(adhan, riyadhDate(now), prayer); prayerKey = key; }
+        state.setPeriod(boardPeriod(periods, now), riyadhDate(now));
         state.setPrayer(activePrayer(periods, now));
         el('clock').textContent = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { timeZone: 'Asia/Riyadh', hour: 'numeric', minute: '2-digit' }).format(now);
         render();

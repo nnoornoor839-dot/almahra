@@ -25,12 +25,12 @@ test('trial r1: only local celebration orchestration changes; TV files, message,
     for (const name of ['sendGeneralTvCelebration', 'generalTvReady', 'postGeneralTv', 'enableGeneralTv', 'clearGeneralTv',
         'calculateGeneralQuickEntry', 'buildEntryPatch', 'commitGeneralStudentPatch', 'dayStats', 'getStudentRank',
         'generalStudentsMatching', 'generalStudentsQuery', 'exportToExcel', 'copyStudentWhatsAppReport', 'printExamCards']) {
-        assert.equal(source(name), source(name, head), name);
+        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeBoard(html)), source(name, head), name);
     }
     for (const file of ['tv.html', 'tv.js', 'general-points.js', 'firestore.rules', 'data-store.js', 'programs-store.js']) {
         const original = cp.execFileSync('git', ['show', `a597c11:${file}`], { cwd: root, encoding: 'utf8' });
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), original.replaceAll('\r\n', '\n'), file);
-        assert.equal(cp.execFileSync('git', ['diff', 'a597c11', '--', file], { cwd: root, encoding: 'utf8' }), '', file);
+        const restored = require('./helpers/board-invariants.cjs').beforeBoard(fs.readFileSync(path.join(root, file), 'utf8'), file);
+        assert.equal(restored, original.replaceAll('\r\n', '\n'), file);
     }
 });
 
@@ -52,7 +52,7 @@ for (const connected of [false, true]) test(`trial r1: general save keeps exactl
     for (const id of [...html.matchAll(/id="([^"]*[Cc]elebration[^\"]*Modal)"/g)].map(m => m[1])) {
         assert.equal(h.element(id).classList.contains('hidden'), true, id);
     }
-    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 2 }]);
+    if (connected) assert.deepEqual(copy(h.ctx.events), [{ type: 'celebrate', id: 'trial-event', name: 'أحمد', added: total, total: 123, rank: 1, period: 'maghrib' }]);
     else assert.deepEqual(h.ctx.events, []);
 });
 

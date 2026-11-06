@@ -4,12 +4,16 @@ const path = require('node:path');
 const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8');
 function installTv(run, install) {
     run(html.match(/const generalTv = .*;/)[0]);
-    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',
+    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',
+        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',
         'generalTvContext', 'generalTvReady', 'postGeneralTv', 'sendGeneralTvSnapshot', 'clearGeneralTv', 'enableGeneralTv',
         'initGeneralTv', 'openGeneralTv', 'sendGeneralTvCelebration', 'cancelGeneralTvCelebration', 'readGeneralTvPrayer');
+    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa'])
+        if (!run(`typeof ${name} === 'function'`)) install(name);
 }
 // قفل العرض الكامل كان للجولتين السابقتين؛ الآن يبقى قفل المنطق والاعتماديات المحلية.
 function tvInvariant(file, source) {
+    source = require('./board-invariants.cjs').beforeBoard(source, file);
     if (file === 'tv.js') return source.split("if (typeof document !== 'undefined')")[0];
     if (file === 'tv.html') return [...source.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]).join('\n');
     return source;

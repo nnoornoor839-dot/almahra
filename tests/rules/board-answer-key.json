@@ -1,0 +1,1357 @@
+{
+  "source": "board-realism-table.md — مسودة ٢ §٣ — اعتماد ٢٠٢٦-١١-٠٦",
+  "today": "2026-11-23",
+  "days": [
+    "2026-11-15",
+    "2026-11-16",
+    "2026-11-17",
+    "2026-11-22",
+    "2026-11-23"
+  ],
+  "season": {
+    "termStart": "2026-11-15",
+    "termEnd": "2027-01-14",
+    "calendar": [
+      {
+        "from": "2026-11-18",
+        "to": "2026-11-18",
+        "name": "إجازة",
+        "kind": "official"
+      }
+    ]
+  },
+  "settings": {
+    "workingDays": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "points": {
+      "attendance": 10
+    },
+    "kindMult": {
+      "newMemorization": 3,
+      "review": 1
+    },
+    "grades": [
+      {
+        "id": "excellent",
+        "name": "ممتاز",
+        "percent": 100
+      },
+      {
+        "id": "good",
+        "name": "جيد",
+        "percent": 50
+      },
+      {
+        "id": "repeat",
+        "name": "يُعاد",
+        "percent": 0
+      }
+    ],
+    "criteria": [
+      {
+        "id": "early",
+        "points": 5
+      },
+      {
+        "id": "late",
+        "points": -5
+      }
+    ],
+    "stages": [
+      {
+        "id": "primary",
+        "name": "ابتدائي",
+        "period": "asr"
+      },
+      {
+        "id": "middle",
+        "name": "متوسط وثانوي",
+        "period": "maghrib"
+      }
+    ],
+    "halaqas": [
+      {
+        "id": "a",
+        "stageId": "primary",
+        "name": "حلقة أ",
+        "teacherId": "abdullah",
+        "active": true
+      },
+      {
+        "id": "b",
+        "stageId": "middle",
+        "name": "حلقة ب",
+        "teacherId": "ibrahim",
+        "active": true
+      }
+    ]
+  },
+  "students": [
+    {
+      "id": "saad",
+      "name": "سعد",
+      "stage": "primary",
+      "entries": [
+        [
+          22.5,
+          7.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5
+        ],
+        [
+          45
+        ]
+      ],
+      "criteria": [
+        0,
+        0,
+        5,
+        0,
+        0
+      ],
+      "daily": [
+        40,
+        32.5,
+        37.5,
+        32.5,
+        55
+      ],
+      "past": 110,
+      "week": 87.5,
+      "season": 197.5
+    },
+    {
+      "id": "khalid",
+      "name": "خالد",
+      "stage": "primary",
+      "entries": [
+        [
+          22.5
+        ],
+        null,
+        [
+          22.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        32.5,
+        0,
+        32.5,
+        32.5,
+        32.5
+      ],
+      "past": 65,
+      "week": 65,
+      "season": 130
+    },
+    {
+      "id": "omar",
+      "name": "عمر",
+      "stage": "primary",
+      "entries": [
+        [
+          22.5,
+          7.5
+        ],
+        [
+          22.5
+        ],
+        [],
+        [],
+        [
+          22.5
+        ]
+      ],
+      "criteria": [
+        0,
+        0,
+        0,
+        5,
+        0
+      ],
+      "daily": [
+        40,
+        32.5,
+        10,
+        15,
+        32.5
+      ],
+      "past": 82.5,
+      "week": 47.5,
+      "season": 130
+    },
+    {
+      "id": "faisal",
+      "name": "فيصل",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [
+          7.5
+        ],
+        [],
+        []
+      ],
+      "criteria": [
+        0,
+        0,
+        0,
+        -5,
+        5
+      ],
+      "daily": [
+        10,
+        10,
+        17.5,
+        10,
+        15
+      ],
+      "past": 37.5,
+      "week": 25,
+      "season": 62.5
+    },
+    {
+      "id": "talal",
+      "name": "طلال",
+      "stage": "primary",
+      "entries": [
+        [],
+        [
+          0.5
+        ],
+        [],
+        [
+          1.5
+        ],
+        [
+          1.5
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10.5,
+        10,
+        11.5,
+        11.5
+      ],
+      "past": 30.5,
+      "week": 23,
+      "season": 53.5
+    },
+    {
+      "id": "trial1",
+      "name": "طالب تجريبي 01",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          1
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        11
+      ],
+      "past": 30,
+      "week": 21,
+      "season": 51
+    },
+    {
+      "id": "trial2",
+      "name": "طالب تجريبي 02",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          2
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        12
+      ],
+      "past": 30,
+      "week": 22,
+      "season": 52
+    },
+    {
+      "id": "trial3",
+      "name": "طالب تجريبي 03",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          3
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        13
+      ],
+      "past": 30,
+      "week": 23,
+      "season": 53
+    },
+    {
+      "id": "trial4",
+      "name": "طالب تجريبي 04",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          4
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        14
+      ],
+      "past": 30,
+      "week": 24,
+      "season": 54
+    },
+    {
+      "id": "trial5",
+      "name": "طالب تجريبي 05",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          5
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        15
+      ],
+      "past": 30,
+      "week": 25,
+      "season": 55
+    },
+    {
+      "id": "trial6",
+      "name": "طالب تجريبي 06",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          6
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        16
+      ],
+      "past": 30,
+      "week": 26,
+      "season": 56
+    },
+    {
+      "id": "trial7",
+      "name": "طالب تجريبي 07",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          7
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        17
+      ],
+      "past": 30,
+      "week": 27,
+      "season": 57
+    },
+    {
+      "id": "trial8",
+      "name": "طالب تجريبي 08",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          8
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        18
+      ],
+      "past": 30,
+      "week": 28,
+      "season": 58
+    },
+    {
+      "id": "trial9",
+      "name": "طالب تجريبي 09",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          9
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        19
+      ],
+      "past": 30,
+      "week": 29,
+      "season": 59
+    },
+    {
+      "id": "trial10",
+      "name": "طالب تجريبي 10",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          10
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        20
+      ],
+      "past": 30,
+      "week": 30,
+      "season": 60
+    },
+    {
+      "id": "trial11",
+      "name": "طالب تجريبي 11",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          11
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        21
+      ],
+      "past": 30,
+      "week": 31,
+      "season": 61
+    },
+    {
+      "id": "trial12",
+      "name": "طالب تجريبي 12",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          12
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        22
+      ],
+      "past": 30,
+      "week": 32,
+      "season": 62
+    },
+    {
+      "id": "trial13",
+      "name": "طالب تجريبي 13",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          13
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        23
+      ],
+      "past": 30,
+      "week": 33,
+      "season": 63
+    },
+    {
+      "id": "trial14",
+      "name": "طالب تجريبي 14",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          14
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        24
+      ],
+      "past": 30,
+      "week": 34,
+      "season": 64
+    },
+    {
+      "id": "trial15",
+      "name": "طالب تجريبي 15",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          15
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        25
+      ],
+      "past": 30,
+      "week": 35,
+      "season": 65
+    },
+    {
+      "id": "trial16",
+      "name": "طالب تجريبي 16",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          16
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        26
+      ],
+      "past": 30,
+      "week": 36,
+      "season": 66
+    },
+    {
+      "id": "trial17",
+      "name": "طالب تجريبي 17",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          17
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        27
+      ],
+      "past": 30,
+      "week": 37,
+      "season": 67
+    },
+    {
+      "id": "trial18",
+      "name": "طالب تجريبي 18",
+      "stage": "primary",
+      "entries": [
+        [],
+        [],
+        [],
+        [],
+        [
+          18
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        10,
+        10,
+        10,
+        28
+      ],
+      "past": 30,
+      "week": 38,
+      "season": 68
+    },
+    {
+      "id": "majed",
+      "name": "ماجد",
+      "stage": "primary",
+      "entries": [
+        false,
+        false,
+        false,
+        false,
+        [
+          22.5
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        0,
+        0,
+        0,
+        0,
+        32.5
+      ],
+      "past": 0,
+      "week": 32.5,
+      "season": 32.5
+    },
+    {
+      "id": "nayef",
+      "name": "نايف",
+      "stage": "primary",
+      "entries": [
+        false,
+        false,
+        false,
+        null,
+        false
+      ],
+      "criteria": [],
+      "daily": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "past": 0,
+      "week": 0,
+      "season": 0
+    },
+    {
+      "id": "ahmad",
+      "name": "أحمد",
+      "stage": "middle",
+      "entries": [
+        [
+          45,
+          7.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5,
+          7.5
+        ],
+        [
+          22.5
+        ],
+        false
+      ],
+      "criteria": [],
+      "daily": [
+        62.5,
+        32.5,
+        40,
+        32.5,
+        0
+      ],
+      "past": 135,
+      "week": 32.5,
+      "season": 167.5
+    },
+    {
+      "id": "yusuf",
+      "name": "يوسف",
+      "stage": "middle",
+      "entries": [
+        [
+          22.5
+        ],
+        [
+          7.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5
+        ],
+        [
+          22.5
+        ]
+      ],
+      "criteria": [
+        0,
+        0,
+        0,
+        5,
+        0
+      ],
+      "daily": [
+        32.5,
+        17.5,
+        32.5,
+        37.5,
+        32.5
+      ],
+      "past": 82.5,
+      "week": 70,
+      "season": 152.5
+    },
+    {
+      "id": "ziyad",
+      "name": "زياد",
+      "stage": "middle",
+      "entries": [
+        [
+          0
+        ],
+        [
+          22.5
+        ],
+        null,
+        [
+          22.5
+        ],
+        [
+          22.5,
+          7.5
+        ]
+      ],
+      "criteria": [],
+      "daily": [
+        10,
+        32.5,
+        0,
+        32.5,
+        40
+      ],
+      "past": 42.5,
+      "week": 72.5,
+      "season": 115
+    }
+  ],
+  "snapshots": {
+    "monday": {
+      "today": "2026-11-23",
+      "boardDate": "2026-11-23",
+      "start": "2026-11-22",
+      "asr": [
+        {
+          "id": "saad",
+          "points": 197.5,
+          "week": 87.5,
+          "rank": 1,
+          "display": 1,
+          "page": 1
+        },
+        {
+          "id": "khalid",
+          "points": 130,
+          "week": 65,
+          "rank": 2,
+          "display": 2,
+          "page": 1
+        },
+        {
+          "id": "omar",
+          "points": 130,
+          "week": 47.5,
+          "rank": 2,
+          "display": 2,
+          "page": 1
+        },
+        {
+          "id": "trial18",
+          "points": 68,
+          "week": 38,
+          "rank": 4,
+          "display": 4,
+          "page": 1
+        },
+        {
+          "id": "trial17",
+          "points": 67,
+          "week": 37,
+          "rank": 5,
+          "display": 5,
+          "page": 1
+        },
+        {
+          "id": "trial16",
+          "points": 66,
+          "week": 36,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial15",
+          "points": 65,
+          "week": 35,
+          "rank": 7,
+          "display": 7,
+          "page": 1
+        },
+        {
+          "id": "trial14",
+          "points": 64,
+          "week": 34,
+          "rank": 8,
+          "display": 8,
+          "page": 1
+        },
+        {
+          "id": "trial13",
+          "points": 63,
+          "week": 33,
+          "rank": 9,
+          "display": 9,
+          "page": 1
+        },
+        {
+          "id": "faisal",
+          "points": 62.5,
+          "week": 25,
+          "rank": 10,
+          "display": 10,
+          "page": 1
+        },
+        {
+          "id": "trial12",
+          "points": 62,
+          "week": 32,
+          "rank": 11,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial11",
+          "points": 61,
+          "week": 31,
+          "rank": 12,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial10",
+          "points": 60,
+          "week": 30,
+          "rank": 13,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial9",
+          "points": 59,
+          "week": 29,
+          "rank": 14,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial8",
+          "points": 58,
+          "week": 28,
+          "rank": 15,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial7",
+          "points": 57,
+          "week": 27,
+          "rank": 16,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial6",
+          "points": 56,
+          "week": 26,
+          "rank": 17,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial5",
+          "points": 55,
+          "week": 25,
+          "rank": 18,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial4",
+          "points": 54,
+          "week": 24,
+          "rank": 19,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "talal",
+          "points": 53.5,
+          "week": 23,
+          "rank": 20,
+          "display": null,
+          "page": 1
+        },
+        {
+          "id": "trial3",
+          "points": 53,
+          "week": 23,
+          "rank": 21,
+          "display": null,
+          "page": 2
+        },
+        {
+          "id": "trial2",
+          "points": 52,
+          "week": 22,
+          "rank": 22,
+          "display": null,
+          "page": 2
+        },
+        {
+          "id": "trial1",
+          "points": 51,
+          "week": 21,
+          "rank": 23,
+          "display": null,
+          "page": 2
+        },
+        {
+          "id": "majed",
+          "points": 32.5,
+          "week": 32.5,
+          "rank": 24,
+          "display": null,
+          "page": 2
+        }
+      ],
+      "maghrib": [
+        {
+          "id": "ahmad",
+          "points": 167.5,
+          "week": 32.5,
+          "rank": 1,
+          "display": 1,
+          "page": 1
+        },
+        {
+          "id": "yusuf",
+          "points": 152.5,
+          "week": 70,
+          "rank": 2,
+          "display": 2,
+          "page": 1
+        },
+        {
+          "id": "ziyad",
+          "points": 115,
+          "week": 72.5,
+          "rank": 3,
+          "display": 3,
+          "page": 1
+        }
+      ]
+    },
+    "sunday": {
+      "today": "2026-11-22",
+      "boardDate": "2026-11-17",
+      "start": "2026-11-15",
+      "asr": [
+        {
+          "id": "saad",
+          "points": 110,
+          "week": 110,
+          "rank": 1,
+          "display": 1,
+          "page": 1
+        },
+        {
+          "id": "omar",
+          "points": 82.5,
+          "week": 82.5,
+          "rank": 2,
+          "display": 2,
+          "page": 1
+        },
+        {
+          "id": "khalid",
+          "points": 65,
+          "week": 65,
+          "rank": 3,
+          "display": 3,
+          "page": 1
+        },
+        {
+          "id": "faisal",
+          "points": 37.5,
+          "week": 37.5,
+          "rank": 4,
+          "display": 4,
+          "page": 1
+        },
+        {
+          "id": "talal",
+          "points": 30.5,
+          "week": 30.5,
+          "rank": 5,
+          "display": 5,
+          "page": 1
+        },
+        {
+          "id": "trial1",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial2",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial3",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial4",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial5",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial6",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial7",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial8",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial9",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial10",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial11",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial12",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial13",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial14",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial15",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 1
+        },
+        {
+          "id": "trial16",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 2
+        },
+        {
+          "id": "trial17",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 2
+        },
+        {
+          "id": "trial18",
+          "points": 30,
+          "week": 30,
+          "rank": 6,
+          "display": 6,
+          "page": 2
+        }
+      ],
+      "maghrib": [
+        {
+          "id": "ahmad",
+          "points": 135,
+          "week": 135,
+          "rank": 1,
+          "display": 1,
+          "page": 1
+        },
+        {
+          "id": "yusuf",
+          "points": 82.5,
+          "week": 82.5,
+          "rank": 2,
+          "display": 2,
+          "page": 1
+        },
+        {
+          "id": "ziyad",
+          "points": 42.5,
+          "week": 42.5,
+          "rank": 3,
+          "display": 3,
+          "page": 1
+        }
+      ]
+    }
+  },
+  "celebrations": {
+    "majed": {
+      "added": 22.5,
+      "total": 32.5,
+      "rank": null,
+      "period": "asr"
+    },
+    "ziyad": {
+      "added": 30,
+      "total": 115,
+      "rank": 3,
+      "period": "maghrib"
+    }
+  },
+  "undo": {
+    "points": 10,
+    "week": 10,
+    "rank": 24
+  },
+  "knights": {
+    "asr": {
+      "day": "saad",
+      "week": "saad"
+    },
+    "maghrib": {
+      "day": "ziyad",
+      "week": "ziyad"
+    }
+  },
+  "rising": {
+    "id": "talal",
+    "growth": 800,
+    "pastPoints": 0.5,
+    "pastDays": 3,
+    "nowPoints": 3,
+    "nowDays": 2
+  },
+  "complexLeaders": [
+    "saad",
+    "ahmad",
+    "yusuf",
+    "khalid",
+    "omar",
+    "ziyad",
+    "trial18",
+    "trial17",
+    "trial16",
+    "trial15"
+  ]
+}

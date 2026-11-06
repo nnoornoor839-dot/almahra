@@ -44,7 +44,7 @@ test('r2 audit: exact approved UI changes only; calculations, persistence, TV an
     assert.equal(beforeRound2, original);
     for (const name of ['calculateGeneralQuickEntry', 'buildEntryPatch', 'commitGeneralStudentPatch', 'makeEntry',
         'dayStats', 'saveSmartProgress', 'saveExamPrepProgress', 'sendGeneralTvCelebration'])
-        assert.equal(source(name), source(name, original), name);
+        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeBoard(html)), source(name, original), name);
     const audit = require('./rules/design-expectation-audit.json');
     const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
     assert.equal(audit.categories[5], 'طلب المالك في تجربته ٢٠٢٦-١١-٠٦');

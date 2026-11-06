@@ -7,5 +7,5 @@ const beforeRound2 = approved.hunks.reduce((text, hunk) => {
     assert.ok(after && before);
     assert.equal(text.split(after).length, 2, 'each round two change occurs exactly once');
     return text.replace(after, before);
-}, html);
+}, require('./board-invariants.cjs').beforeBoard(html));
 module.exports = { beforeRound2 };

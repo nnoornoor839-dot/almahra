@@ -4372,33 +4372,60 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 return { ...e, rank };
             }).filter(e => e.rank <= 10);
         }
+        function getGeneralTvPeriod(student) {
+            const stage = getTiers().find(t => t.id === studentTierId(student));
+            return stage ? generalPerformanceSettings().periodOf(stage) : null;
+        }
+        function getGeneralTvBoard(period) {
+            const allNames = students.map(s => s.name);
+            const list = students.filter(s => getGeneralTvPeriod(s) === period)
+                .map(student => ({ student, points: getCumulativeStats(student).tripPoints }))
+                .filter(e => e.points > 0).sort((a, b) => b.points - a.points ||
+                    tvDisplayName(a.student.name, allNames).localeCompare(tvDisplayName(b.student.name, allNames), 'ar'));
+            let rank = 0;
+            return list.map((e, i) => {
+                if (i === 0 || e.points !== list[i - 1].points) rank = i + 1;
+                return { ...e, rank };
+            });
+        }
         function getGeneralCelebrationRank(student) {
-            const points = getCumulativeStats(student).tripPoints;
-            return students.length > 1 && students.every(s => getCumulativeStats(s).tripPoints >= points) ? null : getStudentRank(student.id);
+            const period = getGeneralTvPeriod(student);
+            const rank = period && getGeneralTvBoard(period).find(e => e.student.id === student.id)?.rank;
+            return rank && rank <= 10 ? rank : null;
         }
         function getGeneralTvSnapshot() {
             if (!isGeneralProgram()) return null;
             const boardDate = getBoardDate(), date = boardDate || todayStr;
-            const tiers = getTiers(), tiersOn = tiersFeatureOn() && tiers.length > 0;
+            const tiers = getTiers();
             const allNames = students.map(s => s.name), nameOf = name => tvDisplayName(name, allNames);
-            const approvedAll = getApprovedKnightsForMode(date, 'all');
-            const tierApprovals = tiersOn ? tiers.map(t => ({ tier: t, appr: getApprovedKnightsForMode(date, t.id) })) : [];
             const automatic = tier => ({ stage: tier?.name || 'كل الطلاب', names: topTied(getDayTitleCandidates(date, tier?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) });
             // الاعتماد يتوّج الأول فقط؛ الباقون وصيفان كما في لوحة الشرف.
             const approved = (entry, stage) => ({ stage, names: (entry.fars || []).filter(f => f && f.name).slice(0, 1).map(f => nameOf(f.name)) });
-            let dayKnights;
-            if (tiersOn && tierApprovals.some(x => x.appr)) dayKnights = tierApprovals.map(({ tier, appr }) => appr ? approved(appr, tier.name) : automatic(tier));
-            else if (approvedAll) dayKnights = [approved(approvedAll, 'كل الطلاب')];
-            else dayKnights = tiersOn ? tiers.map(automatic) : [automatic(null)];
-            const weekKnights = (tiersOn ? tiers : [null]).map(t => ({ stage: t?.name || 'كل الطلاب',
-                names: topTied(getWeekTitleCandidates(t?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) }));
+            const { startStr, endStr } = getBoardWeekRange();
+            const dates = getWorkingDatesInRange(startStr, endStr), attendance = getProgramSettings().points.attendance;
+            const periodOf = generalPerformanceSettings().periodOf;
             const prayer = window.almahraPrograms.getSettings()?.tvPrayer;
             return {
                 type: 'snapshot', boardDate,
                 prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30 },
-                leaders: getGeneralTvLeaders().map(e => ({ name: nameOf(e.student.name), points: e.points, rank: e.rank })),
-                dayKnights: dayKnights.filter(e => e.names.length), weekKnights: weekKnights.filter(e => e.names.length),
-                risingStars: getMostImproved(3).map(e => ({ name: nameOf(e.student.name) }))
+                stages: [...new Set(tiers.map(periodOf))].map(period => {
+                    const group = tiers.filter(t => periodOf(t) === period);
+                    return {
+                        name: group.map(t => t.name).join(' و'), period,
+                        board: getGeneralTvBoard(period).map(e => {
+                            const sum = summarizeRange(e.student, dates);
+                            return { name: nameOf(e.student.name), points: e.points,
+                                week: roundPointTotal(sum.points + sum.attended * attendance), rank: e.rank <= 10 ? e.rank : null };
+                        }),
+                        dayKnights: group.map(t => {
+                            const appr = getApprovedKnightsForMode(date, t.id);
+                            return appr ? approved(appr, t.name) : automatic(t);
+                        }).filter(e => e.names.length),
+                        weekKnights: group.map(t => ({ stage: t.name,
+                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),
+                        risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))
+                    };
+                })
             };
         }
         const generalTv = { channel: null, window: null, enabled: false, heartbeat: null, lastHello: 0, dataContext: null, events: new Map(), serial: 0 };
@@ -4454,7 +4481,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!generalTv.enabled || !generalTvReady() || added <= 0) return;
             const id = window.crypto?.randomUUID?.() || 'tv-' + Date.now() + '-' + (++generalTv.serial);
             const message = { type: 'celebrate', id, name: tvDisplayName(student.name, students.map(s => s.name)),
-                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student) };
+                added, total: getCumulativeStats(student).tripPoints, rank: getGeneralCelebrationRank(student), period: getGeneralTvPeriod(student) };
             if (postGeneralTv(message)) generalTv.events.set(student.id, id);
         }
         function cancelGeneralTvCelebration(student) {
@@ -8175,7 +8202,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         // الأكثر تقدّماً: مقارنة نقاط هذا الأسبوع بمعدّل الأسابيع السابقة
-        function getMostImproved(limit = 5) {
+        function getMostImproved(limit = 5, period = null) {
             const { startStr, endStr } = getBoardWeekRange();
             const thisWeek = getWorkingDatesInRange(startStr, endStr);
             if (thisWeek.length === 0) return [];
@@ -8190,9 +8217,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const pastDates = isGeneralProgram() ? getGeneralSchoolDates(undefined, addDaysToDateStr(startStr, -1)) : Array.from(pastSet).sort();
             if (pastDates.length === 0) return []; // لا سابقة للمقارنة
 
-            const excluded = isGeneralProgram() ? new Set(getGeneralTvLeaders().map(e => e.student.id)) : null;
+            const excluded = isGeneralProgram() ? new Set((period === null ? getGeneralTvLeaders() :
+                getGeneralTvBoard(period).filter(e => e.rank <= 10)).map(e => e.student.id)) : null;
 
-            return students.map(s => {
+            return students.filter(s => !isGeneralProgram() || period === null || getGeneralTvPeriod(s) === period).map(s => {
                 const now = summarizeRange(s, thisWeek);
                 const past = summarizeRange(s, pastDates);
                 if (isGeneralProgram() && (now.unrecorded || past.unrecorded)) return null;

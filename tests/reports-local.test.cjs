@@ -261,7 +261,7 @@ test('د: summer وreview-day بلا تغيير؛ الواجهة والحفظ و
         assert.ok(after && before && initial.replaceAll('\r\n', '\n').includes(before));
         assert.equal(text.split(after).length, 2, 'each approved UI change occurs exactly once');
         return text.replace(after, before);
-    }, html);
+    }, require('./helpers/board-invariants.cjs').beforeBoard(html));
     assert.equal(beforeTrial, initial.replaceAll('\r\n', '\n'));
     for (const name of ['renderReportsTable', 'computeComplexStats', 'generalRecitationTotals', 'getAttendanceState',
         'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));

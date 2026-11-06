@@ -13,11 +13,11 @@ before(async () => {
     browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
 });
 after(async () => { await browser?.close(); });
-const leaders = () => Array.from({ length: 10 }, (_, i) => ({ name: ['سعد فهد ناصر', 'خالد عبد الله سالم', 'عمر عبد الرحمن صالح'][i % 3], points: 96 - i * 6, rank: i + 1 }));
-const snapshot = (extra = {}) => ({ type: 'snapshot', boardDate: '2026-11-01', leaders: leaders(),
+const leaders = () => Array.from({ length: 20 }, (_, i) => ({ name: ['سعد فهد ناصر', 'خالد عبد الله سالم', 'عمر عبد الرحمن صالح'][i % 3], points: 196 - i * 6, week: 42, rank: i < 10 ? i + 1 : null }));
+const snapshot = (extra = {}) => ({ type: 'snapshot', boardDate: extra.boardDate || '2026-11-01', stages: [{ period: 'asr', name: 'ابتدائي', board: extra.leaders || leaders(),
     dayKnights: [{ stage: 'ابتدائي', names: ['سعد فهد ناصر'] }, { stage: 'متوسط', names: ['خالد عبد الله سالم'] }, { stage: 'ثانوي', names: ['عمر عبد الرحمن صالح'] }],
     weekKnights: [{ stage: 'متوسط', names: ['خالد عبد الله سالم', 'سعد فهد ناصر'] }],
-    risingStars: [{ name: 'عمر عبد الرحمن صالح' }], ...extra });
+    risingStars: [{ name: 'عمر عبد الرحمن صالح' }] }] });
 async function openTv(options = {}) {
     const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce', ...options });
     const page = await context.newPage(), requests = [], external = [], errors = [];
@@ -36,7 +36,7 @@ async function openTv(options = {}) {
     await page.clock.pauseAt(new Date('2026-11-01T12:00:01Z'));
     const post = message => page.evaluate(message => {
         window.tvTestSender ||= new BroadcastChannel('almahra-tv'); window.tvTestSender.postMessage(message);
-    }, message);
+    }, message.type === 'celebrate' ? { ...message, period: message.period || 'asr' } : message);
     return { page, context, requests, external, errors, post,
         async snapshot(message = snapshot()) { await post(message); await page.waitForFunction(() => document.querySelector('.leader')); await page.clock.runFor(850); },
         close: () => context.close() };
@@ -98,7 +98,7 @@ test('TV design: Latin digits in clock, rank, points, date and celebration; same
     } finally { await h.close(); }
 });
 
-test('TV design: ten leaders use two five-row columns; names fit at 75, then 60–74, then two lines at 58; compounds never break', async () => {
+test('TV design: twenty rows use two ten-row columns; names shrink from 42 on one line; compounds never break', async () => {
     const h = await openTv();
     try {
         const names = ['سعد فهد ناصر', 'خالد عبد الله سالم', 'عمر عبد الرحمن صالح', 'عبد الرحمن عبد العزيز عبد الكريم'];
@@ -107,15 +107,61 @@ test('TV design: ten leaders use two five-row columns; names fit at 75, then 60�
             const r = n.getBoundingClientRect(), name = n.querySelector('.name'), style = getComputedStyle(name);
             return { x: r.x, y: r.y, size: parseFloat(style.fontSize), lines: name.getBoundingClientRect().height / parseFloat(style.lineHeight), width: name.clientWidth, scroll: name.scrollWidth };
         }));
-        assert.equal(new Set(rows.map(r => r.x)).size, 2); assert.equal(new Set(rows.map(r => r.y)).size, 5);
-        assert.ok(rows.some(r => r.size === 75)); assert.ok(rows.some(r => r.size >= 60 && r.size < 75));
-        assert.ok(rows.some(r => r.size === 58 && r.lines > 1.9 && r.lines < 2.1));
+        assert.equal(new Set(rows.map(r => r.x)).size, 2); assert.equal(new Set(rows.map(r => r.y)).size, 10);
+        assert.ok(rows.some(r => r.size === 42)); assert.ok(rows.some(r => r.size < 42));
+        assert.ok(rows.every(r => r.lines > .9 && r.lines < 1.1));
         assert.ok(rows.every(r => r.scroll <= r.width + 1));
         const words = await h.page.locator('.leader .name-word').evaluateAll(nodes => nodes.map(n => ({ text: n.textContent, rects: n.getClientRects().length, whiteSpace: getComputedStyle(n).whiteSpace })));
         assert.ok(words.some(w => w.text === 'عبد الله')); assert.ok(words.some(w => w.text === 'عبد الرحمن'));
         assert.ok(words.every(w => w.rects === 1 && w.whiteSpace === 'nowrap'));
         await safe(h.page, '.leader, .name, .rank, .points');
         await h.page.screenshot({ path: path.join(root, '.cache/tv-design-leaders.png') });
+    } finally { await h.close(); }
+});
+
+test('Board: hidden ranks after ten, fixed 20-row pages, other-period celebrations and redraw at Maghrib/midnight', async () => {
+    const h = await openTv();
+    try {
+        const board = Array.from({ length: 24 }, (_, i) => ({ name: 'طالب الفترة ' + (i + 1), points: 100 - i, week: 22.5, rank: i + 1 }));
+        await h.post({ type: 'snapshot', boardDate: '2026-11-01', stages: [
+            { period: 'asr', name: 'ابتدائي', board },
+            { period: 'maghrib', name: 'متوسط وثانوي', board: [{ name: 'طالب المغرب', points: 42, week: 22.5, rank: 1 }] }
+        ] });
+        await h.page.waitForFunction(() => document.querySelectorAll('.slide').length === 2);
+        assert.equal(await h.page.locator('.slide.active .leader').count(), 20);
+        assert.equal(await h.page.locator('.slide.active .board-page').innerText(), 'صفحة 1 من 2');
+        assert.deepEqual(await h.page.locator('.slide.active .rank').allTextContents(), [...Array.from({ length: 10 }, (_, i) => String(i + 1)), ...Array(10).fill('')]);
+        assert.equal(await h.page.locator('.slide.active .week').first().getAttribute('dir'), 'ltr');
+        assert.equal(await h.page.locator('.slide.active .week').first().innerText(), '+22.5');
+        await h.page.clock.runFor(15000);
+        assert.equal(await h.page.locator('.slide.active .board-page').innerText(), 'صفحة 2 من 2');
+        assert.equal(await h.page.locator('.slide.active .name').count(), 4);
+        assert.ok((await h.page.locator('.slide.active .rank').allTextContents()).every(s => s === ''));
+        await h.post({ type: 'celebrate', id: 'too-low', period: 'asr', name: 'طالب الفترة', added: 22.5, total: 32.5, rank: 24 });
+        await h.page.waitForFunction(() => !document.getElementById('celebration').hidden);
+        assert.equal(await h.page.locator('#celeRank').innerText(), '');
+        assert.equal(await h.page.locator('#celeRank').evaluate(n => n.hidden), true);
+        const maghrib = require('../tv.js').prayerPeriods(require('../vendor/adhan-4.4.3.umd.js'), '2026-11-01')[0].start;
+        const move = async instant => { await h.page.clock.setSystemTime(new Date(instant)); await h.post({ type: 'cancel', id: 'clock-pulse' }); };
+        await move(maghrib);
+        await h.page.waitForFunction(() => !document.getElementById('prayer').hidden);
+        assert.equal(await h.page.locator('.slide h2').innerText(), 'لوحة النقاط — متوسط وثانوي');
+        await move(maghrib + 20 * 60000);
+        await h.page.waitForFunction(() => document.getElementById('prayer').hidden);
+        assert.equal(await h.page.locator('#celebration').evaluate(n => n.hidden), true);
+        assert.equal(await h.page.locator('.slide.active .name').innerText(), 'طالب المغرب');
+        await h.post({ type: 'celebrate', id: 'wrong-period', period: 'asr', name: 'يسقط', added: 1, total: 1, rank: 1 });
+        assert.equal(await h.page.locator('#celebration').evaluate(n => n.hidden), true);
+        await move('2026-11-01T23:59:59+03:00');
+        await h.post({ type: 'celebrate', id: 'night-current', period: 'maghrib', name: 'الجاري', added: 1, total: 1, rank: 1 });
+        await h.post({ type: 'celebrate', id: 'night-queued', period: 'maghrib', name: 'المنتظر', added: 1, total: 1, rank: 1 });
+        await h.page.waitForFunction(() => !document.getElementById('celebration').hidden);
+        await move('2026-11-02T00:00:00+03:00');
+        await h.page.waitForFunction(() => document.getElementById('celebration').hidden);
+        assert.equal(await h.page.locator('.slide.active h2').innerText(), 'لوحة النقاط — ابتدائي');
+        await h.page.clock.runFor(7000);
+        assert.equal(await h.page.locator('#celebration').evaluate(n => n.hidden), true);
+        assert.deepEqual(h.errors, []);
     } finally { await h.close(); }
 });
 

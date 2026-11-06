@@ -58,19 +58,23 @@
 .slide-title h2 { font-size:56px; font-weight:700; line-height:1.2; }
 .slide-icon { width:64px; height:64px; border-radius:50%; background:var(--tv-surface); display:grid; place-items:center; color:var(--tv-gold); font-size:30px; }
 
-/* المتصدرون: عمودان حتى 5 صفوف لكلٍّ منهما، الأول من اليمين ينزل ثم اليسار (كما في الكود) */
-.board { max-height:calc(var(--board-rows) * 150px + (var(--board-rows) - 1) * 14px); margin-block:auto; flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-template-columns:1fr 1fr; gap:14px 32px; align-content:center; }
-.leader { min-height:0; display:grid; grid-template-columns:88px minmax(0,1fr) auto; align-items:center; gap:20px; padding-inline:22px 28px; background:var(--tv-surface); border-radius:20px; }
-.rank { width:88px; height:88px; border-radius:50%; display:grid; place-items:center; font-size:56px; font-weight:700; line-height:1; color:var(--tv-muted); }
-/* أول ثلاث رتب: أقراص مصمتة. التعادل يشترك في اللون، والرتبة بعده تتخطّى (2، 2، ثم 4 بلا برونزي). */
-.leader.top1 .rank { background:var(--tv-gold); color:var(--tv-bg); }
-.leader.top2 .rank { background:var(--tv-silver); color:var(--tv-bg); }
-.leader.top3 .rank { background:var(--tv-bronze); color:var(--tv-bg); }
-/* الاسم 75px (7% من الارتفاع). الاسم الأطول يصغر بقدر ما يلزم حتى 60px سطراً واحداً، وإن لم يتسع فسطران بـ58px. لا شيء تحت 56px. */
-.leader .name { font-size:75px; font-weight:700; line-height:1.25; white-space:nowrap; }
+/* لوحة الفترة: عشرون صفاً، الأيمن أولاً ثم الأيسر. */
+.board { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:48px; margin-top:20px; margin-bottom:42px; }
+.board-page { text-align:center; font-size:28px; color:var(--tv-muted); }
+.board-column { display:grid; grid-template-rows:44px repeat(10,minmax(0,1fr)); min-height:0; }
+.board-header, .leader { display:grid; grid-template-columns:64px minmax(0,1fr) 150px 120px; align-items:center; padding:0 14px; }
+.board-header { font-size:24px; color:var(--tv-muted); border-bottom:2px solid var(--tv-line); }
+.board-header span:nth-child(n+3) { text-align:center; }
+.leader { min-height:0; line-height:1.1; border-bottom:1px solid var(--tv-line); }
+.rank { width:52px; height:52px; margin:auto; display:grid; place-items:center; font-size:36px; font-weight:700; color:var(--tv-muted); }
+.leader.top1, .leader.top2, .leader.top3 { background:rgba(217,187,95,.06); }
+.leader.top1 .rank { background:var(--tv-gold); color:var(--tv-bg); border-radius:50%; }
+.leader.top2 .rank { background:var(--tv-silver); color:var(--tv-bg); border-radius:50%; }
+.leader.top3 .rank { background:var(--tv-bronze); color:var(--tv-bg); border-radius:50%; }
+.leader .name { min-width:0; font-size:42px; font-weight:600; white-space:nowrap; padding-inline-start:10px; }
 .leader .name.fit { font-size:var(--fit); }
-.leader .name.two { font-size:58px; line-height:1.04; white-space:normal; text-wrap:balance; }
-.leader .points { font-size:75px; font-weight:700; line-height:1; justify-self:end; margin-inline-start:16px; }
+.leader .points { font-size:48px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; }
+.leader .week { font-size:30px; font-weight:600; color:var(--tv-gold); text-align:center; font-variant-numeric:tabular-nums; opacity:.92; }
 
 /* الفرسان والنجم الصاعد: بطاقة لكل مرحلة / لكل طالب */
 .cards { flex:1; display:flex; justify-content:center; gap:40px; min-height:0; }

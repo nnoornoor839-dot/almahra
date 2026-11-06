@@ -14,7 +14,8 @@ const base = cp.execFileSync('git', ['show', '0f1c43e:index.html'], { cwd: root,
 
 function board(list = [], text = html) {
     const state = { program: 'general', seasonId: 's1', ready: true, sent: [], timers: [], settings: {
-        points: { attendance: 0 }, stages: [{ id: 'a', name: 'مرحلة أولى' }, { id: 'b', name: 'مرحلة ثانية' }],
+        points: { attendance: 0 }, stages: [{ id: 'a', name: 'مرحلة أولى', period: 'asr' }, { id: 'b', name: 'مرحلة ثانية', period: 'maghrib' }],
+        halaqas: [{ id: 'ha', stageId: 'a', active: true }, { id: 'hb', stageId: 'b', active: true }],
         grades: [], kindMult: {}, absence: [], criteria: [], workingDays: [0, 1, 2, 3, 4], features: { tiers: false } },
         season: { termStart: '2026-10-01', termEnd: '2026-12-31', calendar: [] },
         daily: {}, weekly: {}, approved: [], cards: {} };
@@ -41,12 +42,13 @@ function board(list = [], text = html) {
         showToast: msg => { state.toast = msg; } });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name, text)));
+    list.forEach(s => { s.halaqaId ??= 'ha'; });
     ctx.fixtures = list; ctx.approved = state.approved;
     run("let students = fixtures, todayStr = '2026-11-05', honorKnightsLog = approved; const ALL_DAY_NAMES = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];");
     install('isGeneralProgram', 'getProgramSettings', 'getTiers', 'tiersFeatureOn', 'isWorkingDay', 'schoolCivilDate',
         'isSeasonCalendarComplete', 'getSchoolDayInfo', 'getGeneralSchoolDates', 'formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr',
         'getBoardDate', 'getBoardWeekRange', 'getWorkingDatesInRange', 'topTied', 'getStudentRank', 'getMostImproved',
-        'getSeasonLeaders', 'getApprovedKnightsForMode', 'getKnightWinCounts', 'getTitleRules', 'hbEmpty', 'renderHonorBoard');
+        'getSeasonLeaders', 'getApprovedKnightsForMode', 'getKnightWinCounts', 'getTitleRules', 'hbEmpty', 'renderHonorBoard', 'roundPointTotal');
     if (text === html) installTv(run, install);
     return { state, ctx, run, install, element, list,
         snapshot: () => copy(run('getGeneralTvSnapshot()')),
@@ -73,12 +75,13 @@ test('three-part display names normalize spaces, join عبد in every position, 
     assert.equal(name(families[3], families), 'أحمد علي حسن ا.');
 });
 
-test('general competition rank skips ties, includes rank-ten ties, and hides every last-place tie', () => {
+test('general competition rank skips ties, includes rank-ten ties, and hides ranks after ten', () => {
     const h = board([100, 100, 90, 80, 70, 60, 50, 40, 30, 20, 20, 10, 10].map((points, id) => ({ id, name: `وهمي طالب رقم${id}`, points })));
     assert.deepEqual(copy(h.run('students.map(s => getStudentRank(s.id))')), [1, 1, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12]);
     assert.equal(h.run('getGeneralTvLeaders().length'), 11);
     assert.deepEqual(copy(h.run('students.slice(-2).map(getGeneralCelebrationRank)')), [null, null]);
-    const single = board([{ id: 1, points: 0 }]); assert.equal(single.run('getGeneralCelebrationRank(students[0])'), 1);
+    const single = board([{ id: 1, points: 0 }]); assert.equal(single.run('getGeneralCelebrationRank(students[0])'), null);
+    single.list[0].points = 10; assert.equal(single.run('getGeneralCelebrationRank(students[0])'), 1);
     for (const program of ['summer', 'review-day']) {
         h.state.program = program;
         h.run(source('getStudentRank', base).replace('function getStudentRank(', 'function oldRank('));
@@ -134,19 +137,24 @@ test('snapshot has exactly allowed keys, approved crowned first only, per-stage 
     h.state.weekly = { a: [candidate(list[2])], b: [] };
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'a', fars: [list[0], list[1], list[2]].map(s => ({ ...s, achievement: 'secret-achievement' })) });
     const s = h.snapshot();
-    assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'leaders', 'dayKnights', 'weekKnights', 'risingStars'].sort());
+    assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'stages'].sort());
     assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);
-    for (const e of s.leaders) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank']);
-    for (const e of [...s.dayKnights, ...s.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
-    for (const e of s.risingStars) assert.deepEqual(Object.keys(e), ['name']);
-    assert.deepEqual(s.dayKnights, [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
+    for (const stage of s.stages) {
+        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'risingStars'].sort());
+        for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
+        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
+        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
+    }
+    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
     assert.doesNotMatch(JSON.stringify(s), /sid-|0500000000|secret|private-stage|"id"|"sid"|عائلة/);
     assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });
     h.state.settings.tvPrayer = { maghribMinutes: 15, ishaMinutes: 40 };
     assert.deepEqual(h.snapshot().prayer, h.state.settings.tvPrayer);
-    h.state.approved.splice(0); assert.equal(h.snapshot().dayKnights[0].names.length, 3);
+    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'all', fars: [list[1]] });
-    assert.deepEqual(h.snapshot().dayKnights, [{ stage: 'كل الطلاب', names: ['طالب وهمي ثالث2'] }]);
+    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [
+        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },
+        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
 });
 
 test('supervisor never builds an unsolicited snapshot; opening is synchronous, popup blocking shows toast, hello reconnects and heartbeat is 30s', () => {
@@ -204,7 +212,7 @@ test('real quick save celebrates only after cloud success, never failed, zero or
     const pending = h.save(); assert.equal(sent.length, 0);
     release({ success: true }); await pending;
     assert.equal(sent.length, 1); assert.equal(sent[0].type, 'celebrate');
-    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank'].sort());
+    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank', 'period'].sort());
     h.state.pending = null; await h.run('undoLastGeneralEntry()');
     assert.deepEqual(sent[1], { type: 'cancel', id: sent[0].id });
     for (const mode of ['failed', 'zero', 'missed']) {
@@ -254,8 +262,8 @@ test('prayer settings validate integer 5–90 and defaults are absent from PROGR
 function tvHarness() {
     let time = 0; const timers = [];
     const state = tv.createTvState({ now: () => time, schedule: (fn, ms) => { timers.push({ fn, ms }); return timers.length; }, unschedule() {} });
-    state.receive({ type: 'snapshot', leaders: [{ name: 'وهمي', points: 1, rank: 1 }] });
-    return { state, timers, time: n => { time = n; }, event: id => state.receive({ type: 'celebrate', id, name: 'وهمي', added: 1, total: 1, rank: null }) };
+    state.receive({ type: 'snapshot', stages: [{ period: 'asr', board: [{ name: 'وهمي', points: 1, week: 1, rank: 1 }] }] });
+    return { state, timers, time: n => { time = n; }, event: id => state.receive({ type: 'celebrate', id, period: 'asr', name: 'وهمي', added: 1, total: 1, rank: null }) };
 }
 test('celebration queue deduplicates ids, cancels waiting/current and stale timer cannot close successor; prayer drops and clears queue', () => {
     const h = tvHarness(); h.event('a'); h.event('a'); h.event('b'); h.event('c');
@@ -274,17 +282,17 @@ test('90 seconds without received message, bye or clear erase names; a snapshot 
     const h = tvHarness(); h.event('a'); h.time(89999); h.state.checkConnection(); assert.ok(h.state.view().snapshot);
     h.time(90000); h.state.checkConnection(); assert.equal(h.state.view().snapshot, null); assert.equal(h.state.view().current, null);
     for (const type of ['bye', 'clear']) {
-        h.state.receive({ type: 'snapshot', risingStars: [{ name: 'وهمي' }] }); assert.equal(h.state.view().slides.length, 1);
+        h.state.receive({ type: 'snapshot', stages: [{ period: 'asr', risingStars: [{ name: 'وهمي' }] }] }); assert.equal(h.state.view().slides.length, 1);
         assert.equal(h.state.view().current, null); h.state.receive({ type }); assert.equal(h.state.view().snapshot, null);
     }
 });
-test('slides skip empty sections, keep four ordered kinds, cap stars at three, keep all tied leaders together and pause under overlays', () => {
+test('slides skip empty sections, paginate board before knights and stars, and pause under overlays', () => {
     assert.deepEqual(tv.makeSlides({}), []);
-    const snapshot = { leaders: Array.from({ length: 13 }, () => ({ name: 'وهمي', rank: 10 })), dayKnights: [{ stage: 'أ', names: [] }, { stage: 'ب', names: ['وهمي'] }],
-        weekKnights: [{ stage: 'ب', names: ['وهمي'] }], risingStars: Array.from({ length: 5 }, () => ({ name: 'وهمي' })) };
-    const slides = tv.makeSlides(snapshot);
-    assert.deepEqual(slides.map(s => s.kind), ['leaders', 'dayKnights', 'weekKnights', 'risingStars']);
-    assert.deepEqual(slides[0].items, snapshot.leaders); assert.equal(slides.at(-1).items.length, 3);
+    const snapshot = { stages: [{ period: 'asr', name: 'أ', board: Array.from({ length: 24 }, () => ({ name: 'وهمي', rank: null, week: 1, points: 1 })), dayKnights: [{ stage: 'أ', names: [] }, { stage: 'ب', names: ['وهمي'] }],
+        weekKnights: [{ stage: 'ب', names: ['وهمي'] }], risingStars: Array.from({ length: 5 }, () => ({ name: 'وهمي' })) }] };
+    const slides = tv.makeSlides(snapshot, 'asr');
+    assert.deepEqual(slides.map(s => s.kind), ['board', 'board', 'dayKnights', 'weekKnights', 'risingStars']);
+    assert.deepEqual(slides.slice(0, 2).flatMap(s => s.items), snapshot.stages[0].board); assert.equal(slides.at(-1).items.length, 3);
     const h = tvHarness(); h.state.receive({ type: 'snapshot', ...snapshot }); h.state.advance(); assert.equal(h.state.view().slide, 1);
     h.event('a'); h.state.advance(); assert.equal(h.state.view().slide, 1);
     h.state.setPrayer('العشاء'); h.state.advance(); assert.equal(h.state.view().slide, 1);
@@ -334,17 +342,17 @@ test('actual TV browser script boots offline, renders message text literally and
     vm.runInContext(fs.readFileSync(path.join(root, 'tv.js'), 'utf8'), ctx);
     assert.equal(channel.sent[0].type, 'hello'); assert.equal(el('neutral').hidden, false);
     const snapshot = { type: 'snapshot', boardDate: '2026-10-29', prayer: { maghribMinutes: 35, ishaMinutes: 40 },
-        leaders: [{ name: '<img src=x onerror=alert(1)>', points: 7, rank: 1 },
-            ...Array.from({ length: 12 }, (_, i) => ({ name: `طالب وهمي ${i}`, points: 1, rank: 10 }))] };
+        stages: [{ name: 'ابتدائي', period: 'asr', board: [{ name: '<img src=x onerror=alert(1)>', points: 7, week: 7, rank: 1 },
+            ...Array.from({ length: 12 }, (_, i) => ({ name: `طالب وهمي ${i}`, points: 1, week: 1, rank: 10 }))] }] };
     channel.onmessage({ data: snapshot });
     assert.equal(el('slides').children.length, 1);
-    const leaders = el('slides').children[0].children[1];
-    assert.equal(leaders.children.length, 13);
-    assert.equal(leaders.style.gridTemplateRows, 'repeat(7, 1fr)');
-    const row = el('slides').children[0].children[1].children[0];
-    assert.equal(row.children[1].textContent, snapshot.leaders[0].name);
+    const board = el('slides').children[0].children[2];
+    assert.equal(board.children.length, 2);
+    assert.equal(board.children[0].children.length, 11);
+    const row = board.children[0].children[1];
+    assert.equal(row.children[1].textContent, snapshot.stages[0].board[0].name);
     assert.match(el('resultsDate').textContent, /29-10/);
-    channel.onmessage({ data: { type: 'celebrate', id: 'one', name: '<script>literal</script>', added: 5, total: 12, rank: null } });
+    channel.onmessage({ data: { type: 'celebrate', id: 'one', period: 'asr', name: '<script>literal</script>', added: 5, total: 12, rank: null } });
     assert.equal(el('celeName').textContent, '<script>literal</script>'); assert.equal(el('celeRank').textContent, '');
     channel.onmessage({ data: { type: 'cancel', id: 'one' } }); assert.equal(el('celebration').hidden, true);
     const maghrib = tv.prayerPeriods(adhan, '2026-11-01')[0].start;
