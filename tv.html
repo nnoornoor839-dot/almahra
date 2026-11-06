@@ -1,53 +1,174 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="general-app">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>البرنامج العام — شاشة العرض</title>
     <style>
-        * { box-sizing: border-box; }
-        [hidden] { display: none !important; }
-        body { margin: 0; background: #0b2e26; color: #f3f7f5; font-family: system-ui, Tahoma, sans-serif; }
-        #content { height: 100vh; padding: 4vh 5vw; display: flex; flex-direction: column; }
-        header { display: flex; align-items: center; justify-content: space-between; font-size: 2vw; gap: 2vw; }
-        #clock, .points, #celeAdded { color: #f5c542; }
-        #slides { position: relative; flex: 1; min-height: 0; margin: 2vh 0; }
-        .slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .8s ease, visibility .8s; display: flex; flex-direction: column; }
-        .slide.active { opacity: 1; visibility: visible; }
-        h2 { font-size: 3vw; text-align: center; margin: 1vh 0 3vh; }
-        .board { display: grid; grid-auto-flow: column; grid-template-columns: 1fr 1fr; gap: 1.2vh 2vw; flex: 1; }
-        .leader { display: grid; grid-template-columns: 1.5em 1fr auto; align-items: center; gap: .4em; background: #12403a; border-radius: .5em; padding: .35em .6em; font-size: 2.1vw; }
-        .rank { color: #a9c7bf; }
-        .cards { display: flex; justify-content: center; gap: 2vw; flex: 1; min-height: 0; }
-        .card { flex: 1; background: #12403a; border: 1px solid #1f5a50; border-radius: 1em; padding: 2vh 1.5vw; text-align: center; overflow: auto; align-content: center; }
-        .card h3 { font-size: 2.8vw; margin: 1vh 0; overflow-wrap: anywhere; }
-        .muted { color: #a9c7bf; font-size: 1.8vw; }
-        footer { text-align: center; min-height: 6vh; }
-        #resultsDate { font-size: 1.3vw; min-height: 1.5em; }
-        #dots { display: flex; justify-content: center; gap: .7em; margin: 1vh; }
-        .dot { width: .7em; height: .7em; background: #1f5a50; border-radius: 50%; }
-        .dot.on { background: #f5c542; }
-        #neutral, .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5vh 5vw; background: #0b2e26; }
-        #neutral { font-size: 5vw; }
-        .overlay { z-index: 2; gap: 2vh; }
-        #prayer { background: #071a16; font-size: 4vw; }
-        #celeName { font-size: 5vw; }
-        #celeAdded { font-size: 5vw; }
-        #celeTotal, #celeRank { font-size: 2.7vw; }
-        #fullscreen { position: fixed; bottom: 1vh; left: 1vw; z-index: 3; font: inherit; padding: .6em 1em; border: 1px solid #a9c7bf; border-radius: .6em; background: #12403a; color: white; cursor: pointer; }
-        @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
-    </style>
+/* شاشة التلفاز 1920×1080. رموز خاصة بالتلفاز مشتقة من رموز الهوية (الأخضر --general-brand، والذهبي من الشعار).
+   شرط للبناء: الخط والأيقونات تُحمَّل محلياً لا عبر CDN، حتى لا تختفي عند انقطاع الإنترنت.
+   المنطقة الآمنة 5%: كل ما يهم يبعد 96px عن اليمين واليسار و54px عن الأعلى والأسفل
+   (الساعة داخلها أيضاً؛ المستثنى فقط زر ملء الشاشة ونقاط التقدّم ووسم «وهمي»).
+   حدود القراءة من 5 م: المريح نحو 80px، والأدنى نحو 40px، ولا شيء يحتاجه الطلاب تحت 56px. */
+.general-app {
+  --general-font: 'Cairo', sans-serif;
+  --general-canvas: #f5f7f5;
+  --general-pending-bg: #faf3e4;
+  --general-radius-sm: 8px;
+  --tv-bg: #0b3320;        /* الأخضر --general-brand مُعتَّماً */
+  --tv-bg-deep: #072414;   /* خلفية وقت الصلاة: أهدأ */
+  --tv-surface: #114229;
+  --tv-line: #1e5a3b;
+  --tv-ink: var(--general-canvas);
+  --tv-muted: #b4c8bb;
+  --tv-gold: #d9bb5f;      /* ذهبي الشعار: المركز الأول، وكبسولة النقاط المضافة */
+  --tv-silver: #cdd5d0;    /* المركز الثاني */
+  --tv-bronze: #c98d57;    /* المركز الثالث */
+  --tv-safe-x: 96px;       /* 5% من 1920 */
+  --tv-safe-y: 54px;       /* 5% من 1080 */
+}
+.general-app, .general-app body { margin:0; height:100%; background:var(--tv-bg); overflow:hidden; }
+.general-app body { font-family:var(--general-font); color:var(--tv-ink); }
+.general-app *, .general-app *::before, .general-app *::after { box-sizing:border-box; }
+.general-app [hidden] { display:none !important; }
+.general-app h1, .general-app h2, .general-app h3, .general-app p { margin:0; }
+.num { font-variant-numeric:tabular-nums; }
+
+/* المسرح: 1920×1080 ثابت، ويُصغَّر للمعاينة على شاشة أصغر */
+.tv { position:absolute; top:0; left:0; width:1920px; height:1080px; transform-origin:0 0; background:var(--tv-bg); overflow:hidden; }
+.tv.idle, .tv.idle * { cursor:none !important; }
+
+/* الرأس: شريط أصغر (72px) داخل المنطقة الآمنة */
+.tv-head { position:absolute; top:var(--tv-safe-y); inset-inline:var(--tv-safe-x); height:72px; display:flex; align-items:center; justify-content:space-between; }
+.tv-brand { display:flex; align-items:center; gap:28px; }
+/* الشعار بلا صندوق أبيض: نسخة بيضاء من الملف نفسه على الداكن */
+.tv-logo { display:block; }
+.tv-logo img { display:block; height:64px; filter:brightness(0) invert(1); opacity:.94; }
+.tv-sep { width:2px; height:48px; background:var(--tv-line); border-radius:2px; }
+.tv-brand h1 { font-size:40px; font-weight:700; line-height:1.2; }
+.tv-clock { font-size:56px; font-weight:700; line-height:1; letter-spacing:.5px; }
+.tv-mock { position:absolute; top:6px; left:8px; font-size:16px; color:var(--tv-muted); border:1px solid var(--tv-line); border-radius:999px; padding:0 10px; line-height:22px; z-index:20; }
+
+/* الشرائح */
+.tv-slides { position:absolute; top:150px; bottom:var(--tv-safe-y); inset-inline:var(--tv-safe-x); }
+.tv.has-date .tv-slides { bottom:148px; }
+.slide { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; visibility:hidden; transition:opacity .8s ease, visibility .8s; }
+.slide.active { opacity:1; visibility:visible; }
+.slide-title { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:26px; }
+.slide-title h2 { font-size:56px; font-weight:700; line-height:1.2; }
+.slide-icon { width:64px; height:64px; border-radius:50%; background:var(--tv-surface); display:grid; place-items:center; color:var(--tv-gold); font-size:30px; }
+
+/* المتصدرون: عمودان حتى 5 صفوف لكلٍّ منهما، الأول من اليمين ينزل ثم اليسار (كما في الكود) */
+.board { max-height:calc(var(--board-rows) * 150px + (var(--board-rows) - 1) * 14px); margin-block:auto; flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-template-columns:1fr 1fr; gap:14px 32px; align-content:center; }
+.leader { min-height:0; display:grid; grid-template-columns:88px minmax(0,1fr) auto; align-items:center; gap:20px; padding-inline:22px 28px; background:var(--tv-surface); border-radius:20px; }
+.rank { width:88px; height:88px; border-radius:50%; display:grid; place-items:center; font-size:56px; font-weight:700; line-height:1; color:var(--tv-muted); }
+/* أول ثلاث رتب: أقراص مصمتة. التعادل يشترك في اللون، والرتبة بعده تتخطّى (2، 2، ثم 4 بلا برونزي). */
+.leader.top1 .rank { background:var(--tv-gold); color:var(--tv-bg); }
+.leader.top2 .rank { background:var(--tv-silver); color:var(--tv-bg); }
+.leader.top3 .rank { background:var(--tv-bronze); color:var(--tv-bg); }
+/* الاسم 75px (7% من الارتفاع). الاسم الأطول يصغر بقدر ما يلزم حتى 60px سطراً واحداً، وإن لم يتسع فسطران بـ58px. لا شيء تحت 56px. */
+.leader .name { font-size:75px; font-weight:700; line-height:1.25; white-space:nowrap; }
+.leader .name.fit { font-size:var(--fit); }
+.leader .name.two { font-size:58px; line-height:1.04; white-space:normal; text-wrap:balance; }
+.leader .points { font-size:75px; font-weight:700; line-height:1; justify-self:end; margin-inline-start:16px; }
+
+/* الفرسان والنجم الصاعد: بطاقة لكل مرحلة / لكل طالب */
+.cards { flex:1; display:flex; justify-content:center; gap:40px; min-height:0; }
+.card { min-width:0; flex:1; max-width:560px; background:var(--tv-surface); border-radius:24px; overflow:hidden; display:flex; flex-direction:column; text-align:center; }
+/* اسم المرحلة عنوان البطاقة: أبيض 64px على شريط */
+.card .stage { font-size:64px; font-weight:700; line-height:1.3; color:var(--tv-ink); background:var(--tv-line); padding:16px 24px; }
+.card .stage::after { content:""; display:block; width:72px; height:6px; margin:10px auto 0; border-radius:6px; background:var(--tv-gold); }
+.card-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; padding:32px 32px; }
+.card .kname { font-size:80px; font-weight:700; line-height:1.3; text-wrap:balance; }
+.card .kname + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }
+.card .muted { font-size:56px; font-weight:600; color:var(--tv-muted); line-height:1.4; text-wrap:balance; }
+
+/* التذييل: تاريخ النتائج داخل المنطقة الآمنة، والنقاط وزر ملء الشاشة في الهامش */
+.results-date { position:absolute; bottom:var(--tv-safe-y); left:50%; transform:translateX(-50%); white-space:nowrap; font-size:56px; font-weight:600; color:var(--general-pending-bg); background:#3a3214; border:2px solid #6b5a22; border-radius:999px; padding:0 40px; line-height:76px; }
+.results-date i { color:var(--tv-gold); margin-inline-end:18px; font-size:44px; }
+.dots { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:14px; }
+.dot { width:16px; height:16px; border-radius:999px; background:var(--tv-line); border:0; padding:0; cursor:pointer; transition:width .4s; }
+.dot.on { background:var(--tv-gold); width:44px; }
+/* يختفي بعد 3 ثوانٍ من توقّف الفأرة، ويعود عند تحريكها */
+.tv-full { position:absolute; bottom:10px; left:16px; z-index:6; font:600 20px var(--general-font); color:var(--tv-muted); background:var(--tv-bg); border:2px solid var(--tv-line); border-radius:var(--general-radius-sm); padding:3px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:opacity .4s; }
+.tv-full i { font-size:20px; }
+.tv.idle .tv-full { opacity:0; pointer-events:none; }
+
+/* الطبقات التي تغطي الشاشة */
+.overlay { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:var(--tv-safe-y) var(--tv-safe-x); }
+.neutral { background:var(--tv-bg); gap:56px; }
+.neutral .tv-logo img { height:200px; }
+.neutral strong { font-size:96px; font-weight:700; }
+
+/* الاحتفال: 7 ثوانٍ كما في الكود */
+.cele { background:radial-gradient(ellipse at 50% 50%, #17633a 0%, var(--tv-bg) 62%); gap:12px; }
+.cele-icon { width:136px; height:136px; border-radius:50%; border:4px solid var(--tv-gold); display:grid; place-items:center; color:var(--tv-gold); font-size:64px; margin-bottom:8px; }
+.cele-name { font-size:128px; font-weight:700; line-height:1.2; }
+/* أكبر عنصر: كبسولة ذهبية مصمتة (المرجع 11) */
+.cele-added { font-size:150px; font-weight:700; line-height:1.15; color:var(--tv-bg); background:var(--tv-gold); border-radius:999px; padding:4px 96px 20px; margin:20px 0 12px; box-shadow:0 12px 40px #0006; }
+.cele-meta { display:flex; gap:28px; margin-top:16px; }
+.cele-meta div { font-size:58px; font-weight:600; background:var(--tv-surface); border:2px solid var(--tv-line); border-radius:999px; padding:0 48px; line-height:100px; }
+/* القصاصات: دفعة قصيرة مرة واحدة عند البداية، على الطرفين وفي الشريط العلوي فقط، بعيداً عن الاسم والنقاط */
+.confetti { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; padding:0; }
+.cele > :not(.confetti) { position:relative; z-index:1; }
+.confetti span { position:absolute; top:-40px; width:16px; height:30px; border-radius:3px; opacity:0; animation:burst var(--dur) cubic-bezier(.2,.6,.4,1) var(--delay) 1 both; }
+@keyframes burst {
+  0% { opacity:0; transform:translate(0,0) rotate(0deg); }
+  8% { opacity:.9; }
+  75% { opacity:.9; }
+  100% { opacity:0; transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+
+.prayer { background:var(--tv-bg-deep); gap:56px; }
+.prayer-icon { width:220px; height:220px; border-radius:50%; border:4px solid var(--tv-line); display:grid; place-items:center; color:var(--tv-gold); font-size:104px; }
+.prayer strong { font-size:128px; font-weight:700; line-height:1.3; }
+
+@media (prefers-reduced-motion: reduce) { .slide, .tv-full, .dot { transition:none; } .confetti { display:none; } }
+
+
+@font-face { font-family:Cairo; font-style:normal; font-weight:200 1000; font-display:swap; src:url('assets/fonts/Cairo-arabic.woff2') format('woff2'); unicode-range:U+0600-06FF,U+0750-077F,U+0870-089F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF; }
+@font-face { font-family:Cairo; font-style:normal; font-weight:200 1000; font-display:swap; src:url('assets/fonts/Cairo-latin.woff2') format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+2215; }
+.name-word { white-space:nowrap; }
+svg { width:1em; height:1em; fill:currentColor; flex-shrink:0; }
+.icon-defs { position:absolute; width:0; height:0; overflow:hidden; }
+.results-date:empty { display:none; }
+.cele-name { max-width:100%; text-wrap:balance; }
+.cele-meta { max-width:100%; }
+.cele-meta div { white-space:nowrap; }
+.prayer strong { white-space:nowrap; }
+.confetti { clip-path:polygon(0 0,100% 0,100% 100%,1760px 100%,1760px 150px,160px 150px,160px 100%,0 100%); }
+</style>
 </head>
 <body>
+
+<svg class="icon-defs" id="tvIcons" aria-hidden="true">
+  <symbol id="icon-leaders" viewBox="0 0 24 24"><path d="M7 2h10v3h4v3c0 3-2 5-5 5a6 6 0 0 1-3 3v3h4v3H7v-3h4v-3a6 6 0 0 1-3-3C5 13 3 11 3 8V5h4V2Zm10 5v4c1.5-.4 2-1.5 2-3V7h-2ZM5 7v1c0 1.5.5 2.6 2 3V7H5Z"/></symbol>
+  <symbol id="icon-dayKnights" viewBox="0 0 24 24"><path d="m12 1 3.4 6.9L23 9l-5.5 5.4 1.3 7.6L12 18.4 5.2 22l1.3-7.6L1 9l7.6-1.1L12 1Z"/></symbol>
+  <symbol id="icon-weekKnights" viewBox="0 0 24 24"><path d="M12 1 22 5v6c0 6-5 10-10 12C7 21 2 17 2 11V5L12 1Zm0 3v16c4-2 7-5 7-9V7l-7-3Z"/></symbol>
+  <symbol id="icon-risingStars" viewBox="0 0 24 24"><path d="M14 2c3-1 6-1 8 0 1 5-2 11-7 14l-5-5c1-4 2-6 4-9ZM6 8l5-1-3 6-5-1 3-4Zm11 5-1 5-4 3-1-5 6-3ZM7 15l2 2c-1 3-4 5-7 5 0-3 2-6 5-7ZM17 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></symbol>
+  <symbol id="icon-clap" viewBox="0 0 24 24"><path d="m4 11 5 5 1-1-7-7a1.3 1.3 0 0 1 2-2l7 7 1-1-6-7a1.3 1.3 0 0 1 2-2l6 7 1-1-4-5a1.3 1.3 0 0 1 2-2l5 6v7c0 6-7 9-12 4l-6-6a1.4 1.4 0 0 1 2-2Zm16-2a1.5 1.5 0 0 1 3 0v7c0 4-2 6-6 7 2-2 3-4 3-7V9ZM4 1h2v3H4V1Zm14-1h2v3h-2V0Z"/></symbol>
+  <symbol id="icon-mosque" viewBox="0 0 24 24"><path d="M2 8h4v14H3a1 1 0 0 1-1-1V8Zm0-1c0-2 1-3 2-4 1 1 2 2 2 4H2Zm7 7c-4-4 3-7 6-11 3 4 10 7 6 11H9Zm-1 1h14v7h-5v-2c0-1-1-2-2-3-1 1-2 2-2 3v2H8v-7Zm2 3v4h1v-4h-1Zm9 0v4h1v-4h-1Z"/></symbol>
+  <symbol id="icon-expand" viewBox="0 0 24 24"><path d="M2 2h7v3H5v4H2V2Zm13 0h7v7h-3V5h-4V2ZM2 15h3v4h4v3H2v-7Zm17 0h3v7h-7v-3h4v-4Z"/></symbol>
+</svg>
+<div class="tv" id="tv">
     <main id="content">
-        <header><strong>البرنامج العام — مجمع الحلقات</strong><time id="clock"></time></header>
-        <div id="slides"></div>
-        <footer><div id="resultsDate"></div><div id="dots" aria-label="تقدّم الشرائح"></div></footer>
-        <div id="neutral">البرنامج العام</div>
+        <header class="tv-head">
+            <div class="tv-brand"><span class="tv-logo"><img src="assets/brand/afdalkom-logo-horizontal-color.png" alt="أفضلكم لتعليم القرآن الكريم وعلومه"></span><span class="tv-sep" aria-hidden="true"></span><h1>البرنامج العام — مجمع الحلقات</h1></div>
+            <time class="tv-clock num" id="clock"></time>
+        </header>
+        <div class="tv-slides" id="slides"></div>
+        <footer><div class="results-date num" id="resultsDate" hidden></div><div class="dots" id="dots" aria-label="تقدّم الشرائح"></div></footer>
+        <div class="overlay neutral" id="neutral"><span class="tv-logo"><img src="assets/brand/afdalkom-logo-horizontal-color.png" alt=""></span><strong>البرنامج العام</strong></div>
     </main>
-    <section id="celebration" class="overlay" hidden><div>🎉</div><strong id="celeName"></strong><strong id="celeAdded"></strong><div id="celeTotal"></div><div id="celeRank"></div></section>
-    <section id="prayer" class="overlay" hidden><div>🕌</div><strong id="prayerText"></strong></section>
-    <button id="fullscreen" type="button">ملء الشاشة</button>
+    <section id="celebration" class="overlay cele" hidden>
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <div class="cele-icon"><svg aria-hidden="true"><use href="#icon-clap"></use></svg></div>
+        <strong class="cele-name" id="celeName"></strong><strong class="cele-added num" id="celeAdded"></strong>
+        <div class="cele-meta num"><div id="celeTotal"></div><div id="celeRank"></div></div>
+    </section>
+    <section id="prayer" class="overlay prayer" hidden><div class="prayer-icon"><svg aria-hidden="true"><use href="#icon-mosque"></use></svg></div><strong id="prayerText"></strong></section>
+    <button class="tv-full" id="fullscreen" type="button"><svg aria-hidden="true"><use href="#icon-expand"></use></svg>ملء الشاشة</button>
+</div>
     <script src="vendor/adhan-4.4.3.umd.js"></script>
     <script src="tv.js"></script>
 </body>

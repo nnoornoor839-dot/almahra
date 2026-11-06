@@ -224,6 +224,27 @@
       ]
     },
     {
+      "file": "tests/helpers/tv-harness.cjs",
+      "hunks": [
+        {
+          "oldLine": 11,
+          "newLine": 11,
+          "before": [
+            "module.exports = { installTv };"
+          ],
+          "after": [
+            "// قفل العرض الكامل كان للجولتين السابقتين؛ الآن يبقى قفل المنطق والاعتماديات المحلية.",
+            "function tvInvariant(file, source) {",
+            "    if (file === 'tv.js') return source.split(\"if (typeof document !== 'undefined')\")[0];",
+            "    if (file === 'tv.html') return [...source.matchAll(/<script src=\"([^\"]+)\"/g)].map(match => match[1]).join('\\n');",
+            "    return source;",
+            "}",
+            "module.exports = { installTv, tvInvariant };"
+          ]
+        }
+      ]
+    },
+    {
       "file": "tests/home-local.test.cjs",
       "hunks": [
         {
@@ -586,6 +607,21 @@
           "after": [
             "        assert.equal(h.state.prompts[0], 'سيُحفظ على يوم الأحد 01-11. متابعة؟');",
             "        if (cancelAt !== 1) assert.equal(h.state.prompts[1], 'سُجّل طالب وهمي غائباً يوم الأحد 01-11؛ التسجيل يجعله حاضراً. متابعة؟');"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 346,
+          "newLine": 346,
+          "before": [
+            "    assert.match(el('resultsDate').textContent, /٢٩-١٠/);"
+          ],
+          "after": [
+            "    assert.match(el('resultsDate').textContent, /29-10/);"
           ]
         }
       ]
@@ -1727,6 +1763,15 @@
       "before": "    const newToast = \"showToast(savedSummary.replace(/^حُفظ: /, `حُفظ ل${student.name}: `) + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";",
       "after": "    const newToast = \"showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');\";",
       "reason": "قرار المالك، إصلاح تأكيدات الجولة الثانية: تحديث النص المرجعي لمصدر الدالة ليضيف الاسم في صيغ الملخص الأربع فقط."
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 346,
+      "newLine": 346,
+      "category": 1,
+      "before": "    assert.match(el('resultsDate').textContent, /٢٩-١٠/);",
+      "after": "    assert.match(el('resultsDate').textContent, /29-10/);",
+      "reason": "قرار المالك 6 لشاشة التلفاز 2026-11-06: شكل الأرقام لاتيني فقط، والتاريخ نفسه بلا تغيير."
     }
   ],
   "ownerScopeEdits": [
@@ -1735,6 +1780,15 @@
       "change": "for (const width of [390, 1280]) → [1280]",
       "reason": "قرار المالك ٢٠٢٦-١١-٠٥: «ركز على الحاسب فقط»، فعرض الجوال 390 خارج النطاق",
       "by": "المدير"
+    },
+    {
+      "files": [
+        "tests/design-r1-local.test.cjs",
+        "tests/design-r2-local.test.cjs",
+        "tests/helpers/tv-harness.cjs"
+      ],
+      "change": "قفل ملفي TV بالكامل صار يقارن نواة tv.js قبل كتلة DOM واعتماديات tv.html؛ بقي قفل الحساب والترتيب والتوقيت حرفياً، مع فحوص متصفح جديدة للعرض.",
+      "reason": "مهمة التلفاز المعتمدة 2026-11-06 تسمح بتغيير HTML وعرض DOM. لم تتغير قيمة رقمية أو مفتاح إجابة. هذا تكييف قفل نطاق الجولتين السابقتين، وليس اعتماد مراجعة مستقلة."
     }
   ]
 }

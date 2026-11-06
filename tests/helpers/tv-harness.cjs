@@ -8,4 +8,10 @@ function installTv(run, install) {
         'generalTvContext', 'generalTvReady', 'postGeneralTv', 'sendGeneralTvSnapshot', 'clearGeneralTv', 'enableGeneralTv',
         'initGeneralTv', 'openGeneralTv', 'sendGeneralTvCelebration', 'cancelGeneralTvCelebration', 'readGeneralTvPrayer');
 }
-module.exports = { installTv };
+// قفل العرض الكامل كان للجولتين السابقتين؛ الآن يبقى قفل المنطق والاعتماديات المحلية.
+function tvInvariant(file, source) {
+    if (file === 'tv.js') return source.split("if (typeof document !== 'undefined')")[0];
+    if (file === 'tv.html') return [...source.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]).join('\n');
+    return source;
+}
+module.exports = { installTv, tvInvariant };

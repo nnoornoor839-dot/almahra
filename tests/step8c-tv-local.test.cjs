@@ -343,7 +343,7 @@ test('actual TV browser script boots offline, renders message text literally and
     assert.equal(leaders.style.gridTemplateRows, 'repeat(7, 1fr)');
     const row = el('slides').children[0].children[1].children[0];
     assert.equal(row.children[1].textContent, snapshot.leaders[0].name);
-    assert.match(el('resultsDate').textContent, /٢٩-١٠/);
+    assert.match(el('resultsDate').textContent, /29-10/);
     channel.onmessage({ data: { type: 'celebrate', id: 'one', name: '<script>literal</script>', added: 5, total: 12, rank: null } });
     assert.equal(el('celeName').textContent, '<script>literal</script>'); assert.equal(el('celeRank').textContent, '');
     channel.onmessage({ data: { type: 'cancel', id: 'one' } }); assert.equal(el('celebration').hidden, true);

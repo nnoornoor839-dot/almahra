@@ -6,6 +6,7 @@ const cp = require('node:child_process');
 const path = require('node:path');
 const { newPage, answerStudents, root } = require('./helpers/t25-browser.cjs');
 const { html, source, harness, student } = require('./helpers/quick-entry-harness.cjs');
+const { tvInvariant } = require('./helpers/tv-harness.cjs');
 let browser;
 before(async () => {
     const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,
@@ -228,6 +229,6 @@ test('design r1: calculation, search, attendance and forbidden files stay identi
     }
     for (const file of ['firestore.rules', 'programs-store.js', 'general-points.js', 'tv.html', 'tv.js']) {
         const original = cp.execFileSync('git', ['show', '82bf19f:' + file], { cwd: root, encoding: 'utf8', maxBuffer: 8e6 });
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), original.replaceAll('\r\n', '\n'), file);
+        assert.equal(tvInvariant(file, fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n')), tvInvariant(file, original.replaceAll('\r\n', '\n')), file);
     }
 });

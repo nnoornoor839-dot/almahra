@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { harness, student, copy, source, html, root, today, savedEntries } = require('./helpers/quick-entry-harness.cjs');
 const { newPage } = require('./helpers/t25-browser.cjs');
+const { tvInvariant } = require('./helpers/tv-harness.cjs');
 const original = cp.execFileSync('git', ['show', '50a97dc:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8e6 });
 const fixture = () => student({}, { name: 'سعد', direction: 'down', lastSurah: 2, lastAyah: 29,
     history: { [today]: { entries: {}, criteria: { late: -2 }, criteriaPoints: -2, absence: 'excused', note: 'وهمي' } } });
@@ -38,8 +39,8 @@ test('r2: save, calculation and validation keep the baseline source except the a
         assert.equal(source(name), source(name, original), name);
     }
     for (const file of ['general-points.js', 'tv.js', 'tv.html']) {
-        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'),
-            cp.execFileSync('git', ['show', `50a97dc:${file}`], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'), file);
+        assert.equal(tvInvariant(file, fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n')),
+            tvInvariant(file, cp.execFileSync('git', ['show', `50a97dc:${file}`], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n')), file);
     }
     assert.equal(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('\r'), false);
 });
