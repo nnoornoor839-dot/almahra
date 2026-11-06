@@ -76,6 +76,7 @@ function harness() {
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
     require('./helpers/tv-harness.cjs').installTv(run, install);
+    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';
     element('psTvMaghrib').value = '20'; element('psTvIsha').value = '30';
     // مدخلات واجهة الأداء الجديدة؛ تبقى توقعات اللقطات كما هي.
     element('psNewGoalPerDay').value = '0.5'; element('psFollowupAttendance').value = '85'; element('psFollowupNew').value = '80';
@@ -92,7 +93,7 @@ function harness() {
     return { state, ctx, run, install, element,
         setStudents(list) { state.dataStudents = list; ctx.inputStudents = list; run('students = inputStudents'); },
         save: () => run('saveProgramSettings()'), recite: () => run('saveSmartProgress()'),
-        refreshDraft() { state.draft = copy(state.settings); },
+        refreshDraft() { state.draft = copy(state.settings); for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1'; },
         validate(next, previous = state.settings.halaqas) {
             Object.assign(ctx, { next, previous });
             return run('validateGeneralHalaqas(next, getProgramSettings().teachers, getProgramSettings().stages, previous, students, students)');

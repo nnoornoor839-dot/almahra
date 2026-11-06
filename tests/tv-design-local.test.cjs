@@ -172,10 +172,10 @@ test('TV design: stage/name/rising text sizes and every student-facing slide sta
         for (const kind of ['dayKnights', 'weekKnights', 'risingStars']) {
             await h.page.clock.runFor(15000);
             const title = await h.page.locator('.slide.active h2').innerText();
-            assert.match(title, kind === 'dayKnights' ? /فرسان اليوم/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);
+            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \(مؤقت حتى الحسم\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);
             await safe(h.page, '.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');
-            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), '80px');
-            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), '64px');
+            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');
+            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');
             else assert.equal(await h.page.locator('.slide.active .muted').evaluate(n => getComputedStyle(n).fontSize), '56px');
             if (kind === 'dayKnights') await h.page.screenshot({ path: path.join(root, '.cache/tv-design-knights.png') });
         }

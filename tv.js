@@ -33,7 +33,7 @@ function makeSlides(snapshot, period) {
     const board = stage.board || [], pages = Math.ceil(board.length / 20);
     for (let page = 1; page <= pages; page++) slides.push({ kind: 'board',
         title: '🏆 لوحة النقاط — ' + stage.name, page, pages, items: board.slice((page - 1) * 20, page * 20) });
-    for (const [kind, title] of [['dayKnights', '⭐ فرسان اليوم'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {
+    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {
         const items = (stage[kind] || []).filter(item => item.names?.length);
         if (items.length) slides.push({ kind, title, items });
     }
@@ -244,10 +244,13 @@ if (typeof document !== 'undefined') {
                         body.append(column);
                     }
                 } else slide.items.forEach(item => {
-                    const card = node('div', 'card'), cardBody = node('div', 'card-body');
+                    const card = node('div', 'card' + (slide.kind === 'dayKnights' ? ' day-knight' : '')), cardBody = node('div', 'card-body');
                     if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));
                     else {
                         card.append(node('p', 'stage', item.stage));
+                        if (slide.kind === 'dayKnights') {
+                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));
+                        }
                         item.names.forEach(name => cardBody.append(node('h3', 'kname', name)));
                     }
                     Array.from(cardBody.children).filter(child => child.className === 'kname').forEach(protectName);

@@ -7,15 +7,37 @@
     "4": "نص بقرار المالك في الجولة الثانية",
     "5": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦",
     "6": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
-    "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦"
+    "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "8": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦"
   },
   "files": [
     {
       "file": "tests/day4b-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 57,
+          "newLine": 57,
+          "before": [
+            "    vm.runInContext('let students = [];\\n' + cleanSource + importSource + totalsSource, ctx);"
+          ],
+          "after": [
+            "    vm.runInContext('let students = []; const todayStr = \\\"2026-11-24\\\";\\n' + cleanSource + importSource + totalsSource, ctx);"
+          ]
+        },
+        {
+          "oldLine": 83,
+          "newLine": 83,
+          "before": [
+            "    const ctx = vm.createContext({ TextEncoder, structuredClone,"
+          ],
+          "after": [
+            "    class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }",
+            "    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,"
+          ]
+        },
+        {
           "oldLine": 124,
-          "newLine": 124,
+          "newLine": 125,
           "before": [
             "    if (source === html) {",
             "        h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;",
@@ -37,7 +59,7 @@
         },
         {
           "oldLine": 132,
-          "newLine": 132,
+          "newLine": 133,
           "before": [
             "        // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
             "        h.ctx.renderGeneralPerformance = () => {};"
@@ -46,11 +68,31 @@
         },
         {
           "oldLine": 135,
-          "newLine": 133,
+          "newLine": 134,
           "before": [],
           "after": [
             "    // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
             "    if (source.includes('function renderGeneralPerformance(')) h.ctx.renderGeneralPerformance = () => {};"
+          ]
+        },
+        {
+          "oldLine": 217,
+          "newLine": 218,
+          "before": [
+            "    const expected = copy(input); delete expected.id;"
+          ],
+          "after": [
+            "    const expected = { ...copy(input), joinedOn: '2026-11-24' }; delete expected.id;"
+          ]
+        },
+        {
+          "oldLine": 486,
+          "newLine": 487,
+          "before": [
+            "    let restored = store.replace(/\\r\\n/g, '\\n');"
+          ],
+          "after": [
+            "    let restored = require('./helpers/board-invariants.cjs').beforeKnights(store, 'data-store.js');"
           ]
         }
       ]
@@ -294,7 +336,7 @@
             "    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',"
           ],
           "after": [
-            "    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',",
+            "    install('readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',",
             "        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',"
           ]
         },
@@ -414,8 +456,19 @@
           ]
         },
         {
+          "oldLine": 436,
+          "newLine": 438,
+          "before": [
+            "    h.install('saveProgramSettings', 'generalSettingRow', 'collectGeneralSettingRows');"
+          ],
+          "after": [
+            "    h.install('readKnightsPerHalaqa', 'saveProgramSettings', 'generalSettingRow', 'collectGeneralSettingRows');",
+            "    for (const circle of h.state.settings.halaqas) h.element('psKnights_' + circle.id).value = '1';"
+          ]
+        },
+        {
           "oldLine": 488,
-          "newLine": 490,
+          "newLine": 491,
           "before": [
             "    assert.equal(store.replaceAll('\\r\\n', '\\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));"
           ],
@@ -425,7 +478,7 @@
         },
         {
           "oldLine": 524,
-          "newLine": 526,
+          "newLine": 527,
           "before": [
             "    assert.ok(classes.has('on')); assert.match(tip.innerHTML, /١٠٠٪/); assert.match(tip.innerHTML, /حضر ٧ · غاب ٠/);"
           ],
@@ -435,7 +488,7 @@
         },
         {
           "oldLine": 529,
-          "newLine": 531,
+          "newLine": 532,
           "before": [
             "    assert.equal(prevented, true); assert.match(tip.innerHTML, /٧٥٪/);"
           ],
@@ -445,7 +498,7 @@
         },
         {
           "oldLine": 625,
-          "newLine": 627,
+          "newLine": 628,
           "before": [
             "    assert.match(h.element('generalAttendanceCard').innerHTML, /gh-kpi-value\">٦٩٪/);",
             "    assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٧٣٪/);"
@@ -457,7 +510,7 @@
         },
         {
           "oldLine": 693,
-          "newLine": 695,
+          "newLine": 696,
           "before": [
             "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">٣٨٪/);"
           ],
@@ -511,8 +564,16 @@
       "file": "tests/step2-halaqas-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 107,
+          "newLine": 107,
+          "before": [],
+          "after": [
+            "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
+          ]
+        },
+        {
           "oldLine": 440,
-          "newLine": 440,
+          "newLine": 441,
           "before": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }"
           ],
@@ -522,7 +583,7 @@
         },
         {
           "oldLine": 710,
-          "newLine": 710,
+          "newLine": 711,
           "before": [
             "    const restored = programsStore.replaceAll('\\r\\n', '\\n')"
           ],
@@ -536,8 +597,26 @@
       "file": "tests/step4-snapshot-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 79,
+          "newLine": 79,
+          "before": [],
+          "after": [
+            "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
+          ]
+        },
+        {
+          "oldLine": 95,
+          "newLine": 96,
+          "before": [
+            "        refreshDraft() { state.draft = copy(state.settings); },"
+          ],
+          "after": [
+            "        refreshDraft() { state.draft = copy(state.settings); for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1'; },"
+          ]
+        },
+        {
           "oldLine": 106,
-          "newLine": 106,
+          "newLine": 107,
           "before": [],
           "after": [
             "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
@@ -608,6 +687,16 @@
           ],
           "after": [
             "    assert.match(h.element('generalTodayCard').innerHTML, /<b>1<\\/b><span>لم يُسجَّل<\\/span>/);"
+          ]
+        },
+        {
+          "oldLine": 376,
+          "newLine": 376,
+          "before": [
+            "        const current = source(name).replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "        const current = source(name, require('./helpers/board-invariants.cjs').beforeKnights(html)).replaceAll('\\r\\n', '\\n');"
           ]
         },
         {
@@ -918,8 +1007,51 @@
           ]
         },
         {
-          "oldLine": 137,
+          "oldLine": 127,
+          "newLine": 130,
+          "before": [
+            "test('snapshot has exactly allowed keys, approved crowned first only, per-stage fallback, tied automatic winners and no private fields', () => {",
+            "    const list = [1, 2, 3].map(id => ({ id, sid: `sid-${id}`, phone: '0500000000', grade: 'secret-grade', stage: 'private-stage',",
+            "        name: `طالب وهمي ثالث${id} عائلة`, points: id * 5, history: { '2026-11-01': { attended: true } } }));"
+          ],
+          "after": [
+            "test('snapshot has exact halaqa keys, manual override and automatic fallback, ties and no private fields', () => {",
+            "    const list = [1, 2, 3].map(id => ({ id, sid: 'sid-' + id, phone: '0500000000', grade: 'secret-grade', stage: 'private-stage',",
+            "        halaqaId: id === 1 ? 'ha' : 'hb', name: 'طالب وهمي ثالث' + id + ' عائلة', points: id * 5,",
+            "        history: { '2026-11-01': { attended: true, points: 10, entries: { e: { kind: 'new', spec: {}, mult: 1 } } } } }));"
+          ]
+        },
+        {
+          "oldLine": 131,
+          "newLine": 135,
+          "before": [],
+          "after": [
+            "    h.state.settings.halaqas[0].name = 'حلقة أولى'; h.state.settings.halaqas[1].name = 'حلقة ثانية';",
+            "    h.state.settings.teachers = [];",
+            "    h.ctx.measureEntry = () => ({ lines: 15 }); h.ctx.dayPoints = day => day.points;"
+          ]
+        },
+        {
+          "oldLine": 133,
           "newLine": 140,
+          "before": [
+            "    h.state.daily = { a: list.map(candidate), b: [candidate(list[1]), candidate(list[2])] };"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 135,
+          "newLine": 141,
+          "before": [
+            "    h.state.approved.push({ dateStr: '2026-11-01', mode: 'a', fars: [list[0], list[1], list[2]].map(s => ({ ...s, achievement: 'secret-achievement' })) });"
+          ],
+          "after": [
+            "    h.state.approved.push({ dateStr: '2026-11-01', mode: 'h:ha', fars: [list[0]] });"
+          ]
+        },
+        {
+          "oldLine": 137,
+          "newLine": 143,
           "before": [
             "    assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'leaders', 'dayKnights', 'weekKnights', 'risingStars'].sort());"
           ],
@@ -929,7 +1061,7 @@
         },
         {
           "oldLine": 139,
-          "newLine": 142,
+          "newLine": 145,
           "before": [
             "    for (const e of s.leaders) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank']);",
             "    for (const e of [...s.dayKnights, ...s.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
@@ -940,38 +1072,41 @@
             "    for (const stage of s.stages) {",
             "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
             "        for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);",
-            "        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+            "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);",
+            "        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
             "        for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);",
             "        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);",
             "    }",
-            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+            "    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], times: 1, provisional: true },",
+            "        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], times: 2, provisional: true }];",
+            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);"
           ]
         },
         {
           "oldLine": 147,
-          "newLine": 154,
+          "newLine": 160,
           "before": [
             "    h.state.approved.splice(0); assert.equal(h.snapshot().dayKnights[0].names.length, 3);"
           ],
           "after": [
-            "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);"
+            "    h.state.approved.splice(0);",
+            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);"
           ]
         },
         {
           "oldLine": 149,
-          "newLine": 156,
+          "newLine": 163,
           "before": [
             "    assert.deepEqual(h.snapshot().dayKnights, [{ stage: 'كل الطلاب', names: ['طالب وهمي ثالث2'] }]);"
           ],
           "after": [
-            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
-            "        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },",
-            "        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);",
+            "    assert.equal(h.run(\"getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id\"), 2);"
           ]
         },
         {
           "oldLine": 207,
-          "newLine": 216,
+          "newLine": 222,
           "before": [
             "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank'].sort());"
           ],
@@ -981,7 +1116,7 @@
         },
         {
           "oldLine": 257,
-          "newLine": 266,
+          "newLine": 272,
           "before": [
             "    state.receive({ type: 'snapshot', leaders: [{ name: 'وهمي', points: 1, rank: 1 }] });",
             "    return { state, timers, time: n => { time = n; }, event: id => state.receive({ type: 'celebrate', id, name: 'وهمي', added: 1, total: 1, rank: null }) };"
@@ -993,7 +1128,7 @@
         },
         {
           "oldLine": 277,
-          "newLine": 286,
+          "newLine": 292,
           "before": [
             "        h.state.receive({ type: 'snapshot', risingStars: [{ name: 'وهمي' }] }); assert.equal(h.state.view().slides.length, 1);"
           ],
@@ -1003,7 +1138,7 @@
         },
         {
           "oldLine": 281,
-          "newLine": 290,
+          "newLine": 296,
           "before": [
             "test('slides skip empty sections, keep four ordered kinds, cap stars at three, keep all tied leaders together and pause under overlays', () => {"
           ],
@@ -1013,7 +1148,7 @@
         },
         {
           "oldLine": 283,
-          "newLine": 292,
+          "newLine": 298,
           "before": [
             "    const snapshot = { leaders: Array.from({ length: 13 }, () => ({ name: 'وهمي', rank: 10 })), dayKnights: [{ stage: 'أ', names: [] }, { stage: 'ب', names: ['وهمي'] }],",
             "        weekKnights: [{ stage: 'ب', names: ['وهمي'] }], risingStars: Array.from({ length: 5 }, () => ({ name: 'وهمي' })) };",
@@ -1031,7 +1166,7 @@
         },
         {
           "oldLine": 318,
-          "newLine": 327,
+          "newLine": 333,
           "before": [
             "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), original.toString('utf8').replaceAll('\\r\\n', '\\n'));"
           ],
@@ -1041,7 +1176,7 @@
         },
         {
           "oldLine": 337,
-          "newLine": 346,
+          "newLine": 352,
           "before": [
             "        leaders: [{ name: '<img src=x onerror=alert(1)>', points: 7, rank: 1 },",
             "            ...Array.from({ length: 12 }, (_, i) => ({ name: `طالب وهمي ${i}`, points: 1, rank: 10 }))] };"
@@ -1053,7 +1188,7 @@
         },
         {
           "oldLine": 341,
-          "newLine": 350,
+          "newLine": 356,
           "before": [
             "    const leaders = el('slides').children[0].children[1];",
             "    assert.equal(leaders.children.length, 13);",
@@ -2963,6 +3098,114 @@
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "before": "    const expected = copy(input); delete expected.id;",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 218
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "before": "    let restored = store.replace(/\\r\\n/g, '\\n');",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 487
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 128
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "        assert.equal(source(name),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);",
+      "after": "        assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnights(html)),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 294
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "before": "        const current = source(name).replaceAll('\\r\\n', '\\n');",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 376
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+      "after": "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);\n        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 148
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);",
+      "after": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 153
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 160
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);\n    assert.equal(h.run(\"getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id\"), 2);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 163
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            assert.match(title, kind === 'dayKnights' ? /فرسان اليوم/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);",
+      "after": "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 175
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), '80px');",
+      "after": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');\n            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 177
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), '64px');",
+      "after": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');\n            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 177
     }
   ],
   "ownerScopeEdits": [
@@ -3018,7 +3261,7 @@
             "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);"
           ]
         },
         {
@@ -3304,8 +3547,16 @@
       "file": "tests/step2-halaqas-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 107,
+          "newLine": 107,
+          "before": [],
+          "after": [
+            "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
+          ]
+        },
+        {
           "oldLine": 440,
-          "newLine": 440,
+          "newLine": 441,
           "before": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }"
           ],
@@ -3315,7 +3566,7 @@
         },
         {
           "oldLine": 710,
-          "newLine": 710,
+          "newLine": 711,
           "before": [
             "    const restored = programsStore.replaceAll('\\r\\n', '\\n')"
           ],
@@ -3329,8 +3580,26 @@
       "file": "tests/step4-snapshot-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 79,
+          "newLine": 79,
+          "before": [],
+          "after": [
+            "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
+          ]
+        },
+        {
+          "oldLine": 95,
+          "newLine": 96,
+          "before": [
+            "        refreshDraft() { state.draft = copy(state.settings); },"
+          ],
+          "after": [
+            "        refreshDraft() { state.draft = copy(state.settings); for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1'; },"
+          ]
+        },
+        {
           "oldLine": 106,
-          "newLine": 106,
+          "newLine": 107,
           "before": [],
           "after": [
             "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
@@ -3653,6 +3922,28 @@
             "    } finally { await h.close(); }",
             "});",
             ""
+          ]
+        },
+        {
+          "oldLine": 129,
+          "newLine": 175,
+          "before": [
+            "            assert.match(title, kind === 'dayKnights' ? /فرسان اليوم/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);"
+          ],
+          "after": [
+            "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);"
+          ]
+        },
+        {
+          "oldLine": 131,
+          "newLine": 177,
+          "before": [
+            "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), '80px');",
+            "            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), '64px');"
+          ],
+          "after": [
+            "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');",
+            "            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');"
           ]
         },
         {
@@ -4505,7 +4796,7 @@
             "        assert.ok([1, 2, 3, 4, 5].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);"
           ]
         },
         {
@@ -4660,8 +4951,26 @@
       "file": "tests/step4-snapshot-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 79,
+          "newLine": 79,
+          "before": [],
+          "after": [
+            "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
+          ]
+        },
+        {
+          "oldLine": 95,
+          "newLine": 96,
+          "before": [
+            "        refreshDraft() { state.draft = copy(state.settings); },"
+          ],
+          "after": [
+            "        refreshDraft() { state.draft = copy(state.settings); for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1'; },"
+          ]
+        },
+        {
           "oldLine": 106,
-          "newLine": 106,
+          "newLine": 107,
           "before": [],
           "after": [
             "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
@@ -6493,6 +6802,868 @@
       "before": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "explanation": "تثبيت المرجع التاريخي بعد اعتماد التحضير المنزلي؛ الطرف الحالي يُعاد حرفياً إلى 1e4152b، فلا يقارن مع HEAD المتحرك الذي يتضمن التغيير المعتمد."
+    }
+  ],
+  "knightsBaseline": "c1bc38f",
+  "knightsProductionChanges": [
+    {
+      "file": "index.html",
+      "hunks": [
+        {
+          "before": [
+            "                        </div>",
+            "                    </div>",
+            "",
+            "                    <div class=\"mb-4\">",
+            "                        <label class=\"block text-base font-bold text-slate-600 mb-1\">يوم الفرسان:</label>",
+            "                        <select id=\"farsDayInput\" class=\"w-full p-2.5 border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500\">"
+          ],
+          "after": [
+            "                        </div>",
+            "                    </div>",
+            "",
+            "                    <label id=\"farsHalaqaReasonRow\" hidden class=\"block mb-4 font-bold\">سبب اعتماد فارس الحلقة (إلزامي)",
+            "                        <input id=\"farsHalaqaReason\" type=\"text\" class=\"w-full p-2 border-2 rounded-xl\" placeholder=\"اكتب سبب الاعتماد\">",
+            "                    </label>",
+            "                    <div class=\"mb-4\">",
+            "                        <label class=\"block text-base font-bold text-slate-600 mb-1\">يوم الفرسان:</label>",
+            "                        <select id=\"farsDayInput\" class=\"w-full p-2.5 border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500\">"
+          ]
+        },
+        {
+          "before": [
+            "            const boardDate = getBoardDate(), date = boardDate || todayStr;",
+            "            const tiers = getTiers();",
+            "            const allNames = students.map(s => s.name), nameOf = name => tvDisplayName(name, allNames);",
+            "            const automatic = tier => ({ stage: tier?.name || 'كل الطلاب', names: topTied(getDayTitleCandidates(date, tier?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) });",
+            "            // الاعتماد يتوّج الأول فقط؛ الباقون وصيفان كما في لوحة الشرف.",
+            "            const approved = (entry, stage) => ({ stage, names: (entry.fars || []).filter(f => f && f.name).slice(0, 1).map(f => nameOf(f.name)) });",
+            "            const { startStr, endStr } = getBoardWeekRange();",
+            "            const dates = getWorkingDatesInRange(startStr, endStr), attendance = getProgramSettings().points.attendance;",
+            "            const periodOf = generalPerformanceSettings().periodOf;"
+          ],
+          "after": [
+            "            const boardDate = getBoardDate(), date = boardDate || todayStr;",
+            "            const tiers = getTiers();",
+            "            const allNames = students.map(s => s.name), nameOf = name => tvDisplayName(name, allNames);",
+            "            const { startStr, endStr } = getBoardWeekRange();",
+            "            const dates = getWorkingDatesInRange(startStr, endStr), attendance = getProgramSettings().points.attendance;",
+            "            const periodOf = generalPerformanceSettings().periodOf;"
+          ]
+        },
+        {
+          "before": [
+            "                            return { name: nameOf(e.student.name), points: e.points,",
+            "                                week: roundPointTotal(sum.points + sum.attended * attendance), rank: e.rank <= 10 ? e.rank : null };",
+            "                        }),",
+            "                        dayKnights: group.map(t => {",
+            "                            const appr = getApprovedKnightsForMode(date, t.id);",
+            "                            return appr ? approved(appr, t.name) : automatic(t);",
+            "                        }).filter(e => e.names.length),",
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),",
+            "                        prepWeek: getHomePrepWeek(period),"
+          ],
+          "after": [
+            "                            return { name: nameOf(e.student.name), points: e.points,",
+            "                                week: roundPointTotal(sum.points + sum.attended * attendance), rank: e.rank <= 10 ? e.rank : null };",
+            "                        }),",
+            "                        dayKnights: getProgramSettings().halaqas.filter(h => h.active === true && group.some(t => t.id === h.stageId))",
+            "                            .sort((a, b) => (a.order || 0) - (b.order || 0)).map(h => {",
+            "                                const knights = getDayHalaqaKnights(date, h.id, students);",
+            "                                return { stage: h.name, teacher: getProgramSettings().teachers.find(t => t.id === h.teacherId)?.name || '',",
+            "                                    names: knights.names.map(nameOf), times: knights.times, provisional: true };",
+            "                            }).filter(e => e.names.length),",
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),",
+            "                        prepWeek: getHomePrepWeek(period),"
+          ]
+        },
+        {
+          "before": [
+            "                        if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage || checked.halaqaId !== row.halaqaId) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');",
+            "                        nextId = Math.max(nextId, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);",
+            "                        const doc = { id: nextId, sid, name: row.name, teacherId: checked.teacherId,",
+            "                            stage: checked.stage, halaqaId: checked.halaqaId, parentPhone: row.phone, history: {}, memorizedJuz: null,",
+            "                            frontierBase: null, lastDailyBase: null };",
+            "                        const result = await window.almahraData.createGeneralStudentIfAbsent(doc, operation.seasonId);",
+            "                        if (result?.success) {"
+          ],
+          "after": [
+            "                        if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage || checked.halaqaId !== row.halaqaId) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');",
+            "                        nextId = Math.max(nextId, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);",
+            "                        const doc = { id: nextId, sid, name: row.name, teacherId: checked.teacherId,",
+            "                            stage: checked.stage, halaqaId: checked.halaqaId, parentPhone: row.phone, history: {}, memorizedJuz: null, joinedOn: todayStr,",
+            "                            frontierBase: null, lastDailyBase: null };",
+            "                        const result = await window.almahraData.createGeneralStudentIfAbsent(doc, operation.seasonId);",
+            "                        if (result?.success) {"
+          ]
+        },
+        {
+          "before": [
+            "            });",
+            "        }",
+            "        ",
+            "        function launchThreeKnights() {",
+            "            if (!canWriteView()) return;",
+            "            const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;",
+            "            const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();"
+          ],
+          "after": [
+            "            });",
+            "        }",
+            "        ",
+            "        async function approveGeneralHalaqaKnights() {",
+            "            if (!isGeneralProgram() || !canWriteView()) return false;",
+            "            const mode = document.getElementById('farsAutoMode').value, dateStr = document.getElementById('farsAutoDate').value || todayStr;",
+            "            const reason = document.getElementById('farsHalaqaReason').value.trim();",
+            "            if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }",
+            "            const ids = [1, 2, 3].map(n => document.getElementById('fars' + n + 'Select').value).filter(Boolean);",
+            "            const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));",
+            "            if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }",
+            "            const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);",
+            "            if (!h || selected.some(s => s.halaqaId !== h.id || getAttendanceState(s, dateStr).state !== 'present' ||",
+            "                dayAcceptedWeightTenths(s.history?.[dateStr], settings.kindMult).total <= 0 || dayHasBlockingViolation(s.history?.[dateStr], getBlockingCriteriaIds()))) {",
+            "                showToast('اختر من طلاب الحلقة الحاضرين بتسميع مقبول وبلا حاجب', 'error'); return false;",
+            "            }",
+            "            const entry = { dateStr, mode, fars: selected.map(s => ({ id: s.id, name: s.name })), reason,",
+            "                by: window.almahraAuth.currentUser.uid, at: new Date().toISOString() };",
+            "            const programId = window.almahraPrograms.getCurrentProgramId(), seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            const result = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, entry);",
+            "            if (!result.success) { showToast('تعذّر حفظ الفرسان سحابياً: ' + result.error, 'error'); return false; }",
+            "            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return false;",
+            "            honorKnightsLog = honorKnightsLog.filter(e => e.dateStr !== dateStr || e.mode !== mode).concat(entry);",
+            "            currentThreeKnights = entry;",
+            "            sendGeneralTvSnapshot(); showToast('حُفظ اعتماد فارس الحلقة'); return true;",
+            "        }",
+            "",
+            "        function launchThreeKnights() {",
+            "            if (isGeneralProgram() && document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();",
+            "            if (!canWriteView()) return;",
+            "            const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;",
+            "            const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();"
+          ]
+        },
+        {
+          "before": [
+            "        }",
+            "",
+            "        // كل المتصدرين المتعادلين في القمة (اشتراك اللقب)",
+            "        function topTied(list, valueOf) {",
+            "            if (!list || list.length === 0) return [];",
+            "            const best = valueOf(list[0]);"
+          ],
+          "after": [
+            "        }",
+            "",
+            "        // كل المتصدرين المتعادلين في القمة (اشتراك اللقب)",
+            "        function dayAcceptedWeightTenths(day, kindMult) {",
+            "            const weight = { new: 0, review: 0, total: 0 };",
+            "            for (const e of Object.values(day?.entries || {})) {",
+            "                if (!e || !['new', 'review'].includes(e.kind) || e.grade === 'repeat' || (!e.iv && !e.spec)) continue;",
+            "                let lines;",
+            "                try { lines = measureEntry(e).lines; }",
+            "                catch (error) { if (error.code === 'NOT_READY') throw error; continue; }",
+            "                const mult = Number.isFinite(e.mult) ? e.mult : kindMult[e.kind === 'new' ? 'newMemorization' : 'review'];",
+            "                weight[e.kind] += Math.round(Math.round(lines * 10) * mult);",
+            "            }",
+            "            weight.total = weight.new + weight.review;",
+            "            return weight;",
+            "        }",
+            "",
+            "        function topTiedBy(list, keysOf) {",
+            "            if (!list?.length) return [];",
+            "            const best = keysOf(list[0]);",
+            "            return list.filter(e => { const keys = keysOf(e); return keys.length === best.length && keys.every((v, i) => v === best[i]); });",
+            "        }",
+            "",
+            "        function knightsEligibilityStart(student, weekStart) {",
+            "            return student?.joinedOn ? (student.joinedOn > weekStart ? student.joinedOn : weekStart) : null;",
+            "        }",
+            "",
+            "        function getDayHalaqaKnights(dateStr, halaqaId, sourceStudents = students) {",
+            "            const settings = getProgramSettings(), blocking = getBlockingCriteriaIds();",
+            "            const halaqa = settings.halaqas.find(h => h.id === halaqaId && h.active === true);",
+            "            const result = { names: [], students: [], times: 0, provisional: true, source: 'auto' };",
+            "            if (!halaqa) return result;",
+            "            const rejection = student => {",
+            "                if (!student || student.halaqaId !== halaqaId) return 'ليس في الحلقة';",
+            "                if (getAttendanceState(student, dateStr).state !== 'present') return 'غائب ذلك اليوم';",
+            "                if (dayAcceptedWeightTenths(student.history?.[dateStr], settings.kindMult).total <= 0) return 'بلا تسميع مقبول (الوزن 0)';",
+            "                if (dayHasBlockingViolation(student.history?.[dateStr], blocking)) return 'مخالفة حاجبة';",
+            "                return null;",
+            "            };",
+            "            const ranked = sourceStudents.filter(s => s.halaqaId === halaqaId && !rejection(s)).map(student => ({ student,",
+            "                pointsTenths: Math.round(dayPoints(student.history[dateStr]) * 10),",
+            "                weightTenths: dayAcceptedWeightTenths(student.history[dateStr], settings.kindMult).total",
+            "            })).sort((a, b) => b.pointsTenths - a.pointsTenths || b.weightTenths - a.weightTenths);",
+            "            let winners = topTiedBy(ranked, e => [e.pointsTenths, e.weightTenths]).map(e => e.student);",
+            "            const approval = (honorKnightsLog || []).find(e => e.dateStr === dateStr && e.mode === 'h:' + halaqaId);",
+            "            if (approval) {",
+            "                const chosen = (approval.fars || []).map(f => sourceStudents.find(s => String(s.id) === String(f.id)));",
+            "                const rejected = chosen.map(s => ({ student: s, reason: rejection(s) })).find(e => e.reason);",
+            "                if (!chosen.length || rejected) {",
+            "                    const name = rejected?.student?.name || approval.fars?.[0]?.name || 'الطالب';",
+            "                    result.rejected = 'اعتماد مرفوض ليوم ' + dateStr.slice(8, 10) + '-' + dateStr.slice(5, 7) + ': ' + name + ' ' + (rejected?.reason || 'اعتماد فارغ');",
+            "                } else { winners = [...new Set(chosen)]; result.source = 'manual'; }",
+            "            }",
+            "            result.students = winners; result.names = winners.map(s => s.name); result.times = winners.length;",
+            "            return result;",
+            "        }",
+            "",
+            "        function topTied(list, valueOf) {",
+            "            if (!list || list.length === 0) return [];",
+            "            const best = valueOf(list[0]);"
+          ]
+        },
+        {
+          "before": [
+            "            }",
+            "            let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, disciplineDays = 0;",
+            "            const blocking = getBlockingCriteriaIds();",
+            "            dates.forEach(dt => {",
+            "                const d = student.history?.[dt];",
+            "                if (!d) return;",
+            "                if (isGeneralProgram() ? getAttendanceState(student, dt).state === 'present' : d.attended) attended++;",
+            "                const ds = dayStats(d);",
+            "                points += dayPoints(d, ds);",
+            "                sard += ds.ayahs;",
+            "                if (dayHasAnyViolation(d)) violations++;",
+            "                if (dayHasBlockingViolation(d, blocking)) blockingViolations++;"
+          ],
+          "after": [
+            "            }",
+            "            let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, disciplineDays = 0;",
+            "            const blocking = getBlockingCriteriaIds();",
+            "            const weightTenths = { new: 0, review: 0, total: 0 };",
+            "            dates.forEach(dt => {",
+            "                const d = student.history?.[dt];",
+            "                if (!d) return;",
+            "                if (isGeneralProgram() ? getAttendanceState(student, dt).state === 'present' : d.attended) attended++;",
+            "                const ds = dayStats(d);",
+            "                points += dayPoints(d, ds);",
+            "                if (isGeneralProgram()) {",
+            "                    const weight = dayAcceptedWeightTenths(d, getProgramSettings().kindMult);",
+            "                    for (const kind of ['new', 'review', 'total']) weightTenths[kind] += weight[kind];",
+            "                }",
+            "                sard += ds.ayahs;",
+            "                if (dayHasAnyViolation(d)) violations++;",
+            "                if (dayHasBlockingViolation(d, blocking)) blockingViolations++;"
+          ]
+        },
+        {
+          "before": [
+            "            if (isGeneralProgram()) {",
+            "                const att = attendance || calculateStudentAttendance(student, dates);",
+            "                return { points: roundPointTotal(points), sard, attended: att.actualDays, violations, blockingViolations, disciplineDays,",
+            "                    expected: att.expectedDays, schoolDays: att.schoolDays, unrecorded: att.unrecorded, absences: att.absences };",
+            "            }",
+            "            return { points: roundPointTotal(points), sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };",
+            "        }"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) {",
+            "                const att = attendance || calculateStudentAttendance(student, dates);",
+            "                return { points: roundPointTotal(points), sard, attended: att.actualDays, violations, blockingViolations, disciplineDays,",
+            "                    expected: att.expectedDays, schoolDays: att.schoolDays, unrecorded: att.unrecorded, absences: att.absences, weightTenths };",
+            "            }",
+            "            return { points: roundPointTotal(points), sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };",
+            "        }"
+          ]
+        },
+        {
+          "before": [
+            "            const sel = document.getElementById('farsAutoMode');",
+            "            if (!sel) return;",
+            "            const prev = sel.value;",
+            "            const tiers = getTiers();",
+            "            const tiersOn = tiersFeatureOn();",
+            "            let html = '<option value=\"all\">🏅 فارس الإنجاز (كل الطلاب)</option>';"
+          ],
+          "after": [
+            "            const sel = document.getElementById('farsAutoMode');",
+            "            if (!sel) return;",
+            "            const prev = sel.value;",
+            "            const reason = document.getElementById('farsHalaqaReasonRow');",
+            "            if (reason) reason.hidden = !isGeneralProgram();",
+            "            if (isGeneralProgram()) {",
+            "                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value=\"h:' + escapeHTML(h.id) + '\">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('') + '<option value=\"all\">كل الطلاب (قديم)</option><option value=\"discipline\">الانضباط (قديم)</option>' + getTiers().map(t => '<option value=\"' + escapeHTML(t.id) + '\">' + escapeHTML(t.name) + ' (قديم)</option>').join('');",
+            "                if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;",
+            "                return;",
+            "            }",
+            "            const tiers = getTiers();",
+            "            const tiersOn = tiersFeatureOn();",
+            "            let html = '<option value=\"all\">🏅 فارس الإنجاز (كل الطلاب)</option>';"
+          ]
+        },
+        {
+          "before": [
+            "            const mode = document.getElementById('farsAutoMode')?.value || 'all';",
+            "",
+            "            let ranking;",
+            "            if (mode === 'discipline') {",
+            "                ranking = getDisciplineRanking(dateStr).map(e => ({",
+            "                    student: e.student, points: e.criteriaPoints, sard: 0,",
+            "                    sardPoints: 0, criteriaPoints: e.criteriaPoints, criteria: e.criteria, disciplineOnly: true"
+          ],
+          "after": [
+            "            const mode = document.getElementById('farsAutoMode')?.value || 'all';",
+            "",
+            "            let ranking;",
+            "            if (isGeneralProgram() && mode.startsWith('h:')) {",
+            "                const knights = getDayHalaqaKnights(dateStr, mode.slice(2));",
+            "                ranking = knights.students.map(student => ({ student, points: dayPoints(student.history[dateStr]), sard: 0, criteriaPoints: 0, criteria: {} }));",
+            "            } else if (mode === 'discipline') {",
+            "                ranking = getDisciplineRanking(dateStr).map(e => ({",
+            "                    student: e.student, points: e.criteriaPoints, sard: 0,",
+            "                    sardPoints: 0, criteriaPoints: e.criteriaPoints, criteria: e.criteria, disciplineOnly: true"
+          ]
+        },
+        {
+          "before": [
+            "                        const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "                        let nid = 1;",
+            "                        const doc = { id: nid, sid: crypto.randomUUID(), name: n, history: {}, memorizedJuz, parentPhone,",
+            "                            frontierBase: null, lastDailyBase: null, ...membership };",
+            "                        let firstMembership = null;",
+            "                        for (let attempt = 0; attempt < 3; attempt++) {",
+            "                            if (!requireSchoolCalendar()) return;"
+          ],
+          "after": [
+            "                        const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "                        let nid = 1;",
+            "                        const doc = { id: nid, sid: crypto.randomUUID(), name: n, history: {}, memorizedJuz, parentPhone,",
+            "                            frontierBase: null, lastDailyBase: null, joinedOn: todayStr, ...membership };",
+            "                        let firstMembership = null;",
+            "                        for (let attempt = 0; attempt < 3; attempt++) {",
+            "                            if (!requireSchoolCalendar()) return;"
+          ]
+        },
+        {
+          "before": [
+            "                                <input id=\"psFollowupNew\" type=\"number\" min=\"1\" max=\"100\" step=\"any\" value=\"${performance.limits.newPct}\" class=\"w-full p-2 border-2 rounded-xl\"></label>",
+            "                        </div>",
+            "                    </div>` : ''}",
+            "                    <!-- شروط استحقاق الألقاب -->",
+            "                    <div class=\"bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2\">",
+            "                        <h3 class=\"font-black text-lg text-slate-700 mb-2 flex items-center gap-2\">"
+          ],
+          "after": [
+            "                                <input id=\"psFollowupNew\" type=\"number\" min=\"1\" max=\"100\" step=\"any\" value=\"${performance.limits.newPct}\" class=\"w-full p-2 border-2 rounded-xl\"></label>",
+            "                        </div>",
+            "                    </div>` : ''}",
+            "                    ${isGeneralProgram() ? `<div class=\"bg-white p-5 rounded-2xl border-2 lg:col-span-2\">",
+            "                        <h3 class=\"font-black mb-3\">عدد فرسان الأسبوع لكل حلقة (1–5)</h3>",
+            "                        <div class=\"grid grid-cols-2 gap-3\">${(s.halaqas || []).map(h => `<label>${escapeHTML(h.name)}<input id=\"psKnights_${escapeHTML(h.id)}\" type=\"number\" min=\"1\" max=\"5\" step=\"1\" value=\"${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}\" class=\"w-full p-2 border-2 rounded-xl\"></label>`).join('')}</div>",
+            "                        <p class=\"my-3\">بلا تاريخ استحقاق: ${students.filter(s => !s.joinedOn).length} طالب</p>",
+            "                        <button type=\"button\" onclick=\"fixGeneralJoinedOn()\" ${isArchivedView ? 'disabled' : ''} class=\"p-3 border-2 rounded-xl\">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>",
+            "                    </div>` : ''}",
+            "                    <!-- شروط استحقاق الألقاب -->",
+            "                    <div class=\"bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2\">",
+            "                        <h3 class=\"font-black text-lg text-slate-700 mb-2 flex items-center gap-2\">"
+          ]
+        },
+        {
+          "before": [
+            "            };",
+            "            return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };",
+            "        }",
+            "        async function saveProgramSettings() {",
+            "            if (!canWriteView()) return;",
+            "            const prog = window.almahraPrograms?.getCurrentProgram();"
+          ],
+          "after": [
+            "            };",
+            "            return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };",
+            "        }",
+            "        function readKnightsPerHalaqa() {",
+            "            const result = { ...(window.almahraPrograms.getSettings()?.titleRules?.knightsPerHalaqa || {}) };",
+            "            for (const h of getProgramSettings().halaqas) {",
+            "                const raw = document.getElementById('psKnights_' + h.id)?.value;",
+            "                const value = Number(raw);",
+            "                if (!raw || !Number.isInteger(value) || value < 1 || value > 5) throw new Error('عدد فرسان الحلقة من 1 إلى 5');",
+            "                result[h.id] = value;",
+            "            }",
+            "            return result;",
+            "        }",
+            "",
+            "        async function fixGeneralJoinedOn() {",
+            "            const programs = window.almahraPrograms, data = window.almahraData;",
+            "            const programId = programs.getCurrentProgramId(), seasonId = programs.getCurrentSeasonId();",
+            "            if (programId !== 'general' || programs.isCurrentSeasonArchived() || !canWriteCloud() || !requireSchoolCalendar()) return;",
+            "            const termStart = programs.getCurrentSeason().termStart;",
+            "            const sameContext = () => programs.getCurrentProgramId() === programId && programs.getCurrentSeasonId() === seasonId &&",
+            "                data.getActiveProgramId() === programId && data.getActiveSeasonId() === seasonId;",
+            "            const ready = () => sameContext() && data.isReady() && !programs.isCurrentSeasonArchived();",
+            "            if (!ready()) { showToast('انتظر اكتمال تحميل طلاب الموسم', 'error'); return; }",
+            "            const ids = [...new Set(data.getStudents().filter(s => !s.joinedOn).map(s => s.id))];",
+            "            if (!ids.length) { showToast('العدد المطلوب تثبيته: 0'); return; }",
+            "            if (!confirm('تثبيت تاريخ الاستحقاق لعدد ' + ids.length + ' طالب = ' + termStart + '؟ لا يتغير من له تاريخ.')) return;",
+            "            let committed = 0, skipped = 0, processed = 0;",
+            "            const stopped = () => showToast('توقّف التثبيت لأن الموسم المعروض تغيّر؛ ثُبّت لـ' + committed + ' طالباً، والباقي ' +",
+            "                (ids.length - processed) + ' — أعد الضغط من الموسم الصحيح', 'error');",
+            "            for (let i = 0; i < ids.length; i += 400) {",
+            "                if (!sameContext()) { stopped(); return; }",
+            "                if (!ready() || !canWriteCloud() || programs.getCurrentSeason().termStart !== termStart) {",
+            "                    showToast('توقّف التثبيت لتعذّر الكتابة؛ ثُبّت لـ' + committed + ' طالباً، والباقي ' + (ids.length - processed), 'error'); return;",
+            "                }",
+            "                const result = await data.setMissingJoinedOn(programId, seasonId, ids.slice(i, i + 400), termStart);",
+            "                committed += result.committed;",
+            "                skipped += result.skipped;",
+            "                processed += result.committed + result.skipped + (result.notFound || 0);",
+            "                if (!sameContext() || result.code === 'JOINED_ON_CONTEXT_CHANGED') { stopped(); return; }",
+            "                if (result.committedIds?.length) {",
+            "                    const written = new Set(result.committedIds.map(String));",
+            "                    students.forEach(s => { if (written.has(String(s.id)) && !s.joinedOn) s.joinedOn = termStart; });",
+            "                }",
+            "                if (!result.success) {",
+            "                    renderProgramSettings();",
+            "                    showToast('توقّف التثبيت؛ ثُبّت لـ' + committed + ' طالباً، وتُرك ' + skipped + '، والباقي ' +",
+            "                        (ids.length - processed) + ': ' + result.error, 'error'); return;",
+            "                }",
+            "            }",
+            "            renderProgramSettings();",
+            "            showToast('ثُبّت لـ' + committed + ' طالباً، وتُرك ' + skipped + ' لأن له تاريخاً', 'success');",
+            "        }",
+            "",
+            "        async function saveProgramSettings() {",
+            "            if (!canWriteView()) return;",
+            "            const prog = window.almahraPrograms?.getCurrentProgram();"
+          ]
+        },
+        {
+          "before": [
+            "                    throw new Error(label + ' غير صالح');",
+            "                return value;",
+            "            };",
+            "            let kindMult, grades, attendancePoints, tvPrayer;",
+            "            if (general) {",
+            "                try {",
+            "                    tvPrayer = readGeneralTvPrayer();",
+            "                    attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);",
+            "                    kindMult = {",
+            "                        newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),"
+          ],
+          "after": [
+            "                    throw new Error(label + ' غير صالح');",
+            "                return value;",
+            "            };",
+            "            let kindMult, grades, attendancePoints, tvPrayer, knightsPerHalaqa;",
+            "            if (general) {",
+            "                try {",
+            "                    tvPrayer = readGeneralTvPrayer();",
+            "                    knightsPerHalaqa = readKnightsPerHalaqa();",
+            "                    attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);",
+            "                    kindMult = {",
+            "                        newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),"
+          ]
+        },
+        {
+          "before": [
+            "                criteria: collectCriteriaFromRows(),",
+            "                ...(isGeneralProgram() ? {} : { tiers: newTiers }),",
+            "                titleRules: {",
+            "                    requireSard: !!document.getElementById('psTrRequireSard')?.checked,",
+            "                    weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),",
+            "                    disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked"
+          ],
+          "after": [
+            "                criteria: collectCriteriaFromRows(),",
+            "                ...(isGeneralProgram() ? {} : { tiers: newTiers }),",
+            "                titleRules: {",
+            "                    ...(general ? { ...prog.settings.titleRules, knightsPerHalaqa } : {}),",
+            "                    requireSard: !!document.getElementById('psTrRequireSard')?.checked,",
+            "                    weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),",
+            "                    disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "data-store.js",
+      "hunks": [
+        {
+          "before": [
+            "        return { success: false, code: 'INVALID_STUDENT', error: 'معرّفات الطالب غير صالحة أو توجد قيمة undefined' };",
+            "    try {",
+            "        const { id, ...data } = structuredClone(student);",
+            "        const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, String(id));",
+            "        const guard = () => {",
+            "            if (!contextValid()) throw Object.assign(new Error('تغيّر سياق الحفظ أو صلاحية الكتابة'), { code: 'IMPORT_CONTEXT_INVALID' });"
+          ],
+          "after": [
+            "        return { success: false, code: 'INVALID_STUDENT', error: 'معرّفات الطالب غير صالحة أو توجد قيمة undefined' };",
+            "    try {",
+            "        const { id, ...data } = structuredClone(student);",
+            "        data.joinedOn = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());",
+            "        const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, String(id));",
+            "        const guard = () => {",
+            "            if (!contextValid()) throw Object.assign(new Error('تغيّر سياق الحفظ أو صلاحية الكتابة'), { code: 'IMPORT_CONTEXT_INVALID' });"
+          ]
+        },
+        {
+          "before": [
+            "    // عمليات جماعية (نقاط المجموعات، التوزيع، الاستيراد): { type: 'update', id, fields } | { type: 'set', id, data } | { type: 'delete', id }",
+            "    // تُقسَّم دفعات ≤ ٤٥٠ (حد Firestore ٥٠٠): كل دفعة ذرّية وحدها، أما المجموع الأكبر من دفعة فليس ذرّياً —",
+            "    // committed يقول كم هبط فعلاً قبل أول دفعة فاشلة",
+            "    commitBatch: async (ops) => {",
+            "        if (isReadOnly) return { success: false, committed: 0, error: 'هذا موسم مؤرشف — للقراءة فقط' };",
+            "        if (!activeProgramId || !activeSeasonId) return { success: false, committed: 0, error: 'لم تُحدَّد جلسة عمل' };"
+          ],
+          "after": [
+            "    // عمليات جماعية (نقاط المجموعات، التوزيع، الاستيراد): { type: 'update', id, fields } | { type: 'set', id, data } | { type: 'delete', id }",
+            "    // تُقسَّم دفعات ≤ ٤٥٠ (حد Firestore ٥٠٠): كل دفعة ذرّية وحدها، أما المجموع الأكبر من دفعة فليس ذرّياً —",
+            "    // committed يقول كم هبط فعلاً قبل أول دفعة فاشلة",
+            "    // دفعة واحدة بمعاملة: جميع القراءات تسبق الكتابة، والعدّ من المحاولة التي التزمت فعلاً.",
+            "    setMissingJoinedOn: async (programId, seasonId, ids, dateStr) => {",
+            "        const empty = { committed: 0, skipped: 0, notFound: 0, committedIds: [] };",
+            "        const sameContext = () => programId === 'general' && activeProgramId === programId && activeSeasonId === seasonId;",
+            "        const guard = () => {",
+            "            if (!sameContext()) throw Object.assign(new Error('تغيّر سياق الموسم'), { code: 'JOINED_ON_CONTEXT_CHANGED' });",
+            "            if (!isReady || isReadOnly) throw new Error('الموسم غير جاهز أو مؤرشف');",
+            "        };",
+            "        try {",
+            "            guard();",
+            "            if (!Array.isArray(ids) || ids.length > 400 || !/^\\d{4}-\\d{2}-\\d{2}$/.test(dateStr) ||",
+            "                !seasonId || String(seasonId).includes('/') || ids.some(id => !String(id) || String(id).includes('/')))",
+            "                throw new Error('دفعة تثبيت غير صالحة؛ الحد الأقصى 400 طالب');",
+            "            const refs = [...new Set(ids.map(String))].map(id => doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, id));",
+            "            const result = await runTransaction(db, async transaction => {",
+            "                guard();",
+            "                const snapshots = [];",
+            "                for (const ref of refs) snapshots.push(await transaction.get(ref));",
+            "                guard();",
+            "                const counts = { ...empty, committedIds: [] };",
+            "                snapshots.forEach((snapshot, i) => {",
+            "                    if (!snapshot.exists()) { counts.notFound++; return; }",
+            "                    if (snapshot.data().joinedOn) { counts.skipped++; return; }",
+            "                    transaction.update(refs[i], { joinedOn: dateStr });",
+            "                    counts.committed++;",
+            "                    counts.committedIds.push(snapshot.id);",
+            "                });",
+            "                return counts;",
+            "            });",
+            "            return { success: true, ...result };",
+            "        } catch (error) {",
+            "            return { success: false, ...empty, code: error.code, error: error.message };",
+            "        }",
+            "    },",
+            "",
+            "    commitBatch: async (ops) => {",
+            "        if (isReadOnly) return { success: false, committed: 0, error: 'هذا موسم مؤرشف — للقراءة فقط' };",
+            "        if (!activeProgramId || !activeSeasonId) return { success: false, committed: 0, error: 'لم تُحدَّد جلسة عمل' };"
+          ]
+        },
+        {
+          "before": [
+            "            const snapshot = await getDocs(srcRef);",
+            "            if (snapshot.empty) return { success: true, imported: 0 };",
+            "",
+            "            const batch = writeBatch(db);",
+            "            let count = 0;",
+            "            snapshot.forEach((docSnap) => {"
+          ],
+          "after": [
+            "            const snapshot = await getDocs(srcRef);",
+            "            if (snapshot.empty) return { success: true, imported: 0 };",
+            "",
+            "            const joinedOn = activeProgramId === 'general' ? window.almahraPrograms?.getCurrentSeason()?.termStart : null;",
+            "            if (activeProgramId === 'general' && !joinedOn) return { success: false, error: 'حدّد يوم انطلاق الموسم أولاً' };",
+            "            const batch = writeBatch(db);",
+            "            let count = 0;",
+            "            snapshot.forEach((docSnap) => {"
+          ]
+        },
+        {
+          "before": [
+            "                        lastDailySurah: data.lastDailySurah || null,",
+            "                        lastDailyAyah: data.lastDailyAyah || null",
+            "                      };",
+            "                batch.set(studentDocRef(docSnap.id), newData);",
+            "                count++;",
+            "            });"
+          ],
+          "after": [
+            "                        lastDailySurah: data.lastDailySurah || null,",
+            "                        lastDailyAyah: data.lastDailyAyah || null",
+            "                      };",
+            "                if (activeProgramId === 'general') newData.joinedOn = joinedOn;",
+            "                batch.set(studentDocRef(docSnap.id), newData);",
+            "                count++;",
+            "            });"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "programs-store.js",
+      "hunks": [
+        {
+          "before": [
+            "        if (!programId || !seasonId) return { success: false, error: 'لا يوجد موسم نشط' };",
+            "        try {",
+            "            const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);",
+            "            const snap = await getDoc(ref);",
+            "            const log = (snap.exists() && Array.isArray(snap.data().knightsLog)) ? snap.data().knightsLog : [];",
+            "            // يُستبدل اعتماد اليوم نفسه ذي الوضع نفسه فقط، فتتجاور اعتمادات الشرائح في اليوم الواحد.",
+            "            // السجلات القديمة بلا mode تُعامل كأنها \"كل الطلاب\" (all).",
+            "            const entryMode = entry.mode || 'all';",
+            "            const filtered = log.filter(e => !(e.dateStr === entry.dateStr && (e.mode || 'all') === entryMode));",
+            "            filtered.push(entry);",
+            "            filtered.sort((a, b) => (a.dateStr < b.dateStr ? 1 : -1));",
+            "            await updateDoc(ref, { knightsLog: filtered.slice(0, 200) });",
+            "            return { success: true };",
+            "        } catch (err) {",
+            "            console.error('❌ saveKnightsEntry:', err);"
+          ],
+          "after": [
+            "        if (!programId || !seasonId) return { success: false, error: 'لا يوجد موسم نشط' };",
+            "        try {",
+            "            const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);",
+            "            const mergeEntry = snap => {",
+            "                const log = (snap.exists() && Array.isArray(snap.data().knightsLog)) ? snap.data().knightsLog : [];",
+            "                const filtered = log.filter(e => !(e.dateStr === entry.dateStr && (e.mode || 'all') === (entry.mode || 'all')));",
+            "                filtered.push(entry);",
+            "                filtered.sort((a, b) => (a.dateStr < b.dateStr ? 1 : -1));",
+            "                return filtered;",
+            "            };",
+            "            if (programId === 'general') {",
+            "                await runTransaction(db, async transaction => {",
+            "                    const snap = await transaction.get(ref);",
+            "                    transaction.update(ref, { knightsLog: mergeEntry(snap) });",
+            "                });",
+            "            } else {",
+            "                const snap = await getDoc(ref);",
+            "                await updateDoc(ref, { knightsLog: mergeEntry(snap).slice(0, 200) });",
+            "            }",
+            "            return { success: true };",
+            "        } catch (err) {",
+            "            console.error('❌ saveKnightsEntry:', err);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.js",
+      "hunks": [
+        {
+          "before": [
+            "    const board = stage.board || [], pages = Math.ceil(board.length / 20);",
+            "    for (let page = 1; page <= pages; page++) slides.push({ kind: 'board',",
+            "        title: '🏆 لوحة النقاط — ' + stage.name, page, pages, items: board.slice((page - 1) * 20, page * 20) });",
+            "    for (const [kind, title] of [['dayKnights', '⭐ فرسان اليوم'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {",
+            "        const items = (stage[kind] || []).filter(item => item.names?.length);",
+            "        if (items.length) slides.push({ kind, title, items });",
+            "    }"
+          ],
+          "after": [
+            "    const board = stage.board || [], pages = Math.ceil(board.length / 20);",
+            "    for (let page = 1; page <= pages; page++) slides.push({ kind: 'board',",
+            "        title: '🏆 لوحة النقاط — ' + stage.name, page, pages, items: board.slice((page - 1) * 20, page * 20) });",
+            "    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {",
+            "        const items = (stage[kind] || []).filter(item => item.names?.length);",
+            "        if (items.length) slides.push({ kind, title, items });",
+            "    }"
+          ]
+        },
+        {
+          "before": [
+            "                        body.append(column);",
+            "                    }",
+            "                } else slide.items.forEach(item => {",
+            "                    const card = node('div', 'card'), cardBody = node('div', 'card-body');",
+            "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));",
+            "                    else {",
+            "                        card.append(node('p', 'stage', item.stage));",
+            "                        item.names.forEach(name => cardBody.append(node('h3', 'kname', name)));",
+            "                    }",
+            "                    Array.from(cardBody.children).filter(child => child.className === 'kname').forEach(protectName);"
+          ],
+          "after": [
+            "                        body.append(column);",
+            "                    }",
+            "                } else slide.items.forEach(item => {",
+            "                    const card = node('div', 'card' + (slide.kind === 'dayKnights' ? ' day-knight' : '')), cardBody = node('div', 'card-body');",
+            "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));",
+            "                    else {",
+            "                        card.append(node('p', 'stage', item.stage));",
+            "                        if (slide.kind === 'dayKnights') {",
+            "                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));",
+            "                        }",
+            "                        item.names.forEach(name => cardBody.append(node('h3', 'kname', name)));",
+            "                    }",
+            "                    Array.from(cardBody.children).filter(child => child.className === 'kname').forEach(protectName);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.html",
+      "hunks": [
+        {
+          "before": [
+            ".card .kname + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }",
+            ".card .muted { font-size:56px; font-weight:600; color:var(--tv-muted); line-height:1.4; text-wrap:balance; }",
+            "",
+            "/* التذييل: تاريخ النتائج داخل المنطقة الآمنة، والنقاط وزر ملء الشاشة في الهامش */",
+            ".results-date { position:absolute; bottom:var(--tv-safe-y); left:50%; transform:translateX(-50%); white-space:nowrap; font-size:56px; font-weight:600; color:var(--general-pending-bg); background:#3a3214; border:2px solid #6b5a22; border-radius:999px; padding:0 40px; line-height:76px; }",
+            ".results-date i { color:var(--tv-gold); margin-inline-end:18px; font-size:44px; }"
+          ],
+          "after": [
+            ".card .kname + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }",
+            ".card .muted { font-size:56px; font-weight:600; color:var(--tv-muted); line-height:1.4; text-wrap:balance; }",
+            "",
+            "/* بطاقة الحلقة اليومية تتسع للمعلم والمتعادلين دون قص الأسماء. */",
+            ".card.day-knight .stage { font-size:44px; }",
+            ".card.day-knight .card-body { gap:16px; padding:24px; }",
+            ".card.day-knight .kname { font-size:56px; }",
+            ".card.day-knight .muted { font-size:28px; }",
+            "",
+            "/* التذييل: تاريخ النتائج داخل المنطقة الآمنة، والنقاط وزر ملء الشاشة في الهامش */",
+            ".results-date { position:absolute; bottom:var(--tv-safe-y); left:50%; transform:translateX(-50%); white-space:nowrap; font-size:56px; font-weight:600; color:var(--general-pending-bg); background:#3a3214; border:2px solid #6b5a22; border-radius:999px; padding:0 40px; line-height:76px; }",
+            ".results-date i { color:var(--tv-gold); margin-inline-end:18px; font-size:44px; }"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsExpectationChanges": [
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "before": "    const expected = copy(input); delete expected.id;",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 218
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "before": "    let restored = store.replace(/\\r\\n/g, '\\n');",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 487
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 128
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "before": "        assert.equal(source(name),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);",
+      "after": "        assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnights(html)),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 294
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "before": "        const current = source(name).replaceAll('\\r\\n', '\\n');",
+      "after": "(assertion retained by exact approved production-diff restoration)",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 376
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+      "after": "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);\n        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 148
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);",
+      "after": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 153
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 160
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "before": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);\n    assert.equal(h.run(\"getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id\"), 2);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 163
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            assert.match(title, kind === 'dayKnights' ? /فرسان اليوم/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);",
+      "after": "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 175
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), '80px');",
+      "after": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');\n            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 177
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "before": "            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), '64px');",
+      "after": "            assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');\n            if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "c1bc38f",
+      "newLine": 177
+    }
+  ],
+  "knightsRepairExpectationChanges": [
+    {
+      "file": "tests/knights-local.test.cjs",
+      "before": "test('joinedOn setup confirms count, commits missing only, preserves existing, reports result and is repeatable', async () => {\n    const h=harness();h.install('fixGeneralJoinedOn');h.ctx.requireSchoolCalendar=()=>true;h.ctx.renderProgramSettings=()=>{};\n    Object.assign(h.ctx.window.almahraData, { isReady:()=>true, getActiveProgramId:()=>h.state.program, getActiveSeasonId:()=>h.state.season, getStudents:()=>h.list });\n    let ops;h.ctx.window.almahraData.commitBatch=async rows=>{ops=copy(rows);return {success:true,committed:rows.length}};\n    h.state.confirmed=false;await h.run('fixGeneralJoinedOn()');assert.equal(ops,undefined);\n    h.state.confirmed=true;await h.run('fixGeneralJoinedOn()');\n    assert.deepEqual(ops,[{type:'update',id:14,fields:{joinedOn:key.season.termStart}}]);\n    assert.match(h.state.prompts.at(-1),/عدد 1 طالب/);assert.match(h.state.messages.at(-1).message,/لعدد 1 طالب من 1/);\n    assert.equal(h.list.find(s=>s.name==='عادل').joinedOn,'2026-11-24');\n    await h.run('fixGeneralJoinedOn()');assert.match(h.state.messages.at(-1).message,/: 0/);\n});\n\n",
+      "after": "// Runs the production store transaction against server documents independent of the UI cache.\nfunction joinedOnHarness(list = [{id: 1}]) {\n    const h = harness(); h.install('fixGeneralJoinedOn');\n    h.list = copy(list); h.ctx.list = h.list; h.run('students = list');\n    h.ctx.requireSchoolCalendar = () => true; h.ctx.renderProgramSettings = () => {};\n    const server = new Map(h.list.map(s => ['general/s1/' + s.id, copy(s)]));\n    const state = { calls: [], writes: [], retry: null, afterCommit: null, beforeRead: null, failAt: null };\n    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',\n        doc: (db, programs, program, seasons, season, students, id) => program + '/' + season + '/' + id,\n        runTransaction: async (db, fn) => {\n            const call = { reads: [], writes: [] }; state.calls.push(call);\n            if (state.failAt === state.calls.length) throw new Error('server unavailable');\n            async function attempt() {\n                const pending = [];\n                const result = await fn({\n                    get: async ref => {\n                        assert.equal(pending.length, 0, 'all reads must precede writes');\n                        call.reads.push(ref); state.beforeRead?.(ref);\n                        const row = server.get(ref);\n                        return { id: ref.split('/').at(-1), exists: () => !!row, data: () => copy(row) };\n                    },\n                    update: (ref, patch) => pending.push({ ref, patch: copy(patch) })\n                });\n                return { result, pending };\n            }\n            let attemptResult = await attempt();\n            if (state.retry) { const retry = state.retry; state.retry = null; retry(); attemptResult = await attempt(); }\n            for (const write of attemptResult.pending) {\n                Object.assign(server.get(write.ref), write.patch); call.writes.push(write); state.writes.push(write);\n            }\n            state.afterCommit?.();\n            return attemptResult.result;\n        }\n    });\n    Object.defineProperties(ctx, {\n        activeProgramId: { get: () => h.state.program }, activeSeasonId: { get: () => h.state.season },\n        isReady: { get: () => true }, isReadOnly: { get: () => h.state.archived }\n    });\n    vm.runInContext('const api={' + storeMethod(dataStore, 'setMissingJoinedOn') + '};', ctx);\n    Object.assign(h.ctx.window.almahraData, {\n        isReady: () => true, getActiveProgramId: () => h.state.program, getActiveSeasonId: () => h.state.season,\n        getStudents: () => h.list,\n        setMissingJoinedOn: async (program, season, ids, date) => {\n            ctx.args = [program, season, ids, date];\n            return copy(await vm.runInContext('api.setMissingJoinedOn(...args)', ctx));\n        },\n        commitBatch: () => { throw new Error('joinedOn must use transactions'); }\n    });\n    h.fix = () => h.run('fixGeneralJoinedOn()');\n    return Object.assign(h, { server, transactionState: state });\n}\n\ntest('joinedOn setup confirms, fills missing server values, counts accurately and repeats without changing anything', async () => {\n    const h = joinedOnHarness(Array.from({length: 451}, (_, i) => ({id: i + 1})));\n    h.server.get('general/s1/451').joinedOn = '2026-11-24';\n    h.state.confirmed = false; await h.fix(); assert.equal(h.transactionState.calls.length, 0);\n    h.state.confirmed = true; await h.fix();\n    assert.match(h.state.prompts.at(-1), /عدد 451 طالب/);\n    assert.equal(h.transactionState.calls.length, 2);\n    assert.deepEqual(h.transactionState.calls.map(c => c.reads.length), [400, 51]);\n    assert.equal(h.transactionState.writes.length, 450);\n    assert.equal([...h.server.values()].filter(s => s.joinedOn === key.season.termStart).length, 450);\n    assert.equal(h.server.get('general/s1/451').joinedOn, '2026-11-24');\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ450 طالباً، وتُرك 1/);\n    assert.equal(h.state.messages.at(-1).type, 'success');\n    const before = copy([...h.server]);\n    // Keep a stale local snapshot to force a second server transaction.\n    h.list.forEach(s => delete s.joinedOn);\n    await h.fix();\n    assert.deepEqual([...h.server], before); assert.equal(h.transactionState.writes.length, 450);\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ0 طالباً، وتُرك 451/);\n});\n\ntest('joinedOn transaction preserves a server value absent from the local snapshot and reports left 1', async () => {\n    const h = joinedOnHarness(); h.server.get('general/s1/1').joinedOn = '2026-11-24';\n    await h.fix();\n    assert.equal(h.server.get('general/s1/1').joinedOn, '2026-11-24');\n    assert.equal(h.transactionState.writes.length, 0);\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ0 طالباً، وتُرك 1/);\n});\n\ntest('joinedOn stops after first 400 of 451 when the displayed season changes, without writes to the other season or success', async () => {\n    const h = joinedOnHarness(Array.from({length: 451}, (_, i) => ({id: i + 1})));\n    h.server.set('general/archive/401', {id: 401, joinedOn: '2026-11-24'});\n    h.transactionState.afterCommit = () => { h.state.season = 'archive'; h.state.archived = true; };\n    await h.fix();\n    assert.equal(h.transactionState.calls.length, 1); assert.equal(h.transactionState.writes.length, 400);\n    assert.ok(h.transactionState.writes.every(w => w.ref.startsWith('general/s1/')));\n    assert.equal([...h.server].filter(([ref, s]) => ref.startsWith('general/s1/') && !s.joinedOn).length, 51);\n    assert.deepEqual(h.server.get('general/archive/401'), {id: 401, joinedOn: '2026-11-24'});\n    assert.equal(h.state.messages.at(-1).message, 'توقّف التثبيت لأن الموسم المعروض تغيّر؛ ثُبّت لـ400 طالباً، والباقي 51 — أعد الضغط من الموسم الصحيح');\n    assert.ok(h.state.messages.every(m => m.type !== 'success'));\n});\n\n",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "round-one working tree before review repairs",
+      "newLine": 169
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "before": "test('joinedOn setup rereads current snapshot after confirmation; never changes a newly fixed value', async () => {\n    const h=harness();h.install('fixGeneralJoinedOn');h.ctx.requireSchoolCalendar=()=>true;h.ctx.renderProgramSettings=()=>{};\n    let latest=copy(h.list),ops;\n    Object.assign(h.ctx.window.almahraData,{isReady:()=>true,getActiveProgramId:()=>h.state.program,getActiveSeasonId:()=>h.state.season,getStudents:()=>latest,\n        commitBatch:async rows=>{ops=copy(rows);return {success:true,committed:rows.length}}});\n    h.state.onConfirm=()=>{latest.find(s=>s.name==='مازن').joinedOn='2026-11-23'};\n    await h.run('fixGeneralJoinedOn()');assert.deepEqual(ops,[]);assert.equal(latest.find(s=>s.name==='مازن').joinedOn,'2026-11-23');\n    latest=copy(h.list);h.state.onConfirm=()=>{h.state.season='other'};ops=undefined;\n    await h.run('fixGeneralJoinedOn()');assert.equal(ops,undefined);\n});\n\n",
+      "after": "test('joinedOn rechecks context after confirmation and restricts execution to active general', async () => {\n    for (const change of [h => {h.state.season = 'other'}, h => {h.state.program = 'summer'}]) {\n        const h = joinedOnHarness(); h.state.onConfirm = () => change(h); await h.fix();\n        assert.equal(h.transactionState.calls.length, 0);\n        assert.match(h.state.messages.at(-1).message, /ثُبّت لـ0 طالباً، والباقي 1/);\n        assert.ok(h.state.messages.every(m => m.type !== 'success'));\n    }\n    for (const overrides of [{archived: true}, {program: 'summer'}, {program: 'review-day'}]) {\n        const h = joinedOnHarness(); Object.assign(h.state, overrides); await h.fix();\n        assert.equal(h.transactionState.calls.length, 0); assert.equal(h.state.prompts.length, 0);\n    }\n});\n\ntest('joinedOn retries count only the committed attempt, preserve concurrent values and never create missing documents', async () => {\n    const h = joinedOnHarness([{id: 1}, {id: 2}, {id: 3}]); h.server.delete('general/s1/3');\n    h.transactionState.retry = () => {h.server.get('general/s1/1').joinedOn = '2026-11-24'};\n    await h.fix();\n    assert.equal(h.transactionState.calls[0].reads.length, 6);\n    assert.equal(h.transactionState.writes.length, 1);\n    assert.equal(h.server.get('general/s1/1').joinedOn, '2026-11-24');\n    assert.equal(h.server.get('general/s1/2').joinedOn, key.season.termStart);\n    assert.equal(h.server.has('general/s1/3'), false);\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ1 طالباً، وتُرك 1/);\n});\n\ntest('joinedOn store guards explicit context, archive status and the 400 document maximum', async () => {\n    for (const [program, season, ids, archived] of [\n        ['general', 'other', [1], false], ['summer', 's1', [1], false],\n        ['general', 's1', [1], true], ['general', 's1', Array.from({length: 401}, (_, i) => i + 1), false]\n    ]) {\n        const h = joinedOnHarness(); h.state.archived = archived;\n        const result = await h.ctx.window.almahraData.setMissingJoinedOn(program, season, ids, key.season.termStart);\n        assert.equal(result.success, false); assert.equal(result.committed, 0); assert.equal(result.skipped, 0);\n        assert.equal(h.transactionState.calls.length, 0);\n    }\n});\n\ntest('joinedOn context switch during a transaction read aborts that batch without success', async () => {\n    const h = joinedOnHarness(); h.transactionState.beforeRead = () => {h.state.season = 'archive'};\n    await h.fix(); assert.equal(h.transactionState.writes.length, 0);\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ0 طالباً، والباقي 1/);\n    assert.ok(h.state.messages.every(m => m.type !== 'success'));\n});\n\ntest('joinedOn failed second transaction reports only committed students without success', async () => {\n    const h = joinedOnHarness(Array.from({length: 451}, (_, i) => ({id: i + 1})));\n    h.transactionState.failAt = 2; await h.fix();\n    assert.equal(h.transactionState.writes.length, 400);\n    assert.match(h.state.messages.at(-1).message, /ثُبّت لـ400 طالباً، وتُرك 0، والباقي 51: server unavailable/);\n    assert.ok(h.state.messages.every(m => m.type !== 'success'));\n});\n\n",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "round-one working tree before review repairs",
+      "newLine": 325
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "category": 8,
+      "reason": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "before": "TV card allowed the displayed knight count alongside teacher and tied names",
+      "after": "TV card must contain only the halaqa title, teacher and tied names, without عدد الفرسان",
+      "reviewBaseline": "round-one working tree before review repairs",
+      "newLine": 411
     }
   ]
 }

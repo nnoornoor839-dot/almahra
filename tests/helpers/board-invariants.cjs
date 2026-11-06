@@ -1,7 +1,23 @@
 const assert = require('node:assert/strict');
 // استثناءات حرفية باعتماد المالك ٢٠٢٦-١١-٠٦؛ لا تُسقط دالة أو ملفاً من القفل.
+function beforeKnights(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    const marker = { 'index.html': 'function dayAcceptedWeightTenths(', 'data-store.js': 'data.joinedOn =',
+        'programs-store.js': 'const mergeEntry =', 'tv.js': 'فارس اليوم (مؤقت حتى الحسم)', 'tv.html': '.card.day-knight .stage' }[file];
+    if (!marker || !text.includes(marker)) return text;
+    const approved = require('../rules/design-expectation-audit.json').knightsProductionChanges;
+    for (const hunk of approved?.find(row => row.file === file)?.hunks || []) {
+        const after = hunk.after.join('\n'), before = hunk.before.join('\n');
+        if (text.includes(after)) {
+            assert.equal(text.split(after).length, 2, file + ': approved knights change is unique');
+            text = text.replace(after, before);
+        } else assert.ok(text.includes(before), file + ': only exact approved knights changes may differ');
+    }
+    return text;
+}
 function beforeBoard(text, file = 'index.html') {
     text = text.replaceAll('\r\n', '\n');
+    text = beforeKnights(text, file);
     const audit = require('../rules/design-expectation-audit.json');
     const prepMarker = { 'index.html': 'function getHomePrepWeek(', 'tv.js': 'stage.prepWeek',
         'tv.html': 'id="celePrep"', 'programs-store.js': "id: 'homeprep'" }[file];
@@ -25,4 +41,4 @@ function beforeBoard(text, file = 'index.html') {
     }
     return text;
 }
-module.exports = { beforeBoard };
+module.exports = { beforeBoard, beforeKnights };

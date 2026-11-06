@@ -54,7 +54,7 @@ function harness() {
         saveData: () => state.legacy++, tiersFeatureOn: () => false,
         escapeHTML: value => String(value ?? ''),
         measureEntry: entry => entry.measure });
-    vm.runInContext('let students = [];\n' + cleanSource + importSource + totalsSource, ctx);
+    vm.runInContext('let students = []; const todayStr = \"2026-11-24\";\n' + cleanSource + importSource + totalsSource, ctx);
     const run = code => vm.runInContext(code, ctx);
     return { state, ctx, run, readers, data, elements,
         setStudents(list) { ctx.testStudents = list; run('students = testStudents'); },
@@ -80,7 +80,8 @@ function harness() {
 
 function transactionHarness() {
     const docs = new Map(), refs = [], state = { calls: 0, callbacks: 0, writes: 0 };
-    const ctx = vm.createContext({ TextEncoder, structuredClone,
+    class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }
+    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,
         doc: (...segments) => { const ref = segments.slice(1).join('/'); refs.push(ref); return ref; },
         async runTransaction(db, callback) {
             state.calls++;
@@ -214,7 +215,7 @@ test('transaction: path uses id, removes only id from data, preserves an existin
     const h = transactionHarness(), input = validStudent();
     assert.equal((await h.create(input)).success, true);
     assert.equal(h.refs[0], 'programs/general/seasons/season-one/students/1');
-    const expected = copy(input); delete expected.id;
+    const expected = { ...copy(input), joinedOn: '2026-11-24' }; delete expected.id;
     assert.deepEqual(h.docs.get(h.refs[0]), expected);
     const previous = { name: 'طالب وهمي سابق', sid: 'old', history: { day: { attended: true, entries: { keep: { points: 77 } } } } };
     h.docs.set(h.refs[0], copy(previous));
@@ -483,7 +484,7 @@ test('documented protection boundary: two devices can create the same normalized
 
 test('data-store exception: only the step2 halaqaId guard changes from the approved baseline', () => {
     const baseline = cp.execFileSync('git', ['show', '9628c9c:data-store.js'], { cwd: root, encoding: 'utf8' }).replace(/\r\n/g, '\n');
-    let restored = store.replace(/\r\n/g, '\n');
+    let restored = require('./helpers/board-invariants.cjs').beforeKnights(store, 'data-store.js');
     restored = restored.replace(' || !validId(student.halaqaId)', '');
     assert.equal(restored, baseline);
 });

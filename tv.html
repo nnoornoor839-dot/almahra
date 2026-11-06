@@ -87,6 +87,12 @@
 .card .kname + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }
 .card .muted { font-size:56px; font-weight:600; color:var(--tv-muted); line-height:1.4; text-wrap:balance; }
 
+/* بطاقة الحلقة اليومية تتسع للمعلم والمتعادلين دون قص الأسماء. */
+.card.day-knight .stage { font-size:44px; }
+.card.day-knight .card-body { gap:16px; padding:24px; }
+.card.day-knight .kname { font-size:56px; }
+.card.day-knight .muted { font-size:28px; }
+
 /* التذييل: تاريخ النتائج داخل المنطقة الآمنة، والنقاط وزر ملء الشاشة في الهامش */
 .results-date { position:absolute; bottom:var(--tv-safe-y); left:50%; transform:translateX(-50%); white-space:nowrap; font-size:56px; font-weight:600; color:var(--general-pending-bg); background:#3a3214; border:2px solid #6b5a22; border-radius:999px; padding:0 40px; line-height:76px; }
 .results-date i { color:var(--tv-gold); margin-inline-end:18px; font-size:44px; }

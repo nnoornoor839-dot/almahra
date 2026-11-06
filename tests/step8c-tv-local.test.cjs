@@ -127,35 +127,41 @@ test('board date uses season calendar and recorded attendance, skipping empty da
     }
 });
 
-test('snapshot has exactly allowed keys, approved crowned first only, per-stage fallback, tied automatic winners and no private fields', () => {
-    const list = [1, 2, 3].map(id => ({ id, sid: `sid-${id}`, phone: '0500000000', grade: 'secret-grade', stage: 'private-stage',
-        name: `طالب وهمي ثالث${id} عائلة`, points: id * 5, history: { '2026-11-01': { attended: true } } }));
+test('snapshot has exact halaqa keys, manual override and automatic fallback, ties and no private fields', () => {
+    const list = [1, 2, 3].map(id => ({ id, sid: 'sid-' + id, phone: '0500000000', grade: 'secret-grade', stage: 'private-stage',
+        halaqaId: id === 1 ? 'ha' : 'hb', name: 'طالب وهمي ثالث' + id + ' عائلة', points: id * 5,
+        history: { '2026-11-01': { attended: true, points: 10, entries: { e: { kind: 'new', spec: {}, mult: 1 } } } } }));
     const h = board(list);
+    h.state.settings.halaqas[0].name = 'حلقة أولى'; h.state.settings.halaqas[1].name = 'حلقة ثانية';
+    h.state.settings.teachers = [];
+    h.ctx.measureEntry = () => ({ lines: 15 }); h.ctx.dayPoints = day => day.points;
     h.run('getMostImproved = () => [{ student: students[2], growth: 50 }]');
     const candidate = s => ({ student: s, points: 10, achievement: 'secret-achievement' });
-    h.state.daily = { a: list.map(candidate), b: [candidate(list[1]), candidate(list[2])] };
     h.state.weekly = { a: [candidate(list[2])], b: [] };
-    h.state.approved.push({ dateStr: '2026-11-01', mode: 'a', fars: [list[0], list[1], list[2]].map(s => ({ ...s, achievement: 'secret-achievement' })) });
+    h.state.approved.push({ dateStr: '2026-11-01', mode: 'h:ha', fars: [list[0]] });
     const s = h.snapshot();
     assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'stages'].sort());
     assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);
     for (const stage of s.stages) {
         assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());
         for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
-        for (const e of [...stage.dayKnights, ...stage.weekKnights]) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
+        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);
+        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
         for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
         for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
     }
-    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
+    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], times: 1, provisional: true },
+        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], times: 2, provisional: true }];
+    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);
     assert.doesNotMatch(JSON.stringify(s), /sid-|0500000000|secret|private-stage|"id"|"sid"|عائلة/);
     assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });
     h.state.settings.tvPrayer = { maghribMinutes: 15, ishaMinutes: 40 };
     assert.deepEqual(h.snapshot().prayer, h.state.settings.tvPrayer);
-    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);
+    h.state.approved.splice(0);
+    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'all', fars: [list[1]] });
-    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [
-        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },
-        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
+    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);
+    assert.equal(h.run("getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id"), 2);
 });
 
 test('supervisor never builds an unsolicited snapshot; opening is synchronous, popup blocking shows toast, hello reconnects and heartbeat is 30s', () => {

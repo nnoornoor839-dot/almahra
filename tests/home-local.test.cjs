@@ -435,7 +435,8 @@ function settingsHarness() {
         showToast: message => { h.state.error = message; },
         commitProgramSettings: async commit => { h.state.writes.push(copy(commit.settings)); } });
     h.run('let generalSettingsHalaqaBaseline = null;');
-    h.install('saveProgramSettings', 'generalSettingRow', 'collectGeneralSettingRows');
+    h.install('readKnightsPerHalaqa', 'saveProgramSettings', 'generalSettingRow', 'collectGeneralSettingRows');
+    for (const circle of h.state.settings.halaqas) h.element('psKnights_' + circle.id).value = '1';
     // صفوف النموذج تُختبر منفردة أدناه؛ هنا نختبر طريق الحفظ الحالي.
     h.ctx.collectGeneralSettingRows = kind => h.state.settings[kind === 'stage' ? 'stages' : 'teachers'];
     for (const [id, value] of Object.entries({ psPtAtt: '10', psMultNew: '3', psMultRev: '1', psNewGoalPerDay: '0.5', psFollowupAttendance: '85', psFollowupNew: '80' })) h.element(id).value = value;

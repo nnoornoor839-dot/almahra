@@ -90,6 +90,7 @@ async function createGeneralStudentIfAbsent(student, expectedSeasonId) {
         return { success: false, code: 'INVALID_STUDENT', error: 'معرّفات الطالب غير صالحة أو توجد قيمة undefined' };
     try {
         const { id, ...data } = structuredClone(student);
+        data.joinedOn = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
         const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, String(id));
         const guard = () => {
             if (!contextValid()) throw Object.assign(new Error('تغيّر سياق الحفظ أو صلاحية الكتابة'), { code: 'IMPORT_CONTEXT_INVALID' });
@@ -222,6 +223,41 @@ window.almahraData = {
     // عمليات جماعية (نقاط المجموعات، التوزيع، الاستيراد): { type: 'update', id, fields } | { type: 'set', id, data } | { type: 'delete', id }
     // تُقسَّم دفعات ≤ ٤٥٠ (حد Firestore ٥٠٠): كل دفعة ذرّية وحدها، أما المجموع الأكبر من دفعة فليس ذرّياً —
     // committed يقول كم هبط فعلاً قبل أول دفعة فاشلة
+    // دفعة واحدة بمعاملة: جميع القراءات تسبق الكتابة، والعدّ من المحاولة التي التزمت فعلاً.
+    setMissingJoinedOn: async (programId, seasonId, ids, dateStr) => {
+        const empty = { committed: 0, skipped: 0, notFound: 0, committedIds: [] };
+        const sameContext = () => programId === 'general' && activeProgramId === programId && activeSeasonId === seasonId;
+        const guard = () => {
+            if (!sameContext()) throw Object.assign(new Error('تغيّر سياق الموسم'), { code: 'JOINED_ON_CONTEXT_CHANGED' });
+            if (!isReady || isReadOnly) throw new Error('الموسم غير جاهز أو مؤرشف');
+        };
+        try {
+            guard();
+            if (!Array.isArray(ids) || ids.length > 400 || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr) ||
+                !seasonId || String(seasonId).includes('/') || ids.some(id => !String(id) || String(id).includes('/')))
+                throw new Error('دفعة تثبيت غير صالحة؛ الحد الأقصى 400 طالب');
+            const refs = [...new Set(ids.map(String))].map(id => doc(db, PROGRAMS, programId, SEASONS, seasonId, STUDENTS, id));
+            const result = await runTransaction(db, async transaction => {
+                guard();
+                const snapshots = [];
+                for (const ref of refs) snapshots.push(await transaction.get(ref));
+                guard();
+                const counts = { ...empty, committedIds: [] };
+                snapshots.forEach((snapshot, i) => {
+                    if (!snapshot.exists()) { counts.notFound++; return; }
+                    if (snapshot.data().joinedOn) { counts.skipped++; return; }
+                    transaction.update(refs[i], { joinedOn: dateStr });
+                    counts.committed++;
+                    counts.committedIds.push(snapshot.id);
+                });
+                return counts;
+            });
+            return { success: true, ...result };
+        } catch (error) {
+            return { success: false, ...empty, code: error.code, error: error.message };
+        }
+    },
+
     commitBatch: async (ops) => {
         if (isReadOnly) return { success: false, committed: 0, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, committed: 0, error: 'لم تُحدَّد جلسة عمل' };
@@ -298,6 +334,8 @@ window.almahraData = {
             const snapshot = await getDocs(srcRef);
             if (snapshot.empty) return { success: true, imported: 0 };
 
+            const joinedOn = activeProgramId === 'general' ? window.almahraPrograms?.getCurrentSeason()?.termStart : null;
+            if (activeProgramId === 'general' && !joinedOn) return { success: false, error: 'حدّد يوم انطلاق الموسم أولاً' };
             const batch = writeBatch(db);
             let count = 0;
             snapshot.forEach((docSnap) => {
@@ -316,6 +354,7 @@ window.almahraData = {
                         lastDailySurah: data.lastDailySurah || null,
                         lastDailyAyah: data.lastDailyAyah || null
                       };
+                if (activeProgramId === 'general') newData.joinedOn = joinedOn;
                 batch.set(studentDocRef(docSnap.id), newData);
                 count++;
             });

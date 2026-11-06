@@ -1698,6 +1698,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         </div>
                     </div>
 
+                    <label id="farsHalaqaReasonRow" hidden class="block mb-4 font-bold">سبب اعتماد فارس الحلقة (إلزامي)
+                        <input id="farsHalaqaReason" type="text" class="w-full p-2 border-2 rounded-xl" placeholder="اكتب سبب الاعتماد">
+                    </label>
                     <div class="mb-4">
                         <label class="block text-base font-bold text-slate-600 mb-1">يوم الفرسان:</label>
                         <select id="farsDayInput" class="w-full p-2.5 border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500">
@@ -4412,9 +4415,6 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const boardDate = getBoardDate(), date = boardDate || todayStr;
             const tiers = getTiers();
             const allNames = students.map(s => s.name), nameOf = name => tvDisplayName(name, allNames);
-            const automatic = tier => ({ stage: tier?.name || 'كل الطلاب', names: topTied(getDayTitleCandidates(date, tier?.id ?? null), e => e.points).map(e => nameOf(e.student.name)) });
-            // الاعتماد يتوّج الأول فقط؛ الباقون وصيفان كما في لوحة الشرف.
-            const approved = (entry, stage) => ({ stage, names: (entry.fars || []).filter(f => f && f.name).slice(0, 1).map(f => nameOf(f.name)) });
             const { startStr, endStr } = getBoardWeekRange();
             const dates = getWorkingDatesInRange(startStr, endStr), attendance = getProgramSettings().points.attendance;
             const periodOf = generalPerformanceSettings().periodOf;
@@ -4431,10 +4431,12 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             return { name: nameOf(e.student.name), points: e.points,
                                 week: roundPointTotal(sum.points + sum.attended * attendance), rank: e.rank <= 10 ? e.rank : null };
                         }),
-                        dayKnights: group.map(t => {
-                            const appr = getApprovedKnightsForMode(date, t.id);
-                            return appr ? approved(appr, t.name) : automatic(t);
-                        }).filter(e => e.names.length),
+                        dayKnights: getProgramSettings().halaqas.filter(h => h.active === true && group.some(t => t.id === h.stageId))
+                            .sort((a, b) => (a.order || 0) - (b.order || 0)).map(h => {
+                                const knights = getDayHalaqaKnights(date, h.id, students);
+                                return { stage: h.name, teacher: getProgramSettings().teachers.find(t => t.id === h.teacherId)?.name || '',
+                                    names: knights.names.map(nameOf), times: knights.times, provisional: true };
+                            }).filter(e => e.names.length),
                         weekKnights: group.map(t => ({ stage: t.name,
                             names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),
                         prepWeek: getHomePrepWeek(period),
@@ -5612,7 +5614,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         if (checked.status !== 'new' || checked.teacherId !== row.teacherId || checked.stage !== row.stage || checked.halaqaId !== row.halaqaId) throw new Error('تغيّرت الإعدادات؛ راجع المعاينة مجدداً');
                         nextId = Math.max(nextId, Math.max(0, ...students.map(s => Number(s.id) || 0)) + 1);
                         const doc = { id: nextId, sid, name: row.name, teacherId: checked.teacherId,
-                            stage: checked.stage, halaqaId: checked.halaqaId, parentPhone: row.phone, history: {}, memorizedJuz: null,
+                            stage: checked.stage, halaqaId: checked.halaqaId, parentPhone: row.phone, history: {}, memorizedJuz: null, joinedOn: todayStr,
                             frontierBase: null, lastDailyBase: null };
                         const result = await window.almahraData.createGeneralStudentIfAbsent(doc, operation.seasonId);
                         if (result?.success) {
@@ -7262,7 +7264,32 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             });
         }
         
+        async function approveGeneralHalaqaKnights() {
+            if (!isGeneralProgram() || !canWriteView()) return false;
+            const mode = document.getElementById('farsAutoMode').value, dateStr = document.getElementById('farsAutoDate').value || todayStr;
+            const reason = document.getElementById('farsHalaqaReason').value.trim();
+            if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }
+            const ids = [1, 2, 3].map(n => document.getElementById('fars' + n + 'Select').value).filter(Boolean);
+            const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));
+            if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }
+            const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);
+            if (!h || selected.some(s => s.halaqaId !== h.id || getAttendanceState(s, dateStr).state !== 'present' ||
+                dayAcceptedWeightTenths(s.history?.[dateStr], settings.kindMult).total <= 0 || dayHasBlockingViolation(s.history?.[dateStr], getBlockingCriteriaIds()))) {
+                showToast('اختر من طلاب الحلقة الحاضرين بتسميع مقبول وبلا حاجب', 'error'); return false;
+            }
+            const entry = { dateStr, mode, fars: selected.map(s => ({ id: s.id, name: s.name })), reason,
+                by: window.almahraAuth.currentUser.uid, at: new Date().toISOString() };
+            const programId = window.almahraPrograms.getCurrentProgramId(), seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const result = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, entry);
+            if (!result.success) { showToast('تعذّر حفظ الفرسان سحابياً: ' + result.error, 'error'); return false; }
+            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return false;
+            honorKnightsLog = honorKnightsLog.filter(e => e.dateStr !== dateStr || e.mode !== mode).concat(entry);
+            currentThreeKnights = entry;
+            sendGeneralTvSnapshot(); showToast('حُفظ اعتماد فارس الحلقة'); return true;
+        }
+
         function launchThreeKnights() {
+            if (isGeneralProgram() && document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
@@ -8041,6 +8068,60 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         // كل المتصدرين المتعادلين في القمة (اشتراك اللقب)
+        function dayAcceptedWeightTenths(day, kindMult) {
+            const weight = { new: 0, review: 0, total: 0 };
+            for (const e of Object.values(day?.entries || {})) {
+                if (!e || !['new', 'review'].includes(e.kind) || e.grade === 'repeat' || (!e.iv && !e.spec)) continue;
+                let lines;
+                try { lines = measureEntry(e).lines; }
+                catch (error) { if (error.code === 'NOT_READY') throw error; continue; }
+                const mult = Number.isFinite(e.mult) ? e.mult : kindMult[e.kind === 'new' ? 'newMemorization' : 'review'];
+                weight[e.kind] += Math.round(Math.round(lines * 10) * mult);
+            }
+            weight.total = weight.new + weight.review;
+            return weight;
+        }
+
+        function topTiedBy(list, keysOf) {
+            if (!list?.length) return [];
+            const best = keysOf(list[0]);
+            return list.filter(e => { const keys = keysOf(e); return keys.length === best.length && keys.every((v, i) => v === best[i]); });
+        }
+
+        function knightsEligibilityStart(student, weekStart) {
+            return student?.joinedOn ? (student.joinedOn > weekStart ? student.joinedOn : weekStart) : null;
+        }
+
+        function getDayHalaqaKnights(dateStr, halaqaId, sourceStudents = students) {
+            const settings = getProgramSettings(), blocking = getBlockingCriteriaIds();
+            const halaqa = settings.halaqas.find(h => h.id === halaqaId && h.active === true);
+            const result = { names: [], students: [], times: 0, provisional: true, source: 'auto' };
+            if (!halaqa) return result;
+            const rejection = student => {
+                if (!student || student.halaqaId !== halaqaId) return 'ليس في الحلقة';
+                if (getAttendanceState(student, dateStr).state !== 'present') return 'غائب ذلك اليوم';
+                if (dayAcceptedWeightTenths(student.history?.[dateStr], settings.kindMult).total <= 0) return 'بلا تسميع مقبول (الوزن 0)';
+                if (dayHasBlockingViolation(student.history?.[dateStr], blocking)) return 'مخالفة حاجبة';
+                return null;
+            };
+            const ranked = sourceStudents.filter(s => s.halaqaId === halaqaId && !rejection(s)).map(student => ({ student,
+                pointsTenths: Math.round(dayPoints(student.history[dateStr]) * 10),
+                weightTenths: dayAcceptedWeightTenths(student.history[dateStr], settings.kindMult).total
+            })).sort((a, b) => b.pointsTenths - a.pointsTenths || b.weightTenths - a.weightTenths);
+            let winners = topTiedBy(ranked, e => [e.pointsTenths, e.weightTenths]).map(e => e.student);
+            const approval = (honorKnightsLog || []).find(e => e.dateStr === dateStr && e.mode === 'h:' + halaqaId);
+            if (approval) {
+                const chosen = (approval.fars || []).map(f => sourceStudents.find(s => String(s.id) === String(f.id)));
+                const rejected = chosen.map(s => ({ student: s, reason: rejection(s) })).find(e => e.reason);
+                if (!chosen.length || rejected) {
+                    const name = rejected?.student?.name || approval.fars?.[0]?.name || 'الطالب';
+                    result.rejected = 'اعتماد مرفوض ليوم ' + dateStr.slice(8, 10) + '-' + dateStr.slice(5, 7) + ': ' + name + ' ' + (rejected?.reason || 'اعتماد فارغ');
+                } else { winners = [...new Set(chosen)]; result.source = 'manual'; }
+            }
+            result.students = winners; result.names = winners.map(s => s.name); result.times = winners.length;
+            return result;
+        }
+
         function topTied(list, valueOf) {
             if (!list || list.length === 0) return [];
             const best = valueOf(list[0]);
@@ -8128,12 +8209,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             let points = 0, sard = 0, attended = 0, violations = 0, blockingViolations = 0, disciplineDays = 0;
             const blocking = getBlockingCriteriaIds();
+            const weightTenths = { new: 0, review: 0, total: 0 };
             dates.forEach(dt => {
                 const d = student.history?.[dt];
                 if (!d) return;
                 if (isGeneralProgram() ? getAttendanceState(student, dt).state === 'present' : d.attended) attended++;
                 const ds = dayStats(d);
                 points += dayPoints(d, ds);
+                if (isGeneralProgram()) {
+                    const weight = dayAcceptedWeightTenths(d, getProgramSettings().kindMult);
+                    for (const kind of ['new', 'review', 'total']) weightTenths[kind] += weight[kind];
+                }
                 sard += ds.ayahs;
                 if (dayHasAnyViolation(d)) violations++;
                 if (dayHasBlockingViolation(d, blocking)) blockingViolations++;
@@ -8143,7 +8229,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (isGeneralProgram()) {
                 const att = attendance || calculateStudentAttendance(student, dates);
                 return { points: roundPointTotal(points), sard, attended: att.actualDays, violations, blockingViolations, disciplineDays,
-                    expected: att.expectedDays, schoolDays: att.schoolDays, unrecorded: att.unrecorded, absences: att.absences };
+                    expected: att.expectedDays, schoolDays: att.schoolDays, unrecorded: att.unrecorded, absences: att.absences, weightTenths };
             }
             return { points: roundPointTotal(points), sard, attended, violations, blockingViolations, disciplineDays, expected: dates.length };
         }
@@ -8331,6 +8417,13 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const sel = document.getElementById('farsAutoMode');
             if (!sel) return;
             const prev = sel.value;
+            const reason = document.getElementById('farsHalaqaReasonRow');
+            if (reason) reason.hidden = !isGeneralProgram();
+            if (isGeneralProgram()) {
+                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value="h:' + escapeHTML(h.id) + '">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('') + '<option value="all">كل الطلاب (قديم)</option><option value="discipline">الانضباط (قديم)</option>' + getTiers().map(t => '<option value="' + escapeHTML(t.id) + '">' + escapeHTML(t.name) + ' (قديم)</option>').join('');
+                if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+                return;
+            }
             const tiers = getTiers();
             const tiersOn = tiersFeatureOn();
             let html = '<option value="all">🏅 فارس الإنجاز (كل الطلاب)</option>';
@@ -8348,7 +8441,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const mode = document.getElementById('farsAutoMode')?.value || 'all';
 
             let ranking;
-            if (mode === 'discipline') {
+            if (isGeneralProgram() && mode.startsWith('h:')) {
+                const knights = getDayHalaqaKnights(dateStr, mode.slice(2));
+                ranking = knights.students.map(student => ({ student, points: dayPoints(student.history[dateStr]), sard: 0, criteriaPoints: 0, criteria: {} }));
+            } else if (mode === 'discipline') {
                 ranking = getDisciplineRanking(dateStr).map(e => ({
                     student: e.student, points: e.criteriaPoints, sard: 0,
                     sardPoints: 0, criteriaPoints: e.criteriaPoints, criteria: e.criteria, disciplineOnly: true
@@ -10146,7 +10242,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         const seasonId = window.almahraPrograms.getCurrentSeasonId();
                         let nid = 1;
                         const doc = { id: nid, sid: crypto.randomUUID(), name: n, history: {}, memorizedJuz, parentPhone,
-                            frontierBase: null, lastDailyBase: null, ...membership };
+                            frontierBase: null, lastDailyBase: null, joinedOn: todayStr, ...membership };
                         let firstMembership = null;
                         for (let attempt = 0; attempt < 3; attempt++) {
                             if (!requireSchoolCalendar()) return;
@@ -11206,6 +11302,12 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                 <input id="psFollowupNew" type="number" min="1" max="100" step="any" value="${performance.limits.newPct}" class="w-full p-2 border-2 rounded-xl"></label>
                         </div>
                     </div>` : ''}
+                    ${isGeneralProgram() ? `<div class="bg-white p-5 rounded-2xl border-2 lg:col-span-2">
+                        <h3 class="font-black mb-3">عدد فرسان الأسبوع لكل حلقة (1–5)</h3>
+                        <div class="grid grid-cols-2 gap-3">${(s.halaqas || []).map(h => `<label>${escapeHTML(h.name)}<input id="psKnights_${escapeHTML(h.id)}" type="number" min="1" max="5" step="1" value="${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}" class="w-full p-2 border-2 rounded-xl"></label>`).join('')}</div>
+                        <p class="my-3">بلا تاريخ استحقاق: ${students.filter(s => !s.joinedOn).length} طالب</p>
+                        <button type="button" onclick="fixGeneralJoinedOn()" ${isArchivedView ? 'disabled' : ''} class="p-3 border-2 rounded-xl">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>
+                    </div>` : ''}
                     <!-- شروط استحقاق الألقاب -->
                     <div class="bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2">
                         <h3 class="font-black text-lg text-slate-700 mb-2 flex items-center gap-2">
@@ -11690,6 +11792,56 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             };
             return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };
         }
+        function readKnightsPerHalaqa() {
+            const result = { ...(window.almahraPrograms.getSettings()?.titleRules?.knightsPerHalaqa || {}) };
+            for (const h of getProgramSettings().halaqas) {
+                const raw = document.getElementById('psKnights_' + h.id)?.value;
+                const value = Number(raw);
+                if (!raw || !Number.isInteger(value) || value < 1 || value > 5) throw new Error('عدد فرسان الحلقة من 1 إلى 5');
+                result[h.id] = value;
+            }
+            return result;
+        }
+
+        async function fixGeneralJoinedOn() {
+            const programs = window.almahraPrograms, data = window.almahraData;
+            const programId = programs.getCurrentProgramId(), seasonId = programs.getCurrentSeasonId();
+            if (programId !== 'general' || programs.isCurrentSeasonArchived() || !canWriteCloud() || !requireSchoolCalendar()) return;
+            const termStart = programs.getCurrentSeason().termStart;
+            const sameContext = () => programs.getCurrentProgramId() === programId && programs.getCurrentSeasonId() === seasonId &&
+                data.getActiveProgramId() === programId && data.getActiveSeasonId() === seasonId;
+            const ready = () => sameContext() && data.isReady() && !programs.isCurrentSeasonArchived();
+            if (!ready()) { showToast('انتظر اكتمال تحميل طلاب الموسم', 'error'); return; }
+            const ids = [...new Set(data.getStudents().filter(s => !s.joinedOn).map(s => s.id))];
+            if (!ids.length) { showToast('العدد المطلوب تثبيته: 0'); return; }
+            if (!confirm('تثبيت تاريخ الاستحقاق لعدد ' + ids.length + ' طالب = ' + termStart + '؟ لا يتغير من له تاريخ.')) return;
+            let committed = 0, skipped = 0, processed = 0;
+            const stopped = () => showToast('توقّف التثبيت لأن الموسم المعروض تغيّر؛ ثُبّت لـ' + committed + ' طالباً، والباقي ' +
+                (ids.length - processed) + ' — أعد الضغط من الموسم الصحيح', 'error');
+            for (let i = 0; i < ids.length; i += 400) {
+                if (!sameContext()) { stopped(); return; }
+                if (!ready() || !canWriteCloud() || programs.getCurrentSeason().termStart !== termStart) {
+                    showToast('توقّف التثبيت لتعذّر الكتابة؛ ثُبّت لـ' + committed + ' طالباً، والباقي ' + (ids.length - processed), 'error'); return;
+                }
+                const result = await data.setMissingJoinedOn(programId, seasonId, ids.slice(i, i + 400), termStart);
+                committed += result.committed;
+                skipped += result.skipped;
+                processed += result.committed + result.skipped + (result.notFound || 0);
+                if (!sameContext() || result.code === 'JOINED_ON_CONTEXT_CHANGED') { stopped(); return; }
+                if (result.committedIds?.length) {
+                    const written = new Set(result.committedIds.map(String));
+                    students.forEach(s => { if (written.has(String(s.id)) && !s.joinedOn) s.joinedOn = termStart; });
+                }
+                if (!result.success) {
+                    renderProgramSettings();
+                    showToast('توقّف التثبيت؛ ثُبّت لـ' + committed + ' طالباً، وتُرك ' + skipped + '، والباقي ' +
+                        (ids.length - processed) + ': ' + result.error, 'error'); return;
+                }
+            }
+            renderProgramSettings();
+            showToast('ثُبّت لـ' + committed + ' طالباً، وتُرك ' + skipped + ' لأن له تاريخاً', 'success');
+        }
+
         async function saveProgramSettings() {
             if (!canWriteView()) return;
             const prog = window.almahraPrograms?.getCurrentProgram();
@@ -11726,10 +11878,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     throw new Error(label + ' غير صالح');
                 return value;
             };
-            let kindMult, grades, attendancePoints, tvPrayer;
+            let kindMult, grades, attendancePoints, tvPrayer, knightsPerHalaqa;
             if (general) {
                 try {
                     tvPrayer = readGeneralTvPrayer();
+                    knightsPerHalaqa = readKnightsPerHalaqa();
                     attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);
                     kindMult = {
                         newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),
@@ -11753,6 +11906,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 criteria: collectCriteriaFromRows(),
                 ...(isGeneralProgram() ? {} : { tiers: newTiers }),
                 titleRules: {
+                    ...(general ? { ...prog.settings.titleRules, knightsPerHalaqa } : {}),
                     requireSard: !!document.getElementById('psTrRequireSard')?.checked,
                     weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),
                     disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked
