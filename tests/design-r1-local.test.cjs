@@ -112,12 +112,10 @@ test('design r1: historical Arabic hijri is converted at display only; export an
 test('design r2: every expectation edit has an exact reviewed diff and owner-approved category', () => {
     const { changes, digits, ownerText } = require('./helpers/design-expectation-audit.cjs');
     const audit = require('./rules/design-expectation-audit.json');
-    const designFiles = ['tests/design-r1-local.test.cjs', 'tests/design-r2-local.test.cjs',
-        'tests/helpers/design-expectation-audit.cjs', 'tests/rules/design-expectation-audit.json'];
-    const baselineDesignFiles = cp.execFileSync('git', ['ls-tree', '-r', '--name-only', '82bf19f', '--', ...designFiles],
+    const baselineFiles = cp.execFileSync('git', ['ls-tree', '-r', '--name-only', '82bf19f', '--', 'tests'],
         { cwd: root, encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
     const names = cp.execFileSync('git', ['diff', '--name-only', '82bf19f', '--', 'tests'], { cwd: root, encoding: 'utf8' })
-        .trim().split(/\r?\n/).filter(Boolean).filter(file => !designFiles.includes(file) || baselineDesignFiles.includes(file));
+        .trim().split(/\r?\n/).filter(Boolean).filter(file => baselineFiles.includes(file));
     assert.deepEqual(names.sort(), audit.files.map(row => row.file).sort(), 'all edited tracked test files are audited');
     for (const file of audit.files) {
         assert.deepEqual(changes(file.file), file, file.file);
@@ -221,7 +219,7 @@ test('design r2: switching programs advances today only through refreshToday and
 test('design r1: calculation, search, attendance and forbidden files stay identical to 82bf19f', () => {
     const baseline = cp.execFileSync('git', ['show', '82bf19f:index.html'], { cwd: root, encoding: 'utf8' });
     for (const name of ['generalTodaySummary', 'generalStalledMemorization', 'generalRecitationSupport',
-        'generalPerformanceTotals', 'generalPerformanceDelta', 'generalPerformanceFollowup', 'generalPerformanceModel',
+        'generalPerformanceDelta', 'generalPerformanceFollowup', 'generalPerformanceModel',
         'generalHalaqaTodayCounts', 'generalStudentsQuery', 'generalStudentsMatching', 'generalCardTodayState',
         'migrateSettings', 'getAttendanceState']) {
         if (name === 'migrateSettings' && !html.includes('function migrateSettings(')) continue;

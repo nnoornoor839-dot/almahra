@@ -6243,23 +6243,12 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (halaqaId !== null && halaqa?.id !== halaqaId) continue;
                 const stage = (settings.stages || []).find(s => s.id === halaqa?.stageId);
                 if (period !== 'all' && (!stage || config.periodOf(stage) !== period)) continue;
-                const start = readers.startOf(student);
-                let daysPresent = 0, studentRaw = 0;
-                for (const date of range.dates) {
-                    if (date >= range.today || date < start) continue;
-                    const state = readers.stateOf(student, date).state;
-                    if (state === 'absent') { absent++; continue; }
-                    if (state !== 'present') continue;
-                    present++; daysPresent++;
-                    for (const entry of Object.values(student.history?.[date]?.entries || {})) {
-                        if (entry?.kind !== 'new' || !entry.grade || entry.grade === 'repeat') continue;
-                        try { studentRaw += readers.measure(entry).pages; }
-                        catch (_) { /* التسجيل الذي يرفضه الميزان يُستبعد، ولا يُخمّن مقداره. */ }
-                    }
-                }
-                const studentGoal = config.newGoalPerDay * daysPresent;
-                if (studentGoal > 0) {
-                    raw += studentRaw; goal += studentGoal; counted += Math.min(studentRaw, studentGoal);
+                const attendance = generalPerformanceStudentAttendance(student, range, readers);
+                const work = generalPerformanceStudentWork(student, attendance.presentDates, 'new', readers);
+                const achievement = generalPerformanceStudentAchievement(work.totals.pages, attendance.present, config);
+                present += attendance.present; absent += attendance.absent;
+                if (achievement.goal > 0) {
+                    raw += achievement.raw; goal += achievement.goal; counted += achievement.counted;
                 }
             }
             const attendanceRawPct = present + absent ? present / (present + absent) * 100 : null;
@@ -6267,6 +6256,125 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             return { present, absent, raw, goal, counted, attendanceRawPct, newRawPct,
                 attendancePct: attendanceRawPct === null ? null : Math.round(attendanceRawPct),
                 newPct: newRawPct === null ? null : Math.round(newRawPct) };
+        }
+        // مصدر الحساب المشترك للرئيسية والتقارير؛ القرّاء والمدى مدخلات صريحة.
+        function generalPerformanceStudentAttendance(student, range, readers) {
+            const start = readers.startOf(student);
+            const days = range.dates.filter(date => date < range.today && date >= start)
+                .map(date => ({ date, ...readers.stateOf(student, date) }));
+            const presentDates = days.filter(day => day.state === 'present').map(day => day.date);
+            const absentDays = days.filter(day => day.state === 'absent');
+            const present = presentDates.length, absent = absentDays.length;
+            const excused = absentDays.filter(day => day.absence === 'excused').length;
+            return { days, presentDates, present, absent, excused, unexcused: absent - excused,
+                unrecorded: days.filter(day => day.state === 'unrecorded').length,
+                recorded: present + absent,
+                pct: present + absent ? Math.round(present / (present + absent) * 100) : null };
+        }
+        function generalPerformanceStudentWork(student, dates, kind, readers) {
+            const totals = { ayahs: 0, pages: 0, quarters: 0, hizbs: 0, juzs: 0 }, entries = [];
+            for (const date of dates) for (const entry of Object.values(student.history?.[date]?.entries || {})) {
+                if (entry?.kind !== kind || !entry.grade || entry.grade === 'repeat') continue;
+                try {
+                    const measured = readers.measure(entry);
+                    for (const unit of Object.keys(totals)) totals[unit] += measured[{ hizbs: 'hizb', juzs: 'juz' }[unit] || unit];
+                    entries.push({ date, entry });
+                } catch (_) { /* التسجيل الفاسد يُتخطّى دون تخمين مقداره. */ }
+            }
+            return { totals, entries };
+        }
+        function generalPerformanceStudentAchievement(raw, present, config) {
+            const goal = config.newGoalPerDay * present, counted = Math.min(raw, goal);
+            return { raw, goal, counted, excess: Math.max(0, raw - goal),
+                pct: goal > 0 ? Math.round(counted / goal * 100) : null };
+        }
+        // أسابيع كاملة يحدّدها التقويم، ونهاية الحساب مقصوصة إلى أمس دائماً.
+        function generalPeriodRange(season, settings, today, schoolDayInfo, selection = {}) {
+            const yesterday = schoolCivilDate(today);
+            if (!yesterday || !isSeasonCalendarComplete(season)) return { from: null, to: null, today };
+            yesterday.setDate(yesterday.getDate() - 1);
+            const ceiling = [formatDateLocal(yesterday), season.termEnd].sort()[0];
+            if (selection.mode === 'term') return { from: season.termStart, to: ceiling, today };
+            if (selection.from && selection.to) {
+                if (!schoolCivilDate(selection.from) || !schoolCivilDate(selection.to) || selection.from > selection.to)
+                    return { from: null, to: null, today };
+                const end = schoolCivilDate(getWeekStartDate(selection.to)); end.setDate(end.getDate() + 6);
+                return { from: [getWeekStartDate(selection.from), season.termStart].sort().pop(),
+                    to: [formatDateLocal(end), ceiling].sort()[0], today };
+            }
+            const weeks = generalPerformanceWeeks(season, settings.workingDays || [], today, Infinity, schoolDayInfo);
+            const last = weeks.filter(week => !week.partial && week.dates.length).pop();
+            return { from: last ? [last.start, season.termStart].sort().pop() : null,
+                to: last ? [last.end, ceiling].sort()[0] : null, today };
+        }
+        function generalPeriodDays(range, schoolDayInfo) {
+            const date = schoolCivilDate(range.from), end = schoolCivilDate(range.to), today = schoolCivilDate(range.today);
+            if (!date || !end || !today) return [];
+            today.setDate(today.getDate() - 1);
+            const to = [range.to, formatDateLocal(today)].sort()[0], dates = [];
+            for (; formatDateLocal(date) <= to; date.setDate(date.getDate() + 1)) {
+                const value = formatDateLocal(date);
+                if (schoolDayInfo(value).isSchoolDay) dates.push(value);
+            }
+            return dates;
+        }
+        function generalStudentReport(student, range, config, readers) {
+            const dates = generalPeriodDays(range, readers.schoolDayInfo);
+            const attendance = generalPerformanceStudentAttendance(student, { dates, today: range.today }, readers);
+            const fresh = generalPerformanceStudentWork(student, attendance.presentDates, 'new', readers);
+            const review = generalPerformanceStudentWork(student, attendance.presentDates, 'review', readers);
+            const acceptedDates = new Set(fresh.entries.map(row => row.date));
+            const reviewDates = [...new Set(review.entries.map(row => row.date))];
+            const noNewDates = attendance.presentDates.filter(date => !acceptedDates.has(date));
+            const repeatDates = attendance.presentDates.filter(date => Object.values(student.history?.[date]?.entries || {})
+                .some(entry => ['new', 'review'].includes(entry?.kind) && entry.grade === 'repeat'));
+            // at وقت الحفظ لا يوم التسميع؛ التاريخ أولاً حتى عند إدخال يوم فائت.
+            const ordered = fresh.entries.slice().sort((a, b) => a.date.localeCompare(b.date) || (a.entry.at || 0) - (b.entry.at || 0));
+            let memorizedRange = null;
+            if (ordered.length) {
+                try {
+                    const first = ordered[0].entry, last = ordered[ordered.length - 1].entry;
+                    const firstIndex = first.iv ? Math.min(...ivPairs(first.iv).map(pair => pair[0])) : null;
+                    const from = first.spec?.from ? { surah: first.spec.from[0], ayah: first.spec.from[1] }
+                        : readers.endPoint({ iv: [[firstIndex, firstIndex]] }, 'up');
+                    memorizedRange = { from, to: readers.endPoint(last, student.direction || 'up') };
+                } catch (_) { /* مدى تالف لا يُسقط كميات التقرير الأخرى. */ }
+            }
+            return { studentId: student.id, attendance, new: fresh.totals, review: review.totals, memorizedRange,
+                achievement: generalPerformanceStudentAchievement(fresh.totals.pages, attendance.present, config),
+                noNewDates, reviewDates, reviewAttendance: attendance.present ? { days: reviewDates.length, present: attendance.present } : null,
+                repeatDates };
+        }
+        function generalHalaqaReport(studentList, halaqaId, range, config, readers) {
+            const reports = studentList.filter(student => student.halaqaId === halaqaId)
+                .map(student => generalStudentReport(student, range, config, readers));
+            const sum = read => reports.reduce((total, report) => total + read(report), 0);
+            const attendance = {};
+            for (const field of ['present', 'absent', 'excused', 'unexcused', 'unrecorded', 'recorded'])
+                attendance[field] = sum(report => report.attendance[field]);
+            attendance.pct = attendance.recorded ? Math.round(attendance.present / attendance.recorded * 100) : null;
+            const quantities = kind => Object.fromEntries(['ayahs', 'pages', 'quarters', 'hizbs', 'juzs']
+                .map(unit => [unit, sum(report => report[kind][unit])]));
+            const goal = sum(report => report.achievement.goal), counted = sum(report => report.achievement.counted);
+            const achievement = { raw: sum(report => report.achievement.raw), goal, counted,
+                pct: goal ? Math.round(counted / goal * 100) : null };
+            const status = { attendance: attendance.pct === null ? null : attendance.pct < config.limits.attendancePct,
+                new: achievement.pct === null ? null : achievement.pct < config.limits.newPct };
+            return { halaqaId, studentCount: reports.length, students: reports, attendance, achievement,
+                new: quantities('new'), review: quantities('review'), status };
+        }
+        function generalComplexNumbers(studentList, range, readers) {
+            const dates = generalPeriodDays(range, readers.schoolDayInfo);
+            const totals = { new: { ayahs: 0, pages: 0, quarters: 0, hizbs: 0, juzs: 0 },
+                review: { ayahs: 0, pages: 0, quarters: 0, hizbs: 0, juzs: 0 } };
+            for (const student of studentList) {
+                const attendance = generalPerformanceStudentAttendance(student, { dates, today: range.today }, readers);
+                for (const kind of ['new', 'review']) {
+                    const work = generalPerformanceStudentWork(student, attendance.presentDates, kind, readers);
+                    for (const unit of Object.keys(totals[kind])) totals[kind][unit] += work.totals[unit];
+                }
+            }
+            return { studentCount: studentList.length, ...totals };
         }
         function generalPerformanceDelta(current, previous) {
             return current === null || previous === null ? null : current - previous;

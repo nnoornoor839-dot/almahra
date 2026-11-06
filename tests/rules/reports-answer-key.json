@@ -1,0 +1,656 @@
+{
+  "source": "home-answer-key.md ?7 (Fable 2026-11-06); raw values, quantities transcribed to six decimal places; synthetic data only",
+  "today": "2026-11-22",
+  "period": {
+    "from": "2026-11-15",
+    "to": "2026-11-18"
+  },
+  "students": [
+    {
+      "studentId": 1,
+      "attendance": {
+        "present": 2,
+        "absent": 2,
+        "excused": 1,
+        "unexcused": 1,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 50
+      },
+      "new": {
+        "ayahs": 5,
+        "pages": 1,
+        "quarters": 0.403966,
+        "hizbs": 0.100992,
+        "juzs": 0.050496
+      },
+      "review": {
+        "ayahs": 0,
+        "pages": 0,
+        "quarters": 0,
+        "hizbs": 0,
+        "juzs": 0
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 29
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 1,
+        "counted": 1,
+        "pct": 100,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-15"
+      ],
+      "reviewDates": [],
+      "reviewAttendance": {
+        "days": 0,
+        "present": 2
+      },
+      "repeatDates": [
+        "2026-11-15",
+        "2026-11-16"
+      ]
+    },
+    {
+      "studentId": 2,
+      "attendance": {
+        "present": 0,
+        "absent": 4,
+        "excused": 0,
+        "unexcused": 4,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 0
+      },
+      "new": {
+        "ayahs": 0,
+        "pages": 0,
+        "quarters": 0,
+        "hizbs": 0,
+        "juzs": 0
+      },
+      "review": {
+        "ayahs": 0,
+        "pages": 0,
+        "quarters": 0,
+        "hizbs": 0,
+        "juzs": 0
+      },
+      "memorizedRange": null,
+      "achievement": {
+        "raw": 0,
+        "goal": 0,
+        "counted": 0,
+        "pct": null,
+        "excess": 0
+      },
+      "noNewDates": [],
+      "reviewDates": [],
+      "reviewAttendance": null,
+      "repeatDates": []
+    },
+    {
+      "studentId": 3,
+      "attendance": {
+        "present": 2,
+        "absent": 2,
+        "excused": 0,
+        "unexcused": 2,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 50
+      },
+      "new": {
+        "ayahs": 5,
+        "pages": 1,
+        "quarters": 0.403966,
+        "hizbs": 0.100992,
+        "juzs": 0.050496
+      },
+      "review": {
+        "ayahs": 11,
+        "pages": 1,
+        "quarters": 0.32,
+        "hizbs": 0.08,
+        "juzs": 0.04
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 29
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 1,
+        "counted": 1,
+        "pct": 100,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-16"
+      ],
+      "reviewDates": [
+        "2026-11-16"
+      ],
+      "reviewAttendance": {
+        "days": 1,
+        "present": 2
+      },
+      "repeatDates": []
+    },
+    {
+      "studentId": 4,
+      "attendance": {
+        "present": 3,
+        "absent": 1,
+        "excused": 0,
+        "unexcused": 1,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 75
+      },
+      "new": {
+        "ayahs": 13,
+        "pages": 2,
+        "quarters": 0.837179,
+        "hizbs": 0.209295,
+        "juzs": 0.104648
+      },
+      "review": {
+        "ayahs": 11,
+        "pages": 1,
+        "quarters": 0.32,
+        "hizbs": 0.08,
+        "juzs": 0.04
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 37
+        }
+      },
+      "achievement": {
+        "raw": 2,
+        "goal": 1.5,
+        "counted": 1.5,
+        "pct": 100,
+        "excess": 0.5
+      },
+      "noNewDates": [
+        "2026-11-17"
+      ],
+      "reviewDates": [
+        "2026-11-17"
+      ],
+      "reviewAttendance": {
+        "days": 1,
+        "present": 3
+      },
+      "repeatDates": []
+    },
+    {
+      "studentId": 5,
+      "attendance": {
+        "present": 4,
+        "absent": 0,
+        "excused": 0,
+        "unexcused": 0,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 100
+      },
+      "new": {
+        "ayahs": 5,
+        "pages": 1,
+        "quarters": 0.403966,
+        "hizbs": 0.100992,
+        "juzs": 0.050496
+      },
+      "review": {
+        "ayahs": 22,
+        "pages": 2,
+        "quarters": 0.64,
+        "hizbs": 0.16,
+        "juzs": 0.08
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 29
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 2,
+        "counted": 1,
+        "pct": 50,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-16",
+        "2026-11-17",
+        "2026-11-18"
+      ],
+      "reviewDates": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "reviewAttendance": {
+        "days": 2,
+        "present": 4
+      },
+      "repeatDates": [
+        "2026-11-17"
+      ]
+    },
+    {
+      "studentId": 6,
+      "attendance": {
+        "present": 4,
+        "absent": 0,
+        "excused": 0,
+        "unexcused": 0,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 100
+      },
+      "new": {
+        "ayahs": 5,
+        "pages": 1,
+        "quarters": 0.403966,
+        "hizbs": 0.100992,
+        "juzs": 0.050496
+      },
+      "review": {
+        "ayahs": 22,
+        "pages": 2,
+        "quarters": 0.64,
+        "hizbs": 0.16,
+        "juzs": 0.08
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 29
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 2,
+        "counted": 1,
+        "pct": 50,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-15",
+        "2026-11-17",
+        "2026-11-18"
+      ],
+      "reviewDates": [
+        "2026-11-15",
+        "2026-11-17"
+      ],
+      "reviewAttendance": {
+        "days": 2,
+        "present": 4
+      },
+      "repeatDates": []
+    },
+    {
+      "studentId": 7,
+      "attendance": {
+        "present": 3,
+        "absent": 1,
+        "excused": 0,
+        "unexcused": 1,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 75
+      },
+      "new": {
+        "ayahs": 5,
+        "pages": 1,
+        "quarters": 0.403966,
+        "hizbs": 0.100992,
+        "juzs": 0.050496
+      },
+      "review": {
+        "ayahs": 0,
+        "pages": 0,
+        "quarters": 0,
+        "hizbs": 0,
+        "juzs": 0
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 25
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 29
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 1.5,
+        "counted": 1,
+        "pct": 67,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-16",
+        "2026-11-18"
+      ],
+      "reviewDates": [],
+      "reviewAttendance": {
+        "days": 0,
+        "present": 3
+      },
+      "repeatDates": [
+        "2026-11-16",
+        "2026-11-18"
+      ]
+    },
+    {
+      "studentId": 8,
+      "attendance": {
+        "present": 3,
+        "absent": 1,
+        "excused": 0,
+        "unexcused": 1,
+        "unrecorded": 0,
+        "recorded": 4,
+        "pct": 75
+      },
+      "new": {
+        "ayahs": 11,
+        "pages": 1,
+        "quarters": 0.32,
+        "hizbs": 0.08,
+        "juzs": 0.04
+      },
+      "review": {
+        "ayahs": 22,
+        "pages": 2,
+        "quarters": 0.64,
+        "hizbs": 0.16,
+        "juzs": 0.08
+      },
+      "memorizedRange": {
+        "from": {
+          "surah": 2,
+          "ayah": 6
+        },
+        "to": {
+          "surah": 2,
+          "ayah": 16
+        }
+      },
+      "achievement": {
+        "raw": 1,
+        "goal": 1.5,
+        "counted": 1,
+        "pct": 67,
+        "excess": 0
+      },
+      "noNewDates": [
+        "2026-11-17",
+        "2026-11-18"
+      ],
+      "reviewDates": [
+        "2026-11-17",
+        "2026-11-18"
+      ],
+      "reviewAttendance": {
+        "days": 2,
+        "present": 3
+      },
+      "repeatDates": []
+    }
+  ],
+  "halaqas": [
+    {
+      "halaqaId": "a",
+      "studentCount": 3,
+      "attendance": {
+        "present": 4,
+        "absent": 8,
+        "excused": 1,
+        "unexcused": 7,
+        "unrecorded": 0,
+        "recorded": 12,
+        "pct": 33
+      },
+      "achievement": {
+        "raw": 2,
+        "goal": 2,
+        "counted": 2,
+        "pct": 100
+      },
+      "new": {
+        "ayahs": 10,
+        "pages": 2,
+        "quarters": 0.807932,
+        "hizbs": 0.201983,
+        "juzs": 0.100992
+      },
+      "review": {
+        "ayahs": 11,
+        "pages": 1,
+        "quarters": 0.32,
+        "hizbs": 0.08,
+        "juzs": 0.04
+      },
+      "status": {
+        "attendance": true,
+        "new": false
+      }
+    },
+    {
+      "halaqaId": "b",
+      "studentCount": 3,
+      "attendance": {
+        "present": 11,
+        "absent": 1,
+        "excused": 0,
+        "unexcused": 1,
+        "unrecorded": 0,
+        "recorded": 12,
+        "pct": 92
+      },
+      "achievement": {
+        "raw": 4,
+        "goal": 5.5,
+        "counted": 3.5,
+        "pct": 64
+      },
+      "new": {
+        "ayahs": 23,
+        "pages": 4,
+        "quarters": 1.645112,
+        "hizbs": 0.411278,
+        "juzs": 0.205639
+      },
+      "review": {
+        "ayahs": 55,
+        "pages": 5,
+        "quarters": 1.6,
+        "hizbs": 0.4,
+        "juzs": 0.2
+      },
+      "status": {
+        "attendance": false,
+        "new": true
+      }
+    },
+    {
+      "halaqaId": "c",
+      "studentCount": 2,
+      "attendance": {
+        "present": 6,
+        "absent": 2,
+        "excused": 0,
+        "unexcused": 2,
+        "unrecorded": 0,
+        "recorded": 8,
+        "pct": 75
+      },
+      "achievement": {
+        "raw": 2,
+        "goal": 3,
+        "counted": 2,
+        "pct": 67
+      },
+      "new": {
+        "ayahs": 16,
+        "pages": 2,
+        "quarters": 0.723966,
+        "hizbs": 0.180992,
+        "juzs": 0.090496
+      },
+      "review": {
+        "ayahs": 22,
+        "pages": 2,
+        "quarters": 0.64,
+        "hizbs": 0.16,
+        "juzs": 0.08
+      },
+      "status": {
+        "attendance": true,
+        "new": true
+      }
+    }
+  ],
+  "withinLimits": [
+    {
+      "halaqaId": "a",
+      "present": 11,
+      "recorded": 12,
+      "attendancePct": 92,
+      "counted": 5.5,
+      "goal": 5.5,
+      "newPct": 100
+    },
+    {
+      "halaqaId": "b",
+      "present": 11,
+      "recorded": 11,
+      "attendancePct": 100,
+      "counted": 5.5,
+      "goal": 5.5,
+      "newPct": 100
+    },
+    {
+      "halaqaId": "c",
+      "present": 4,
+      "recorded": 4,
+      "attendancePct": 100,
+      "counted": 2,
+      "goal": 2,
+      "newPct": 100
+    }
+  ],
+  "omarEarly": {
+    "attendance": {
+      "present": 3,
+      "absent": 0,
+      "excused": 0,
+      "unexcused": 0,
+      "unrecorded": 1,
+      "recorded": 3,
+      "pct": 100
+    },
+    "achievement": {
+      "raw": 2,
+      "goal": 1.5,
+      "counted": 1.5,
+      "excess": 0.5,
+      "pct": 100
+    },
+    "reviewAttendance": {
+      "days": 1,
+      "present": 3
+    }
+  },
+  "complex": {
+    "studentCount": 8,
+    "new": {
+      "ayahs": 182,
+      "pages": 22,
+      "quarters": 7.657011,
+      "hizbs": 1.914253,
+      "juzs": 0.957126
+    },
+    "review": {
+      "ayahs": 220,
+      "pages": 20,
+      "quarters": 6.4,
+      "hizbs": 1.6,
+      "juzs": 0.8
+    },
+    "newPageCounts": {
+      "3": 8,
+      "4": 7,
+      "5": 6,
+      "6": 1
+    }
+  },
+  "pageMeasures": {
+    "3": {
+      "ayahs": 11,
+      "pages": 1,
+      "quarters": 0.32,
+      "hizbs": 0.08,
+      "juzs": 0.04
+    },
+    "4": {
+      "ayahs": 8,
+      "pages": 1,
+      "quarters": 0.32,
+      "hizbs": 0.08,
+      "juzs": 0.04
+    },
+    "5": {
+      "ayahs": 5,
+      "pages": 1,
+      "quarters": 0.403966,
+      "hizbs": 0.100992,
+      "juzs": 0.050496
+    },
+    "6": {
+      "ayahs": 8,
+      "pages": 1,
+      "quarters": 0.433213,
+      "hizbs": 0.108303,
+      "juzs": 0.054152
+    }
+  }
+}
