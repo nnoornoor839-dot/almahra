@@ -437,7 +437,7 @@ test('general quick recitation waits for cloud, freezes its halaqa and preserves
         assert.equal(entry.heardBy, 't1'); assert.equal(entry.grade, 'good'); assert.equal(entry.mult, 3);
         assert.equal(entry.halaqaId, 'h1'); assert.equal(entry.stageId, 'stage1');
         wait.resolve({ success, error: 'فشل وهمي' }); await pending;
-        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }
+        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }
         else { assert.deepEqual(h.s, before); assert.equal(h.state.messages.at(-1).type, 'error'); }
     }
 });

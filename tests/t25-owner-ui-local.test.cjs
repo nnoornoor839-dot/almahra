@@ -154,7 +154,7 @@ for (const program of ['summer', 'review-day']) test(`ت٢٥-٢،٣،٤: ${progr
     } finally { await h.close(); }
 });
 
-test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرض الاحتفال بالأرقام الإنجليزية وتظل قيم الحفظ أرقاماً', async () => {
+test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يؤكد الحفظ دون احتفال وتظل قيم الحفظ أرقاماً', async () => {
     const h = harness(student({}, { lastSurah: 114, lastAyah: 3, history: {} }));
     h.state.settings.criteria = [{ id: 'early', name: 'معيار وهمي', points: 14 }];
     h.ctx.getCumulativeStats = () => ({ tripPoints: 103.5 }); h.ctx.getStudentRank = () => 1;
@@ -162,9 +162,9 @@ test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرض ال�
     h.range('new', null, [114, 6]); h.grade('new');
     const preview = h.preview(); await h.save();
     assert.equal(preview.total, 22.5);
-    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\.')} نقطة`));
-    assert.match(h.element('celebrationTotalPoints').innerText, /103\.5/);
-    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);
+    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
+    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);
+    assert.equal(h.state.confetti, 0);
     assert.equal(typeof Object.values(h.state.writes[0].fields).find(value => value && typeof value === 'object' && 'points' in value).points, 'number');
     assert.equal(h.element('quick_new_toAyah').value, '6');
 });
@@ -185,7 +185,7 @@ test('ت٢٥-٤: احتفال summer عبر زر الحفظ القديم يبق�
     assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1$/);
 });
 
-test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض 22.5 و103.5 والترتيب 1؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {
+test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يبقي رسالة الحفظ وحدها؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {
     const list = [{ id: 1, sid: 'synthetic-t25', name: 'طالب وهمي', halaqaId: 'a', lastSurah: 114, lastAyah: 3,
         history: { '2026-11-18': { attended: true, criteriaPoints: 81 } } }];
     const h = await newPage(browser, { width: 1280, list, settings: {
@@ -205,10 +205,9 @@ test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض 22.5 و10
         assert.equal(await h.page.locator('#quick_new_toAyah').inputValue(), '6');
         assert.equal(await text(h.page, '#generalQuickTotal'), '22.5');
         await h.page.locator('#generalQuickSaveBtn').click();
-        await h.page.locator('#knightCelebrationModal').waitFor({ state: 'visible' });
-        assert.match(await text(h.page, '#celebrationPoints'), /\+ 22\.5 نقطة/);
-        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');
-        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);
+        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });
+        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);
+        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);
         const writes = await h.page.evaluate(() => window.__fixture.writes);
         assert.equal(writes.length, 1);
         assert.equal(Object.values(writes[0].fields).find(value => value && typeof value === 'object' && 'points' in value).points, 8.5);

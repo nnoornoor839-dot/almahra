@@ -95,9 +95,8 @@ test('both sections produce one request, frozen context and exact preview sum in
         assert.equal(e.iv.every(Number.isInteger), true);
     }
     assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 10) * 10) / 10);
-    // نقرأ القيمة المعروضة بصيغتي الأرقام؛ العدد المتوقع نفسه بلا تعديل.
-    assert.match(h.element('celebrationPoints').innerText.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.'), new RegExp(`\\+ ${preview.total} نقطة`));
-    assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), false);
+    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);
+    assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
     assert.equal(h.element('smartModal').classList.contains('hidden'), true);
     const fields = h.state.writes[0].fields, last = copy(h.run('computeLastDaily(students[0])'));
     assert.deepEqual([fields.lastDailySurah, fields.lastDailyAyah, fields.lastDailySardRange], [last.surah, last.ayah, last.range]);
@@ -121,7 +120,7 @@ test('second grade click retains selection; explicit clear resets section; unuse
     assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ لطالب وهمي: الحضور فقط');
     const changed = harness(); changed.run('fulfillGeneralCriteria()'); const p = changed.preview(); await changed.save();
     assert.equal(savedEntries(changed).length, 0); assert.equal(changed.s.history[today].criteriaPoints, 8);
-    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);
+    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 0);
 });
 
 test('quick-entry scroll wrapper contains the fieldset and preview, outside the fixed footer', () => {
@@ -176,7 +175,7 @@ test('criteria remain unevaluated on open; fulfill checks only enabled positives
     assert.deepEqual(copy(saved.s.history[today].criteria), { early: 5, uniform: 3 });
 });
 
-test('pending save blocks double-click, undo and close; no local change or celebration until successful cloud confirmation', async () => {
+test('pending save blocks double-click, undo and close; no local change until successful cloud confirmation and no celebration', async () => {
     const h = harness(); h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview(); const before = copy(h.s);
     let release; h.state.pending = new Promise(resolve => { release = resolve; });
     const pending = h.save(); await h.save(); await h.run('undoLastGeneralEntry()'); h.run('closeSmartModal()');
@@ -185,10 +184,10 @@ test('pending save blocks double-click, undo and close; no local change or celeb
     assert.equal(h.element('generalQuickSaveBtn').textContent, 'جارٍ الحفظ…');
     assert.equal(h.element('smartModal').classList.contains('flex'), true);
     release({ success: true }); await pending;
-    assert.equal(h.state.confetti, 1); assert.equal(h.element('generalQuickSaveBtn').disabled, false);
+    assert.equal(h.state.confetti, 0); assert.equal(h.element('generalQuickSaveBtn').disabled, false);
 });
 
-test('cloud rejection and throw preserve all local values and open modal; retry succeeds once, final rank is hidden', async () => {
+test('cloud rejection and throw preserve all local values and open modal; retry succeeds once without a supervisor celebration', async () => {
     for (const throws of [false, true]) {
         const h = harness(); h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview(); const before = copy(h.s);
         h.state.pending = throws ? Promise.reject(Error('فشل وهمي')) : Promise.resolve({ success: false, error: 'فشل وهمي' });
@@ -197,7 +196,7 @@ test('cloud rejection and throw preserve all local values and open modal; retry 
         assert.equal(h.element('quick_new_toAyah').value, '6'); assert.equal(h.element('generalQuickSaveBtn').disabled, false);
         assert.match(h.state.messages.at(-1).message, /فشل الحفظ السحابي/);
         h.state.pending = null; h.ctx.getStudentRank = () => 2; h.run('students.push({ id: 2 })');
-        await h.save(); assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), true);
+        await h.save(); assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
     }
 });
 
@@ -370,7 +369,7 @@ test('fixed clock gives review new.at+1; key order cannot alter lastDaily or two
         assert.equal(h.run('getGeneralUndoTarget(students[0])'), null);
         assert.equal(h.run('computeLastDaily(students[0])'), null);
         assert.equal('lastDailyAyah' in h.s, false);
-        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 1);
+        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);
     }
 });
 

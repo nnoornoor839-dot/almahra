@@ -149,7 +149,7 @@ test('TV design: fullscreen button and pointer hide at 3000ms and wake on mouse 
         await h.page.mouse.move(410, 410); await h.page.clock.runFor(450);
         assert.equal(await h.page.locator('#fullscreen').evaluate(n => getComputedStyle(n).opacity), '1');
         await h.page.locator('#fullscreen').click();
-        await h.page.waitForFunction(() => !!document.fullscreenElement);
+        await h.page.waitForFunction(() => !!document.fullscreenElement && document.getElementById('fullscreen').hidden);
         assert.equal(await h.page.locator('#fullscreen').evaluate(n => n.hidden), true);
         await h.page.evaluate(() => document.exitFullscreen());
         await h.page.waitForFunction(() => !document.fullscreenElement && !document.getElementById('fullscreen').hidden);

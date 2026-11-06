@@ -19,6 +19,8 @@ before(async () => {
 after(async () => { await browser?.close(); });
 
 test('r2: save, calculation and validation keep the baseline source except the approved success prefix and inline-only field errors', () => {
+    const oldCelebration = '                if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);';
+    const tvDisconnect = '                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);';
     const oldToast = "showToast(savedSummary + (missed ? ` — على يوم ${dayName}` : ''), 'success');";
     const newToast = "showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');";
     assert.ok(source('saveGeneralQuickEntry', original).includes(oldToast));
@@ -29,13 +31,13 @@ test('r2: save, calculation and validation keep the baseline source except the a
         '                return;'
     ].join('\n');
     assert.ok(source('saveGeneralQuickEntry', original).includes(oldErrorToast));
-    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast));
+    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));
     assert.equal(source('updateGeneralUndoButton'), source('updateGeneralUndoButton', original).replace(
         "                quickSave.textContent = generalUndoInProgress === 'save' ? 'جارٍ الحفظ…' : 'حفظ (Enter ↵)';",
         "                if (generalUndoInProgress === 'save') quickSave.textContent = 'جارٍ الحفظ…';\n                else quickSave.innerHTML = 'حفظ <small>Enter ↵</small>';"));
     for (const name of ['renderGeneralQuickGrades', 'updateGeneralQuickPreview', 'calculateGeneralQuickEntry',
         'buildEntryPatch', 'commitGeneralStudentPatch', 'readGeneralQuickPosition',
-        'celebrateGeneralQuickEntry', 'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {
+        'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {
         assert.equal(source(name), source(name, original), name);
     }
     for (const file of ['general-points.js', 'tv.js', 'tv.html']) {
@@ -90,7 +92,7 @@ test('r2: errors without a field retain their own toast, including alongside inl
 async function saveFixture(baseline = false) {
     const h = harness(fixture());
     if (baseline) {
-        for (const name of ['initGeneralQuickEntry', 'saveGeneralQuickEntry']) h.run(source(name, original));
+        for (const name of ['initGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'saveGeneralQuickEntry']) h.run(source(name, original));
         h.reopen();
     }
     h.range('new', null, [2, 37]); h.grade('new');
@@ -123,16 +125,17 @@ test('r2: new + review + discipline write exactly the baseline payload and ident
     assert.deepEqual(after.h.state.writes[0].fields[`history.${today}.criteria`], { early: 5, uniform: 3 });
     assert.equal(after.h.state.writes[0].fields[`history.${today}.criteriaPoints`], before.h.state.writes[0].fields[`history.${today}.criteriaPoints`]);
 });
-test('r2: confirmation names Saad while the celebration text and points remain unchanged', async () => {
+test('r2: confirmation names Saad and the trial fix removes the supervisor celebration', async () => {
     const before = await saveFixture(true), after = await saveFixture();
     assert.match(after.h.state.messages.at(-1).message, /^حُفظ لسعد: /);
     assert.equal(after.h.state.messages.at(-1).message, before.h.state.messages.at(-1).message.replace(/^حُفظ: /, 'حُفظ لسعد: '));
     for (const id of ['celebrationTitle', 'celebrationName', 'celebrationPoints', 'celebrationTotalPoints', 'celebrationRank']) {
-        assert.equal(after.h.element(id).innerText, before.h.element(id).innerText, id);
-        assert.equal(after.h.element(id).innerHTML, before.h.element(id).innerHTML, id);
+        assert.equal(after.h.element(id).innerText, '', id);
+        assert.equal(after.h.element(id).innerHTML, '', id);
     }
-    assert.match(after.h.element('celebrationTitle').innerText, /^حُفظ: /);
-    assert.equal(after.h.state.confetti, before.h.state.confetti);
+    assert.equal(after.h.element('knightCelebrationModal').classList.contains('hidden'), true);
+    assert.equal(before.h.state.confetti, 1);
+    assert.equal(after.h.state.confetti, 0);
 });
 for (const [kind, summary] of [
     ['attendance', 'الحضور فقط'],
@@ -154,8 +157,7 @@ for (const [kind, summary] of [
     assert.deepEqual(h.state.messages, [{ message: `حُفظ لأحمد: ${summary}`, type: 'success' }]);
     assert.equal((h.state.messages[0].message.match(/حُفظ/g) || []).length, 1);
     assert.doesNotMatch(h.state.messages[0].message, /:\s*:/);
-    if (calculation.total > 0) assert.equal(h.element('celebrationTitle').innerText,
-        kind === 'new' ? `حُفظ: ${summary}` : 'حُفظ الحضور، والانضباط 8');
+    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
 });
 
 test('r2: save button keeps template markup after saving and undo, including pending and locked states', async () => {

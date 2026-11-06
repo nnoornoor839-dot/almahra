@@ -1052,7 +1052,8 @@ body.program-general .general-students .gs-card td { height:68px; padding:8px 24
 body.program-general .general-students .gs-card + .gs-card td { border-top:1px solid var(--general-line); }
 body.program-general .general-students .gs-card:hover { background:var(--general-canvas); }
 body.program-general .general-students .gs-name { font-size:16px; font-weight:600; min-height:0; }
-body.program-general .general-students .gs-number { margin-inline-start:12px; color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .general-students .gs-number, body.program-general .general-students .gs-separator { color:var(--general-muted); font-size:13px; font-weight:400; }
+body.program-general .general-student-number { color:var(--general-muted); font-weight:400; }
 body.program-general .general-students .gs-state { display:inline-flex; padding:3px 10px; border:0; border-radius:8px; font-size:13px; font-weight:400; background:var(--general-canvas); color:var(--general-muted); }
 body.program-general .general-students .gs-done { background:var(--general-soft); color:var(--general-brand); }
 body.program-general .general-students .gs-none { background:var(--general-pending-bg); color:var(--general-pending); }
@@ -6888,7 +6889,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function openPointsBreakdownModal(studentId) {
             const student = students.find(s => s.id === studentId); if (!student) return;
             const b = getPointsBreakdown(student);
-            document.getElementById('pbStudentName').innerText = `${escapeHTML(student.name)} — رقم #${student.id}`;
+            if (isGeneralProgram()) document.getElementById('pbStudentName').innerHTML = `<span class="general-student-number">${escapeHTML(String(student.id))} - </span>${escapeHTML(student.name)}`;
+            else document.getElementById('pbStudentName').innerText = `${escapeHTML(student.name)} — رقم #${student.id}`;
             document.getElementById('pbContent').innerHTML = `
                 <div class="bg-white p-4 rounded-xl border-2 border-slate-200 flex justify-between items-center">
                     <span class="font-bold text-slate-700"><i class="fas fa-user-check text-blue-500 ml-2"></i>بونص الحضور (${b.attendanceDays} يوم × 10)</span>
@@ -7393,7 +7395,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function generalStudentsCardHtml(student) {
             const state = generalCardTodayState(student, todayStr);
             return `<tr class="gs-card${state.hasEntries ? ' is-done' : ''}">
-                <td><span class="gs-name">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class="gs-number">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>
+                <td><span class="gs-number">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class="gs-separator"> - </span><span class="gs-name">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>
                 <td><span class="gs-state gs-${state.cardState}">${state.label}</span></td>
                 <td><div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div></td>
             </tr>`;
@@ -7486,7 +7488,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 container.innerHTML += `
                     <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
                         <div class="min-w-0 flex-1">
-                            <div class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black">#${student.id}</span> ${escapeHTML(student.name)}</div>
+                            <div class="font-bold text-slate-700 truncate"><span class="text-slate-400 font-black${isGeneralProgram() ? ' general-student-number' : ''}">${isGeneralProgram() ? `${student.id} -` : `#${student.id}`}</span> ${escapeHTML(student.name)}</div>
                             <div class="mt-1">${isGeneralProgram() ? '' : tierBadge}<span class="text-xs text-slate-500">${halaqa}</span></div>
                         </div>
                         <div class="flex gap-1 shrink-0">
@@ -7549,11 +7551,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <div class="text-xs font-black text-amber-600 mb-2">${p.score === 1 ? 'تطابق تام محتمل' : 'تشابه محتمل'} (${Math.round(p.score * 100)}%)</div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <div class="font-black text-slate-800">#${p.a.id} — ${escapeHTML(p.a.name)}</div>
+                                <div class="font-black text-slate-800">${isGeneralProgram() ? `<span class="general-student-number">${escapeHTML(String(p.a.id))} - </span>` : `#${p.a.id} — `}${escapeHTML(p.a.name)}</div>
                                 <div class="text-sm text-slate-500 mt-1">آيات: ${statsA.sardAyahs} | نقاط: ${statsA.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.a, getWorkingDaysList(students))) : `أيام حضور: ${statsA.attendanceDays}`}</div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <div class="font-black text-slate-800">#${p.b.id} — ${escapeHTML(p.b.name)}</div>
+                                <div class="font-black text-slate-800">${isGeneralProgram() ? `<span class="general-student-number">${escapeHTML(String(p.b.id))} - </span>` : `#${p.b.id} — `}${escapeHTML(p.b.name)}</div>
                                 <div class="text-sm text-slate-500 mt-1">آيات: ${statsB.sardAyahs} | نقاط: ${statsB.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.b, getWorkingDaysList(students))) : `أيام حضور: ${statsB.attendanceDays}`}</div>
                             </div>
                         </div>
@@ -8953,35 +8955,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 closeSmartModal();
                 search?.focus();
                 showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');
-                if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);
+                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);
                 if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);
             } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }
         }
-        function celebrateGeneralQuickEntry(student, totalAdded, savedSummary) {
-            if (totalAdded <= 0) { showToast(savedSummary || 'حُفظ الحضور فقط', 'success'); return; }
-            if (generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);
-            if (generalTv.enabled && generalTvReady()) {
-                showToast(`تم الحفظ: ${student.name} — الاحتفال على التلفاز`, 'success');
-                return;
-            }
-            const totalStats = getCumulativeStats(student), currentRank = getStudentRank(student.id);
-            const celModal = document.getElementById('knightCelebrationModal');
-            document.getElementById('celebrationTitle').innerText = savedSummary || 'حُفظ الحضور فقط';
-            document.getElementById('celebrationName').innerText = escapeHTML(student.name);
-            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded.toLocaleString('ar-SA-u-nu-latn')} نقطة جديدة مضافة للسباق 🎁`;
-            const totalEl = document.getElementById('celebrationTotalPointsContainer');
-            if (totalEl) {
-                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints.toLocaleString('ar-SA-u-nu-latn')} نقطة`;
-                document.getElementById('celebrationRank').innerHTML = `<i class="fas fa-medal text-yellow-400 mr-2"></i> الترتيب: ${currentRank.toLocaleString('ar-SA-u-nu-latn')}`;
-                document.getElementById('celebrationRank').classList.toggle('hidden', getGeneralCelebrationRank(student) === null);
-                totalEl.classList.remove('hidden');
-            }
-            celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');
-            if (!window.localConfettiInstance) window.localConfettiInstance = confetti.create(document.getElementById('celebrationCanvas'), { resize: true });
-            window.localConfettiInstance({ particleCount: 150, spread: 85, origin: { y: 0.5 } });
-            setTimeout(() => { closeKnightCelebration(); }, 7000);
-        }
-
         function openSmartModal(id) {
             if (isGeneralProgram() && generalUndoInProgress) return;
             if (isGeneralProgram()) {
@@ -9175,7 +9152,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 return `
                 <div class="bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-3">
                     <div class="flex-1 min-w-[220px]">
-                        <span class="font-black text-slate-700 flex items-center gap-2 flex-wrap"><span class="text-slate-400">#${s.id}</span> ${escapeHTML(s.name)} ${badge}</span>
+                        <span class="font-black text-slate-700 flex items-center gap-2 flex-wrap"><span class="text-slate-400${isGeneralProgram() ? ' general-student-number' : ''}">${isGeneralProgram() ? `${s.id} -` : `#${s.id}`}</span> ${escapeHTML(s.name)} ${badge}</span>
                         <div class="text-xs font-bold text-blue-700 mt-1 flex items-center gap-1"><i class="fas fa-book-open"></i> النطاق: ${escapeHTML(range)}</div>
                     </div>
                     <div class="flex items-center gap-1"><label class="text-xs font-bold text-slate-500">حفظ (٩٠)</label><input type="number" min="0" max="90" id="examHifz_${s.id}" value="${hVal}" class="w-16 p-1.5 border-2 border-slate-300 rounded-lg text-center font-bold text-sm outline-none focus:border-emerald-500"></div>
@@ -10112,7 +10089,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function confirmDelete(id) {
             const student = students.find(s => s.id === id); if (!student) return;
-            delId = id; document.getElementById('deleteStudentName').innerText = `${student.name} — رقم #${student.id}`; document.getElementById('deleteModal').classList.replace('hidden','flex');
+            delId = id;
+            if (isGeneralProgram()) document.getElementById('deleteStudentName').innerHTML = `<span class="general-student-number">${escapeHTML(String(student.id))} - </span>${escapeHTML(student.name)}`;
+            else document.getElementById('deleteStudentName').innerText = `${student.name} — رقم #${student.id}`;
+            document.getElementById('deleteModal').classList.replace('hidden','flex');
         }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.replace('flex','hidden'); delId=null; }
         function executeDelete() {
@@ -11851,7 +11831,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             list.innerHTML = shown.map(s => `
                 <div class="bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2" data-sid="${s.id}">
                     <span class="font-bold text-slate-700 min-w-[140px] flex-1 truncate">
-                        <span class="text-slate-400 font-black">#${s.id}</span> ${escapeHTML(s.name)}
+                        <span class="text-slate-400 font-black${isGeneralProgram() ? ' general-student-number' : ''}">${isGeneralProgram() ? `${s.id} -` : `#${s.id}`}</span> ${escapeHTML(s.name)}
                     </span>
                     <select class="bulk-mem p-2 border-2 border-slate-300 rounded-xl font-bold text-xs outline-none focus:border-indigo-500 w-full sm:w-64"
                             onchange="onBulkMemChange(this)" title="مقدار الحفظ">${memOpts}</select>
@@ -11978,7 +11958,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';
             box.innerHTML = list.map(s => `
                 <div class="bg-white p-3 rounded-xl border-2 border-amber-200 flex items-center gap-2">
-                    <span class="text-slate-400 font-black shrink-0">#${escapeHTML(String(s.id))}</span>
+                    <span class="text-slate-400 font-black shrink-0${isGeneralProgram() ? ' general-student-number' : ''}">${isGeneralProgram() ? `${escapeHTML(String(s.id))} -` : `#${escapeHTML(String(s.id))}`}</span>
                     <span class="font-bold text-slate-700 flex-1 truncate">${escapeHTML(s.name || 'بلا اسم')}</span>
                     <span class="text-[11px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0">${escapeHTML(noLevelReason(s))}</span>
                 </div>`).join('');

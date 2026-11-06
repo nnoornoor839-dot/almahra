@@ -254,12 +254,17 @@ test('ج: مقارنة حرفية مع 82bf19f على 80 عينة مولدة ب�
 });
 
 test('د: summer وreview-day بلا تغيير؛ الواجهة والحفظ والمحرك والدوال الممنوعة مطابقة للرأس الأول', () => {
-    const added = [...html.matchAll(/function ((?:generalPerformanceStudent|generalPeriod|generalStudentReport|generalHalaqaReport|generalComplexNumbers)\w*)\(/g)].map(m => m[1]);
-    const strip = (text, names) => names.reduce((result, name) => result.replace(source(name, result), ''), text)
-        .replace(/^\s*\/\/.*$/gm, '').replace(/\s+/g, ' ');
-    assert.equal(strip(html, [...added, 'generalPerformanceTotals']), strip(initial, ['generalPerformanceTotals']));
+    // استثناء حرفي لعرض تجربة المالك؛ أي فرق آخر في الملف يبقى ممنوعاً.
+    const approvedTrial = require('./rules/design-expectation-audit.json').trialProductionChanges;
+    const beforeTrial = approvedTrial.hunks.reduce((text, hunk) => {
+        const after = hunk.after.join('\n'), before = hunk.before.join('\n');
+        assert.ok(after && before && initial.replaceAll('\r\n', '\n').includes(before));
+        assert.equal(text.split(after).length, 2, 'each approved UI change occurs exactly once');
+        return text.replace(after, before);
+    }, html);
+    assert.equal(beforeTrial, initial.replaceAll('\r\n', '\n'));
     for (const name of ['renderReportsTable', 'computeComplexStats', 'generalRecitationTotals', 'getAttendanceState',
-        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name), source(name, initial));
+        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));
     const store = fs.readFileSync(root + '/programs-store.js', 'utf8');
     assert.equal(store.replaceAll('\r\n', '\n'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'));
     const ctx = vm.createContext({});

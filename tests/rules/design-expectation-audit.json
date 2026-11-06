@@ -4,7 +4,8 @@
     "1": "تحويل أرقام فقط",
     "2": "نص بقرار المالك",
     "3": "بنية HTML جديدة",
-    "4": "نص بقرار المالك في الجولة الثانية"
+    "4": "نص بقرار المالك في الجولة الثانية",
+    "5": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦"
   },
   "files": [
     {
@@ -206,6 +207,21 @@
           ],
           "after": [
             "    assert.match(h.state.messages.at(-1).message,/حُفظ لطالب وهمي: الحضور، والانضباط 8/);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/quick-entry-harness.cjs",
+      "hunks": [
+        {
+          "oldLine": 146,
+          "newLine": 146,
+          "before": [
+            "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
+          ],
+          "after": [
+            "        'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
           ]
         }
       ]
@@ -416,6 +432,21 @@
       ]
     },
     {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 440,
+          "newLine": 440,
+          "before": [
+            "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }"
+          ],
+          "after": [
+            "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
+          ]
+        }
+      ]
+    },
+    {
       "file": "tests/step5-calendar-local.test.cjs",
       "hunks": [
         {
@@ -531,8 +562,21 @@
           ]
         },
         {
+          "oldLine": 98,
+          "newLine": 98,
+          "before": [
+            "    // نقرأ القيمة المعروضة بصيغتي الأرقام؛ العدد المتوقع نفسه بلا تعديل.",
+            "    assert.match(h.element('celebrationPoints').innerText.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.'), new RegExp(`\\\\+ ${preview.total} نقطة`));",
+            "    assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), false);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        },
+        {
           "oldLine": 121,
-          "newLine": 121,
+          "newLine": 120,
           "before": [
             "    assert.equal(h.state.confetti, 0); assert.equal(h.state.messages.at(-1).message, 'حُفظ الحضور فقط');"
           ],
@@ -541,8 +585,18 @@
           ]
         },
         {
+          "oldLine": 124,
+          "newLine": 123,
+          "before": [
+            "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);"
+          ],
+          "after": [
+            "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 0);"
+          ]
+        },
+        {
           "oldLine": 138,
-          "newLine": 138,
+          "newLine": 137,
           "before": [
             "        const startField = newRow.match(/<div class=\"qe-field\"><label>من 🔒<\\/label>([\\s\\S]*?)<p id=\"quick_new_start\" class=\"qe-locked\"><\\/p><\\/div>/)[1];"
           ],
@@ -551,13 +605,63 @@
           ]
         },
         {
+          "oldLine": 179,
+          "newLine": 178,
+          "before": [
+            "test('pending save blocks double-click, undo and close; no local change or celebration until successful cloud confirmation', async () => {"
+          ],
+          "after": [
+            "test('pending save blocks double-click, undo and close; no local change until successful cloud confirmation and no celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 188,
+          "newLine": 187,
+          "before": [
+            "    assert.equal(h.state.confetti, 1); assert.equal(h.element('generalQuickSaveBtn').disabled, false);"
+          ],
+          "after": [
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.element('generalQuickSaveBtn').disabled, false);"
+          ]
+        },
+        {
+          "oldLine": 191,
+          "newLine": 190,
+          "before": [
+            "test('cloud rejection and throw preserve all local values and open modal; retry succeeds once, final rank is hidden', async () => {"
+          ],
+          "after": [
+            "test('cloud rejection and throw preserve all local values and open modal; retry succeeds once without a supervisor celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 200,
+          "newLine": 199,
+          "before": [
+            "        await h.save(); assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), true);"
+          ],
+          "after": [
+            "        await h.save(); assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        },
+        {
           "oldLine": 231,
-          "newLine": 231,
+          "newLine": 230,
           "before": [
             "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.state.messages.at(-1).message, /تغيّر آخر جديد/);"
           ],
           "after": [
             "    await h.save(); assert.equal(h.state.writes.length, 0); assert.match(h.element('quick_new_message').textContent, /تغيّر آخر جديد/);"
+          ]
+        },
+        {
+          "oldLine": 373,
+          "newLine": 372,
+          "before": [
+            "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 1);"
+          ],
+          "after": [
+            "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);"
           ]
         }
       ]
@@ -730,6 +834,61 @@
           "after": [
             "    assert.match(h.element('studentsGrid').innerHTML, /سمّع 1 من 1/);"
           ]
+        },
+        {
+          "oldLine": 420,
+          "newLine": 420,
+          "before": [
+            "test('TV connected uses existing enabled/ready state and a short message without supervisor overlay; disconnected keeps celebration', async () => {"
+          ],
+          "after": [
+            "test('TV connected or disconnected retains the save message without supervisor overlay', async () => {"
+          ]
+        },
+        {
+          "oldLine": 427,
+          "newLine": 427,
+          "before": [
+            "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), enabled);",
+            "        assert.equal(h.state.confetti, enabled ? 0 : 1);",
+            "        if (enabled) { assert.equal(h.state.messages.at(-1).message, 'تم الحفظ: طالب وهمي — الاحتفال على التلفاز');"
+          ],
+          "after": [
+            "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+            "        assert.equal(h.state.confetti, 0);",
+            "        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "        if (enabled) {"
+          ]
+        },
+        {
+          "oldLine": 435,
+          "newLine": 436,
+          "before": [
+            "    await stale.save(); assert.equal(stale.state.confetti, 1);"
+          ],
+          "after": [
+            "    await stale.save(); assert.equal(stale.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 438,
+          "newLine": 439,
+          "before": [
+            "test('TV closed after opening or missing hello for 90 seconds falls back immediately to supervisor celebration', async () => {"
+          ],
+          "after": [
+            "test('TV closed after opening or missing hello for 90 seconds disconnects without supervisor celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 449,
+          "newLine": 450,
+          "before": [
+            "        assert.equal(h.state.confetti, 1); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), false);"
+          ],
+          "after": [
+            "        assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
         }
       ]
     },
@@ -887,7 +1046,7 @@
             "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرّب الاحتفال فقط وتظل قيم الحفظ أرقاماً', async () => {"
           ],
           "after": [
-            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرض الاحتفال بالأرقام الإنجليزية وتظل قيم الحفظ أرقاماً', async () => {"
+            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يؤكد الحفظ دون احتفال وتظل قيم الحفظ أرقاماً', async () => {"
           ]
         },
         {
@@ -899,9 +1058,9 @@
             "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: ١/);"
           ],
           "after": [
-            "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')} نقطة`));",
-            "    assert.match(h.element('celebrationTotalPoints').innerText, /103\\.5/);",
-            "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);"
+            "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+            "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "    assert.equal(h.state.confetti, 0);"
           ]
         },
         {
@@ -911,7 +1070,7 @@
             "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض ٢٢٫٥ و١٠٣٫٥ والترتيب ١؛ المعايير عربية والإدخال غربي', async () => {"
           ],
           "after": [
-            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض 22.5 و103.5 والترتيب 1؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {"
+            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يبقي رسالة الحفظ وحدها؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {"
           ]
         },
         {
@@ -949,17 +1108,18 @@
           ]
         },
         {
-          "oldLine": 201,
-          "newLine": 209,
+          "oldLine": 200,
+          "newLine": 208,
           "before": [
+            "        await h.page.locator('#knightCelebrationModal').waitFor({ state: 'visible' });",
             "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ ٢٢٫٥ نقطة/);",
             "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: ١٠٣٫٥ نقطة');",
             "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: ١/);"
           ],
           "after": [
-            "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ 22\\.5 نقطة/);",
-            "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');",
-            "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
+            "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });",
+            "        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);",
+            "        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);"
           ]
         }
       ]
@@ -1772,6 +1932,276 @@
       "before": "    assert.match(el('resultsDate').textContent, /٢٩-١٠/);",
       "after": "    assert.match(el('resultsDate').textContent, /29-10/);",
       "reason": "قرار المالك 6 لشاشة التلفاز 2026-11-06: شكل الأرقام لاتيني فقط، والتاريخ نفسه بلا تغيير."
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 127,
+      "newLine": 127,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5].includes(row.category), `${row.file}:${row.newLine}`);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 32,
+      "newLine": 34,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast));",
+      "after": "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 131,
+      "newLine": 133,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(after.h.element(id).innerText, before.h.element(id).innerText, id);",
+      "after": "        assert.equal(after.h.element(id).innerText, '', id);\n        assert.equal(after.h.element(id).innerHTML, '', id);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 132,
+      "newLine": 133,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(after.h.element(id).innerHTML, before.h.element(id).innerHTML, id);",
+      "after": "        assert.equal(after.h.element(id).innerText, '', id);\n        assert.equal(after.h.element(id).innerHTML, '', id);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 134,
+      "newLine": 136,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.match(after.h.element('celebrationTitle').innerText, /^حُفظ: /);",
+      "after": "    assert.equal(after.h.element('knightCelebrationModal').classList.contains('hidden'), true);\n    assert.equal(before.h.state.confetti, 1);\n    assert.equal(after.h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 135,
+      "newLine": 136,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(after.h.state.confetti, before.h.state.confetti);",
+      "after": "    assert.equal(after.h.element('knightCelebrationModal').classList.contains('hidden'), true);\n    assert.equal(before.h.state.confetti, 1);\n    assert.equal(after.h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "oldLine": 157,
+      "newLine": 160,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    if (calculation.total > 0) assert.equal(h.element('celebrationTitle').innerText,",
+      "after": "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "oldLine": 260,
+      "newLine": 257,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(strip(html, [...added, 'generalPerformanceTotals']), strip(initial, ['generalPerformanceTotals']));",
+      "after": "    // استثناء حرفي لعرض تجربة المالك؛ أي فرق آخر في الملف يبقى ممنوعاً.\n    const approvedTrial = require('./rules/design-expectation-audit.json').trialProductionChanges;\n    const beforeTrial = approvedTrial.hunks.reduce((text, hunk) => {\n        const after = hunk.after.join('\\n'), before = hunk.before.join('\\n');\n        assert.ok(after && before && initial.replaceAll('\\r\\n', '\\n').includes(before));\n        assert.equal(text.split(after).length, 2, 'each approved UI change occurs exactly once');\n        return text.replace(after, before);\n    }, html);\n    assert.equal(beforeTrial, initial.replaceAll('\\r\\n', '\\n'));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "oldLine": 262,
+      "newLine": 267,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name), source(name, initial));",
+      "after": "        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 440,
+      "newLine": 440,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }",
+      "after": "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 99,
+      "newLine": 98,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.match(h.element('celebrationPoints').innerText.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.'), new RegExp(`\\\\+ ${preview.total} نقطة`));",
+      "after": "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n    assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 100,
+      "newLine": 98,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), false);",
+      "after": "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n    assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 124,
+      "newLine": 123,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);",
+      "after": "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 188,
+      "newLine": 187,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.equal(h.state.confetti, 1); assert.equal(h.element('generalQuickSaveBtn').disabled, false);",
+      "after": "    assert.equal(h.state.confetti, 0); assert.equal(h.element('generalQuickSaveBtn').disabled, false);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 200,
+      "newLine": 199,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        await h.save(); assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), true);",
+      "after": "        await h.save(); assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "oldLine": 373,
+      "newLine": 372,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 1);",
+      "after": "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 427,
+      "newLine": 427,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), enabled);",
+      "after": "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n        assert.equal(h.state.confetti, 0);\n        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n        if (enabled) {",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 428,
+      "newLine": 427,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(h.state.confetti, enabled ? 0 : 1);",
+      "after": "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n        assert.equal(h.state.confetti, 0);\n        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n        if (enabled) {",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 429,
+      "newLine": 427,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        if (enabled) { assert.equal(h.state.messages.at(-1).message, 'تم الحفظ: طالب وهمي — الاحتفال على التلفاز');",
+      "after": "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n        assert.equal(h.state.confetti, 0);\n        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n        if (enabled) {",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 435,
+      "newLine": 436,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    await stale.save(); assert.equal(stale.state.confetti, 1);",
+      "after": "    await stale.save(); assert.equal(stale.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "oldLine": 449,
+      "newLine": 450,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(h.state.confetti, 1); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), false);",
+      "after": "        assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 165,
+      "newLine": 165,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')} نقطة`));",
+      "after": "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n    assert.equal(h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 166,
+      "newLine": 165,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.match(h.element('celebrationTotalPoints').innerText, /103\\.5/);",
+      "after": "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n    assert.equal(h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 167,
+      "newLine": 165,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);",
+      "after": "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);\n    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);\n    assert.equal(h.state.confetti, 0);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 209,
+      "newLine": 208,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ 22\\.5 نقطة/);",
+      "after": "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });\n        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);\n        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 210,
+      "newLine": 208,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');",
+      "after": "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });\n        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);\n        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "oldLine": 211,
+      "newLine": 208,
+      "category": 5,
+      "reviewBaseline": "a597c11",
+      "before": "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);",
+      "after": "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });\n        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);\n        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);",
+      "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦: إلغاء احتفال المشرف في general فقط، مع إبقاء رسالة الحفظ والتلفاز؛ وتوثيق التوقعات الجديدة دون تغيير قيم البيانات أو الحساب."
     }
   ],
   "ownerScopeEdits": [
@@ -1789,6 +2219,704 @@
       ],
       "change": "قفل ملفي TV بالكامل صار يقارن نواة tv.js قبل كتلة DOM واعتماديات tv.html؛ بقي قفل الحساب والترتيب والتوقيت حرفياً، مع فحوص متصفح جديدة للعرض.",
       "reason": "مهمة التلفاز المعتمدة 2026-11-06 تسمح بتغيير HTML وعرض DOM. لم تتغير قيمة رقمية أو مفتاح إجابة. هذا تكييف قفل نطاق الجولتين السابقتين، وليس اعتماد مراجعة مستقلة."
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "category": 5,
+      "change": "انتظار اكتمال fullscreenchange وإخفاء الزر قبل الفحص نفسه",
+      "reason": "تعثر متكرر عند التشغيل الكامل: fullscreenElement يتغير قبل معالج الحدث. تعديل مزامنة اختبار فقط؛ التوقع hidden=true والتوقيت 3000ms وجميع ملفات التلفاز بلا تغيير."
     }
-  ]
+  ],
+  "trialBaseline": "a597c11",
+  "trialFixes": [
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 127,
+          "newLine": 127,
+          "before": [
+            "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);"
+          ],
+          "after": [
+            "        assert.ok([1, 2, 3, 4, 5].includes(row.category), `${row.file}:${row.newLine}`);"
+          ]
+        },
+        {
+          "oldLine": 138,
+          "newLine": 138,
+          "before": [],
+          "after": [
+            "    for (const row of audit.expectations.filter(row => row.category === 5)) {",
+            "        assert.ok(row.reason && row.reviewBaseline === 'a597c11', 'trial changes document the owner request and exact baseline');",
+            "    }",
+            "    for (const row of audit.trialFixes) {",
+            "        const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
+            "        assert.deepEqual(changesFrom(row.file, audit.trialBaseline), row, row.file);",
+            "    }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/design-r2-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 22,
+          "newLine": 22,
+          "before": [],
+          "after": [
+            "    const oldCelebration = '                if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);';",
+            "    const tvDisconnect = '                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);';"
+          ]
+        },
+        {
+          "oldLine": 32,
+          "newLine": 34,
+          "before": [
+            "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast));"
+          ],
+          "after": [
+            "    assert.equal(source('saveGeneralQuickEntry'), source('saveGeneralQuickEntry', original).replace(oldToast, newToast).replace(oldErrorToast, newErrorToast).replace(oldCelebration, tvDisconnect));"
+          ]
+        },
+        {
+          "oldLine": 38,
+          "newLine": 40,
+          "before": [
+            "        'celebrateGeneralQuickEntry', 'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {"
+          ],
+          "after": [
+            "        'sendGeneralTvCelebration', 'undoLastGeneralEntry']) {"
+          ]
+        },
+        {
+          "oldLine": 93,
+          "newLine": 95,
+          "before": [
+            "        for (const name of ['initGeneralQuickEntry', 'saveGeneralQuickEntry']) h.run(source(name, original));"
+          ],
+          "after": [
+            "        for (const name of ['initGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'saveGeneralQuickEntry']) h.run(source(name, original));"
+          ]
+        },
+        {
+          "oldLine": 126,
+          "newLine": 128,
+          "before": [
+            "test('r2: confirmation names Saad while the celebration text and points remain unchanged', async () => {"
+          ],
+          "after": [
+            "test('r2: confirmation names Saad and the trial fix removes the supervisor celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 131,
+          "newLine": 133,
+          "before": [
+            "        assert.equal(after.h.element(id).innerText, before.h.element(id).innerText, id);",
+            "        assert.equal(after.h.element(id).innerHTML, before.h.element(id).innerHTML, id);"
+          ],
+          "after": [
+            "        assert.equal(after.h.element(id).innerText, '', id);",
+            "        assert.equal(after.h.element(id).innerHTML, '', id);"
+          ]
+        },
+        {
+          "oldLine": 134,
+          "newLine": 136,
+          "before": [
+            "    assert.match(after.h.element('celebrationTitle').innerText, /^حُفظ: /);",
+            "    assert.equal(after.h.state.confetti, before.h.state.confetti);"
+          ],
+          "after": [
+            "    assert.equal(after.h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+            "    assert.equal(before.h.state.confetti, 1);",
+            "    assert.equal(after.h.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 157,
+          "newLine": 160,
+          "before": [
+            "    if (calculation.total > 0) assert.equal(h.element('celebrationTitle').innerText,",
+            "        kind === 'new' ? `حُفظ: ${summary}` : 'حُفظ الحضور، والانضباط 8');"
+          ],
+          "after": [
+            "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 6,
+          "newLine": 6,
+          "before": [
+            "function changes(file) {"
+          ],
+          "after": [
+            "function changesFrom(file, baseline) {"
+          ]
+        },
+        {
+          "oldLine": 42,
+          "newLine": 42,
+          "before": [
+            "module.exports = { root, baseline, changes, digits, ownerText };"
+          ],
+          "after": [
+            "const changes = file => changesFrom(file, baseline);",
+            "module.exports = { root, baseline, changes, changesFrom, digits, ownerText };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/quick-entry-harness.cjs",
+      "hunks": [
+        {
+          "oldLine": 146,
+          "newLine": 146,
+          "before": [
+            "        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
+          ],
+          "after": [
+            "        'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/reports-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 257,
+          "newLine": 257,
+          "before": [
+            "    const added = [...html.matchAll(/function ((?:generalPerformanceStudent|generalPeriod|generalStudentReport|generalHalaqaReport|generalComplexNumbers)\\w*)\\(/g)].map(m => m[1]);",
+            "    const strip = (text, names) => names.reduce((result, name) => result.replace(source(name, result), ''), text)",
+            "        .replace(/^\\s*\\/\\/.*$/gm, '').replace(/\\s+/g, ' ');",
+            "    assert.equal(strip(html, [...added, 'generalPerformanceTotals']), strip(initial, ['generalPerformanceTotals']));"
+          ],
+          "after": [
+            "    // استثناء حرفي لعرض تجربة المالك؛ أي فرق آخر في الملف يبقى ممنوعاً.",
+            "    const approvedTrial = require('./rules/design-expectation-audit.json').trialProductionChanges;",
+            "    const beforeTrial = approvedTrial.hunks.reduce((text, hunk) => {",
+            "        const after = hunk.after.join('\\n'), before = hunk.before.join('\\n');",
+            "        assert.ok(after && before && initial.replaceAll('\\r\\n', '\\n').includes(before));",
+            "        assert.equal(text.split(after).length, 2, 'each approved UI change occurs exactly once');",
+            "        return text.replace(after, before);",
+            "    }, html);",
+            "    assert.equal(beforeTrial, initial.replaceAll('\\r\\n', '\\n'));"
+          ]
+        },
+        {
+          "oldLine": 262,
+          "newLine": 267,
+          "before": [
+            "        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name), source(name, initial));"
+          ],
+          "after": [
+            "        'saveGeneralQuickEntry', 'buildGeneralWeeklyMessage']) assert.equal(source(name, beforeTrial), source(name, initial));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 440,
+          "newLine": 440,
+          "before": [
+            "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }"
+          ],
+          "after": [
+            "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 0); }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8a-quick-entry-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 98,
+          "newLine": 98,
+          "before": [
+            "    // نقرأ القيمة المعروضة بصيغتي الأرقام؛ العدد المتوقع نفسه بلا تعديل.",
+            "    assert.match(h.element('celebrationPoints').innerText.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.'), new RegExp(`\\\\+ ${preview.total} نقطة`));",
+            "    assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), false);"
+          ],
+          "after": [
+            "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        },
+        {
+          "oldLine": 124,
+          "newLine": 123,
+          "before": [
+            "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 1);"
+          ],
+          "after": [
+            "    assert.equal(p.total, 8); assert.equal(changed.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 179,
+          "newLine": 178,
+          "before": [
+            "test('pending save blocks double-click, undo and close; no local change or celebration until successful cloud confirmation', async () => {"
+          ],
+          "after": [
+            "test('pending save blocks double-click, undo and close; no local change until successful cloud confirmation and no celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 188,
+          "newLine": 187,
+          "before": [
+            "    assert.equal(h.state.confetti, 1); assert.equal(h.element('generalQuickSaveBtn').disabled, false);"
+          ],
+          "after": [
+            "    assert.equal(h.state.confetti, 0); assert.equal(h.element('generalQuickSaveBtn').disabled, false);"
+          ]
+        },
+        {
+          "oldLine": 191,
+          "newLine": 190,
+          "before": [
+            "test('cloud rejection and throw preserve all local values and open modal; retry succeeds once, final rank is hidden', async () => {"
+          ],
+          "after": [
+            "test('cloud rejection and throw preserve all local values and open modal; retry succeeds once without a supervisor celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 200,
+          "newLine": 199,
+          "before": [
+            "        await h.save(); assert.equal(h.state.confetti, 1); assert.equal(h.element('celebrationRank').classList.contains('hidden'), true);"
+          ],
+          "after": [
+            "        await h.save(); assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        },
+        {
+          "oldLine": 373,
+          "newLine": 372,
+          "before": [
+            "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 1);"
+          ],
+          "after": [
+            "        assert.equal(h.state.writes.length, 3); assert.equal(h.state.confetti, 0);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/students-page-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 420,
+          "newLine": 420,
+          "before": [
+            "test('TV connected uses existing enabled/ready state and a short message without supervisor overlay; disconnected keeps celebration', async () => {"
+          ],
+          "after": [
+            "test('TV connected or disconnected retains the save message without supervisor overlay', async () => {"
+          ]
+        },
+        {
+          "oldLine": 427,
+          "newLine": 427,
+          "before": [
+            "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), enabled);",
+            "        assert.equal(h.state.confetti, enabled ? 0 : 1);",
+            "        if (enabled) { assert.equal(h.state.messages.at(-1).message, 'تم الحفظ: طالب وهمي — الاحتفال على التلفاز');"
+          ],
+          "after": [
+            "        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+            "        assert.equal(h.state.confetti, 0);",
+            "        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "        if (enabled) {"
+          ]
+        },
+        {
+          "oldLine": 435,
+          "newLine": 436,
+          "before": [
+            "    await stale.save(); assert.equal(stale.state.confetti, 1);"
+          ],
+          "after": [
+            "    await stale.save(); assert.equal(stale.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 438,
+          "newLine": 439,
+          "before": [
+            "test('TV closed after opening or missing hello for 90 seconds falls back immediately to supervisor celebration', async () => {"
+          ],
+          "after": [
+            "test('TV closed after opening or missing hello for 90 seconds disconnects without supervisor celebration', async () => {"
+          ]
+        },
+        {
+          "oldLine": 449,
+          "newLine": 450,
+          "before": [
+            "        assert.equal(h.state.confetti, 1); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), false);"
+          ],
+          "after": [
+            "        assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/t25-owner-ui-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 157,
+          "newLine": 157,
+          "before": [
+            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يعرض الاحتفال بالأرقام الإنجليزية وتظل قيم الحفظ أرقاماً', async () => {"
+          ],
+          "after": [
+            "test('ت٢٥-٤: حفظ حقيقي من نافذة التسجيل يؤكد الحفظ دون احتفال وتظل قيم الحفظ أرقاماً', async () => {"
+          ]
+        },
+        {
+          "oldLine": 165,
+          "newLine": 165,
+          "before": [
+            "    assert.match(h.element('celebrationPoints').innerText, new RegExp(`\\\\+ ${preview.total.toLocaleString('ar-SA-u-nu-latn').replace('.', '\\\\.')} نقطة`));",
+            "    assert.match(h.element('celebrationTotalPoints').innerText, /103\\.5/);",
+            "    assert.match(h.element('celebrationRank').innerHTML, /الترتيب: 1/);"
+          ],
+          "after": [
+            "    assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);",
+            "    assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);",
+            "    assert.equal(h.state.confetti, 0);"
+          ]
+        },
+        {
+          "oldLine": 188,
+          "newLine": 188,
+          "before": [
+            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يعرض 22.5 و103.5 والترتيب 1؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {"
+          ],
+          "after": [
+            "test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يبقي رسالة الحفظ وحدها؛ المعايير والإدخال بالأرقام الإنجليزية', async () => {"
+          ]
+        },
+        {
+          "oldLine": 208,
+          "newLine": 208,
+          "before": [
+            "        await h.page.locator('#knightCelebrationModal').waitFor({ state: 'visible' });",
+            "        assert.match(await text(h.page, '#celebrationPoints'), /\\+ 22\\.5 نقطة/);",
+            "        assert.equal(await text(h.page, '#celebrationTotalPoints'), '🏆 إجمالي رصيدك: 103.5 نقطة');",
+            "        assert.match(await text(h.page, '#celebrationRank'), /الترتيب: 1/);"
+          ],
+          "after": [
+            "        await h.page.locator('#smartModal').waitFor({ state: 'hidden' });",
+            "        assert.equal(await h.page.locator('#knightCelebrationModal').isVisible(), false);",
+            "        assert.match(await text(h.page, '#toastText'), /^حُفظ لطالب وهمي: /);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 152,
+          "newLine": 152,
+          "before": [
+            "        await h.page.waitForFunction(() => !!document.fullscreenElement);"
+          ],
+          "after": [
+            "        await h.page.waitForFunction(() => !!document.fullscreenElement && document.getElementById('fullscreen').hidden);"
+          ]
+        }
+      ]
+    }
+  ],
+  "trialProductionChanges": {
+    "file": "index.html",
+    "category": 5,
+    "reason": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦",
+    "hunks": [
+      {
+        "oldLine": 1052,
+        "newLine": 1052,
+        "before": [
+          "body.program-general .general-students .gs-card + .gs-card td { border-top:1px solid var(--general-line); }",
+          "body.program-general .general-students .gs-card:hover { background:var(--general-canvas); }",
+          "body.program-general .general-students .gs-name { font-size:16px; font-weight:600; min-height:0; }",
+          "body.program-general .general-students .gs-number { margin-inline-start:12px; color:var(--general-muted); font-size:13px; font-weight:400; }",
+          "body.program-general .general-students .gs-state { display:inline-flex; padding:3px 10px; border:0; border-radius:8px; font-size:13px; font-weight:400; background:var(--general-canvas); color:var(--general-muted); }",
+          "body.program-general .general-students .gs-done { background:var(--general-soft); color:var(--general-brand); }",
+          "body.program-general .general-students .gs-none { background:var(--general-pending-bg); color:var(--general-pending); }"
+        ],
+        "after": [
+          "body.program-general .general-students .gs-card + .gs-card td { border-top:1px solid var(--general-line); }",
+          "body.program-general .general-students .gs-card:hover { background:var(--general-canvas); }",
+          "body.program-general .general-students .gs-name { font-size:16px; font-weight:600; min-height:0; }",
+          "body.program-general .general-students .gs-number, body.program-general .general-students .gs-separator { color:var(--general-muted); font-size:13px; font-weight:400; }",
+          "body.program-general .general-student-number { color:var(--general-muted); font-weight:400; }",
+          "body.program-general .general-students .gs-state { display:inline-flex; padding:3px 10px; border:0; border-radius:8px; font-size:13px; font-weight:400; background:var(--general-canvas); color:var(--general-muted); }",
+          "body.program-general .general-students .gs-done { background:var(--general-soft); color:var(--general-brand); }",
+          "body.program-general .general-students .gs-none { background:var(--general-pending-bg); color:var(--general-pending); }"
+        ]
+      },
+      {
+        "oldLine": 6888,
+        "newLine": 6889,
+        "before": [
+          "        function openPointsBreakdownModal(studentId) {",
+          "            const student = students.find(s => s.id === studentId); if (!student) return;",
+          "            const b = getPointsBreakdown(student);",
+          "            document.getElementById('pbStudentName').innerText = `${escapeHTML(student.name)} — رقم #${student.id}`;",
+          "            document.getElementById('pbContent').innerHTML = `",
+          "                <div class=\"bg-white p-4 rounded-xl border-2 border-slate-200 flex justify-between items-center\">",
+          "                    <span class=\"font-bold text-slate-700\"><i class=\"fas fa-user-check text-blue-500 ml-2\"></i>بونص الحضور (${b.attendanceDays} يوم × 10)</span>"
+        ],
+        "after": [
+          "        function openPointsBreakdownModal(studentId) {",
+          "            const student = students.find(s => s.id === studentId); if (!student) return;",
+          "            const b = getPointsBreakdown(student);",
+          "            if (isGeneralProgram()) document.getElementById('pbStudentName').innerHTML = `<span class=\"general-student-number\">${escapeHTML(String(student.id))} - </span>${escapeHTML(student.name)}`;",
+          "            else document.getElementById('pbStudentName').innerText = `${escapeHTML(student.name)} — رقم #${student.id}`;",
+          "            document.getElementById('pbContent').innerHTML = `",
+          "                <div class=\"bg-white p-4 rounded-xl border-2 border-slate-200 flex justify-between items-center\">",
+          "                    <span class=\"font-bold text-slate-700\"><i class=\"fas fa-user-check text-blue-500 ml-2\"></i>بونص الحضور (${b.attendanceDays} يوم × 10)</span>"
+        ]
+      },
+      {
+        "oldLine": 7393,
+        "newLine": 7395,
+        "before": [
+          "        function generalStudentsCardHtml(student) {",
+          "            const state = generalCardTodayState(student, todayStr);",
+          "            return `<tr class=\"gs-card${state.hasEntries ? ' is-done' : ''}\">",
+          "                <td><span class=\"gs-name\">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class=\"gs-number\">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>",
+          "                <td><span class=\"gs-state gs-${state.cardState}\">${state.label}</span></td>",
+          "                <td><div class=\"gs-actions\"><button type=\"button\" class=\"gs-entry\" onclick=\"openSmartModal(${Number(student.id)})\">إدخال إنجاز</button><button type=\"button\" class=\"gs-attendance attendance-btn\" onclick=\"openAttendanceEditModal(${Number(student.id)})\">الحضور</button></div></td>",
+          "            </tr>`;"
+        ],
+        "after": [
+          "        function generalStudentsCardHtml(student) {",
+          "            const state = generalCardTodayState(student, todayStr);",
+          "            return `<tr class=\"gs-card${state.hasEntries ? ' is-done' : ''}\">",
+          "                <td><span class=\"gs-number\">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class=\"gs-separator\"> - </span><span class=\"gs-name\">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>",
+          "                <td><span class=\"gs-state gs-${state.cardState}\">${state.label}</span></td>",
+          "                <td><div class=\"gs-actions\"><button type=\"button\" class=\"gs-entry\" onclick=\"openSmartModal(${Number(student.id)})\">إدخال إنجاز</button><button type=\"button\" class=\"gs-attendance attendance-btn\" onclick=\"openAttendanceEditModal(${Number(student.id)})\">الحضور</button></div></td>",
+          "            </tr>`;"
+        ]
+      },
+      {
+        "oldLine": 7486,
+        "newLine": 7488,
+        "before": [
+          "                container.innerHTML += `",
+          "                    <div class=\"bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2\">",
+          "                        <div class=\"min-w-0 flex-1\">",
+          "                            <div class=\"font-bold text-slate-700 truncate\"><span class=\"text-slate-400 font-black\">#${student.id}</span> ${escapeHTML(student.name)}</div>",
+          "                            <div class=\"mt-1\">${isGeneralProgram() ? '' : tierBadge}<span class=\"text-xs text-slate-500\">${halaqa}</span></div>",
+          "                        </div>",
+          "                        <div class=\"flex gap-1 shrink-0\">"
+        ],
+        "after": [
+          "                container.innerHTML += `",
+          "                    <div class=\"bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center gap-2\">",
+          "                        <div class=\"min-w-0 flex-1\">",
+          "                            <div class=\"font-bold text-slate-700 truncate\"><span class=\"text-slate-400 font-black${isGeneralProgram() ? ' general-student-number' : ''}\">${isGeneralProgram() ? `${student.id} -` : `#${student.id}`}</span> ${escapeHTML(student.name)}</div>",
+          "                            <div class=\"mt-1\">${isGeneralProgram() ? '' : tierBadge}<span class=\"text-xs text-slate-500\">${halaqa}</span></div>",
+          "                        </div>",
+          "                        <div class=\"flex gap-1 shrink-0\">"
+        ]
+      },
+      {
+        "oldLine": 7549,
+        "newLine": 7551,
+        "before": [
+          "                        <div class=\"text-xs font-black text-amber-600 mb-2\">${p.score === 1 ? 'تطابق تام محتمل' : 'تشابه محتمل'} (${Math.round(p.score * 100)}%)</div>",
+          "                        <div class=\"grid grid-cols-1 sm:grid-cols-2 gap-3\">",
+          "                            <div class=\"bg-slate-50 p-3 rounded-xl border border-slate-200\">",
+          "                                <div class=\"font-black text-slate-800\">#${p.a.id} — ${escapeHTML(p.a.name)}</div>",
+          "                                <div class=\"text-sm text-slate-500 mt-1\">آيات: ${statsA.sardAyahs} | نقاط: ${statsA.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.a, getWorkingDaysList(students))) : `أيام حضور: ${statsA.attendanceDays}`}</div>",
+          "                            </div>",
+          "                            <div class=\"bg-slate-50 p-3 rounded-xl border border-slate-200\">",
+          "                                <div class=\"font-black text-slate-800\">#${p.b.id} — ${escapeHTML(p.b.name)}</div>",
+          "                                <div class=\"text-sm text-slate-500 mt-1\">آيات: ${statsB.sardAyahs} | نقاط: ${statsB.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.b, getWorkingDaysList(students))) : `أيام حضور: ${statsB.attendanceDays}`}</div>",
+          "                            </div>",
+          "                        </div>"
+        ],
+        "after": [
+          "                        <div class=\"text-xs font-black text-amber-600 mb-2\">${p.score === 1 ? 'تطابق تام محتمل' : 'تشابه محتمل'} (${Math.round(p.score * 100)}%)</div>",
+          "                        <div class=\"grid grid-cols-1 sm:grid-cols-2 gap-3\">",
+          "                            <div class=\"bg-slate-50 p-3 rounded-xl border border-slate-200\">",
+          "                                <div class=\"font-black text-slate-800\">${isGeneralProgram() ? `<span class=\"general-student-number\">${escapeHTML(String(p.a.id))} - </span>` : `#${p.a.id} — `}${escapeHTML(p.a.name)}</div>",
+          "                                <div class=\"text-sm text-slate-500 mt-1\">آيات: ${statsA.sardAyahs} | نقاط: ${statsA.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.a, getWorkingDaysList(students))) : `أيام حضور: ${statsA.attendanceDays}`}</div>",
+          "                            </div>",
+          "                            <div class=\"bg-slate-50 p-3 rounded-xl border border-slate-200\">",
+          "                                <div class=\"font-black text-slate-800\">${isGeneralProgram() ? `<span class=\"general-student-number\">${escapeHTML(String(p.b.id))} - </span>` : `#${p.b.id} — `}${escapeHTML(p.b.name)}</div>",
+          "                                <div class=\"text-sm text-slate-500 mt-1\">آيات: ${statsB.sardAyahs} | نقاط: ${statsB.tripPoints} | ${isGeneralProgram() ? generalAttendanceLabel(calculateStudentAttendance(p.b, getWorkingDaysList(students))) : `أيام حضور: ${statsB.attendanceDays}`}</div>",
+          "                            </div>",
+          "                        </div>"
+        ]
+      },
+      {
+        "oldLine": 8953,
+        "newLine": 8955,
+        "before": [
+          "                closeSmartModal();",
+          "                search?.focus();",
+          "                showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');",
+          "                if (!missed && calculation.total > 0) celebrateGeneralQuickEntry(students.find(s => s.id === student.id) || student, calculation.total, savedSummary);",
+          "                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);",
+          "            } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }",
+          "        }",
+          "        function celebrateGeneralQuickEntry(student, totalAdded, savedSummary) {",
+          "            if (totalAdded <= 0) { showToast(savedSummary || 'حُفظ الحضور فقط', 'success'); return; }",
+          "            if (generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);",
+          "            if (generalTv.enabled && generalTvReady()) {",
+          "                showToast(`تم الحفظ: ${student.name} — الاحتفال على التلفاز`, 'success');",
+          "                return;",
+          "            }",
+          "            const totalStats = getCumulativeStats(student), currentRank = getStudentRank(student.id);",
+          "            const celModal = document.getElementById('knightCelebrationModal');",
+          "            document.getElementById('celebrationTitle').innerText = savedSummary || 'حُفظ الحضور فقط';",
+          "            document.getElementById('celebrationName').innerText = escapeHTML(student.name);",
+          "            document.getElementById('celebrationPoints').innerText = `+ ${totalAdded.toLocaleString('ar-SA-u-nu-latn')} نقطة جديدة مضافة للسباق 🎁`;",
+          "            const totalEl = document.getElementById('celebrationTotalPointsContainer');",
+          "            if (totalEl) {",
+          "                document.getElementById('celebrationTotalPoints').innerText = `🏆 إجمالي رصيدك: ${totalStats.tripPoints.toLocaleString('ar-SA-u-nu-latn')} نقطة`;",
+          "                document.getElementById('celebrationRank').innerHTML = `<i class=\"fas fa-medal text-yellow-400 mr-2\"></i> الترتيب: ${currentRank.toLocaleString('ar-SA-u-nu-latn')}`;",
+          "                document.getElementById('celebrationRank').classList.toggle('hidden', getGeneralCelebrationRank(student) === null);",
+          "                totalEl.classList.remove('hidden');",
+          "            }",
+          "            celModal.classList.add('animate-flash-bg'); celModal.classList.remove('hidden'); celModal.classList.add('flex');",
+          "            if (!window.localConfettiInstance) window.localConfettiInstance = confetti.create(document.getElementById('celebrationCanvas'), { resize: true });",
+          "            window.localConfettiInstance({ particleCount: 150, spread: 85, origin: { y: 0.5 } });",
+          "            setTimeout(() => { closeKnightCelebration(); }, 7000);",
+          "        }",
+          "",
+          "        function openSmartModal(id) {",
+          "            if (isGeneralProgram() && generalUndoInProgress) return;",
+          "            if (isGeneralProgram()) {"
+        ],
+        "after": [
+          "                closeSmartModal();",
+          "                search?.focus();",
+          "                showToast(`حُفظ ل${student.name}: ${savedSummary.replace(/^حُفظ:?\\s*/, '')}` + (missed ? ` — على يوم ${dayName}` : ''), 'success');",
+          "                if (!missed && calculation.total > 0 && generalTv.enabled && (generalTv.window?.closed || Date.now() - generalTv.lastHello >= 90000)) clearGeneralTv(true);",
+          "                if (!missed && calculation.total > 0) sendGeneralTvCelebration(students.find(s => s.id === student.id) || student, calculation.total);",
+          "            } finally { generalUndoInProgress = false; updateGeneralUndoButton(); }",
+          "        }",
+          "        function openSmartModal(id) {",
+          "            if (isGeneralProgram() && generalUndoInProgress) return;",
+          "            if (isGeneralProgram()) {"
+        ]
+      },
+      {
+        "oldLine": 9175,
+        "newLine": 9152,
+        "before": [
+          "                return `",
+          "                <div class=\"bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-3\">",
+          "                    <div class=\"flex-1 min-w-[220px]\">",
+          "                        <span class=\"font-black text-slate-700 flex items-center gap-2 flex-wrap\"><span class=\"text-slate-400\">#${s.id}</span> ${escapeHTML(s.name)} ${badge}</span>",
+          "                        <div class=\"text-xs font-bold text-blue-700 mt-1 flex items-center gap-1\"><i class=\"fas fa-book-open\"></i> النطاق: ${escapeHTML(range)}</div>",
+          "                    </div>",
+          "                    <div class=\"flex items-center gap-1\"><label class=\"text-xs font-bold text-slate-500\">حفظ (٩٠)</label><input type=\"number\" min=\"0\" max=\"90\" id=\"examHifz_${s.id}\" value=\"${hVal}\" class=\"w-16 p-1.5 border-2 border-slate-300 rounded-lg text-center font-bold text-sm outline-none focus:border-emerald-500\"></div>"
+        ],
+        "after": [
+          "                return `",
+          "                <div class=\"bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-3\">",
+          "                    <div class=\"flex-1 min-w-[220px]\">",
+          "                        <span class=\"font-black text-slate-700 flex items-center gap-2 flex-wrap\"><span class=\"text-slate-400${isGeneralProgram() ? ' general-student-number' : ''}\">${isGeneralProgram() ? `${s.id} -` : `#${s.id}`}</span> ${escapeHTML(s.name)} ${badge}</span>",
+          "                        <div class=\"text-xs font-bold text-blue-700 mt-1 flex items-center gap-1\"><i class=\"fas fa-book-open\"></i> النطاق: ${escapeHTML(range)}</div>",
+          "                    </div>",
+          "                    <div class=\"flex items-center gap-1\"><label class=\"text-xs font-bold text-slate-500\">حفظ (٩٠)</label><input type=\"number\" min=\"0\" max=\"90\" id=\"examHifz_${s.id}\" value=\"${hVal}\" class=\"w-16 p-1.5 border-2 border-slate-300 rounded-lg text-center font-bold text-sm outline-none focus:border-emerald-500\"></div>"
+        ]
+      },
+      {
+        "oldLine": 10112,
+        "newLine": 10089,
+        "before": [
+          "        }",
+          "        function confirmDelete(id) {",
+          "            const student = students.find(s => s.id === id); if (!student) return;",
+          "            delId = id; document.getElementById('deleteStudentName').innerText = `${student.name} — رقم #${student.id}`; document.getElementById('deleteModal').classList.replace('hidden','flex');",
+          "        }",
+          "        function closeDeleteModal() { document.getElementById('deleteModal').classList.replace('flex','hidden'); delId=null; }",
+          "        function executeDelete() {"
+        ],
+        "after": [
+          "        }",
+          "        function confirmDelete(id) {",
+          "            const student = students.find(s => s.id === id); if (!student) return;",
+          "            delId = id;",
+          "            if (isGeneralProgram()) document.getElementById('deleteStudentName').innerHTML = `<span class=\"general-student-number\">${escapeHTML(String(student.id))} - </span>${escapeHTML(student.name)}`;",
+          "            else document.getElementById('deleteStudentName').innerText = `${student.name} — رقم #${student.id}`;",
+          "            document.getElementById('deleteModal').classList.replace('hidden','flex');",
+          "        }",
+          "        function closeDeleteModal() { document.getElementById('deleteModal').classList.replace('flex','hidden'); delId=null; }",
+          "        function executeDelete() {"
+        ]
+      },
+      {
+        "oldLine": 11851,
+        "newLine": 11831,
+        "before": [
+          "            list.innerHTML = shown.map(s => `",
+          "                <div class=\"bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2\" data-sid=\"${s.id}\">",
+          "                    <span class=\"font-bold text-slate-700 min-w-[140px] flex-1 truncate\">",
+          "                        <span class=\"text-slate-400 font-black\">#${s.id}</span> ${escapeHTML(s.name)}",
+          "                    </span>",
+          "                    <select class=\"bulk-mem p-2 border-2 border-slate-300 rounded-xl font-bold text-xs outline-none focus:border-indigo-500 w-full sm:w-64\"",
+          "                            onchange=\"onBulkMemChange(this)\" title=\"مقدار الحفظ\">${memOpts}</select>"
+        ],
+        "after": [
+          "            list.innerHTML = shown.map(s => `",
+          "                <div class=\"bulk-row bg-white p-3 rounded-xl border-2 border-slate-200 flex flex-wrap items-center gap-2\" data-sid=\"${s.id}\">",
+          "                    <span class=\"font-bold text-slate-700 min-w-[140px] flex-1 truncate\">",
+          "                        <span class=\"text-slate-400 font-black${isGeneralProgram() ? ' general-student-number' : ''}\">${isGeneralProgram() ? `${s.id} -` : `#${s.id}`}</span> ${escapeHTML(s.name)}",
+          "                    </span>",
+          "                    <select class=\"bulk-mem p-2 border-2 border-slate-300 rounded-xl font-bold text-xs outline-none focus:border-indigo-500 w-full sm:w-64\"",
+          "                            onchange=\"onBulkMemChange(this)\" title=\"مقدار الحفظ\">${memOpts}</select>"
+        ]
+      },
+      {
+        "oldLine": 11978,
+        "newLine": 11958,
+        "before": [
+          "            document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';",
+          "            box.innerHTML = list.map(s => `",
+          "                <div class=\"bg-white p-3 rounded-xl border-2 border-amber-200 flex items-center gap-2\">",
+          "                    <span class=\"text-slate-400 font-black shrink-0\">#${escapeHTML(String(s.id))}</span>",
+          "                    <span class=\"font-bold text-slate-700 flex-1 truncate\">${escapeHTML(s.name || 'بلا اسم')}</span>",
+          "                    <span class=\"text-[11px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0\">${escapeHTML(noLevelReason(s))}</span>",
+          "                </div>`).join('');"
+        ],
+        "after": [
+          "            document.getElementById('noLevelFixLabel').textContent = isGeneralProgram() ? 'راجع بيانات الطلاب' : 'أدخل مقاديرهم الآن';",
+          "            box.innerHTML = list.map(s => `",
+          "                <div class=\"bg-white p-3 rounded-xl border-2 border-amber-200 flex items-center gap-2\">",
+          "                    <span class=\"text-slate-400 font-black shrink-0${isGeneralProgram() ? ' general-student-number' : ''}\">${isGeneralProgram() ? `${escapeHTML(String(s.id))} -` : `#${escapeHTML(String(s.id))}`}</span>",
+          "                    <span class=\"font-bold text-slate-700 flex-1 truncate\">${escapeHTML(s.name || 'بلا اسم')}</span>",
+          "                    <span class=\"text-[11px] font-black bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 rounded-full shrink-0\">${escapeHTML(noLevelReason(s))}</span>",
+          "                </div>`).join('');"
+        ]
+      }
+    ]
+  }
 }

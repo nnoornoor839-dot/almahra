@@ -3,7 +3,7 @@ const cp = require('node:child_process');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const baseline = '82bf19f';
-function changes(file) {
+function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\r?\n/);
     const after = fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);
     const width = after.length + 1, scores = new Uint16Array((before.length + 1) * width);
@@ -39,4 +39,5 @@ const ownerText = (line, round = 1) => round === 2
         .replace('<label>من 🔒<\\/label>', '<label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"><\\/i><\\/label>')
     : line.replaceAll('أكملهم ←', 'أكمل التسجيل ←')
     .replace('>⌄/', '><i class="fas fa-caret-down"><\\/i>/');
-module.exports = { root, baseline, changes, digits, ownerText };
+const changes = file => changesFrom(file, baseline);
+module.exports = { root, baseline, changes, changesFrom, digits, ownerText };

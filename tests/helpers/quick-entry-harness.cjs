@@ -143,7 +143,7 @@ function harness(s = student()) {
         'generalQuickContext', 'generalQuickContextMatches', 'invalidateGeneralQuickEntry',
         'generalQuickSuggestions', 'generalPointLabel', 'moveGeneralQuickSections', 'initGeneralQuickEntry', 'renderGeneralQuickGrades',
         'quickSurahChanged', 'fulfillGeneralCriteria', 'generalCriteriaChange', 'calculateGeneralQuickEntry', 'updateGeneralQuickPreview',
-        'saveGeneralQuickEntry', 'celebrateGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
+        'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
         'renderCriteriaList', 'updateCriteriaTotal', 'updateGrandTotal', 'updateGeneralUndoButton', 'getGeneralUndoTarget', 'generalUndoLabel',
         'undoLastGeneralEntry', 'switchSmartTab', 'updateSmartSimplification', 'openSmartModal', 'closeSmartModal',
         'refreshGeneralRecitationFields', 'updateAyahMax', 'setSardType');

@@ -417,25 +417,26 @@ test('real successful quick save clears and focuses search, keeps halaqa and ref
     assert.doesNotMatch(fail.element('studentsGrid').innerHTML, /gs-done/);
 });
 
-test('TV connected uses existing enabled/ready state and a short message without supervisor overlay; disconnected keeps celebration', async () => {
+test('TV connected or disconnected retains the save message without supervisor overlay', async () => {
     for (const enabled of [true, false]) {
         const h = quickPage(); h.ctx.window.almahraData.isReady = () => true;
         h.ctx.window.almahraData.getActiveProgramId = () => 'general'; h.ctx.window.almahraData.getActiveSeasonId = () => 's1';
         h.ctx.events = []; h.ctx.window.crypto = { randomUUID: () => 'synthetic-event' };
         h.run(`generalTv.enabled = ${enabled}; generalTv.lastHello = Date.now(); generalTv.dataContext = generalTvContext(); generalTv.channel = { postMessage(message) { events.push(message); } }`);
         await h.save();
-        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), enabled);
-        assert.equal(h.state.confetti, enabled ? 0 : 1);
-        if (enabled) { assert.equal(h.state.messages.at(-1).message, 'تم الحفظ: طالب وهمي — الاحتفال على التلفاز');
+        assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
+        assert.equal(h.state.confetti, 0);
+        assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);
+        if (enabled) {
             assert.equal(h.ctx.events.length, 1); assert.equal(h.ctx.events[0].type, 'celebrate'); }
     }
     const stale = quickPage(); stale.ctx.window.almahraData.isReady = () => true;
     stale.ctx.window.almahraData.getActiveProgramId = () => 'general'; stale.ctx.window.almahraData.getActiveSeasonId = () => 's1';
     stale.run("generalTv.enabled = true; generalTv.lastHello = Date.now(); generalTv.dataContext = 'general:other'");
-    await stale.save(); assert.equal(stale.state.confetti, 1);
+    await stale.save(); assert.equal(stale.state.confetti, 0);
 });
 
-test('TV closed after opening or missing hello for 90 seconds falls back immediately to supervisor celebration', async () => {
+test('TV closed after opening or missing hello for 90 seconds disconnects without supervisor celebration', async () => {
     for (const disconnect of ['closed', 'timeout']) {
         const h = quickPage(); h.ctx.window.almahraData.isReady = () => true;
         h.ctx.window.almahraData.getActiveProgramId = () => 'general'; h.ctx.window.almahraData.getActiveSeasonId = () => 's1';
@@ -446,7 +447,7 @@ test('TV closed after opening or missing hello for 90 seconds falls back immedia
         if (disconnect === 'closed') h.run('generalTv.window.closed = true');
         else h.run('generalTv.lastHello = Date.now() - 90000');
         release({ success: true }); await pending;
-        assert.equal(h.state.confetti, 1); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), false);
+        assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
         assert.equal(h.run('generalTv.enabled'), false); assert.ok(h.ctx.events.every(e => e.type !== 'celebrate'));
         assert.ok(h.state.messages.every(m => !m.message.includes('الاحتفال على التلفاز')));
     }
