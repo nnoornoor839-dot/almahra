@@ -920,6 +920,8 @@ body.program-general {
 
 /* Approved design, round 1. Every override belongs to general. */
 body.program-general { background:var(--general-canvas); color:var(--general-ink); }
+body.program-general [onclick="openSettingsSection('setPanelKnights')"],
+body.program-general #setPanelKnights,
 body.program-general #threeKnightsModal,
 body.program-general #supervisorPanel,
 body.program-general #knightCelebrationModal,
@@ -929,14 +931,6 @@ body.program-general #hbCardDiscipline,
 body.program-general #hbCardWeekly,
 body.program-general #farsDayRow,
 body.program-general #supervisorPanel input[id$="Achievement"] { display:none !important; }
-#generalKnightsPanel { display:none; }
-body.program-general #generalKnightsPanel { display:grid; gap:var(--general-space-4); padding:var(--general-space-6); background:var(--general-surface); border:1px solid var(--general-line); border-radius:var(--general-radius-md); }
-body.program-general #generalKnightsPanel h2 { font-size:var(--general-text-lg); font-weight:700; }
-body.program-general #generalKnightsPanel label { display:grid; gap:8px; font-weight:600; }
-body.program-general #generalKnightsPanel input,
-body.program-general #generalKnightsPanel select { width:100%; min-height:44px; padding:10px; background:var(--general-surface); color:var(--general-ink); border:1px solid var(--general-line); border-radius:var(--general-radius-sm); }
-body.program-general #generalKnightsPanel p { color:var(--general-muted); }
-body.program-general #generalKnightsChoices { display:grid; gap:var(--general-space-4); }
 body.program-general .general-knights-actions { display:flex; flex-wrap:wrap; gap:12px; margin-block:12px; }
 body.program-general .general-knights-action {
   display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:44px; padding:10px 20px;
@@ -1700,24 +1694,6 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
                     <span class="panel-back-title"><i class="fas fa-trophy text-blue-500 ml-1"></i> فرسان الحلقات</span>
                 </div>
-
-            <section id="generalKnightsPanel" aria-labelledby="generalKnightsTitle">
-                <h2 id="generalKnightsTitle">فارس الحلقة</h2>
-                <p>فارس الحلقة يختاره البرنامج آلياً كل يوم، ولا يحتاج منك شيئاً. استعمل هذا فقط إذا أردت تبديله يدوياً، مع كتابة السبب.</p>
-                <label for="generalKnightsDate">التاريخ
-                    <input id="generalKnightsDate" type="date" onchange="renderGeneralKnightsPanel(true)">
-                </label>
-                <label for="generalKnightsHalaqa">الحلقة
-                    <select id="generalKnightsHalaqa" onchange="renderGeneralKnightsPanel(true)"></select>
-                </label>
-                <p id="generalKnightsAutomatic" role="status" aria-live="polite"></p>
-                <p id="generalKnightsSaved"></p>
-                <div id="generalKnightsChoices"></div>
-                <label for="generalKnightsReason">سبب التبديل اليدوي (إلزامي)
-                    <input id="generalKnightsReason" type="text" required>
-                </label>
-                <button type="button" class="general-knights-action" onclick="saveGeneralKnightsReplacement()">حفظ التبديل اليدوي</button>
-            </section>
 
             <!-- بوابة تكريم فرسان اليوم -->
             <div id="supervisorPanel" class="bg-white rounded-3xl shadow-xl border-4 border-blue-500 flex flex-col overflow-hidden w-full shrink-0">
@@ -4278,6 +4254,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         async function saveCurrentThreeKnights(data) {
+            if (isGeneralProgram()) return false;
             if (!canWriteView()) return false;
             const programId = window.almahraPrograms?.getCurrentProgramId();
             const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
@@ -7351,7 +7328,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             updateSchoolCalendarAlert();
             updateGeneralAttendanceUI();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
-            processRealClockPomodoro(); if (isGeneralProgram()) renderGeneralKnightsPanel(); else updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
+            processRealClockPomodoro(); if (!isGeneralProgram()) updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
             if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
             if (typeof updateRecordsBadges === 'function') updateRecordsBadges();
             if (typeof updateSettingsBadges === 'function') updateSettingsBadges();
@@ -7363,43 +7340,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         
         function farsSelectionCount() {
-            if (!isGeneralProgram()) return 3;
-            const mode = document.getElementById('generalKnightsHalaqa')?.value || '';
-            const count = window.almahraPrograms?.getSettings()?.titleRules?.knightsPerHalaqa?.[mode.slice(2)];
-            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 1;
-        }
-        function renderGeneralKnightsPanel(reset = false) {
-            if (!isGeneralProgram()) return;
-            const panel = document.getElementById('generalKnightsPanel');
-            if (!panel) return;
-            const date = document.getElementById('generalKnightsDate'), halaqa = document.getElementById('generalKnightsHalaqa');
-            const previous = halaqa.value;
-            halaqa.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)
-                .map(h => `<option value="h:${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
-            if ([...halaqa.options].some(o => o.value === previous)) halaqa.value = previous;
-            if (!date.value) date.value = todayStr;
-            const context = window.almahraPrograms.getCurrentSeasonId() + '|' + date.value + '|' + halaqa.value;
-            reset = reset || panel.dataset.context !== context;
-            panel.dataset.context = context;
-            const id = halaqa.value.slice(2), count = farsSelectionCount();
-            const automatic = getDayHalaqaKnights(date.value, id, students, []);
-            document.getElementById('generalKnightsAutomatic').textContent = automatic.names.length
-                ? 'الفارس الآلي الحالي: ' + automatic.names.join('، ') : 'لا فارس آلياً لهذا اليوم';
-            const saved = honorKnightsLog.find(e => e.dateStr === date.value && e.mode === halaqa.value);
-            document.getElementById('generalKnightsSaved').textContent = saved
-                ? 'التبديل اليدوي المحفوظ: ' + saved.fars.map(f => f.name).join('، ') + ' — السبب: ' + saved.reason : '';
-            const choices = document.getElementById('generalKnightsChoices');
-            const values = reset ? [] : [...choices.querySelectorAll('select')].map(s => s.value);
-            const options = '<option value="">اختر البديل</option>' + students.filter(s => s.halaqaId === id)
-                .slice().sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(s => `<option value="${s.id}">${escapeHTML(s.name)}${getGeneralAttendanceEligibility(s, [date.value], 100).status === 'incomplete' ? ' — غير مكتمل' : ''}</option>`).join('');
-            choices.innerHTML = Array.from({ length: count }, (_, i) => `<label for="generalKnightsChoice${i + 1}">البديل${count > 1 ? ' ' + (i + 1) : ''}<select id="generalKnightsChoice${i + 1}">${options}</select></label>`).join('');
-            values.forEach((value, i) => { const select = document.getElementById('generalKnightsChoice' + (i + 1)); if (select) select.value = value; });
-            if (reset) document.getElementById('generalKnightsReason').value = '';
+            return 3;
         }
         async function saveGeneralKnightsReplacement() {
-            const saved = await approveGeneralHalaqaKnights();
-            if (saved) renderGeneralKnightsPanel();
-            return saved;
+            return false;
         }
         function updateFarsApprovalView() {
             if (isGeneralProgram()) return;
@@ -7436,31 +7380,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         
         async function approveGeneralHalaqaKnights() {
-            if (!isGeneralProgram() || !canWriteView()) return false;
-            const mode = document.getElementById('generalKnightsHalaqa').value, dateStr = document.getElementById('generalKnightsDate').value || todayStr;
-            const reason = document.getElementById('generalKnightsReason').value.trim();
-            if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }
-            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('generalKnightsChoice' + (i + 1)).value).filter(Boolean);
-            const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));
-            if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }
-            const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);
-            if (!h || selected.some(s => s.halaqaId !== h.id || getAttendanceState(s, dateStr).state !== 'present' ||
-                dayAcceptedWeightTenths(s.history?.[dateStr], settings.kindMult).total <= 0 || dayHasBlockingViolation(s.history?.[dateStr], getBlockingCriteriaIds()))) {
-                showToast('اختر من طلاب الحلقة الحاضرين بتسميع مقبول وبلا حاجب', 'error'); return false;
-            }
-            const entry = { dateStr, mode, fars: selected.map(s => ({ id: s.id, name: s.name })), reason,
-                by: window.almahraAuth.currentUser.uid, at: new Date().toISOString() };
-            const programId = window.almahraPrograms.getCurrentProgramId(), seasonId = window.almahraPrograms.getCurrentSeasonId();
-            const result = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, entry);
-            if (!result.success) { showToast('تعذّر حفظ الفرسان سحابياً: ' + result.error, 'error'); return false; }
-            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return false;
-            honorKnightsLog = honorKnightsLog.filter(e => e.dateStr !== dateStr || e.mode !== mode).concat(entry);
-            currentThreeKnights = entry;
-            sendGeneralTvSnapshot(); showToast('حُفظ اعتماد فارس الحلقة'); return true;
+            return false;
         }
 
         async function launchThreeKnights() {
-            if (isGeneralProgram()) return;
+            if (isGeneralProgram()) return false;
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
@@ -11303,8 +11227,6 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             // لوحة الفرسان
             const knightsPanel = document.getElementById('supervisorPanel');
             if (knightsPanel) knightsPanel.style.display = (general || f.knights === false) ? 'none' : '';
-            const generalKnightsPanel = document.getElementById('generalKnightsPanel');
-            if (generalKnightsPanel) generalKnightsPanel.style.display = general ? 'grid' : 'none';
             if (general) {
                 ['threeKnightsModal', 'knightCelebrationModal'].forEach(id => {
                     const modal = document.getElementById(id);
@@ -11441,6 +11363,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
         }
         function openSettingsSection(panelId) {
+            if (panelId === 'setPanelKnights' && isGeneralProgram()) return;
             if (panelId === 'setPanelFrontierFix') {
                 if (!canOpenGeneralFrontierFix()) return;
                 renderGeneralFrontierFix();
@@ -12161,7 +12084,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             renderCriteriaRows(s.criteria || []);
             if (isGeneralProgram()) refreshGeneralHalaqaOptions();
             renderTierRows(s.tiers || []);
-            if (isGeneralProgram()) renderGeneralKnightsPanel(); else fillFarsModeSelect();
+            if (!isGeneralProgram()) fillFarsModeSelect();
             updateSettingsBadges();
         }
 

@@ -25,7 +25,7 @@ for(const [name,args] of [
     ['updateSettings',['general',key.settings]],['resetSettings',['general']]
 ])test('r2b guard denies before any program operation: '+name,async()=>{
     const server=cloud(),store=server.stores().almahraPrograms;store.setWriteGuard(async()=>{throw Error('فشل')});
-    assert.deepEqual(copy(await store[name](...args)),{success:false,error:GUARD});
+    assert.deepEqual(copy(await store[name](...args)),{success:false,error:name==='saveKnightsEntry'?'الاعتماد اليدوي للفرسان معطّل في البرنامج العام':GUARD});
     assert.equal(server.state.events.length,0);assert.equal(server.state.writes.length,0);
 });
 test('r2b other programs bypass the guard',async()=>{
@@ -258,8 +258,8 @@ test('r2b real UI path rejects failed freeze and preserves local and server data
         h.install('approveGeneralHalaqaKnights','launchThreeKnights');
     for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.
     h.run('let honorKnightsLog=[],currentThreeKnights=null');
-        h.element('generalKnightsHalaqa').value='h:a';h.element('generalKnightsDate').value='2026-11-22';
-        h.element('generalKnightsReason').value='تصحيح';h.element('generalKnightsChoice1').value='1';
+        // Removed fields need not exist: the manual entry point rejects immediately.
+        
         assert.equal(await h.call('approveGeneralHalaqaKnights'),false);assert.equal(h.run('currentThreeKnights'),null);
         assert.equal(h.element('threeKnightsModal').classList.contains('hidden'),true);
     }else if(path==='calendar'){
@@ -290,7 +290,7 @@ test('r2b real UI path rejects failed freeze and preserves local and server data
     }
     await tick();
     assert.deepEqual(copy(h.run('students')),before);assert.deepEqual(copy([...server.docs.entries()]),stored);
-    assert.equal(server.state.writes.length,0);assert.ok(h.state.messages.some(m=>m.type==='error'&&m.message.includes(GUARD)),JSON.stringify(h.state.messages));
+    assert.equal(server.state.writes.length,0);if(path!=='manual')assert.ok(h.state.messages.some(m=>m.type==='error'&&m.message.includes(GUARD)),JSON.stringify(h.state.messages));
 });
 test('r2b empty school week needs no measure; a studied week refuses unavailable measure',async()=>{
     for(const empty of [true,false]){
@@ -343,7 +343,7 @@ test('r2b audit accounts for every exact production/test hunk and leaves all fou
     const cp=require('node:child_process'),{changesFrom}=require('./helpers/design-expectation-audit.cjs');
     const audit=require('./rules/design-expectation-audit.json');
     const files=cp.execFileSync('git',['diff','--name-only','--diff-filter=M','0c5ec91'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
-    const production=files.filter(f=>!f.startsWith('tests/'));
+    const production=files.filter(f=>!f.startsWith('tests/')&&changesFrom(f,'0c5ec91').hunks.length);
     assert.deepEqual(audit.knightsRound2bProductionChanges,production.map(f=>changesFrom(f,'0c5ec91')));
     const testFiles=files.filter(f=>f.startsWith('tests/')&&f!=='tests/rules/design-expectation-audit.json');
     const hunks=testFiles.flatMap(file=>changesFrom(file,'0c5ec91').hunks.map(h=>({file,...h,category:10,reason:audit.categories['10'],reviewBaseline:'0c5ec91'})));

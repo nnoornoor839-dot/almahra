@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 // Reverse only the exact changed lines approved for removing the legacy general UI.
 function beforeGeneralKnightsCleanup(text, file = 'index.html') {
+    text = require('./knights-owner-auto-audit.cjs').beforeKnightsOwnerAuto(text, file);
     text = text.replaceAll('\r\n', '\n');
     const row = require('../rules/design-expectation-audit.json').generalKnightsCleanupChanges?.find(r => r.file === file);
     if (!row || createHash('sha256').update(text).digest('hex') === row.beforeSha256) return text;

@@ -737,8 +737,7 @@ window.almahraPrograms = {
     // المسار: programs/{programId}/seasons/{seasonId} → حقل knightsLog
     // ============================================================
     saveKnightsEntry: async (programId, seasonId, entry) => {
-        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;
-        if (blocked) return blocked;
+        if (programId === 'general') return { success: false, error: 'الاعتماد اليدوي للفرسان معطّل في البرنامج العام' };
         if (!programId || !seasonId) return { success: false, error: 'لا يوجد موسم نشط' };
         try {
             const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);
@@ -749,15 +748,8 @@ window.almahraPrograms = {
                 filtered.sort((a, b) => (a.dateStr < b.dateStr ? 1 : -1));
                 return filtered;
             };
-            if (programId === 'general') {
-                await runTransaction(db, async transaction => {
-                    const snap = await transaction.get(ref);
-                    transaction.update(ref, { knightsLog: mergeEntry(snap) });
-                });
-            } else {
-                const snap = await getDoc(ref);
-                await updateDoc(ref, { knightsLog: mergeEntry(snap).slice(0, 200) });
-            }
+            const snap = await getDoc(ref);
+            await updateDoc(ref, { knightsLog: mergeEntry(snap).slice(0, 200) });
             return { success: true };
         } catch (err) {
             console.error('❌ saveKnightsEntry:', err);

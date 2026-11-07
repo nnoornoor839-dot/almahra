@@ -275,37 +275,22 @@ function storeMethod(text, name) {
     const start=text.indexOf('    '+name+': async '), end=text.indexOf('\n    },',start)+7;
     assert.ok(start>=0&&end>start);return text.slice(start,end);
 }
-test('approval transaction replaces only date+mode, preserves over 200 rows and retry/concurrent rows', async () => {
-    const log=Array.from({length:205},(_,i)=>({dateStr:'2026-10-'+i,mode:'all',fars:[]}));
-    log.push(copy(key.manualApproval),{dateStr:key.days[2],mode:'discipline',fars:[]},{dateStr:key.days[2],fars:[]});
-    const state={log:copy(log),reads:0,updates:0};
-    const ctx=firestoreContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{
-        const tx={get:async()=>{state.reads++;return {exists:()=>true,data:()=>({knightsLog:copy(state.log)})}},update:(ref,patch)=>{state.updates++;state.log=copy(patch.knightsLog)}};
-        await fn(tx);state.log.push({dateStr:key.days[2],mode:'h:a',fars:[]});await fn(tx);
-    }});
+test('manual approval store rejects every general mode before reads, transactions or guard', async () => {
+    const ctx = firestoreContext({ beforeWrite: () => assert.fail('guard reached'), console });
     vm.runInContext('const api={'+storeMethod(store,'saveKnightsEntry')+'};',ctx);
-    ctx.entry={...key.manualApproval,reason:'تصحيح'};
-    assert.equal((await vm.runInContext('api.saveKnightsEntry("general","s1",entry)',ctx)).success,true);
-    assert.equal(state.reads,2);assert.equal(state.updates,2);assert.equal(state.log.length,log.length+1);
-    assert.deepEqual(state.log.filter(e=>!(e.dateStr===key.days[2]&&e.mode==='h:b')).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))),
-        [...log.filter(e=>!(e.dateStr===key.days[2]&&e.mode==='h:b')),{dateStr:key.days[2],mode:'h:a',fars:[]}].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
-    assert.equal(state.log.find(e=>e.mode==='h:b').reason,'تصحيح');
+    for (const mode of ['h:b','all','discipline','stage1',undefined]) {
+        ctx.entry = { ...key.manualApproval, mode };
+        const result = copy(await vm.runInContext('api.saveKnightsEntry("general","s1",entry)',ctx));
+        assert.equal(result.success,false); assert.equal(typeof result.error,'string');
+    }
 });
-
-test('manual UI requires reason, stores exact row, awaits success and does not publish failure', async () => {
-    const h=harness();h.install('approveGeneralHalaqaKnights');
-    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.
-    h.ctx.sendGeneralTvSnapshot=()=>{};
-    h.element('generalKnightsHalaqa').value='h:b';h.element('generalKnightsDate').value=key.days[2];h.element('generalKnightsChoice1').value='7';
-    assert.equal(await h.run('approveGeneralHalaqaKnights()'),false);assert.equal(h.state.knightWrites,0);
-    h.element('generalKnightsReason').value='تقدير المعلم';
-    let release,saved;h.ctx.window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=copy(e);return new Promise(r=>release=r)};
-    const pending=h.run('approveGeneralHalaqaKnights()');assert.equal(h.run('currentThreeKnights'),null);release({success:false,error:'وهمي'});
-    assert.equal(await pending,false);assert.equal(h.run('currentThreeKnights'),null);
-    h.ctx.window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=copy(e);return {success:true}};
-    assert.equal(await h.run('approveGeneralHalaqaKnights()'),true);
-    assert.deepEqual(Object.keys(saved).sort(),['dateStr','mode','fars','reason','by','at'].sort());
-    assert.deepEqual(saved.fars,[{id:7,name:'ماجد'}]);assert.equal(saved.mode,'h:b');
+test('manual UI refuses general without reading removed fields or publishing', async () => {
+    const h=harness(); h.install('approveGeneralHalaqaKnights','saveGeneralKnightsReplacement','saveCurrentThreeKnights');
+    h.ctx.sendGeneralTvSnapshot=()=>assert.fail('publish reached');
+    for (const fn of ['approveGeneralHalaqaKnights','saveGeneralKnightsReplacement','saveCurrentThreeKnights'])
+        assert.equal(await h.run(fn+'({mode:"all",fars:[]})'),false);
+    assert.equal(h.state.knightWrites,0); assert.equal(h.run('currentThreeKnights'),null);
+    assert.deepEqual(copy(h.run('honorKnightsLog')),[key.manualApproval]);
 });
 
 test('create assigns Riyadh addition day, season import assigns new termStart for keep/reset', async () => {

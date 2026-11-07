@@ -11978,5 +11978,1124 @@
     "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
     "existingExpectedResultsChanged": true,
     "explanation": "إزالة واجهة الفرسان القديمة من general كاملة، واستبدالها بتبديل يدوي استثنائي. تغيرت توقعات ظهور اللوحة القديمة وتعبئة قوائم كل الطلاب وعددها الافتراضي 3 إلى لوحة مستقلة بقوائم الحلقة وافتراضي 1. بقيت شروط الحفظ وشكل entry والحسابات والمخازن والمفاتيح المقفلة كما هي. فروق التدقيق محدودة بالأسطر المسجلة هنا فقط."
+  },
+  "knightsOwnerAutoBaseline": "186a18e",
+  "knightsOwnerAutoChanges": [
+    {
+      "file": "index.html",
+      "hunks": [
+        {
+          "oldLine": 923,
+          "newLine": 923,
+          "before": [],
+          "after": [
+            "body.program-general [onclick=\"openSettingsSection('setPanelKnights')\"],",
+            "body.program-general #setPanelKnights,"
+          ]
+        },
+        {
+          "oldLine": 932,
+          "newLine": 934,
+          "before": [
+            "#generalKnightsPanel { display:none; }",
+            "body.program-general #generalKnightsPanel { display:grid; gap:var(--general-space-4); padding:var(--general-space-6); background:var(--general-surface); border:1px solid var(--general-line); border-radius:var(--general-radius-md); }",
+            "body.program-general #generalKnightsPanel h2 { font-size:var(--general-text-lg); font-weight:700; }",
+            "body.program-general #generalKnightsPanel label { display:grid; gap:8px; font-weight:600; }",
+            "body.program-general #generalKnightsPanel input,",
+            "body.program-general #generalKnightsPanel select { width:100%; min-height:44px; padding:10px; background:var(--general-surface); color:var(--general-ink); border:1px solid var(--general-line); border-radius:var(--general-radius-sm); }",
+            "body.program-general #generalKnightsPanel p { color:var(--general-muted); }",
+            "body.program-general #generalKnightsChoices { display:grid; gap:var(--general-space-4); }"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 1704,
+          "newLine": 1698,
+          "before": [
+            "            <section id=\"generalKnightsPanel\" aria-labelledby=\"generalKnightsTitle\">",
+            "                <h2 id=\"generalKnightsTitle\">فارس الحلقة</h2>",
+            "                <p>فارس الحلقة يختاره البرنامج آلياً كل يوم، ولا يحتاج منك شيئاً. استعمل هذا فقط إذا أردت تبديله يدوياً، مع كتابة السبب.</p>",
+            "                <label for=\"generalKnightsDate\">التاريخ",
+            "                    <input id=\"generalKnightsDate\" type=\"date\" onchange=\"renderGeneralKnightsPanel(true)\">",
+            "                </label>",
+            "                <label for=\"generalKnightsHalaqa\">الحلقة",
+            "                    <select id=\"generalKnightsHalaqa\" onchange=\"renderGeneralKnightsPanel(true)\"></select>",
+            "                </label>",
+            "                <p id=\"generalKnightsAutomatic\" role=\"status\" aria-live=\"polite\"></p>",
+            "                <p id=\"generalKnightsSaved\"></p>",
+            "                <div id=\"generalKnightsChoices\"></div>",
+            "                <label for=\"generalKnightsReason\">سبب التبديل اليدوي (إلزامي)",
+            "                    <input id=\"generalKnightsReason\" type=\"text\" required>",
+            "                </label>",
+            "                <button type=\"button\" class=\"general-knights-action\" onclick=\"saveGeneralKnightsReplacement()\">حفظ التبديل اليدوي</button>",
+            "            </section>",
+            ""
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 4281,
+          "newLine": 4257,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return false;"
+          ]
+        },
+        {
+          "oldLine": 7354,
+          "newLine": 7331,
+          "before": [
+            "            processRealClockPomodoro(); if (isGeneralProgram()) renderGeneralKnightsPanel(); else updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();"
+          ],
+          "after": [
+            "            processRealClockPomodoro(); if (!isGeneralProgram()) updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();"
+          ]
+        },
+        {
+          "oldLine": 7366,
+          "newLine": 7343,
+          "before": [
+            "            if (!isGeneralProgram()) return 3;",
+            "            const mode = document.getElementById('generalKnightsHalaqa')?.value || '';",
+            "            const count = window.almahraPrograms?.getSettings()?.titleRules?.knightsPerHalaqa?.[mode.slice(2)];",
+            "            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 1;",
+            "        }",
+            "        function renderGeneralKnightsPanel(reset = false) {",
+            "            if (!isGeneralProgram()) return;",
+            "            const panel = document.getElementById('generalKnightsPanel');",
+            "            if (!panel) return;",
+            "            const date = document.getElementById('generalKnightsDate'), halaqa = document.getElementById('generalKnightsHalaqa');",
+            "            const previous = halaqa.value;",
+            "            halaqa.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)",
+            "                .map(h => `<option value=\"h:${escapeHTML(h.id)}\">${escapeHTML(h.name)}</option>`).join('');",
+            "            if ([...halaqa.options].some(o => o.value === previous)) halaqa.value = previous;",
+            "            if (!date.value) date.value = todayStr;",
+            "            const context = window.almahraPrograms.getCurrentSeasonId() + '|' + date.value + '|' + halaqa.value;",
+            "            reset = reset || panel.dataset.context !== context;",
+            "            panel.dataset.context = context;",
+            "            const id = halaqa.value.slice(2), count = farsSelectionCount();",
+            "            const automatic = getDayHalaqaKnights(date.value, id, students, []);",
+            "            document.getElementById('generalKnightsAutomatic').textContent = automatic.names.length",
+            "                ? 'الفارس الآلي الحالي: ' + automatic.names.join('، ') : 'لا فارس آلياً لهذا اليوم';",
+            "            const saved = honorKnightsLog.find(e => e.dateStr === date.value && e.mode === halaqa.value);",
+            "            document.getElementById('generalKnightsSaved').textContent = saved",
+            "                ? 'التبديل اليدوي المحفوظ: ' + saved.fars.map(f => f.name).join('، ') + ' — السبب: ' + saved.reason : '';",
+            "            const choices = document.getElementById('generalKnightsChoices');",
+            "            const values = reset ? [] : [...choices.querySelectorAll('select')].map(s => s.value);",
+            "            const options = '<option value=\"\">اختر البديل</option>' + students.filter(s => s.halaqaId === id)",
+            "                .slice().sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(s => `<option value=\"${s.id}\">${escapeHTML(s.name)}${getGeneralAttendanceEligibility(s, [date.value], 100).status === 'incomplete' ? ' — غير مكتمل' : ''}</option>`).join('');",
+            "            choices.innerHTML = Array.from({ length: count }, (_, i) => `<label for=\"generalKnightsChoice${i + 1}\">البديل${count > 1 ? ' ' + (i + 1) : ''}<select id=\"generalKnightsChoice${i + 1}\">${options}</select></label>`).join('');",
+            "            values.forEach((value, i) => { const select = document.getElementById('generalKnightsChoice' + (i + 1)); if (select) select.value = value; });",
+            "            if (reset) document.getElementById('generalKnightsReason').value = '';"
+          ],
+          "after": [
+            "            return 3;"
+          ]
+        },
+        {
+          "oldLine": 7400,
+          "newLine": 7346,
+          "before": [
+            "            const saved = await approveGeneralHalaqaKnights();",
+            "            if (saved) renderGeneralKnightsPanel();",
+            "            return saved;"
+          ],
+          "after": [
+            "            return false;"
+          ]
+        },
+        {
+          "oldLine": 7439,
+          "newLine": 7383,
+          "before": [
+            "            if (!isGeneralProgram() || !canWriteView()) return false;",
+            "            const mode = document.getElementById('generalKnightsHalaqa').value, dateStr = document.getElementById('generalKnightsDate').value || todayStr;",
+            "            const reason = document.getElementById('generalKnightsReason').value.trim();",
+            "            if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }",
+            "            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('generalKnightsChoice' + (i + 1)).value).filter(Boolean);",
+            "            const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));",
+            "            if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }",
+            "            const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);",
+            "            if (!h || selected.some(s => s.halaqaId !== h.id || getAttendanceState(s, dateStr).state !== 'present' ||",
+            "                dayAcceptedWeightTenths(s.history?.[dateStr], settings.kindMult).total <= 0 || dayHasBlockingViolation(s.history?.[dateStr], getBlockingCriteriaIds()))) {",
+            "                showToast('اختر من طلاب الحلقة الحاضرين بتسميع مقبول وبلا حاجب', 'error'); return false;",
+            "            }",
+            "            const entry = { dateStr, mode, fars: selected.map(s => ({ id: s.id, name: s.name })), reason,",
+            "                by: window.almahraAuth.currentUser.uid, at: new Date().toISOString() };",
+            "            const programId = window.almahraPrograms.getCurrentProgramId(), seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            const result = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, entry);",
+            "            if (!result.success) { showToast('تعذّر حفظ الفرسان سحابياً: ' + result.error, 'error'); return false; }",
+            "            if (!isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== seasonId) return false;",
+            "            honorKnightsLog = honorKnightsLog.filter(e => e.dateStr !== dateStr || e.mode !== mode).concat(entry);",
+            "            currentThreeKnights = entry;",
+            "            sendGeneralTvSnapshot(); showToast('حُفظ اعتماد فارس الحلقة'); return true;"
+          ],
+          "after": [
+            "            return false;"
+          ]
+        },
+        {
+          "oldLine": 7463,
+          "newLine": 7387,
+          "before": [
+            "            if (isGeneralProgram()) return;"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) return false;"
+          ]
+        },
+        {
+          "oldLine": 11306,
+          "newLine": 11230,
+          "before": [
+            "            const generalKnightsPanel = document.getElementById('generalKnightsPanel');",
+            "            if (generalKnightsPanel) generalKnightsPanel.style.display = general ? 'grid' : 'none';"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 11444,
+          "newLine": 11366,
+          "before": [],
+          "after": [
+            "            if (panelId === 'setPanelKnights' && isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 12164,
+          "newLine": 12087,
+          "before": [
+            "            if (isGeneralProgram()) renderGeneralKnightsPanel(); else fillFarsModeSelect();"
+          ],
+          "after": [
+            "            if (!isGeneralProgram()) fillFarsModeSelect();"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "ccb8e6d1de6cd568f9369b6d2b48f62a24572ee3b26ca99d5832d0bff8fedf9c"
+    },
+    {
+      "file": "programs-store.js",
+      "hunks": [
+        {
+          "oldLine": 740,
+          "newLine": 740,
+          "before": [
+            "        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;",
+            "        if (blocked) return blocked;"
+          ],
+          "after": [
+            "        if (programId === 'general') return { success: false, error: 'الاعتماد اليدوي للفرسان معطّل في البرنامج العام' };"
+          ]
+        },
+        {
+          "oldLine": 752,
+          "newLine": 751,
+          "before": [
+            "            if (programId === 'general') {",
+            "                await runTransaction(db, async transaction => {",
+            "                    const snap = await transaction.get(ref);",
+            "                    transaction.update(ref, { knightsLog: mergeEntry(snap) });",
+            "                });",
+            "            } else {",
+            "                const snap = await getDoc(ref);",
+            "                await updateDoc(ref, { knightsLog: mergeEntry(snap).slice(0, 200) });",
+            "            }"
+          ],
+          "after": [
+            "            const snap = await getDoc(ref);",
+            "            await updateDoc(ref, { knightsLog: mergeEntry(snap).slice(0, 200) });"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "7958429e96ed00af01400024e9f40ea9e6f22c2e3b7695ed8942a240a091a0fa"
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 7,
+          "newLine": 7,
+          "before": [
+            "    const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\\r?\\n/);"
+          ],
+          "after": [
+            "    const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\\r?\\n/);"
+          ]
+        },
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '55fd33e') return diffLines(file, before, currentText.split(/\\r?\\n/));"
+          ],
+          "after": [
+            "    if (baseline === '186a18e') {",
+            "        const diff = cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' });",
+            "        const hunks = []; let hunk;",
+            "        for (const line of diff.split(/\\r?\\n/)) {",
+            "            const match = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "            if (match) { hunk = { oldLine: +match[1] + (match[2] === '0' ? 1 : 0), newLine: +match[3] + (match[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "            else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "            else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "        }",
+            "        return { file, hunks };",
+            "    }",
+            "    if (baseline === '55fd33e') return diffLines(file, before, require('./knights-owner-auto-audit.cjs').beforeKnightsOwnerAuto(currentText, file).split(/\\r?\\n/));"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "0aa76039b98ef08d835cfe5a08491695dc9c838fa691741f4e245e52fd7dba1d"
+    },
+    {
+      "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 5,
+          "newLine": 5,
+          "before": [],
+          "after": [
+            "    text = require('./knights-owner-auto-audit.cjs').beforeKnightsOwnerAuto(text, file);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "1b750e0cbc2d043473ea8fb5e4d286575f5c174ff91675876a60e0c209ca7274"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 278,
+          "newLine": 278,
+          "before": [
+            "test('approval transaction replaces only date+mode, preserves over 200 rows and retry/concurrent rows', async () => {",
+            "    const log=Array.from({length:205},(_,i)=>({dateStr:'2026-10-'+i,mode:'all',fars:[]}));",
+            "    log.push(copy(key.manualApproval),{dateStr:key.days[2],mode:'discipline',fars:[]},{dateStr:key.days[2],fars:[]});",
+            "    const state={log:copy(log),reads:0,updates:0};",
+            "    const ctx=firestoreContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{",
+            "        const tx={get:async()=>{state.reads++;return {exists:()=>true,data:()=>({knightsLog:copy(state.log)})}},update:(ref,patch)=>{state.updates++;state.log=copy(patch.knightsLog)}};",
+            "        await fn(tx);state.log.push({dateStr:key.days[2],mode:'h:a',fars:[]});await fn(tx);",
+            "    }});"
+          ],
+          "after": [
+            "test('manual approval store rejects every general mode before reads, transactions or guard', async () => {",
+            "    const ctx = firestoreContext({ beforeWrite: () => assert.fail('guard reached'), console });"
+          ]
+        },
+        {
+          "oldLine": 287,
+          "newLine": 281,
+          "before": [
+            "    ctx.entry={...key.manualApproval,reason:'تصحيح'};",
+            "    assert.equal((await vm.runInContext('api.saveKnightsEntry(\"general\",\"s1\",entry)',ctx)).success,true);",
+            "    assert.equal(state.reads,2);assert.equal(state.updates,2);assert.equal(state.log.length,log.length+1);",
+            "    assert.deepEqual(state.log.filter(e=>!(e.dateStr===key.days[2]&&e.mode==='h:b')).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))),",
+            "        [...log.filter(e=>!(e.dateStr===key.days[2]&&e.mode==='h:b')),{dateStr:key.days[2],mode:'h:a',fars:[]}].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));",
+            "    assert.equal(state.log.find(e=>e.mode==='h:b').reason,'تصحيح');"
+          ],
+          "after": [
+            "    for (const mode of ['h:b','all','discipline','stage1',undefined]) {",
+            "        ctx.entry = { ...key.manualApproval, mode };",
+            "        const result = copy(await vm.runInContext('api.saveKnightsEntry(\"general\",\"s1\",entry)',ctx));",
+            "        assert.equal(result.success,false); assert.equal(typeof result.error,'string');",
+            "    }"
+          ]
+        },
+        {
+          "oldLine": 294,
+          "newLine": 287,
+          "before": [
+            "",
+            "test('manual UI requires reason, stores exact row, awaits success and does not publish failure', async () => {",
+            "    const h=harness();h.install('approveGeneralHalaqaKnights');",
+            "    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.",
+            "    h.ctx.sendGeneralTvSnapshot=()=>{};",
+            "    h.element('generalKnightsHalaqa').value='h:b';h.element('generalKnightsDate').value=key.days[2];h.element('generalKnightsChoice1').value='7';",
+            "    assert.equal(await h.run('approveGeneralHalaqaKnights()'),false);assert.equal(h.state.knightWrites,0);",
+            "    h.element('generalKnightsReason').value='تقدير المعلم';",
+            "    let release,saved;h.ctx.window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=copy(e);return new Promise(r=>release=r)};",
+            "    const pending=h.run('approveGeneralHalaqaKnights()');assert.equal(h.run('currentThreeKnights'),null);release({success:false,error:'وهمي'});",
+            "    assert.equal(await pending,false);assert.equal(h.run('currentThreeKnights'),null);",
+            "    h.ctx.window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=copy(e);return {success:true}};",
+            "    assert.equal(await h.run('approveGeneralHalaqaKnights()'),true);",
+            "    assert.deepEqual(Object.keys(saved).sort(),['dateStr','mode','fars','reason','by','at'].sort());",
+            "    assert.deepEqual(saved.fars,[{id:7,name:'ماجد'}]);assert.equal(saved.mode,'h:b');"
+          ],
+          "after": [
+            "test('manual UI refuses general without reading removed fields or publishing', async () => {",
+            "    const h=harness(); h.install('approveGeneralHalaqaKnights','saveGeneralKnightsReplacement','saveCurrentThreeKnights');",
+            "    h.ctx.sendGeneralTvSnapshot=()=>assert.fail('publish reached');",
+            "    for (const fn of ['approveGeneralHalaqaKnights','saveGeneralKnightsReplacement','saveCurrentThreeKnights'])",
+            "        assert.equal(await h.run(fn+'({mode:\"all\",fars:[]})'),false);",
+            "    assert.equal(h.state.knightWrites,0); assert.equal(h.run('currentThreeKnights'),null);",
+            "    assert.deepEqual(copy(h.run('honorKnightsLog')),[key.manualApproval]);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "b74f1034d566d2797ec47c50e3417eb738630c7431f5186fc3cfda4ef7c4c891"
+    },
+    {
+      "file": "tests/knights-r2b-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 28,
+          "newLine": 28,
+          "before": [
+            "    assert.deepEqual(copy(await store[name](...args)),{success:false,error:GUARD});"
+          ],
+          "after": [
+            "    assert.deepEqual(copy(await store[name](...args)),{success:false,error:name==='saveKnightsEntry'?'الاعتماد اليدوي للفرسان معطّل في البرنامج العام':GUARD});"
+          ]
+        },
+        {
+          "oldLine": 261,
+          "newLine": 261,
+          "before": [
+            "        h.element('generalKnightsHalaqa').value='h:a';h.element('generalKnightsDate').value='2026-11-22';",
+            "        h.element('generalKnightsReason').value='تصحيح';h.element('generalKnightsChoice1').value='1';"
+          ],
+          "after": [
+            "        // Removed fields need not exist: the manual entry point rejects immediately.",
+            "        "
+          ]
+        },
+        {
+          "oldLine": 293,
+          "newLine": 293,
+          "before": [
+            "    assert.equal(server.state.writes.length,0);assert.ok(h.state.messages.some(m=>m.type==='error'&&m.message.includes(GUARD)),JSON.stringify(h.state.messages));"
+          ],
+          "after": [
+            "    assert.equal(server.state.writes.length,0);if(path!=='manual')assert.ok(h.state.messages.some(m=>m.type==='error'&&m.message.includes(GUARD)),JSON.stringify(h.state.messages));"
+          ]
+        },
+        {
+          "oldLine": 346,
+          "newLine": 346,
+          "before": [
+            "    const production=files.filter(f=>!f.startsWith('tests/'));"
+          ],
+          "after": [
+            "    const production=files.filter(f=>!f.startsWith('tests/')&&changesFrom(f,'0c5ec91').hunks.length);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "243e280bdc445c428e7514aa0075a12918969bef2af8ed53439b1116f57e8503"
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [],
+          "after": [
+            "const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 22,
+          "newLine": 23,
+          "before": [
+            "test('release general: independent replacement panel, active halaqas, automatic winner, scoped sorted students and counts 1..5/default 1', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => {",
+            "            const settings = window.almahraPrograms.getSettings();",
+            "            settings.features.knights = false; // New approval remains available independently of the old feature.",
+            "            settings.halaqas.push({ id: 'inactive', name: 'Inactive', active: false });",
+            "            goHome('page-settings');",
+            "        });",
+            "        const card = h.page.locator('[onclick=\"openSettingsSection(\\'setPanelKnights\\')\"]');",
+            "        assert.equal(await card.isVisible(), true);",
+            "        await card.click();",
+            "        assert.equal(await h.page.locator('#setPanelKnights').isVisible(), true);",
+            "        assert.equal(await h.page.locator('#supervisorPanel').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#generalKnightsPanel').isVisible(), true);",
+            "        assert.equal(await h.page.locator('#generalKnightsTitle').innerText(), 'فارس الحلقة');",
+            "        assert.deepEqual(await h.page.locator('#generalKnightsHalaqa option').evaluateAll(list => list.map(o => ({value:o.value,text:o.textContent}))), key.settings.halaqas.filter(h => h.active === true).map(h => ({value:'h:' + h.id,text:h.name})));",
+            "        assert.equal(await h.page.locator('#farsDayInput').isVisible(), false);",
+            "        for (const n of [1,2,3]) assert.equal(await h.page.locator('#fars' + n + 'Achievement').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#generalKnightsReason').isVisible(), true);",
+            "        assert.doesNotMatch(await h.page.locator('#generalKnightsPanel').innerText(), /اختيار آلي|يوم الفرسان|الإنجاز|الأول|الثاني|الثالث|🚀/);",
+            "        for (const count of [1,2,3,4,5,undefined]) {",
+            "            await h.page.evaluate(count => {",
+            "                const settings = window.almahraPrograms.getSettings();",
+            "                settings.titleRules.knightsPerHalaqa = { ...settings.titleRules.knightsPerHalaqa, a: count };",
+            "                document.getElementById('generalKnightsHalaqa').value = 'h:a';",
+            "                renderGeneralKnightsPanel(true);",
+            "            }, count);",
+            "            assert.equal(await h.page.locator('#generalKnightsChoices select').count(), count ?? 1);",
+            "        }",
+            "        const data = await h.page.evaluate(() => ({",
+            "            options:[...document.getElementById('generalKnightsChoice1').options].slice(1).map(o=>({id:o.value,text:o.textContent})),",
+            "            expected:students.filter(s=>s.halaqaId==='a').sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(s=>({id:String(s.id),text:s.name+(getGeneralAttendanceEligibility(s,['2026-11-24'],100).status==='incomplete'?' — غير مكتمل':'')})),",
+            "            automatic:document.getElementById('generalKnightsAutomatic').textContent,",
+            "            names:getDayHalaqaKnights('2026-11-24','a',students,[]).names",
+            "        }));",
+            "        assert.deepEqual(data.options,data.expected);for(const name of data.names)assert.ok(data.automatic.includes(name));",
+            "        await h.page.evaluate(() => {delete students.find(s=>s.halaqaId==='a').history['2026-11-23'];document.getElementById('generalKnightsDate').value='2026-11-23';renderGeneralKnightsPanel(true)});",
+            "        assert.match(await h.page.locator('#generalKnightsChoice1').innerText(), /غير مكتمل/);",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('release general: all legacy entry points are inert; replacement rejects blank reason and saves exact entry', async () => {"
+          ],
+          "after": [
+            "test('release general: owner removed replacement UI and all manual approval entry points refuse', async () => {"
+          ]
+        },
+        {
+          "oldLine": 69,
+          "newLine": 27,
+          "before": [
+            "            const writes = [], legacy = [];",
+            "            window.almahraPrograms.saveKnightsEntry = async (...args) => { writes.push(args); return {success:true}; };",
+            "            saveCurrentThreeKnights = async (...args) => { legacy.push(args); return true; };",
+            "            getDayRanking = getDisciplineRanking = () => { throw Error('Legacy ranking reached'); };",
+            "            sendGeneralTvSnapshot = () => {};",
+            "            const mode = document.getElementById('farsAutoMode');",
+            "            const before = document.getElementById('supervisorPanel').innerHTML;",
+            "            for (const value of ['all','discipline','stage1','']) {",
+            "                mode.innerHTML = ''; mode.add(new Option(value,value)); mode.value = value;",
+            "                const html = document.getElementById('supervisorPanel').innerHTML;",
+            "                await launchThreeKnights(); autoPickKnights(); fillFarsModeSelect(); updateThreeKnightsSelects(); syncFarsDayFromDate();",
+            "                if (html !== document.getElementById('supervisorPanel').innerHTML) throw Error('Legacy mutation');",
+            "            }",
+            "            const blocked = {writes:writes.length,legacy:legacy.length,open:document.getElementById('threeKnightsModal').classList.contains('flex')};",
+            "            document.getElementById('generalKnightsHalaqa').value = 'h:b';",
+            "            window.almahraPrograms.getSettings().titleRules.knightsPerHalaqa.b = 1;",
+            "            document.getElementById('generalKnightsDate').value = '2026-11-24';",
+            "            renderGeneralKnightsPanel(true);",
+            "            document.getElementById('generalKnightsChoice1').value = '7';",
+            "            document.getElementById('fars2Select').value = '1'; // Stale hidden choice from another halaqa must not be saved.",
+            "            document.getElementById('generalKnightsReason').value = '  ';",
+            "            const empty = await saveGeneralKnightsReplacement(), emptyWrites = writes.length;",
+            "            document.getElementById('generalKnightsReason').value = '  تقدير المعلم  ';",
+            "            const saved = await saveGeneralKnightsReplacement();",
+            "            const hidden = getComputedStyle(document.getElementById('threeKnightsModal')).display;",
+            "            return {blocked,empty,emptyWrites,saved,writes,legacy,hidden};"
+          ],
+          "after": [
+            "            let writes = 0;",
+            "            window.almahraPrograms.saveKnightsEntry = async () => { writes++; return {success:true}; };",
+            "            goHome('page-settings'); openSettingsSection('setPanelKnights'); updateAllUIs();",
+            "            return { writes, panel: document.getElementById('setPanelKnights').classList.contains('active'),",
+            "                replacement: document.getElementById('generalKnightsPanel') !== null,",
+            "                render: typeof renderGeneralKnightsPanel,",
+            "                approved: await approveGeneralHalaqaKnights(), replacementSaved: await saveGeneralKnightsReplacement(),",
+            "                sharedSaved: await saveCurrentThreeKnights({dateStr:'2026-11-24', mode:'all', fars:[]}) };"
+          ]
+        },
+        {
+          "oldLine": 96,
+          "newLine": 36,
+          "before": [
+            "        assert.deepEqual(result.blocked, {writes:0,legacy:0,open:false});",
+            "        assert.equal(result.empty, false); assert.equal(result.emptyWrites, 0);",
+            "        assert.equal(result.saved, true); assert.equal(result.writes.length, 1);",
+            "        const [program,season,entry] = result.writes[0];",
+            "        assert.equal(program,'general'); assert.equal(season,'s-general');",
+            "        assert.equal(entry.mode,'h:b'); assert.equal(entry.reason,'تقدير المعلم');",
+            "        assert.deepEqual(entry.fars,[{id:7,name:'ماجد'}]);",
+            "        assert.deepEqual(Object.keys(entry).sort(), ['dateStr','mode','fars','reason','by','at'].sort());",
+            "        assert.match(await h.page.locator('#generalKnightsSaved').innerText(), /ماجد.*تقدير المعلم/);",
+            "        assert.equal(result.hidden,'none'); assert.deepEqual(result.legacy,[]);",
+            "        assert.deepEqual(h.errors,[]);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('release general: all five allowed manual positions save and old modal stays hidden', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        const result = await h.page.evaluate(async () => {",
+            "            let saved;",
+            "            const list = window.__fixture.list;",
+            "            const template = list.find(s => s.id === 7);",
+            "            for(let i=0;i<4;i++) list.push({...structuredClone(template),id:100+i,name:'Synthetic '+i});",
+            "            students = list;",
+            "            const settings=window.almahraPrograms.getSettings(); settings.titleRules.knightsPerHalaqa.b=5;",
+            "            document.getElementById('generalKnightsHalaqa').value='h:b';",
+            "            document.getElementById('generalKnightsDate').value='2026-11-24';renderGeneralKnightsPanel(true);",
+            "            [7,100,101,102,103].forEach((id,i)=>document.getElementById('generalKnightsChoice'+(i+1)).value=String(id));",
+            "            document.getElementById('generalKnightsReason').value='تقدير المعلم';",
+            "            window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=e;return {success:true}};",
+            "            sendGeneralTvSnapshot=()=>{};",
+            "            return {ok:await saveGeneralKnightsReplacement(),saved};",
+            "        });",
+            "        assert.equal(result.ok,true); assert.deepEqual(result.saved.fars.map(s=>s.id),[7,100,101,102,103]);",
+            "        assert.deepEqual(h.errors,[]);"
+          ],
+          "after": [
+            "        assert.deepEqual(result, {writes:0, panel:false, replacement:false, render:'undefined', approved:false, replacementSaved:false, sharedSaved:false});",
+            "        assert.deepEqual(h.errors, []);"
+          ]
+        },
+        {
+          "oldLine": 133,
+          "newLine": 41,
+          "before": [
+            "test('general replacement: changing date/halaqa clears draft, no automatic winner, saved reason, and all eligibility rejections', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => {goHome('page-settings');openSettingsSection('setPanelKnights')});",
+            "        await h.page.selectOption('#generalKnightsHalaqa','h:b');",
+            "        await h.page.selectOption('#generalKnightsChoice1','7');",
+            "        await h.page.fill('#generalKnightsReason','سبب سابق');",
+            "        await h.page.selectOption('#generalKnightsHalaqa','h:a');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');",
+            "        await h.page.selectOption('#generalKnightsChoice1','1');",
+            "        await h.page.fill('#generalKnightsReason','سبب آخر');",
+            "        await h.page.fill('#generalKnightsDate','2026-11-23');",
+            "        await h.page.locator('#generalKnightsDate').dispatchEvent('change');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');",
+            "        await h.page.fill('#generalKnightsDate','2026-11-20');",
+            "        await h.page.locator('#generalKnightsDate').dispatchEvent('change');",
+            "        assert.equal(await h.page.locator('#generalKnightsAutomatic').innerText(),'لا فارس آلياً لهذا اليوم');",
+            "        const result=await h.page.evaluate(async()=>{",
+            "            let writes=0;window.almahraPrograms.saveKnightsEntry=async()=>{writes++;return {success:true}};",
+            "            const student=students.find(s=>s.id===7), original=structuredClone(student.history['2026-11-24']);",
+            "            document.getElementById('generalKnightsDate').value='2026-11-24';",
+            "            document.getElementById('generalKnightsHalaqa').value='h:b';renderGeneralKnightsPanel(true);",
+            "            document.getElementById('generalKnightsReason').value='تصحيح الورقة';",
+            "            const rejected=[];",
+            "            for(const type of ['absent','no-recitation','repeat','blocking','wrong-halaqa']) {",
+            "                student.history['2026-11-24']=structuredClone(original);",
+            "                if(type==='absent')student.history['2026-11-24']={attended:false,absence:'unexcused'};",
+            "                if(type==='no-recitation')student.history['2026-11-24'].entries={};",
+            "                if(type==='repeat')Object.values(student.history['2026-11-24'].entries).forEach(e=>e.grade='repeat');",
+            "                if(type==='blocking') {",
+            "                    const c=getProgramSettings().criteria.find(c=>c.blocksTitles && c.points<0);",
+            "                    student.history['2026-11-24'].criteria[c.id]=c.points;",
+            "                }",
+            "                const select=document.getElementById('generalKnightsChoice1');",
+            "                if(type==='wrong-halaqa') {select.add(new Option('طالب حلقة أخرى','1'));select.value='1'}else select.value='7';",
+            "                rejected.push(await approveGeneralHalaqaKnights());",
+            "            }",
+            "            student.history['2026-11-24']=original;",
+            "            return {writes,rejected};",
+            "        });",
+            "        assert.equal(result.writes,0);assert.deepEqual(result.rejected,[false,false,false,false,false]);",
+            "        assert.deepEqual(h.errors,[]);",
+            "    } finally {await h.close()}",
+            "});",
+            ""
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 320,
+          "newLine": 181,
+          "before": [
+            "        assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','2d78da2:'+file],{cwd:root}));"
+          ],
+          "after": [
+            "        assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,file),'utf8'),file),cp.execFileSync('git',['show','2d78da2:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n'));"
+          ]
+        },
+        {
+          "oldLine": 327,
+          "newLine": 188,
+          "before": [
+            "    const changed=cp.execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/)",
+            "        .filter(f=>f&&f!=='tests/rules/design-expectation-audit.json').sort();"
+          ],
+          "after": [
+            "    const existing=new Set(cp.execFileSync('git',['ls-tree','-r','--name-only','55fd33e'],{cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/));",
+            "    const changed=cp.execFileSync('git',['diff','--name-only','55fd33e'],{cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/)",
+            "        .filter(f=>existing.has(f)&&f!=='tests/rules/design-expectation-audit.json').filter(f=>changesFrom(f,'55fd33e').hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 339,
+          "newLine": 201,
+          "before": [
+            "        const current=fs.readFileSync(path.join(root,row.file));"
+          ],
+          "after": [
+            "        const current=Buffer.from(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,row.file),'utf8'),row.file));"
+          ]
+        },
+        {
+          "oldLine": 345,
+          "newLine": 207,
+          "before": [
+            "    const reads=source('approveGeneralHalaqaKnights').replaceAll('generalKnightsHalaqa','farsAutoMode')"
+          ],
+          "after": [
+            "    const reviewed = beforeKnightsOwnerAuto(html);",
+            "    const reads=source('approveGeneralHalaqaKnights',reviewed).replaceAll('generalKnightsHalaqa','farsAutoMode')"
+          ]
+        },
+        {
+          "oldLine": 351,
+          "newLine": 214,
+          "before": [
+            "        assert.equal(source(name),source(name,baseline),name);"
+          ],
+          "after": [
+            "        assert.equal(source(name,reviewed),source(name,baseline),name);"
+          ]
+        },
+        {
+          "oldLine": 353,
+          "newLine": 216,
+          "before": [
+            "        assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','55fd33e:'+file],{cwd:root}));",
+            "    const mutated=html.replace(\"const options = '<option value=\\\"\\\">اختر البديل</option>'\", \"const options = '<option value=\\\"\\\">تغيير غير معتمد</option>'\");",
+            "    assert.notEqual(mutated,html);"
+          ],
+          "after": [
+            "        assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,file),'utf8'),file),cp.execFileSync('git',['show','55fd33e:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n'));",
+            "    const mutated=reviewed.replace(\"const options = '<option value=\\\"\\\">اختر البديل</option>'\", \"const options = '<option value=\\\"\\\">تغيير غير معتمد</option>'\");",
+            "    assert.notEqual(mutated,reviewed);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "a8965e27a1052327d4ab4ef6ca10da002a44bb1a90781e41dbd73333831b9ab0"
+    }
+  ],
+  "knightsOwnerAutoAddedFiles": [
+    {
+      "file": "tests/helpers/knights-owner-auto-audit.cjs",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "sha256": "058321633a2db357bfcdf382575bfd7cde09c703d13eef450f1609a6c505266b",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { createHash } = require('node:crypto');",
+            "// Reverse only the owner's exact changed lines, leaving unrelated edits exposed.",
+            "function beforeKnightsOwnerAuto(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    const row = require('../rules/design-expectation-audit.json').knightsOwnerAutoChanges?.find(r => r.file === file);",
+            "    if (!row || createHash('sha256').update(text).digest('hex') === row.beforeSha256) return text;",
+            "    const lines = text.split('\\n');",
+            "    if (!row.hunks.every(h => JSON.stringify(lines.slice(h.newLine - 1, h.newLine - 1 + h.after.length)) === JSON.stringify(h.after))) return text;",
+            "    for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);",
+            "    return lines.join('\\n');",
+            "}",
+            "module.exports = { beforeKnightsOwnerAuto };",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "sha256": "0862c4be31773a2d0691af76dd4b348f7452e944ffa68a6b49a1d7902676979d",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { before, after, test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const path = require('node:path');",
+            "const fs = require('node:fs');",
+            "const vm = require('node:vm');",
+            "const { newPage, root } = require('./helpers/t25-browser.cjs');",
+            "const { cloud, runtime, key } = require('./helpers/knights-r2b-harness.cjs');",
+            "const { harness: pure, fixtures, entry } = require('./helpers/knights-r2-harness.cjs');",
+            "const { copy, source } = require('./helpers/quick-entry-harness.cjs');",
+            "let browser;",
+            "before(async () => {",
+            "    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,",
+            "        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));",
+            "    browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });",
+            "});",
+            "after(async () => { await browser?.close(); });",
+            "const open = (options = {}) => newPage(browser, { width: 1280, today: key.days[1], list: fixtures(), settings: key.settings, ...options });",
+            "const tick = () => new Promise(resolve => setImmediate(resolve));",
+            "const rows = server => copy(Object.values(server.season().weekKnightsLog || {}));",
+            "const report = h => h.install('summarizeRange', 'dayHasAnyViolation', 'dayMeetsDisciplineCriteria', 'getDisciplineCriteriaIds');",
+            "function tv(h, date = key.days[1]) {",
+            "    h.run('let honorKnightsLog = []');",
+            "    h.ctx.getBoardDate = () => date;",
+            "    h.ctx.getBoardWeekRange = () => ({ startStr: key.days[0], endStr: key.days[3] });",
+            "    h.ctx.getWorkingDatesInRange = () => key.days;",
+            "    h.ctx.getGeneralTvBoard = h.ctx.getHomePrepWeek = h.ctx.getMostImproved = () => [];",
+            "    const sent = [];",
+            "    h.ctx.generalTvReady = () => true; h.ctx.generalTvContext = () => 'general:s1';",
+            "    h.ctx.postGeneralTv = snapshot => sent.push(copy(snapshot));",
+            "    h.run('generalTv.enabled = true');",
+            "    return sent;",
+            "}",
+            "function sender(h) {",
+            "    h.install('sendGeneralWeeklyMessage', 'getGeneralSchoolDates');",
+            "    h.ctx.getGeneralMessageWeek = () => ({ startStr: key.days[0], endStr: key.days[3] });",
+            "    h.ctx.quranMeta = { surahs: { references: [] } };",
+            "    h.ctx.programBrandName = () => 'المهرة'; h.ctx.normalizeSaudiPhone = () => '966500000000';",
+            "}",
+            "async function correction() {",
+            "    const server = cloud(); server.season().knightsLog = [];",
+            "    const h = runtime(server); await h.frozen();",
+            "    const old = copy(rows(server).find(r => r.halaqaId === 'a'));",
+            "    const saad = server.docs.get('programs/general/seasons/s1/students/2');",
+            "    saad.history[key.days[3]] = copy(server.docs.get('programs/general/seasons/s1/students/1').history[key.days[0]]);",
+            "    return { server, h, old };",
+            "}",
+            "",
+            "test('ق1: general hides the knights card and entire panel, including forced display and direct open', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelKnights'); });",
+            "        assert.equal(await h.page.locator('[onclick=\"openSettingsSection(\\'setPanelKnights\\')\"]').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#setPanelKnights').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#setPanelKnights.active').count(), 0);",
+            "        assert.equal(await h.page.locator('#generalKnightsPanel').count(), 0);",
+            "        await h.page.evaluate(() => { document.getElementById('setPanelKnights').style.display = 'block'; });",
+            "        assert.equal(await h.page.locator('#setPanelKnights').isVisible(), false);",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ق2: approve and launch reject general without writes or local changes', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        const result = await h.page.evaluate(async () => {",
+            "            let writes = 0;",
+            "            window.almahraPrograms.saveKnightsEntry = async () => { writes++; return { success: true }; };",
+            "            const before = JSON.stringify([honorKnightsLog, currentThreeKnights]);",
+            "            // Seed the removed panel only when testing the pre-change implementation.",
+            "            if (document.getElementById('generalKnightsPanel')) {",
+            "                document.getElementById('generalKnightsHalaqa').value = 'h:b';",
+            "                document.getElementById('generalKnightsDate').value = '2026-11-24';",
+            "                renderGeneralKnightsPanel(true);",
+            "                document.getElementById('generalKnightsChoice1').value = '7';",
+            "                document.getElementById('generalKnightsReason').value = 'تصحيح';",
+            "            }",
+            "            return { approved: await approveGeneralHalaqaKnights(), launched: await launchThreeKnights(), writes,",
+            "                same: before === JSON.stringify([honorKnightsLog, currentThreeKnights]) };",
+            "        });",
+            "        assert.equal(result.approved, false); assert.equal(result.launched, false);",
+            "        assert.equal(result.writes, 0); assert.equal(result.same, true);",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ق3: weekly count and joinedOn remain in program settings with review/refreeze/announcement', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelPoints'); });",
+            "        assert.equal(await h.page.locator('#psKnights_a').count(), 1);",
+            "        assert.equal(await h.page.locator('#psKnights_a').isVisible(), true);",
+            "        assert.match(await h.page.locator('#setPanelPoints').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);",
+            "        const server = cloud(), r = runtime(server); await r.frozen(); await r.call('renderWeekKnightsReview');",
+            "        assert.match(r.element('weekKnightsReview').innerHTML, /إعادة الحسم/);",
+            "        assert.ok(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('onclick=\"copyWeeklyKnightsAnnouncement()\"'));",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "async function dailyCorrection() {",
+            "    const h = await open({ today: key.days[2] });",
+            "    try {",
+            "        const result = await h.page.evaluate(async ({ high, low, corrected }) => {",
+            "            const date = '2026-11-24', winner = students.find(s => s.id === 1), rival = students.find(s => s.id === 2);",
+            "            winner.name = 'أحمد'; rival.name = 'يوسف';",
+            "            for (const s of students.filter(s => s.halaqaId === 'a')) s.history[date] = { attended: false, absence: 'unexcused' };",
+            "            winner.history[date] = { attended: true, entries: { e: high, extra: structuredClone(high) } };",
+            "            rival.history[date] = { attended: true, entries: { e: low } };",
+            "            const before = getGeneralTvSnapshot();",
+            "            const log = JSON.stringify(honorKnightsLog);",
+            "            if (!await commitGeneralStudentPatch(winner, { ['history.' + date + '.entries.e']: corrected, ['history.' + date + '.entries.extra']: DEL_FIELD })) throw Error('valid correction refused');",
+            "            return { before, after: getGeneralTvSnapshot(), sameLog: log === JSON.stringify(honorKnightsLog), writes: window.__fixture.writes };",
+            "        }, { high: { ...entry({kind:'new',passage:5,grade:'excellent'}), heardBy:'t-a' },",
+            "            low: { ...entry({kind:'new',passage:4,grade:'excellent'}), heardBy:'t-a' },",
+            "            corrected: { ...entry({kind:'new',passage:4,grade:'good'}), heardBy:'t-a' } });",
+            "        const names = s => s.stages.flatMap(stage => stage.dayKnights).find(k => k.stage === key.settings.halaqas.find(k => k.id === 'a').name).names;",
+            "        assert.deepEqual(names(result.before), ['أحمد']); assert.deepEqual(names(result.after), ['يوسف']);",
+            "        assert.equal(result.sameLog, true); assert.equal(result.writes.length, 1);",
+            "        // Render the actual snapshot through production TV rendering, offline.",
+            "        const context = await browser.newContext();",
+            "        try {",
+            "            const page = await context.newPage();",
+            "            await page.addInitScript(() => { const NativeDate = Date; window.Date = class extends NativeDate { constructor(...args) { super(...(args.length ? args : ['2026-11-24T10:00:00Z'])); } static now() { return +new NativeDate('2026-11-24T10:00:00Z'); } }; });",
+            "            await page.route('**/*', route => {",
+            "                const url = new URL(route.request().url());",
+            "                const file = url.pathname === '/' ? 'tv.html' : url.pathname.slice(1);",
+            "                const absolute = path.resolve(root, file);",
+            "                if (url.hostname !== 'almahra.test' || !absolute.startsWith(root + path.sep) || !fs.existsSync(absolute)) return route.fulfill({ body: '' });",
+            "                return route.fulfill({ path: absolute });",
+            "            });",
+            "            await page.goto('http://almahra.test/tv.html');",
+            "            // The renderer is also exported for deterministic offline rendering.",
+            "            await page.evaluate(snapshot => { snapshot.stages.forEach(s => { s.board = []; s.weekKnights = []; s.prepWeek = []; s.risingStars = []; }); const channel = new BroadcastChannel('almahra-tv'); channel.postMessage(snapshot); channel.close(); }, result.after);",
+            "            await page.waitForFunction(() => document.body.innerText.includes('يوسف'));",
+            "            assert.ok((await page.locator('body').innerText()).includes('يوسف'));",
+            "        } finally { await context.close(); }",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "}",
+            "test('ق4: correcting Ahmad recitation changes snapshot.stages[].dayKnights and TV automatically', dailyCorrection);",
+            "test('ق15: a saved correction changes the provisional TV knight without an approval', dailyCorrection);",
+            "",
+            "async function refreeze() {",
+            "    const { server, h, old } = await correction();",
+            "    assert.equal(old.knights[0].name, 'فهد');",
+            "    assert.deepEqual(rows(server).find(r => r.halaqaId === 'a'), old);",
+            "    for (const reason of ['', '   ']) assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', reason)).success, false);",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد')).success, true);",
+            "    const fresh = rows(server).find(r => r.halaqaId === 'a');",
+            "    assert.equal(fresh.knights[0].name, 'سعد'); assert.equal(fresh.refreeze[0].reason, 'تصحيح ورقة سعد');",
+            "    assert.deepEqual(server.season().knightsLog, []);",
+            "    assert.equal(h.run('students.find(s=>s.id===2).history[\"2026-11-25\"]'), undefined, 'refreeze used server, not stale local students');",
+            "}",
+            "test('ق5: after freeze, reason is mandatory and corrected server data changes weekly knight', refreeze);",
+            "test('ق17: frozen row persists until refreeze, blank/whitespace refused and fresh server reason recorded', refreeze);",
+            "",
+            "test('ق6: after announcement refreeze refuses and correction updates points/report but not announced knight', async () => {",
+            "    const { server, h } = await correction();",
+            "    await h.call('copyWeeklyKnightsAnnouncement');",
+            "    const old = copy(rows(server)), announcement = h.state.copies[0];",
+            "    report(h);",
+            "    const student = h.run('students[0]'), before = copy(await h.call('summarizeRange', student, key.days));",
+            "    await h.call('commitGeneralStudentPatch', student, { ['history.' + key.days[0] + '.criteriaPoints']: -100 });",
+            "    const after = copy(await h.call('summarizeRange', student, key.days));",
+            "    assert.notEqual(after.points, before.points);",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');",
+            "    await h.call('copyWeeklyKnightsAnnouncement');",
+            "    assert.equal(h.state.copies[1], announcement); assert.deepEqual(rows(server), old);",
+            "    await h.call('renderWeekKnightsReview'); assert.doesNotMatch(h.element('weekKnightsReview').innerHTML, /onclick=\"refreeze/);",
+            "});",
+            "",
+            "test('ق12: refresh/settings and round trips never restore general knights UI or call removed renderers', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        for (const program of ['general', 'summer', 'general', 'review-day', 'general']) {",
+            "            await h.page.evaluate(program => window.almahraPrograms.openProgram(program), program);",
+            "            await h.page.waitForFunction(program => document.body.classList.contains('program-general') === (program === 'general'), program);",
+            "            await h.page.evaluate(() => { updateAllUIs(); goHome('page-settings'); });",
+            "            assert.equal(await h.page.locator('[onclick=\"openSettingsSection(\\'setPanelKnights\\')\"]').isVisible(), program !== 'general');",
+            "            await h.page.evaluate(() => openSettingsSection('setPanelKnights'));",
+            "            assert.equal(await h.page.locator('#setPanelKnights').isVisible(), program !== 'general');",
+            "        }",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ق13: every manual mode is rejected at UI/shared/store entries with no server/local/guard mutation', async () => {",
+            "    const server = cloud(), h = runtime(server);",
+            "    h.install('saveCurrentThreeKnights', 'saveGeneralKnightsReplacement', 'approveGeneralHalaqaKnights');",
+            "    h.run('let honorKnightsLog = [], currentThreeKnights = null');",
+            "    const before = copy([...server.docs]); let guard = 0;",
+            "    h.ctx.window.almahraPrograms.setWriteGuard(async () => { guard++; return { ok: true }; });",
+            "    for (const mode of ['h:a', 'all', 'discipline', 'stage1', '', undefined]) {",
+            "        const entry = { dateStr: key.days[1], fars: [{ id: 1, name: 'أحمد' }], ...(mode === undefined ? {} : { mode }) };",
+            "        assert.equal(await h.call('saveCurrentThreeKnights', entry), false);",
+            "        const result = await h.ctx.window.almahraPrograms.saveKnightsEntry('general', 's1', entry);",
+            "        assert.equal(result.success, false); assert.match(result.error, /الاعتماد اليدوي.*معطّل.*البرنامج العام/);",
+            "    }",
+            "    assert.equal(await h.call('saveGeneralKnightsReplacement'), false);",
+            "    assert.equal(h.run('currentThreeKnights'), null); assert.deepEqual(copy(h.run('honorKnightsLog')), []);",
+            "    assert.deepEqual(copy([...server.docs]), before); assert.equal(server.state.writes.length, 0); assert.equal(guard, 0);",
+            "});",
+            "",
+            "test('ق14: count default/1..5 persists and freezes; boundary ties share rank and daily winners have no count limit', async () => {",
+            "    for (const n of [undefined, 1, 2, 3, 4, 5]) {",
+            "        const server = cloud(), settings = copy(key.settings);",
+            "        for (const s of server.students().filter(s => s.halaqaId === 'c')) {",
+            "            s.history = copy(server.students()[0].history); s.joinedOn = key.days[0];",
+            "            server.docs.set('programs/general/seasons/s1/students/' + s.id, s);",
+            "        }",
+            "        settings.titleRules.knightsPerHalaqa = n === undefined ? {} : { c: n };",
+            "        const store = server.stores().almahraPrograms;",
+            "        store.setWriteGuard(async () => ({ok:true}));",
+            "        assert.equal((await store.updateSettings('general', settings)).success, true);",
+            "        assert.deepEqual(copy(await store.getSettingsFromServer('general')).titleRules, settings.titleRules);",
+            "        const h = runtime(server); await h.frozen();",
+            "        const row = rows(server).find(r => r.halaqaId === 'c');",
+            "        assert.equal(row.n, n ?? 1); assert.equal(row.knights.length, 2);",
+            "        assert.deepEqual(row.knights.map(k => k.rank), [1, 1]);",
+            "        const day = await h.call('getDayHalaqaKnights', key.days[0], 'c', server.students(), [], { ...settings, season: key.season });",
+            "        assert.equal(day.names.length, 2);",
+            "    }",
+            "});",
+            "",
+            "test('ق16: saved removal of accepted recitation, absence or blocker chooses rival or removes empty TV card', async () => {",
+            "    for (const kind of ['no-accepted', 'absent', 'blocking']) {",
+            "        const server = cloud(), h = runtime(server); tv(h);",
+            "        const list = h.run('students'), winner = list.find(s => s.id === 1), rival = list.find(s => s.id === 2);",
+            "        for (const s of list.filter(s => s.halaqaId === 'a' && ![1,2].includes(s.id))) s.history[key.days[1]] = {attended:false,absence:'unexcused'};",
+            "        const day = key.days[1]; winner.history[day] = copy(winner.history[key.days[0]]);",
+            "        rival.history[day] = copy(winner.history[day]);",
+            "        Object.values(winner.history[day].entries).forEach(e => e.points = 1000);",
+            "        const names = async () => copy(await h.call('getGeneralTvSnapshot')).stages.flatMap(s => s.dayKnights).find(k => k.stage === key.settings.halaqas.find(k => k.id === 'a').name)?.names;",
+            "        assert.deepEqual(await names(), ['فهد']);",
+            "        const removeEntries = student => Object.fromEntries(Object.keys(student.history[day].entries || {}).map(id => ['history.' + day + '.entries.' + id, h.run('DEL_FIELD')]));",
+            "        const patch = kind === 'no-accepted' ? removeEntries(winner) : kind === 'absent'",
+            "            ? { ['history.' + day + '.attended']: false, ['history.' + day + '.absence']: 'unexcused', ['history.' + day + '.note']: '' }",
+            "            : { ['history.' + day + '.criteria']: { [key.settings.criteria.find(c => c.blocksTitles && c.points < 0).id]: -1 } };",
+            "        if (kind === 'absent') Object.assign(patch, removeEntries(winner));",
+            "        assert.equal(await h.call('commitGeneralStudentPatch', winner, patch), true);",
+            "        assert.deepEqual(await names(), ['سعد']);",
+            "        for (const student of list.filter(s => s.halaqaId === 'a')) await h.call('commitGeneralStudentPatch', student, { ...removeEntries(student), ['history.' + day + '.attended']: false, ['history.' + day + '.absence']: 'unexcused', ['history.' + day + '.note']: '' });",
+            "        assert.equal(await names(), undefined); assert.equal(h.run('honorKnightsLog.length'), 0);",
+            "    }",
+            "});",
+            "",
+            "test.todo('ق18/ق19 الجرد: لا يوجد مسار ابدأ الجرد في HEAD؛ يلزم تنفيذ مستقل أو فرع يحتويه لاختبار القفل وإعادة العرض');",
+            "for (const route of ['snapshot', 'message', 'announcement']) test('ق18: '+route+' locks before output and refuses direct refreeze', async () => {",
+            "    const server = cloud(), h = runtime(server); await h.frozen();",
+            "    if (route === 'snapshot') { const sent = tv(h); await h.call('sendGeneralTvSnapshot'); await tick(); assert.ok(sent.at(-1).stages.some(s => s.weekKnights?.length)); }",
+            "    if (route === 'announcement') { await h.call('copyWeeklyKnightsAnnouncement'); assert.equal(h.state.copies.length, 1); }",
+            "    if (route === 'message') { sender(h); await h.call('sendGeneralWeeklyMessage', server.students()[0]); assert.notEqual(h.ctx.window.location.href, 'unchanged'); }",
+            "    const row = rows(server).find(r => r.halaqaId === 'a'); assert.ok(row.lockedAt);",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');",
+            "    assert.deepEqual(row.lockedSteps, row.steps);",
+            "});",
+            "",
+            "test('ق19: corrected points/reports resend snapshot/message from unchanged locked names/ranks/steps', async () => {",
+            "    const server = cloud(), h = runtime(server); await h.frozen();",
+            "    await h.call('copyWeeklyKnightsAnnouncement'); const old = copy(rows(server)); const sent = tv(h); sender(h);",
+            "    report(h); const student = h.run('students[0]');",
+            "    const before = copy(await h.call('summarizeRange', student, key.days));",
+            "    await h.call('commitGeneralStudentPatch', student, { ['history.' + key.days[0] + '.criteriaPoints']: -999 });",
+            "    assert.notEqual((await h.call('summarizeRange', student, key.days)).points, before.points);",
+            "    await h.call('sendGeneralWeeklyMessage', student); await h.call('sendGeneralTvSnapshot'); await tick();",
+            "    for (const row of old) for (const line of await h.call('knightsMessageLines', student, [row], true)) assert.ok(decodeURIComponent(h.ctx.window.location.href).includes(line));",
+            "    assert.ok(sent.length); assert.deepEqual(rows(server), old);",
+            "});",
+            "",
+            "test('ق20: summer/review-day old launch and isolated season logs survive round trips', async () => {",
+            "    const h = await open({ program: 'summer' });",
+            "    try {",
+            "        const result = await h.page.evaluate(async () => {",
+            "            canWriteView = () => true;",
+            "            const logs = new Map(), writes = [];",
+            "            window.almahraPrograms.getKnightsLog = (p, s) => logs.get(p + ':' + s) || [];",
+            "            window.almahraPrograms.saveKnightsEntry = async (p, s, entry) => { writes.push({p,s,entry}); logs.set(p + ':' + s, [entry]); return {success:true}; };",
+            "            const visits = [];",
+            "            for (const program of ['summer', 'review-day', 'general', 'summer', 'review-day']) {",
+            "                window.almahraPrograms.openProgram(program); loadCurrentThreeKnights();",
+            "                if (program !== 'general') { openSettingsSection('setPanelKnights'); await launchThreeKnights(); }",
+            "                visits.push({ program, log: structuredClone(honorKnightsLog), current: structuredClone(currentThreeKnights) });",
+            "            }",
+            "            return {writes, visits};",
+            "        });",
+            "        assert.ok(result.writes.every(w => w.p !== 'general' && w.s === 's-' + w.p));",
+            "        assert.equal(result.visits[2].current, null); assert.deepEqual(result.visits[2].log, []);",
+            "        assert.equal(result.writes.length, 4); assert.deepEqual(h.errors, []);",
+            "        const server = cloud(), store = server.stores().almahraPrograms;",
+            "        for (const p of ['summer', 'review-day']) {",
+            "            assert.equal((await store.saveKnightsEntry(p, 'other', { dateStr: key.days[0], mode: 'all', fars: [{name:p}] })).success, true);",
+            "            assert.equal(server.docs.get('programs/' + p + '/seasons/other').knightsLog[0].fars[0].name, p);",
+            "        }",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ق21: historical h: approval follows locked keys in daily/freeze; loading and announced row stay intact', async () => {",
+            "    const h = pure();",
+            "    const daily = h.call('getDayHalaqaKnights', key.days[2], 'b', h.list, h.approvals, h.settings);",
+            "    assert.deepEqual(daily.names, key.daily.b[2]);",
+            "    const server = cloud(), r = runtime(server); await r.frozen();",
+            "    const row = rows(server).find(row => row.halaqaId === 'b');",
+            "    assert.deepEqual(row.knights.map(k => k.name), h.row('b').knights.map(k => k.name));",
+            "    r.install('loadCurrentThreeKnights'); r.run('let honorKnightsLog=[], currentThreeKnights=null');",
+            "    await r.call('loadCurrentThreeKnights');",
+            "    assert.deepEqual(copy(r.run('honorKnightsLog')), [key.manualApproval]);",
+            "    await r.call('lockWeekRows', key.days[0], row.stageId);",
+            "    const locked = copy(rows(server).find(row => row.halaqaId === 'b'));",
+            "    server.season().knightsLog = [];",
+            "    assert.equal((await r.call('unfreezeHalaqaWeek', key.days[0], 'b', 'تاريخي')).success, false);",
+            "    assert.deepEqual(rows(server).find(row => row.halaqaId === 'b'), locked);",
+            "});",
+            "",
+            "test('owner audit: exact changed lines only, all protected functions/keys/history and other-program branches retain HEAD behavior', () => {",
+            "    const cp = require('node:child_process'), { createHash } = require('node:crypto');",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
+            "    const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');",
+            "    const original = file => cp.execFileSync('git', ['show', '186a18e:' + file], {cwd:root, encoding:'utf8', maxBuffer:4*1024*1024}).replaceAll('\\r\\n','\\n');",
+            "    const changed = cp.execFileSync('git', ['diff','--name-only'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();",
+            "    assert.deepEqual(audit.knightsOwnerAutoChanges.map(r => r.file).sort(), changed);",
+            "    for (const row of audit.knightsOwnerAutoChanges) {",
+            "        assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);",
+            "        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,'186a18e'));",
+            "        assert.equal(createHash('sha256').update(original(row.file)).digest('hex'),row.beforeSha256);",
+            "        assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,row.file),'utf8'),row.file),original(row.file));",
+            "    }",
+            "    for (const row of audit.knightsOwnerAutoAddedFiles) {",
+            "        const text = fs.readFileSync(path.join(root,row.file),'utf8');",
+            "        assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);",
+            "        assert.equal(createHash('sha256').update(text).digest('hex'),row.sha256);",
+            "        assert.deepEqual(row.hunks,[{oldLine:1,newLine:1,before:[],after:text.split('\\n')}]);",
+            "    }",
+            "    const html = fs.readFileSync(path.join(root,'index.html'),'utf8'), old = original('index.html');",
+            "    for (const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars',",
+            "        'getDayHalaqaKnights','getWeekNominations','rankHalaqaWeekKnights','buildWeekKnightsRow','buildRevealSteps',",
+            "        'ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','lockKnightsForMessage','getGeneralTvSnapshot',",
+            "        'sendGeneralTvSnapshot','sendGeneralWeeklyMessage','copyWeeklyKnightsAnnouncement','loadCurrentThreeKnights'])",
+            "        assert.equal(source(name,html),source(name,old),name);",
+            "    assert.equal(html.match(/const dayPoints = .*;/)[0],old.match(/const dayPoints = .*;/)[0]);",
+            "    for (const name of ['launchThreeKnights','saveCurrentThreeKnights'])",
+            "        assert.equal(source(name,html).replace('            if (isGeneralProgram()) return false;\\n',''),",
+            "            source(name,old).replace('            if (isGeneralProgram()) return;\\n',''),name+': other programs');",
+            "    for (const file of ['firestore.rules','data-store.js','tv.js','tv.html', ...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])",
+            "        assert.equal(fs.readFileSync(path.join(root,file),'utf8').replaceAll('\\r\\n','\\n'),original(file),file);",
+            "    const mutated = html.replace(\"if (isGeneralProgram()) return false;\", \"if (isGeneralProgram()) return true;\");",
+            "    assert.notEqual(mutated,html); assert.notEqual(beforeKnightsOwnerAuto(mutated),old);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOwnerAutoBefore": {
+    "productionHead": "186a18e",
+    "tests": 19,
+    "pass": 14,
+    "fail": 4,
+    "skipped": 0,
+    "todo": 1,
+    "failedAcceptance": [
+      1,
+      2,
+      12,
+      13
+    ],
+    "protectionAcceptance": [
+      3,
+      4,
+      5,
+      6,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "missing": [
+      "reveal start/output/replay path absent; Q18/Q19 reveal portion remains TODO"
+    ],
+    "existingExpectedResultsChanged": true
   }
 }

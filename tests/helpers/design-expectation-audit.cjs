@@ -4,9 +4,20 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const baseline = '82bf19f';
 function changesFrom(file, baseline) {
-    const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\r?\n/);
+    const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
-    if (baseline === '55fd33e') return diffLines(file, before, currentText.split(/\r?\n/));
+    if (baseline === '186a18e') {
+        const diff = cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' });
+        const hunks = []; let hunk;
+        for (const line of diff.split(/\r?\n/)) {
+            const match = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
+            if (match) { hunk = { oldLine: +match[1] + (match[2] === '0' ? 1 : 0), newLine: +match[3] + (match[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }
+            else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));
+            else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));
+        }
+        return { file, hunks };
+    }
+    if (baseline === '55fd33e') return diffLines(file, before, require('./knights-owner-auto-audit.cjs').beforeKnightsOwnerAuto(currentText, file).split(/\r?\n/));
     currentText = require('./general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(currentText, file);
     if (!['2d78da2', '9f2224d'].includes(baseline)) currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);
     if (!['0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);

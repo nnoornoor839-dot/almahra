@@ -9,6 +9,7 @@ const { fixtures } = require('./helpers/knights-r2-harness.cjs');
 const { cloud, runtime, key } = require('./helpers/knights-r2b-harness.cjs');
 const { source, html } = require('./helpers/quick-entry-harness.cjs');
 const { beforeKnightsRelease } = require('./helpers/knights-release-audit.cjs');
+const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');
 let browser;
 before(async () => {
     const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,
@@ -19,162 +20,22 @@ after(async () => { await browser?.close(); });
 const open = (options = {}) => newPage(browser, { width: 1280, today: '2026-11-24', list: fixtures(), settings: key.settings, ...options });
 const shown = page => page.locator('#supervisorPanel select[id$="Select"]:visible').count();
 
-test('release general: independent replacement panel, active halaqas, automatic winner, scoped sorted students and counts 1..5/default 1', async () => {
+test('release general: owner removed replacement UI and all manual approval entry points refuse', async () => {
     const h = await open();
     try {
-        await h.page.evaluate(() => {
-            const settings = window.almahraPrograms.getSettings();
-            settings.features.knights = false; // New approval remains available independently of the old feature.
-            settings.halaqas.push({ id: 'inactive', name: 'Inactive', active: false });
-            goHome('page-settings');
+        const result = await h.page.evaluate(async () => {
+            let writes = 0;
+            window.almahraPrograms.saveKnightsEntry = async () => { writes++; return {success:true}; };
+            goHome('page-settings'); openSettingsSection('setPanelKnights'); updateAllUIs();
+            return { writes, panel: document.getElementById('setPanelKnights').classList.contains('active'),
+                replacement: document.getElementById('generalKnightsPanel') !== null,
+                render: typeof renderGeneralKnightsPanel,
+                approved: await approveGeneralHalaqaKnights(), replacementSaved: await saveGeneralKnightsReplacement(),
+                sharedSaved: await saveCurrentThreeKnights({dateStr:'2026-11-24', mode:'all', fars:[]}) };
         });
-        const card = h.page.locator('[onclick="openSettingsSection(\'setPanelKnights\')"]');
-        assert.equal(await card.isVisible(), true);
-        await card.click();
-        assert.equal(await h.page.locator('#setPanelKnights').isVisible(), true);
-        assert.equal(await h.page.locator('#supervisorPanel').isVisible(), false);
-        assert.equal(await h.page.locator('#generalKnightsPanel').isVisible(), true);
-        assert.equal(await h.page.locator('#generalKnightsTitle').innerText(), 'فارس الحلقة');
-        assert.deepEqual(await h.page.locator('#generalKnightsHalaqa option').evaluateAll(list => list.map(o => ({value:o.value,text:o.textContent}))), key.settings.halaqas.filter(h => h.active === true).map(h => ({value:'h:' + h.id,text:h.name})));
-        assert.equal(await h.page.locator('#farsDayInput').isVisible(), false);
-        for (const n of [1,2,3]) assert.equal(await h.page.locator('#fars' + n + 'Achievement').isVisible(), false);
-        assert.equal(await h.page.locator('#generalKnightsReason').isVisible(), true);
-        assert.doesNotMatch(await h.page.locator('#generalKnightsPanel').innerText(), /اختيار آلي|يوم الفرسان|الإنجاز|الأول|الثاني|الثالث|🚀/);
-        for (const count of [1,2,3,4,5,undefined]) {
-            await h.page.evaluate(count => {
-                const settings = window.almahraPrograms.getSettings();
-                settings.titleRules.knightsPerHalaqa = { ...settings.titleRules.knightsPerHalaqa, a: count };
-                document.getElementById('generalKnightsHalaqa').value = 'h:a';
-                renderGeneralKnightsPanel(true);
-            }, count);
-            assert.equal(await h.page.locator('#generalKnightsChoices select').count(), count ?? 1);
-        }
-        const data = await h.page.evaluate(() => ({
-            options:[...document.getElementById('generalKnightsChoice1').options].slice(1).map(o=>({id:o.value,text:o.textContent})),
-            expected:students.filter(s=>s.halaqaId==='a').sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(s=>({id:String(s.id),text:s.name+(getGeneralAttendanceEligibility(s,['2026-11-24'],100).status==='incomplete'?' — غير مكتمل':'')})),
-            automatic:document.getElementById('generalKnightsAutomatic').textContent,
-            names:getDayHalaqaKnights('2026-11-24','a',students,[]).names
-        }));
-        assert.deepEqual(data.options,data.expected);for(const name of data.names)assert.ok(data.automatic.includes(name));
-        await h.page.evaluate(() => {delete students.find(s=>s.halaqaId==='a').history['2026-11-23'];document.getElementById('generalKnightsDate').value='2026-11-23';renderGeneralKnightsPanel(true)});
-        assert.match(await h.page.locator('#generalKnightsChoice1').innerText(), /غير مكتمل/);
+        assert.deepEqual(result, {writes:0, panel:false, replacement:false, render:'undefined', approved:false, replacementSaved:false, sharedSaved:false});
         assert.deepEqual(h.errors, []);
     } finally { await h.close(); }
-});
-
-test('release general: all legacy entry points are inert; replacement rejects blank reason and saves exact entry', async () => {
-    const h = await open();
-    try {
-        const result = await h.page.evaluate(async () => {
-            const writes = [], legacy = [];
-            window.almahraPrograms.saveKnightsEntry = async (...args) => { writes.push(args); return {success:true}; };
-            saveCurrentThreeKnights = async (...args) => { legacy.push(args); return true; };
-            getDayRanking = getDisciplineRanking = () => { throw Error('Legacy ranking reached'); };
-            sendGeneralTvSnapshot = () => {};
-            const mode = document.getElementById('farsAutoMode');
-            const before = document.getElementById('supervisorPanel').innerHTML;
-            for (const value of ['all','discipline','stage1','']) {
-                mode.innerHTML = ''; mode.add(new Option(value,value)); mode.value = value;
-                const html = document.getElementById('supervisorPanel').innerHTML;
-                await launchThreeKnights(); autoPickKnights(); fillFarsModeSelect(); updateThreeKnightsSelects(); syncFarsDayFromDate();
-                if (html !== document.getElementById('supervisorPanel').innerHTML) throw Error('Legacy mutation');
-            }
-            const blocked = {writes:writes.length,legacy:legacy.length,open:document.getElementById('threeKnightsModal').classList.contains('flex')};
-            document.getElementById('generalKnightsHalaqa').value = 'h:b';
-            window.almahraPrograms.getSettings().titleRules.knightsPerHalaqa.b = 1;
-            document.getElementById('generalKnightsDate').value = '2026-11-24';
-            renderGeneralKnightsPanel(true);
-            document.getElementById('generalKnightsChoice1').value = '7';
-            document.getElementById('fars2Select').value = '1'; // Stale hidden choice from another halaqa must not be saved.
-            document.getElementById('generalKnightsReason').value = '  ';
-            const empty = await saveGeneralKnightsReplacement(), emptyWrites = writes.length;
-            document.getElementById('generalKnightsReason').value = '  تقدير المعلم  ';
-            const saved = await saveGeneralKnightsReplacement();
-            const hidden = getComputedStyle(document.getElementById('threeKnightsModal')).display;
-            return {blocked,empty,emptyWrites,saved,writes,legacy,hidden};
-        });
-        assert.deepEqual(result.blocked, {writes:0,legacy:0,open:false});
-        assert.equal(result.empty, false); assert.equal(result.emptyWrites, 0);
-        assert.equal(result.saved, true); assert.equal(result.writes.length, 1);
-        const [program,season,entry] = result.writes[0];
-        assert.equal(program,'general'); assert.equal(season,'s-general');
-        assert.equal(entry.mode,'h:b'); assert.equal(entry.reason,'تقدير المعلم');
-        assert.deepEqual(entry.fars,[{id:7,name:'ماجد'}]);
-        assert.deepEqual(Object.keys(entry).sort(), ['dateStr','mode','fars','reason','by','at'].sort());
-        assert.match(await h.page.locator('#generalKnightsSaved').innerText(), /ماجد.*تقدير المعلم/);
-        assert.equal(result.hidden,'none'); assert.deepEqual(result.legacy,[]);
-        assert.deepEqual(h.errors,[]);
-    } finally { await h.close(); }
-});
-
-test('release general: all five allowed manual positions save and old modal stays hidden', async () => {
-    const h = await open();
-    try {
-        const result = await h.page.evaluate(async () => {
-            let saved;
-            const list = window.__fixture.list;
-            const template = list.find(s => s.id === 7);
-            for(let i=0;i<4;i++) list.push({...structuredClone(template),id:100+i,name:'Synthetic '+i});
-            students = list;
-            const settings=window.almahraPrograms.getSettings(); settings.titleRules.knightsPerHalaqa.b=5;
-            document.getElementById('generalKnightsHalaqa').value='h:b';
-            document.getElementById('generalKnightsDate').value='2026-11-24';renderGeneralKnightsPanel(true);
-            [7,100,101,102,103].forEach((id,i)=>document.getElementById('generalKnightsChoice'+(i+1)).value=String(id));
-            document.getElementById('generalKnightsReason').value='تقدير المعلم';
-            window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=e;return {success:true}};
-            sendGeneralTvSnapshot=()=>{};
-            return {ok:await saveGeneralKnightsReplacement(),saved};
-        });
-        assert.equal(result.ok,true); assert.deepEqual(result.saved.fars.map(s=>s.id),[7,100,101,102,103]);
-        assert.deepEqual(h.errors,[]);
-    } finally { await h.close(); }
-});
-
-test('general replacement: changing date/halaqa clears draft, no automatic winner, saved reason, and all eligibility rejections', async () => {
-    const h = await open();
-    try {
-        await h.page.evaluate(() => {goHome('page-settings');openSettingsSection('setPanelKnights')});
-        await h.page.selectOption('#generalKnightsHalaqa','h:b');
-        await h.page.selectOption('#generalKnightsChoice1','7');
-        await h.page.fill('#generalKnightsReason','سبب سابق');
-        await h.page.selectOption('#generalKnightsHalaqa','h:a');
-        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');
-        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');
-        await h.page.selectOption('#generalKnightsChoice1','1');
-        await h.page.fill('#generalKnightsReason','سبب آخر');
-        await h.page.fill('#generalKnightsDate','2026-11-23');
-        await h.page.locator('#generalKnightsDate').dispatchEvent('change');
-        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');
-        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');
-        await h.page.fill('#generalKnightsDate','2026-11-20');
-        await h.page.locator('#generalKnightsDate').dispatchEvent('change');
-        assert.equal(await h.page.locator('#generalKnightsAutomatic').innerText(),'لا فارس آلياً لهذا اليوم');
-        const result=await h.page.evaluate(async()=>{
-            let writes=0;window.almahraPrograms.saveKnightsEntry=async()=>{writes++;return {success:true}};
-            const student=students.find(s=>s.id===7), original=structuredClone(student.history['2026-11-24']);
-            document.getElementById('generalKnightsDate').value='2026-11-24';
-            document.getElementById('generalKnightsHalaqa').value='h:b';renderGeneralKnightsPanel(true);
-            document.getElementById('generalKnightsReason').value='تصحيح الورقة';
-            const rejected=[];
-            for(const type of ['absent','no-recitation','repeat','blocking','wrong-halaqa']) {
-                student.history['2026-11-24']=structuredClone(original);
-                if(type==='absent')student.history['2026-11-24']={attended:false,absence:'unexcused'};
-                if(type==='no-recitation')student.history['2026-11-24'].entries={};
-                if(type==='repeat')Object.values(student.history['2026-11-24'].entries).forEach(e=>e.grade='repeat');
-                if(type==='blocking') {
-                    const c=getProgramSettings().criteria.find(c=>c.blocksTitles && c.points<0);
-                    student.history['2026-11-24'].criteria[c.id]=c.points;
-                }
-                const select=document.getElementById('generalKnightsChoice1');
-                if(type==='wrong-halaqa') {select.add(new Option('طالب حلقة أخرى','1'));select.value='1'}else select.value='7';
-                rejected.push(await approveGeneralHalaqaKnights());
-            }
-            student.history['2026-11-24']=original;
-            return {writes,rejected};
-        });
-        assert.equal(result.writes,0);assert.deepEqual(result.rejected,[false,false,false,false,false]);
-        assert.deepEqual(h.errors,[]);
-    } finally {await h.close()}
 });
 
 test('general legacy inventory: hidden with forced inline displays, no old ranking reads, settings and text classified', async()=>{
@@ -317,15 +178,16 @@ test('release audit: exact hunks, protected calculations/stores/rules, four lock
     assert.equal(html.match(/const dayPoints = .*;/)[0],original.match(/const dayPoints = .*;/)[0]);
     assert.equal(beforeKnightsRelease(fs.readFileSync(path.join(root,'tv.js'),'utf8'),'tv.js'),cp.execFileSync('git',['show','2d78da2:tv.js'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
     for(const file of ['programs-store.js','data-store.js','firestore.rules','tv.html',...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])
-        assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','2d78da2:'+file],{cwd:root}));
+        assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,file),'utf8'),file),cp.execFileSync('git',['show','2d78da2:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
 });
 
 test('general cleanup audit: every changed line registered in category 11; save validation and entry remain exact',()=>{
     const audit=require('./rules/design-expectation-audit.json');
     const {changesFrom}=require('./helpers/design-expectation-audit.cjs');
     const {beforeGeneralKnightsCleanup}=require('./helpers/general-knights-cleanup-audit.cjs');
-    const changed=cp.execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/)
-        .filter(f=>f&&f!=='tests/rules/design-expectation-audit.json').sort();
+    const existing=new Set(cp.execFileSync('git',['ls-tree','-r','--name-only','55fd33e'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/));
+    const changed=cp.execFileSync('git',['diff','--name-only','55fd33e'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/)
+        .filter(f=>existing.has(f)&&f!=='tests/rules/design-expectation-audit.json').filter(f=>changesFrom(f,'55fd33e').hunks.length).sort();
     assert.deepEqual(audit.generalKnightsCleanupChanges.map(r=>r.file).sort(),changed);
     assert.equal(audit.generalKnightsCleanupBaseline,'55fd33e');
     for(const row of audit.generalKnightsCleanupChanges) {
@@ -336,23 +198,24 @@ test('general cleanup audit: every changed line registered in category 11; save 
         assert.equal(beforeGeneralKnightsCleanup(fs.readFileSync(path.join(root,row.file),'utf8'),row.file),original);
     }
     for(const row of audit.generalKnightsCleanupAddedFiles) {
-        const current=fs.readFileSync(path.join(root,row.file));
+        const current=Buffer.from(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,row.file),'utf8'),row.file));
         assert.equal(row.category,11);assert.equal(row.reason,audit.categories['11']);
         assert.equal(createHash('sha256').update(current).digest('hex'),row.sha256);
         assert.deepEqual(row.hunks,[{oldLine:1,newLine:1,before:[],after:current.toString('utf8').split('\n')}]);
     }
     const baseline=cp.execFileSync('git',['show','55fd33e:index.html'],{cwd:root,encoding:'utf8'});
-    const reads=source('approveGeneralHalaqaKnights').replaceAll('generalKnightsHalaqa','farsAutoMode')
+    const reviewed = beforeKnightsOwnerAuto(html);
+    const reads=source('approveGeneralHalaqaKnights',reviewed).replaceAll('generalKnightsHalaqa','farsAutoMode')
         .replaceAll('generalKnightsDate','farsAutoDate').replaceAll('generalKnightsReason','farsHalaqaReason')
         .replace("'generalKnightsChoice' + (i + 1)","'fars' + (i + 1) + 'Select'");
     assert.equal(reads,source('approveGeneralHalaqaKnights',baseline),'only field reads change');
     for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars',
         'saveCurrentThreeKnights','ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','saveSmartProgress'])
-        assert.equal(source(name),source(name,baseline),name);
+        assert.equal(source(name,reviewed),source(name,baseline),name);
     for(const file of ['tv.js','tv.html','programs-store.js','data-store.js','firestore.rules'])
-        assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','55fd33e:'+file],{cwd:root}));
-    const mutated=html.replace("const options = '<option value=\"\">اختر البديل</option>'", "const options = '<option value=\"\">تغيير غير معتمد</option>'");
-    assert.notEqual(mutated,html);
+        assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,file),'utf8'),file),cp.execFileSync('git',['show','55fd33e:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
+    const mutated=reviewed.replace("const options = '<option value=\"\">اختر البديل</option>'", "const options = '<option value=\"\">تغيير غير معتمد</option>'");
+    assert.notEqual(mutated,reviewed);
     assert.notEqual(beforeGeneralKnightsCleanup(mutated),baseline.replaceAll('\r\n','\n'));
 });
 
