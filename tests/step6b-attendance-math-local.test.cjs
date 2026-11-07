@@ -29,7 +29,7 @@ function harness(list = [], text = html, program = 'general') {
         titleRules: { requireSard: false, weeklyAttendancePct: 75 }, messages: [], sheets: [] };
     const elements = new Map();
     const element = id => {
-        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', style: {}, querySelectorAll: () => [],
+        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', dataset: {}, style: {}, querySelectorAll: () => [],
             classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } } });
         return elements.get(id);
     };
@@ -72,7 +72,7 @@ function harness(list = [], text = html, program = 'general') {
         'topTied', 'buildGeneralWeeklyMessage', 'getGeneralMessageWeek', 'exportToExcel', 'renderReportsTable',
         'renderAbsenceReport', 'renderHomeDashboard', 'renderHonorBoard', 'hbEmpty', 'hbTier', 'hbWinnerRow', 'hbDuo',
         'buildAchievementText', 'getSeasonLeaders', 'updateThreeKnightsSelects', 'syncFarsDayFromDate');
-    if (text === html) install('generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',
+    if (text === html) install('farsSelectionCount', 'updateFarsApprovalView', 'generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',
         'generalStudentAttendanceLabel', 'generalAttendanceLabel', 'getGeneralAttendanceEligibility', 'generalIncompleteAttendanceHtml');
     if (text === html) {
         run("let generalHomeExpanded = { context: '', stalled: false, support: false };");

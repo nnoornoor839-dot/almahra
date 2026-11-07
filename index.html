@@ -920,6 +920,21 @@ body.program-general {
 
 /* Approved design, round 1. Every override belongs to general. */
 body.program-general { background:var(--general-canvas); color:var(--general-ink); }
+body.program-general #threeKnightsModal,
+body.program-general #hbCardDaily,
+body.program-general #hbCardWeekly,
+body.program-general #farsDayRow,
+body.program-general #supervisorPanel input[id$="Achievement"] { display:none !important; }
+body.program-general .general-knights-actions { display:flex; flex-wrap:wrap; gap:12px; margin-block:12px; }
+body.program-general .general-knights-action {
+  display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:44px; padding:10px 20px;
+  border:1px solid var(--general-line); border-radius:var(--general-radius-sm); box-shadow:none;
+  background:var(--general-surface); color:var(--general-brand); font-size:var(--general-text-sm); font-weight:600;
+}
+body.program-general .general-knights-action:hover { background:var(--general-soft); }
+body.program-general .general-knights-action:focus-visible { outline:2px solid var(--general-brand); outline-offset:2px; }
+body.program-general .general-knights-action:disabled { opacity:.5; cursor:wait; }
+body.program-general #farsHalaqaReasonRow[hidden] { display:none; }
 body.program-general #page-home.general-home {
   --gh-brand:var(--general-brand); --gh-brand-600:var(--general-brand); --gh-gold:var(--general-muted);
   --gh-bg:var(--general-canvas); --gh-surface:var(--general-surface); --gh-ink:var(--general-ink);
@@ -1685,13 +1700,13 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <div class="font-black text-emerald-800 mb-1 flex items-center gap-2">
                             <i class="fas fa-wand-magic-sparkles"></i> الاختيار الآلي
                         </div>
-                        <p class="text-sm text-emerald-700 font-bold mb-3">
+                        <p id="farsAutoHelp" class="text-sm text-emerald-700 font-bold mb-3">
                             يختار البرنامج الفرسان الثلاثة تلقائياً حسب الأعلى نقاطاً في اليوم (سرد + انضباط)، ويكتب إنجازهم. يمكنك التعديل بعدها.
                         </p>
                         <div class="flex flex-wrap items-center gap-2">
                             <label class="text-sm font-bold text-slate-600">التاريخ:</label>
                             <input type="date" id="farsAutoDate" onchange="syncFarsDayFromDate()" class="p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
-                            <select id="farsAutoMode" class="p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 flex-1 min-w-[180px]"></select>
+                            <select id="farsAutoMode" onchange="if (isGeneralProgram()) updateThreeKnightsSelects()" class="p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 flex-1 min-w-[180px]"></select>
                             <button onclick="autoPickKnights()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-sm shrink-0">
                                 <i class="fas fa-bolt"></i> اختيار آلي
                             </button>
@@ -1701,7 +1716,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <label id="farsHalaqaReasonRow" hidden class="block mb-4 font-bold">سبب اعتماد فارس الحلقة (إلزامي)
                         <input id="farsHalaqaReason" type="text" class="w-full p-2 border-2 rounded-xl" placeholder="اكتب سبب الاعتماد">
                     </label>
-                    <div class="mb-4">
+                    <div id="farsDayRow" class="mb-4">
                         <label class="block text-base font-bold text-slate-600 mb-1">يوم الفرسان:</label>
                         <select id="farsDayInput" class="w-full p-2.5 border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500">
                             <option value="الأحد">الأحد</option>
@@ -1715,26 +1730,34 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     </div>
                     <div class="space-y-4 mb-6">
                         <!-- الفارس الأول -->
-                        <div class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                        <div id="fars1Row" class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
                             <div class="text-amber-500 font-black text-lg w-full sm:w-1/4 flex items-center gap-2"><i class="fas fa-crown"></i> الأول</div>
                             <select id="fars1Select" class="w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500"></select>
                             <input type="text" id="fars1Achievement" placeholder="الإنجاز..." class="w-full sm:w-1/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500 text-sm">
                         </div>
                         <!-- الفارس الثاني -->
-                        <div class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                        <div id="fars2Row" class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
                             <div class="text-slate-500 font-black text-lg w-full sm:w-1/4 flex items-center gap-2"><i class="fas fa-medal"></i> الثاني</div>
                             <select id="fars2Select" class="w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500"></select>
                             <input type="text" id="fars2Achievement" placeholder="الإنجاز..." class="w-full sm:w-1/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500 text-sm">
                         </div>
                         <!-- الفارس الثالث -->
-                        <div class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                        <div id="fars3Row" class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
                             <div class="text-amber-700 font-black text-lg w-full sm:w-1/4 flex items-center gap-2"><i class="fas fa-medal"></i> الثالث</div>
                             <select id="fars3Select" class="w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500"></select>
                             <input type="text" id="fars3Achievement" placeholder="الإنجاز..." class="w-full sm:w-1/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold outline-none focus:border-blue-500 text-sm">
                         </div>
+                        <div id="fars4Row" style="display:none" class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                            <div class="font-black text-lg w-full sm:w-1/4">الرابع</div>
+                            <select id="fars4Select" aria-label="الفارس الرابع" class="w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold"></select>
+                        </div>
+                        <div id="fars5Row" style="display:none" class="bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                            <div class="font-black text-lg w-full sm:w-1/4">الخامس</div>
+                            <select id="fars5Select" aria-label="الفارس الخامس" class="w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold"></select>
+                        </div>
                     </div>
 
-                    <button onclick="launchThreeKnights()" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xl md:text-2xl py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 transform hover:scale-[1.01]">
+                    <button id="farsApproveButton" onclick="launchThreeKnights()" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xl md:text-2xl py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 transform hover:scale-[1.01]">
                         <i class="fas fa-images text-2xl"></i> اعتماد وعرض شاشة فرسان الحلقات 🚀
                     </button>
                 </div>
@@ -1880,7 +1903,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                     </select>
                                     <span id="generalMessageWeekDates" class="text-slate-600 font-bold"></span>
                                 </div>
-                                <div class="flex gap-2 my-3"><button type="button" onclick="renderWeekKnightsReview()" class="border rounded-xl p-2">مراجعة فرسان الأسبوع</button><button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="border rounded-xl p-2">نسخ إعلان الفرسان</button></div>
+                                <div class="general-knights-actions flex gap-2 my-3">
+                                    <button type="button" onclick="renderWeekKnightsReview()" class="general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300"><i class="fas fa-list-check" aria-hidden="true"></i> مراجعة فرسان الأسبوع</button>
+                                    <button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300"><i class="fas fa-copy" aria-hidden="true"></i> نسخ إعلان الفرسان</button>
+                                </div>
                                 <div id="weekKnightsReview" class="hidden"></div>
                                 <div id="generalWeeklyMessageList" class="space-y-2"></div>
                             </div>
@@ -4299,7 +4325,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // كشف البطاقات تباعاً: تبدأ كلها أغلفة ثم تنفتح واحدة بعد أخرى
         function playHonorBoardEntranceAnimation() {
             hbResetCards();
-            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => c.style.display !== 'none');
+            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => getComputedStyle(c).display !== 'none');
             cards.forEach((card, i) => {
                 hbRevealTimers.push(setTimeout(() => hbSetOpen(card, true), HB_REVEAL_START + i * HB_REVEAL_STEP));
             });
@@ -7299,8 +7325,32 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             try { renderHomeDashboard(); } catch (e) { console.error('renderHomeDashboard error:', e); }
         }
         
+        function farsSelectionCount() {
+            if (!isGeneralProgram()) return 3;
+            const mode = document.getElementById('farsAutoMode')?.value || '';
+            const count = window.almahraPrograms?.getSettings()?.titleRules?.knightsPerHalaqa?.[mode.slice(2)];
+            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 3;
+        }
+        function updateFarsApprovalView() {
+            const general = isGeneralProgram(), count = farsSelectionCount();
+            const help = document.getElementById('farsAutoHelp'), button = document.getElementById('farsApproveButton');
+            if (help) {
+                if (!help.dataset.legacyText) help.dataset.legacyText = help.textContent;
+                help.textContent = general ? 'يقترح البرنامج فارس الحلقة المؤقت لليوم؛ ويمكنك اعتماده يدوياً بسبب إلزامي.' : help.dataset.legacyText;
+            }
+            if (button) {
+                if (!button.dataset.legacyHtml) button.dataset.legacyHtml = button.innerHTML;
+                button.innerHTML = general ? '<i class="fas fa-check" aria-hidden="true"></i> اعتماد فارس الحلقة' : button.dataset.legacyHtml;
+            }
+            for (let n = 1; n <= 5; n++) {
+                const row = document.getElementById('fars' + n + 'Row'), select = document.getElementById('fars' + n + 'Select');
+                if (row) row.style.display = n <= count ? '' : 'none';
+                if (select && general && n > count) select.value = '';
+            }
+        }
         function updateThreeKnightsSelects() {
-            const ids = ['fars1Select', 'fars2Select', 'fars3Select'];
+            if (isGeneralProgram()) updateFarsApprovalView();
+            const ids = Array.from({ length: isGeneralProgram() ? 5 : 3 }, (_, i) => 'fars' + (i + 1) + 'Select');
             const date = isGeneralProgram() ? document.getElementById('farsAutoDate')?.value || todayStr : '';
             let opts = '<option value="">-- اختر اسم الطالب الفارس يدوياً --</option>';
             students.forEach(s => {
@@ -7318,7 +7368,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const mode = document.getElementById('farsAutoMode').value, dateStr = document.getElementById('farsAutoDate').value || todayStr;
             const reason = document.getElementById('farsHalaqaReason').value.trim();
             if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }
-            const ids = [1, 2, 3].map(n => document.getElementById('fars' + n + 'Select').value).filter(Boolean);
+            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('fars' + (i + 1) + 'Select').value).filter(Boolean);
             const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));
             if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }
             const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);
@@ -7338,7 +7388,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         async function launchThreeKnights() {
-            if (isGeneralProgram() && document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();
+            if (isGeneralProgram()) {
+                if (document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();
+                return;
+            }
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
@@ -8487,7 +8540,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     + row.nominees.map(s => '<tr><td>' + escapeHTML(s.name) + '</td><td>' + escapeHTML(s.nominations.join('، ')) + '</td><td>' + s.weightTenths.total + '</td><td>' + s.weekPointsTenths / 10
                         + '</td><td>' + escapeHTML((s.eligible ? 'مستوفٍ' : 'غير مستوفٍ') + (s.reasons.length ? ' — ' + s.reasons.join('؛ ') : '')) + '</td><td>' + (s.rank ?? '—') + '</td></tr>').join('')
                     + '</tbody></table></div>' + (row.lockedAt ? '<p>أُعلن الأسبوع؛ لا تُعاد الحسبة</p>' :
-                        '<label>سبب إعادة الحسم <input class="border rounded p-2" data-reason="' + i + '" required></label><button type="button" class="border rounded p-2" data-refreeze="' + i + '">إعادة الحسم</button>') + '</section>';
+                        '<label>سبب إعادة الحسم <input class="border rounded p-2" data-reason="' + i + '" required></label><button type="button" class="general-knights-action" data-refreeze="' + i + '"><i class="fas fa-rotate-right" aria-hidden="true"></i> إعادة الحسم</button>') + '</section>';
             }).join('') : '<p>لا أسابيع مجمّدة بعد.</p>');
             host.querySelectorAll('[data-refreeze]').forEach(button => button.addEventListener('click', async () => {
                 const i = Number(button.dataset.refreeze), row = rows[i];
@@ -8933,8 +8986,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const reason = document.getElementById('farsHalaqaReasonRow');
             if (reason) reason.hidden = !isGeneralProgram();
             if (isGeneralProgram()) {
-                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value="h:' + escapeHTML(h.id) + '">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('') + '<option value="all">كل الطلاب (قديم)</option><option value="discipline">الانضباط (قديم)</option>' + getTiers().map(t => '<option value="' + escapeHTML(t.id) + '">' + escapeHTML(t.name) + ' (قديم)</option>').join('');
+                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value="h:' + escapeHTML(h.id) + '">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('');
                 if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+                updateThreeKnightsSelects();
                 return;
             }
             const tiers = getTiers();
@@ -8946,6 +9000,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             html += '<option value="discipline">⭐ فارس الانضباط</option>';
             sel.innerHTML = html;
             if (prev) sel.value = prev;
+            updateFarsApprovalView();
         }
 
         function autoPickKnights() {
@@ -8953,6 +9008,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const dateStr = dateInput?.value || todayStr;
             const mode = document.getElementById('farsAutoMode')?.value || 'all';
 
+            if (isGeneralProgram() && !mode.startsWith('h:')) return;
             let ranking;
             if (isGeneralProgram() && mode.startsWith('h:')) {
                 const knights = getDayHalaqaKnights(dateStr, mode.slice(2));
@@ -8973,8 +9029,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 return;
             }
 
-            const top3 = ranking.slice(0, 3);
-            for (let i = 0; i < 3; i++) {
+            const count = farsSelectionCount(), top3 = ranking.slice(0, count);
+            for (let i = 0; i < (isGeneralProgram() ? 5 : 3); i++) {
                 const sel = document.getElementById(`fars${i + 1}Select`);
                 const ach = document.getElementById(`fars${i + 1}Achievement`);
                 if (top3[i]) {
@@ -11171,7 +11227,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
             // لوحة الفرسان
             const knightsPanel = document.getElementById('supervisorPanel');
-            if (knightsPanel) knightsPanel.style.display = (f.knights === false) ? 'none' : '';
+            if (knightsPanel) knightsPanel.style.display = (!general && f.knights === false) ? 'none' : '';
 
             // زر لوحة الشرف
             document.querySelectorAll('[onclick*="openHonorBoard"]').forEach(b => {

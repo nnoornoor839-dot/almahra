@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 function beforeKnightsRound2b(text, file = 'index.html') {
+    text = require('./knights-release-audit.cjs').beforeKnightsRelease(text, file);
     text = text.replaceAll('\r\n', '\n');
     const marker = { 'index.html': 'const weekKnightsState =', 'data-store.js': 'setWriteGuard:',
         'programs-store.js': 'setWriteGuard:', 'tv.js': 'فرسان الحلقات للأسبوع الماضي' }[file];

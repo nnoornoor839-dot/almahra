@@ -10,7 +10,8 @@
     "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
     "8": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
     "9": "الفرسان الجولة ٢أ باعتماد المالك ٢٠٢٦-١١-٠٦",
-    "10": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦"
+    "10": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "11": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧"
   },
   "files": [
     {
@@ -10276,5 +10277,375 @@
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "0c5ec91"
     }
-  ]
+  ],
+  "knightsReleaseBaseline": "2d78da2",
+  "knightsReleaseProductionChanges": [
+    {
+      "file": "index.html",
+      "beforeSha256": "d33709426ed25808bddec0391305dce980aa3695804f8b36f7a00e52f71ca6a8",
+      "hunks": [
+        {
+          "oldLine": 923,
+          "newLine": 923,
+          "before": [],
+          "after": [
+            "body.program-general #threeKnightsModal,",
+            "body.program-general #hbCardDaily,",
+            "body.program-general #hbCardWeekly,",
+            "body.program-general #farsDayRow,",
+            "body.program-general #supervisorPanel input[id$=\"Achievement\"] { display:none !important; }",
+            "body.program-general .general-knights-actions { display:flex; flex-wrap:wrap; gap:12px; margin-block:12px; }",
+            "body.program-general .general-knights-action {",
+            "  display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:44px; padding:10px 20px;",
+            "  border:1px solid var(--general-line); border-radius:var(--general-radius-sm); box-shadow:none;",
+            "  background:var(--general-surface); color:var(--general-brand); font-size:var(--general-text-sm); font-weight:600;",
+            "}",
+            "body.program-general .general-knights-action:hover { background:var(--general-soft); }",
+            "body.program-general .general-knights-action:focus-visible { outline:2px solid var(--general-brand); outline-offset:2px; }",
+            "body.program-general .general-knights-action:disabled { opacity:.5; cursor:wait; }",
+            "body.program-general #farsHalaqaReasonRow[hidden] { display:none; }"
+          ]
+        },
+        {
+          "oldLine": 1688,
+          "newLine": 1703,
+          "before": [
+            "                        <p class=\"text-sm text-emerald-700 font-bold mb-3\">"
+          ],
+          "after": [
+            "                        <p id=\"farsAutoHelp\" class=\"text-sm text-emerald-700 font-bold mb-3\">"
+          ]
+        },
+        {
+          "oldLine": 1694,
+          "newLine": 1709,
+          "before": [
+            "                            <select id=\"farsAutoMode\" class=\"p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 flex-1 min-w-[180px]\"></select>"
+          ],
+          "after": [
+            "                            <select id=\"farsAutoMode\" onchange=\"if (isGeneralProgram()) updateThreeKnightsSelects()\" class=\"p-2 border-2 border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-emerald-500 flex-1 min-w-[180px]\"></select>"
+          ]
+        },
+        {
+          "oldLine": 1704,
+          "newLine": 1719,
+          "before": [
+            "                    <div class=\"mb-4\">"
+          ],
+          "after": [
+            "                    <div id=\"farsDayRow\" class=\"mb-4\">"
+          ]
+        },
+        {
+          "oldLine": 1718,
+          "newLine": 1733,
+          "before": [
+            "                        <div class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ],
+          "after": [
+            "                        <div id=\"fars1Row\" class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ]
+        },
+        {
+          "oldLine": 1724,
+          "newLine": 1739,
+          "before": [
+            "                        <div class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ],
+          "after": [
+            "                        <div id=\"fars2Row\" class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ]
+        },
+        {
+          "oldLine": 1730,
+          "newLine": 1745,
+          "before": [
+            "                        <div class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ],
+          "after": [
+            "                        <div id=\"fars3Row\" class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">"
+          ]
+        },
+        {
+          "oldLine": 1735,
+          "newLine": 1750,
+          "before": [],
+          "after": [
+            "                        <div id=\"fars4Row\" style=\"display:none\" class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">",
+            "                            <div class=\"font-black text-lg w-full sm:w-1/4\">الرابع</div>",
+            "                            <select id=\"fars4Select\" aria-label=\"الفارس الرابع\" class=\"w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold\"></select>",
+            "                        </div>",
+            "                        <div id=\"fars5Row\" style=\"display:none\" class=\"bg-white p-3 rounded-2xl border-2 border-slate-200 flex flex-col sm:flex-row gap-3 items-center shadow-sm\">",
+            "                            <div class=\"font-black text-lg w-full sm:w-1/4\">الخامس</div>",
+            "                            <select id=\"fars5Select\" aria-label=\"الفارس الخامس\" class=\"w-full sm:w-2/4 p-2 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-bold\"></select>",
+            "                        </div>"
+          ]
+        },
+        {
+          "oldLine": 1737,
+          "newLine": 1760,
+          "before": [
+            "                    <button onclick=\"launchThreeKnights()\" class=\"w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xl md:text-2xl py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 transform hover:scale-[1.01]\">"
+          ],
+          "after": [
+            "                    <button id=\"farsApproveButton\" onclick=\"launchThreeKnights()\" class=\"w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xl md:text-2xl py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 transform hover:scale-[1.01]\">"
+          ]
+        },
+        {
+          "oldLine": 1883,
+          "newLine": 1906,
+          "before": [
+            "                                <div class=\"flex gap-2 my-3\"><button type=\"button\" onclick=\"renderWeekKnightsReview()\" class=\"border rounded-xl p-2\">مراجعة فرسان الأسبوع</button><button type=\"button\" onclick=\"copyWeeklyKnightsAnnouncement()\" class=\"border rounded-xl p-2\">نسخ إعلان الفرسان</button></div>"
+          ],
+          "after": [
+            "                                <div class=\"general-knights-actions flex gap-2 my-3\">",
+            "                                    <button type=\"button\" onclick=\"renderWeekKnightsReview()\" class=\"general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300\"><i class=\"fas fa-list-check\" aria-hidden=\"true\"></i> مراجعة فرسان الأسبوع</button>",
+            "                                    <button type=\"button\" onclick=\"copyWeeklyKnightsAnnouncement()\" class=\"general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300\"><i class=\"fas fa-copy\" aria-hidden=\"true\"></i> نسخ إعلان الفرسان</button>",
+            "                                </div>"
+          ]
+        },
+        {
+          "oldLine": 4302,
+          "newLine": 4328,
+          "before": [
+            "            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => c.style.display !== 'none');"
+          ],
+          "after": [
+            "            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => getComputedStyle(c).display !== 'none');"
+          ]
+        },
+        {
+          "oldLine": 7302,
+          "newLine": 7328,
+          "before": [],
+          "after": [
+            "        function farsSelectionCount() {",
+            "            if (!isGeneralProgram()) return 3;",
+            "            const mode = document.getElementById('farsAutoMode')?.value || '';",
+            "            const count = window.almahraPrograms?.getSettings()?.titleRules?.knightsPerHalaqa?.[mode.slice(2)];",
+            "            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 3;",
+            "        }",
+            "        function updateFarsApprovalView() {",
+            "            const general = isGeneralProgram(), count = farsSelectionCount();",
+            "            const help = document.getElementById('farsAutoHelp'), button = document.getElementById('farsApproveButton');",
+            "            if (help) {",
+            "                if (!help.dataset.legacyText) help.dataset.legacyText = help.textContent;",
+            "                help.textContent = general ? 'يقترح البرنامج فارس الحلقة المؤقت لليوم؛ ويمكنك اعتماده يدوياً بسبب إلزامي.' : help.dataset.legacyText;",
+            "            }",
+            "            if (button) {",
+            "                if (!button.dataset.legacyHtml) button.dataset.legacyHtml = button.innerHTML;",
+            "                button.innerHTML = general ? '<i class=\"fas fa-check\" aria-hidden=\"true\"></i> اعتماد فارس الحلقة' : button.dataset.legacyHtml;",
+            "            }",
+            "            for (let n = 1; n <= 5; n++) {",
+            "                const row = document.getElementById('fars' + n + 'Row'), select = document.getElementById('fars' + n + 'Select');",
+            "                if (row) row.style.display = n <= count ? '' : 'none';",
+            "                if (select && general && n > count) select.value = '';",
+            "            }",
+            "        }"
+          ]
+        },
+        {
+          "oldLine": 7303,
+          "newLine": 7352,
+          "before": [
+            "            const ids = ['fars1Select', 'fars2Select', 'fars3Select'];"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) updateFarsApprovalView();",
+            "            const ids = Array.from({ length: isGeneralProgram() ? 5 : 3 }, (_, i) => 'fars' + (i + 1) + 'Select');"
+          ]
+        },
+        {
+          "oldLine": 7321,
+          "newLine": 7371,
+          "before": [
+            "            const ids = [1, 2, 3].map(n => document.getElementById('fars' + n + 'Select').value).filter(Boolean);"
+          ],
+          "after": [
+            "            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('fars' + (i + 1) + 'Select').value).filter(Boolean);"
+          ]
+        },
+        {
+          "oldLine": 7341,
+          "newLine": 7391,
+          "before": [
+            "            if (isGeneralProgram() && document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) {",
+            "                if (document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();",
+            "                return;",
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 8490,
+          "newLine": 8543,
+          "before": [
+            "                        '<label>سبب إعادة الحسم <input class=\"border rounded p-2\" data-reason=\"' + i + '\" required></label><button type=\"button\" class=\"border rounded p-2\" data-refreeze=\"' + i + '\">إعادة الحسم</button>') + '</section>';"
+          ],
+          "after": [
+            "                        '<label>سبب إعادة الحسم <input class=\"border rounded p-2\" data-reason=\"' + i + '\" required></label><button type=\"button\" class=\"general-knights-action\" data-refreeze=\"' + i + '\"><i class=\"fas fa-rotate-right\" aria-hidden=\"true\"></i> إعادة الحسم</button>') + '</section>';"
+          ]
+        },
+        {
+          "oldLine": 8936,
+          "newLine": 8989,
+          "before": [
+            "                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value=\"h:' + escapeHTML(h.id) + '\">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('') + '<option value=\"all\">كل الطلاب (قديم)</option><option value=\"discipline\">الانضباط (قديم)</option>' + getTiers().map(t => '<option value=\"' + escapeHTML(t.id) + '\">' + escapeHTML(t.name) + ' (قديم)</option>').join('');"
+          ],
+          "after": [
+            "                sel.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true).map(h => '<option value=\"h:' + escapeHTML(h.id) + '\">فارس حلقة ' + escapeHTML(h.name) + '</option>').join('');"
+          ]
+        },
+        {
+          "oldLine": 8938,
+          "newLine": 8991,
+          "before": [],
+          "after": [
+            "                updateThreeKnightsSelects();"
+          ]
+        },
+        {
+          "oldLine": 8949,
+          "newLine": 9003,
+          "before": [],
+          "after": [
+            "            updateFarsApprovalView();"
+          ]
+        },
+        {
+          "oldLine": 8956,
+          "newLine": 9011,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram() && !mode.startsWith('h:')) return;"
+          ]
+        },
+        {
+          "oldLine": 8976,
+          "newLine": 9032,
+          "before": [
+            "            const top3 = ranking.slice(0, 3);",
+            "            for (let i = 0; i < 3; i++) {"
+          ],
+          "after": [
+            "            const count = farsSelectionCount(), top3 = ranking.slice(0, count);",
+            "            for (let i = 0; i < (isGeneralProgram() ? 5 : 3); i++) {"
+          ]
+        },
+        {
+          "oldLine": 11174,
+          "newLine": 11230,
+          "before": [
+            "            if (knightsPanel) knightsPanel.style.display = (f.knights === false) ? 'none' : '';"
+          ],
+          "after": [
+            "            if (knightsPanel) knightsPanel.style.display = (!general && f.knights === false) ? 'none' : '';"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsReleaseExpectationChanges": [
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "beforeSha256": "027402445c673a2c52459c4ff235bca860597f19144791902f9b7732f9b33fb2",
+      "hunks": [
+        {
+          "oldLine": 32,
+          "newLine": 32,
+          "before": [
+            "        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', style: {}, querySelectorAll: () => [],"
+          ],
+          "after": [
+            "        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', dataset: {}, style: {}, querySelectorAll: () => [],"
+          ]
+        },
+        {
+          "oldLine": 75,
+          "newLine": 75,
+          "before": [
+            "    if (text === html) install('generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',"
+          ],
+          "after": [
+            "    if (text === html) install('farsSelectionCount', 'updateFarsApprovalView', 'generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
+    },
+    {
+      "file": "tests/helpers/board-invariants.cjs",
+      "beforeSha256": "49c2ece0930adab1e9d0df6f67915c6ebea48cd3893b69a47d75453a95cf61c7",
+      "hunks": [
+        {
+          "oldLine": 3,
+          "newLine": 3,
+          "before": [],
+          "after": [
+            "    text = require('./knights-release-audit.cjs').beforeKnightsRelease(text, file);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "beforeSha256": "e0f170553ebf4cba97fd674db038dbe6f06cc6bbef577820cf16091262a8c5bb",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline !== '0c5ec91') currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);",
+            "    if (!['82bf19f', '0c5ec91'].includes(baseline)) {"
+          ],
+          "after": [
+            "    if (baseline !== '2d78da2') currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);",
+            "    if (!['0c5ec91', '2d78da2'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);",
+            "    if (!['82bf19f', '0c5ec91', '2d78da2'].includes(baseline)) {"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
+    },
+    {
+      "file": "tests/helpers/quick-entry-harness.cjs",
+      "beforeSha256": "a8bd999cdc987a8965ac3937521731dff314adb81e3f2fac41a0f5aa685ba13a",
+      "hunks": [
+        {
+          "oldLine": 138,
+          "newLine": 138,
+          "before": [
+            "        'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',"
+          ],
+          "after": [
+            "        'isGeneralProgram', 'farsSelectionCount', 'updateFarsApprovalView', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
+    }
+  ],
+  "knightsReleaseNotes": {
+    "category": 11,
+    "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+    "existingExpectedResultsChanged": false,
+    "explanation": "واجهة general فقط؛ توصيل مساعد عدد القوائم إلى المحاكي، وعكس الفروق المعتمدة حرفياً قبل اختبارات القفل السابقة دون إسقاط أي ملف أو دالة.",
+    "addedTests": [
+      "tests/knights-release-local.test.cjs"
+    ],
+    "addedHelpers": [
+      "tests/helpers/knights-release-audit.cjs"
+    ]
+  }
 }

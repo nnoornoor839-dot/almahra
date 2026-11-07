@@ -135,7 +135,7 @@ function harness(s = student()) {
     for (const name of ['ivPairs', 'measureEntry', 'rangeLabelOf', 'newEntryId']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
     install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
         'generalQuickDateBlocked', 'readGeneralQuickPosition', 'generalQuickPositionChanged', 'clearGeneralQuickSection', 'toggleGeneralCriteriaExceptions', 'generalQuickKeydown', 'generalQuickEntryLabel',
-        'isGeneralProgram', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
+        'isGeneralProgram', 'farsSelectionCount', 'updateFarsApprovalView', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
         'roundPointTotal', 'dayStats', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',
         'generalQuickDayName', 'getGeneralMissedDays', 'prepareGeneralQuickDate', 'renderGeneralQuickDate', 'showGeneralMissedDays', 'selectGeneralQuickDate',
         'generalQuickHasUnsavedInput', 'openGeneralFrontierFixFromQuick',
