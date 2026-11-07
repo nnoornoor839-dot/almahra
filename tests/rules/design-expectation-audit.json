@@ -10545,6 +10545,26 @@
           ]
         }
       ]
+    },
+    {
+      "file": "tv.js",
+      "hunks": [
+        {
+          "oldLine": 251,
+          "newLine": 251,
+          "before": [
+            "                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {",
+            "                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));",
+            "                        }"
+          ],
+          "after": []
+        }
+      ],
+      "beforeSha256": "0e432bcb770957392ebeba933cf69021562f24ddd2d5a625833363aed32e9aff",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2",
+      "marker": "['weekKnights', 'فرسان الحلقات للأسبوع الماضي']"
     }
   ],
   "knightsReleaseExpectationChanges": [
@@ -10596,7 +10616,6 @@
     },
     {
       "file": "tests/helpers/design-expectation-audit.cjs",
-      "beforeSha256": "e0f170553ebf4cba97fd674db038dbe6f06cc6bbef577820cf16091262a8c5bb",
       "hunks": [
         {
           "oldLine": 9,
@@ -10606,12 +10625,13 @@
             "    if (!['82bf19f', '0c5ec91'].includes(baseline)) {"
           ],
           "after": [
-            "    if (baseline !== '2d78da2') currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);",
-            "    if (!['0c5ec91', '2d78da2'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);",
-            "    if (!['82bf19f', '0c5ec91', '2d78da2'].includes(baseline)) {"
+            "    if (!['2d78da2', '9f2224d'].includes(baseline)) currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);",
+            "    if (!['0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);",
+            "    if (!['82bf19f', '0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) {"
           ]
         }
       ],
+      "beforeSha256": "e0f170553ebf4cba97fd674db038dbe6f06cc6bbef577820cf16091262a8c5bb",
       "category": 11,
       "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
       "reviewBaseline": "2d78da2"
@@ -10634,13 +10654,187 @@
       "category": 11,
       "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
       "reviewBaseline": "2d78da2"
+    },
+    {
+      "file": "tests/helpers/knights-release-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [],
+          "after": [
+            "    if (row.marker && !text.includes(row.marker)) return text;"
+          ]
+        }
+      ],
+      "beforeSha256": "f86d06d27b32eb25aaff4ae66fd60076a59d9f386a32def5cfb430be6bab167a",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "9f2224d"
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 206,
+          "newLine": 206,
+          "before": [
+            "test('release audit: exact hunks, protected calculations/stores/rules, four locked keys and unchanged prior expected values',()=>{"
+          ],
+          "after": [
+            "test('release audit: exact hunks, protected calculations/stores/rules, four locked keys and registered owner expectations',()=>{"
+          ]
+        },
+        {
+          "oldLine": 209,
+          "newLine": 209,
+          "before": [
+            "    assert.equal(audit.knightsReleaseNotes.existingExpectedResultsChanged,false);"
+          ],
+          "after": [
+            "    assert.equal(audit.knightsReleaseNotes.existingExpectedResultsChanged,true);"
+          ]
+        },
+        {
+          "oldLine": 212,
+          "newLine": 212,
+          "before": [
+            "        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,'2d78da2'));",
+            "        const original=cp.execFileSync('git',['show','2d78da2:'+row.file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n');"
+          ],
+          "after": [
+            "        const baseline=row.reviewBaseline || audit.knightsReleaseBaseline;",
+            "        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,baseline));",
+            "        const original=cp.execFileSync('git',['show',baseline+':'+row.file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n');"
+          ]
+        },
+        {
+          "oldLine": 220,
+          "newLine": 221,
+          "before": [
+            "    for(const file of ['programs-store.js','data-store.js','firestore.rules','tv.js','tv.html',...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])"
+          ],
+          "after": [
+            "    assert.equal(beforeKnightsRelease(fs.readFileSync(path.join(root,'tv.js'),'utf8'),'tv.js'),cp.execFileSync('git',['show','2d78da2:tv.js'],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n'));",
+            "    for(const file of ['programs-store.js','data-store.js','firestore.rules','tv.html',...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])"
+          ]
+        },
+        {
+          "oldLine": 224,
+          "newLine": 226,
+          "before": [],
+          "after": [
+            "test('release TV audit: only the three teacher-rendering lines are exempt; unrelated logic and rendering changes stay exposed',()=>{",
+            "    const audit=require('./rules/design-expectation-audit.json');",
+            "    const row=audit.knightsReleaseProductionChanges.find(r=>r.file==='tv.js');",
+            "    assert.equal(row.category,11);",
+            "    assert.equal(row.reason,audit.categories['11']);",
+            "    assert.equal(row.hunks.length,1);",
+            "    assert.deepEqual(row.hunks[0],{oldLine:251,newLine:251,before:[",
+            "        \"                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {\",",
+            "        \"                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));\",",
+            "        \"                        }\"",
+            "    ],after:[]});",
+            "    const current=fs.readFileSync(path.join(root,'tv.js'),'utf8');",
+            "    const original=cp.execFileSync('git',['show','9f2224d:tv.js'],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n');",
+            "    assert.equal(beforeKnightsRelease(current,'tv.js'),original);",
+            "    for(const [from,to] of [[', 15000);',', 15001);'],[\"node('p', 'stage', item.stage)\",\"node('p', 'stage', item.teacher)\"]]) {",
+            "        const changed=current.replace(from,to);",
+            "        assert.notEqual(changed,current,'mutation must exercise production code');",
+            "        assert.notEqual(beforeKnightsRelease(changed,'tv.js'),original,'unapproved TV change remains visible');",
+            "    }",
+            "});",
+            ""
+          ]
+        }
+      ],
+      "beforeSha256": "2b5d0a5ee9392a5c8c33713354e80e1fa295171d18beae8a34849fe3352d92d8",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "9f2224d"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 256,
+          "newLine": 256,
+          "before": [
+            "test('TV r2b: closing cards use locked rows, exact title, names alone, teachers and empty statuses inside the safe area',async()=>{"
+          ],
+          "after": [
+            "test('TV r2b: closing cards use locked rows, exact title, names alone, no teacher names, and empty statuses inside the safe area',async()=>{"
+          ]
+        },
+        {
+          "oldLine": 264,
+          "newLine": 264,
+          "before": [],
+          "after": [
+            "            assert.ok(cards.some(c=>c.teacher),'fixture has teacher names to hide');"
+          ]
+        },
+        {
+          "oldLine": 276,
+          "newLine": 277,
+          "before": [
+            "                assert.ok((await slide.innerText()).includes(item.teacher));"
+          ],
+          "after": [
+            "                if(item.teacher)assert.ok(!(await slide.innerText()).includes(item.teacher),'TV hides teacher names on knights cards (owner 2026-11-07)');"
+          ]
+        }
+      ],
+      "beforeSha256": "70685f7e9ca4a86d01e8969e86974cc0a16659a5478e328f261e63f393c2dc4d",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 389,
+          "newLine": 389,
+          "before": [
+            "test('browser: daily halaqa title, teacher and tied names remain visible inside every TV card', async () => {"
+          ],
+          "after": [
+            "test('browser: daily halaqa title and tied names remain visible while nonempty teacher names are hidden', async () => {"
+          ]
+        },
+        {
+          "oldLine": 407,
+          "newLine": 407,
+          "before": [],
+          "after": [
+            "        assert.ok(cards.every(c=>typeof c.teacher==='string' && c.teacher.trim()),'fixture has nonempty teacher names to hide');"
+          ]
+        },
+        {
+          "oldLine": 414,
+          "newLine": 415,
+          "before": [
+            "        assert.deepEqual(visibleCards, cards.map(c => [c.stage, c.teacher, ...c.names]));"
+          ],
+          "after": [
+            "        assert.deepEqual(visibleCards, cards.map(c => [c.stage, ...c.names]));",
+            "        const visibleText=await page.locator('.slide.active').innerText();",
+            "        for(const card of cards)assert.ok(!visibleText.includes(card.teacher),'day knights hide teacher names (owner 2026-11-07)');"
+          ]
+        }
+      ],
+      "beforeSha256": "d2be96d64aaea58e621980e663ef54ae8d08e73ea246a981bd61356993f2a8f9",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "2d78da2"
     }
   ],
   "knightsReleaseNotes": {
     "category": 11,
     "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
-    "existingExpectedResultsChanged": false,
-    "explanation": "واجهة general فقط؛ توصيل مساعد عدد القوائم إلى المحاكي، وعكس الفروق المعتمدة حرفياً قبل اختبارات القفل السابقة دون إسقاط أي ملف أو دالة.",
+    "existingExpectedResultsChanged": true,
+    "explanation": "اعتماد المالك ٢٠٢٦-١١-٠٧ بعد تجربة المحاكي: إخفاء اسم المعلم في بطاقات فارس اليوم وفرسان الأسبوع فقط، بعكس حذف أسطر العرض الثلاثة حرفياً قبل الأقفال القديمة. تغيّر توقع بطاقات اليوم والختام من ظهور المعلم إلى إخفائه، مع إثبات وجود teacher غير فارغ في بيانات الاختبار. بيانات اللقطة والحسابات والتوقيتات كما هي، وأي فرق آخر في tv.js يبقى مكشوفاً بالمقارنة الكاملة.",
     "addedTests": [
       "tests/knights-release-local.test.cjs"
     ],

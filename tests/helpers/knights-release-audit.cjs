@@ -6,6 +6,7 @@ function beforeKnightsRelease(text, file = 'index.html') {
     const audit = require('../rules/design-expectation-audit.json');
     const row = [...(audit.knightsReleaseProductionChanges || []), ...(audit.knightsReleaseExpectationChanges || [])].find(r => r.file === file);
     if (!row || createHash('sha256').update(text).digest('hex') === row.beforeSha256) return text;
+    if (row.marker && !text.includes(row.marker)) return text;
     const lines = text.split('\n');
     for (const hunk of [...row.hunks].reverse()) {
         assert.deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after, file + ': exact approved release change');

@@ -386,7 +386,7 @@ test('weight reports unavailable measure and protected calculations remain exact
     assert.deepEqual(cp.execFileSync('git',['diff','c1bc38f','--','firestore.rules','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');
 });
 
-test('browser: daily halaqa title, teacher and tied names remain visible inside every TV card', async () => {
+test('browser: daily halaqa title and tied names remain visible while nonempty teacher names are hidden', async () => {
     const path=require('node:path');
     const playwright=require(process.env.PLAYWRIGHT_MODULE||path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
     const browser=await playwright.chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
@@ -404,6 +404,7 @@ test('browser: daily halaqa title, teacher and tied names remain visible inside 
         const cards=key.settings.halaqas.filter(h=>h.stageId==='primary').map(h=>({stage:h.name,
             teacher:key.settings.teachers.find(t=>t.id===h.teacherId).name,
             names:['عبدالرحمن محمد عبدالله','خالد عبد الله سالم'],times:2,provisional:true}));
+        assert.ok(cards.every(c=>typeof c.teacher==='string' && c.teacher.trim()),'fixture has nonempty teacher names to hide');
         await page.evaluate(snapshot=>{const channel=new BroadcastChannel('almahra-tv');channel.postMessage(snapshot);channel.close()},
             {type:'snapshot',boardDate:'2026-11-25',stages:[{period:'asr',name:'ابتدائي',dayKnights:cards}]});
         await page.waitForSelector('.slide.active .card');await page.clock.runFor(850);
@@ -411,7 +412,9 @@ test('browser: daily halaqa title, teacher and tied names remain visible inside 
         assert.deepEqual(await page.locator('.slide.active .stage').allTextContents(),cards.map(c=>c.stage));
         assert.doesNotMatch(await page.locator('.slide.active').innerText(), /عدد الفرسان/);
         const visibleCards = await page.locator('.slide.active .card').evaluateAll(cards => cards.map(card => [...card.querySelectorAll('p,h3')].map(n => n.textContent)));
-        assert.deepEqual(visibleCards, cards.map(c => [c.stage, c.teacher, ...c.names]));
+        assert.deepEqual(visibleCards, cards.map(c => [c.stage, ...c.names]));
+        const visibleText=await page.locator('.slide.active').innerText();
+        for(const card of cards)assert.ok(!visibleText.includes(card.teacher),'day knights hide teacher names (owner 2026-11-07)');
         const bounds=await page.locator('.slide.active .card').evaluateAll(cards=>cards.map(card=>{
             const r=card.getBoundingClientRect();return [...card.querySelectorAll('p,h3')].map(el=>{const b=el.getBoundingClientRect();return {text:el.textContent,inside:b.left>=r.left&&b.right<=r.right&&b.top>=r.top&&b.bottom<=r.bottom,screen:b.left>=96&&b.right<=1824&&b.top>=54&&b.bottom<=1026}})
         }).flat());

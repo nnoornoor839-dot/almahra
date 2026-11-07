@@ -6,9 +6,9 @@ const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
-    if (baseline !== '2d78da2') currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);
-    if (!['0c5ec91', '2d78da2'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);
-    if (!['82bf19f', '0c5ec91', '2d78da2'].includes(baseline)) {
+    if (!['2d78da2', '9f2224d'].includes(baseline)) currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);
+    if (!['0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);
+    if (!['82bf19f', '0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) {
         const rows = require('../rules/design-expectation-audit.json').knightsRound2bExpectationChanges || [];
         const lines = currentText.split(/\r?\n/);
         for (const hunk of rows.filter(row => row.file === file).reverse()) {

@@ -203,20 +203,43 @@ test('release TV: production transport delivers new provisional halaqa knights a
     for(const name of ['getGeneralTvSnapshot','getLockedWeekKnights','getDayHalaqaKnights']) assert.equal(source(name),source(name,old));
 });
 
-test('release audit: exact hunks, protected calculations/stores/rules, four locked keys and unchanged prior expected values',()=>{
+test('release audit: exact hunks, protected calculations/stores/rules, four locked keys and registered owner expectations',()=>{
     const audit=require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['11'],'الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧');
-    assert.equal(audit.knightsReleaseNotes.existingExpectedResultsChanged,false);
+    assert.equal(audit.knightsReleaseNotes.existingExpectedResultsChanged,true);
     const {changesFrom}=require('./helpers/design-expectation-audit.cjs');
     for(const row of [...audit.knightsReleaseProductionChanges,...audit.knightsReleaseExpectationChanges]) {
-        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,'2d78da2'));
-        const original=cp.execFileSync('git',['show','2d78da2:'+row.file],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n');
+        const baseline=row.reviewBaseline || audit.knightsReleaseBaseline;
+        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,baseline));
+        const original=cp.execFileSync('git',['show',baseline+':'+row.file],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n');
         assert.equal(createHash('sha256').update(original).digest('hex'),row.beforeSha256);
         assert.equal(beforeKnightsRelease(fs.readFileSync(path.join(root,row.file),'utf8'),row.file),original);
     }
     const original=cp.execFileSync('git',['show','2d78da2:index.html'],{cwd:root,encoding:'utf8'});
     for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars','ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','knightsToday']) assert.equal(source(name),source(name,original),name);
     assert.equal(html.match(/const dayPoints = .*;/)[0],original.match(/const dayPoints = .*;/)[0]);
-    for(const file of ['programs-store.js','data-store.js','firestore.rules','tv.js','tv.html',...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])
+    assert.equal(beforeKnightsRelease(fs.readFileSync(path.join(root,'tv.js'),'utf8'),'tv.js'),cp.execFileSync('git',['show','2d78da2:tv.js'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
+    for(const file of ['programs-store.js','data-store.js','firestore.rules','tv.html',...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])
         assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','2d78da2:'+file],{cwd:root}));
+});
+
+test('release TV audit: only the three teacher-rendering lines are exempt; unrelated logic and rendering changes stay exposed',()=>{
+    const audit=require('./rules/design-expectation-audit.json');
+    const row=audit.knightsReleaseProductionChanges.find(r=>r.file==='tv.js');
+    assert.equal(row.category,11);
+    assert.equal(row.reason,audit.categories['11']);
+    assert.equal(row.hunks.length,1);
+    assert.deepEqual(row.hunks[0],{oldLine:251,newLine:251,before:[
+        "                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {",
+        "                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));",
+        "                        }"
+    ],after:[]});
+    const current=fs.readFileSync(path.join(root,'tv.js'),'utf8');
+    const original=cp.execFileSync('git',['show','9f2224d:tv.js'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n');
+    assert.equal(beforeKnightsRelease(current,'tv.js'),original);
+    for(const [from,to] of [[', 15000);',', 15001);'],["node('p', 'stage', item.stage)","node('p', 'stage', item.teacher)"]]) {
+        const changed=current.replace(from,to);
+        assert.notEqual(changed,current,'mutation must exercise production code');
+        assert.notEqual(beforeKnightsRelease(changed,'tv.js'),original,'unapproved TV change remains visible');
+    }
 });

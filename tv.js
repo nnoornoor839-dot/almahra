@@ -248,9 +248,6 @@ if (typeof document !== 'undefined') {
                     if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));
                     else {
                         card.append(node('p', 'stage', item.stage));
-                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {
-                            if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));
-                        }
                         item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));
                         if (item.status) cardBody.append(node('p', 'muted', item.status));
                     }

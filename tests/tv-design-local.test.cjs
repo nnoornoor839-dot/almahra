@@ -253,7 +253,7 @@ test('TV design: one peripheral burst per celebration, cancellation starts the n
 });
 
 
-test('TV r2b: closing cards use locked rows, exact title, names alone, teachers and empty statuses inside the safe area',async()=>{
+test('TV r2b: closing cards use locked rows, exact title, names alone, no teacher names, and empty statuses inside the safe area',async()=>{
     const {cloud,runtime}=require('./helpers/knights-r2b-harness.cjs');
     const server=cloud(),app=runtime(server);await app.frozen();
     await app.call('lockWeekRows','2026-11-22','primary');await app.call('lockWeekRows','2026-11-22','middle');
@@ -261,6 +261,7 @@ test('TV r2b: closing cards use locked rows, exact title, names alone, teachers 
     try{
         for(const period of ['asr','maghrib']){
             const cards=copyCards(await app.call('getLockedWeekKnights',period));
+            assert.ok(cards.some(c=>c.teacher),'fixture has teacher names to hide');
             const message=snapshot();message.stages[0].weekKnights=cards;
             await h.snapshot(message);
             await h.page.waitForFunction(stage=>[...document.querySelectorAll('.stage')].some(n=>n.textContent===stage),cards[0].stage);
@@ -273,7 +274,7 @@ test('TV r2b: closing cards use locked rows, exact title, names alone, teachers 
             assert.equal(await slide.locator('.card').count(),cards.length);
             assert.deepEqual(await slide.locator('.stage').allTextContents(),cards.map(c=>c.stage));
             for(const item of cards){
-                assert.ok((await slide.innerText()).includes(item.teacher));
+                if(item.teacher)assert.ok(!(await slide.innerText()).includes(item.teacher),'TV hides teacher names on knights cards (owner 2026-11-07)');
                 for(const knight of item.names)assert.ok((await slide.locator('.kname').allTextContents()).includes(knight.name));
                 if(item.status)assert.ok((await slide.innerText()).includes(item.status));
             }
