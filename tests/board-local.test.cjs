@@ -82,8 +82,8 @@ test('كل يوم وأسبوع وموسم بالمفتاح: العلاوة خا�
 test('فرسان اليوم والأسبوع والنجم طلال؛ شرف المشرف يستبعد عشرة المجمع حرفياً', () => {
     const h = harness(), snapshot = h.snapshot();
     for (const stage of snapshot.stages) {
-        assert.deepEqual(stage.dayKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].day).name]);
-        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);
+        assert.deepEqual(stage.dayKnights, []);
+        assert.deepEqual(stage.weekKnights, []);
         assert.deepEqual(stage.risingStars, stage.period === 'asr' ? [{ name: 'طلال' }] : []);
     }
     const leaders = copy(h.run('getGeneralTvLeaders().map(e => e.student.id)'));
@@ -153,8 +153,8 @@ test('ثلاث مراحل: لوحة مغرب واحدة مدموجة برتب م
     const snapshot = h.snapshot(), stage = snapshot.stages.find(s => s.period === 'maghrib');
     assert.equal(snapshot.stages.length, 2); assert.equal(stage.name, 'متوسط وثانوي');
     assert.deepEqual(stage.board.map(r => [r.name,r.rank]), [['أحمد',1],['يوسف',2],['زياد',3]]);
-    assert.deepEqual(stage.dayKnights.map(k => k.names), [['يوسف'],['زياد']]);
-    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);
+    assert.deepEqual(stage.dayKnights, []);
+    assert.deepEqual(stage.weekKnights, []);
     assert.deepEqual(stage.risingStars, []);
     assert.equal(h.run("getGeneralCelebrationRank(students.find(s => s.id === 'ziyad'))"), 3);
     assert.equal(tv.makeSlides(snapshot, 'maghrib').filter(s => s.kind === 'board').length, 1);

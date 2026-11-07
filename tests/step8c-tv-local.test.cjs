@@ -146,16 +146,14 @@ test('snapshot has exactly allowed keys, approved crowned first only, per-stage 
         for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
         for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
     }
-    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
+    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), []);
     assert.doesNotMatch(JSON.stringify(s), /sid-|0500000000|secret|private-stage|"id"|"sid"|عائلة/);
     assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });
     h.state.settings.tvPrayer = { maghribMinutes: 15, ishaMinutes: 40 };
     assert.deepEqual(h.snapshot().prayer, h.state.settings.tvPrayer);
-    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);
+    h.state.approved.splice(0); assert.deepEqual(h.snapshot().stages[0].dayKnights, []);
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'all', fars: [list[1]] });
-    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [
-        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },
-        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);
+    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);
 });
 
 test('supervisor never builds an unsolicited snapshot; opening is synchronous, popup blocking shows toast, hello reconnects and heartbeat is 30s', () => {

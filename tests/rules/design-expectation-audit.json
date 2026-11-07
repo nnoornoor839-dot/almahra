@@ -7,7 +7,8 @@
     "4": "نص بقرار المالك في الجولة الثانية",
     "5": "طلب المالك في تجربته ٢٠٢٦-١١-٠٦",
     "6": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
-    "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦"
+    "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "8": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧"
   },
   "files": [
     {
@@ -611,6 +612,16 @@
           ]
         },
         {
+          "oldLine": 376,
+          "newLine": 376,
+          "before": [
+            "        const current = source(name).replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "        const current = source(name, name === 'launchThreeKnights' ? require('./helpers/board-invariants.cjs').beforeBoard(html) : html).replaceAll('\\r\\n', '\\n');"
+          ]
+        },
+        {
           "oldLine": 389,
           "newLine": 389,
           "before": [
@@ -944,7 +955,7 @@
             "        for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);",
             "        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);",
             "    }",
-            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), []);"
           ]
         },
         {
@@ -954,7 +965,7 @@
             "    h.state.approved.splice(0); assert.equal(h.snapshot().dayKnights[0].names.length, 3);"
           ],
           "after": [
-            "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);"
+            "    h.state.approved.splice(0); assert.deepEqual(h.snapshot().stages[0].dayKnights, []);"
           ]
         },
         {
@@ -964,14 +975,12 @@
             "    assert.deepEqual(h.snapshot().dayKnights, [{ stage: 'كل الطلاب', names: ['طالب وهمي ثالث2'] }]);"
           ],
           "after": [
-            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
-            "        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },",
-            "        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);"
           ]
         },
         {
           "oldLine": 207,
-          "newLine": 216,
+          "newLine": 214,
           "before": [
             "    assert.deepEqual(Object.keys(sent[0]).sort(), ['type', 'id', 'name', 'added', 'total', 'rank'].sort());"
           ],
@@ -981,7 +990,7 @@
         },
         {
           "oldLine": 257,
-          "newLine": 266,
+          "newLine": 264,
           "before": [
             "    state.receive({ type: 'snapshot', leaders: [{ name: 'وهمي', points: 1, rank: 1 }] });",
             "    return { state, timers, time: n => { time = n; }, event: id => state.receive({ type: 'celebrate', id, name: 'وهمي', added: 1, total: 1, rank: null }) };"
@@ -993,7 +1002,7 @@
         },
         {
           "oldLine": 277,
-          "newLine": 286,
+          "newLine": 284,
           "before": [
             "        h.state.receive({ type: 'snapshot', risingStars: [{ name: 'وهمي' }] }); assert.equal(h.state.view().slides.length, 1);"
           ],
@@ -1003,7 +1012,7 @@
         },
         {
           "oldLine": 281,
-          "newLine": 290,
+          "newLine": 288,
           "before": [
             "test('slides skip empty sections, keep four ordered kinds, cap stars at three, keep all tied leaders together and pause under overlays', () => {"
           ],
@@ -1013,7 +1022,7 @@
         },
         {
           "oldLine": 283,
-          "newLine": 292,
+          "newLine": 290,
           "before": [
             "    const snapshot = { leaders: Array.from({ length: 13 }, () => ({ name: 'وهمي', rank: 10 })), dayKnights: [{ stage: 'أ', names: [] }, { stage: 'ب', names: ['وهمي'] }],",
             "        weekKnights: [{ stage: 'ب', names: ['وهمي'] }], risingStars: Array.from({ length: 5 }, () => ({ name: 'وهمي' })) };",
@@ -1031,7 +1040,7 @@
         },
         {
           "oldLine": 318,
-          "newLine": 327,
+          "newLine": 325,
           "before": [
             "        assert.equal(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), original.toString('utf8').replaceAll('\\r\\n', '\\n'));"
           ],
@@ -1041,7 +1050,7 @@
         },
         {
           "oldLine": 337,
-          "newLine": 346,
+          "newLine": 344,
           "before": [
             "        leaders: [{ name: '<img src=x onerror=alert(1)>', points: 7, rank: 1 },",
             "            ...Array.from({ length: 12 }, (_, i) => ({ name: `طالب وهمي ${i}`, points: 1, rank: 10 }))] };"
@@ -1053,7 +1062,7 @@
         },
         {
           "oldLine": 341,
-          "newLine": 350,
+          "newLine": 348,
           "before": [
             "    const leaders = el('slides').children[0].children[1];",
             "    assert.equal(leaders.children.length, 13);",
@@ -2963,6 +2972,96 @@
       "category": 7,
       "reason": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "1e4152b"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 85,
+      "newLine": 85,
+      "before": "        assert.deepEqual(stage.dayKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].day).name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);\n        assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 85,
+      "newLine": 85,
+      "before": "        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);\n        assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(stage.dayKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+      "after": "    assert.deepEqual(stage.dayKnights, []);\n    assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+      "after": "    assert.deepEqual(stage.dayKnights, []);\n    assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "oldLine": 256,
+      "newLine": 256,
+      "before": "        assert.deepEqual(stage.dayKnights[0].names,[expected.name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 149,
+      "newLine": 149,
+      "before": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);",
+      "after": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 154,
+      "newLine": 154,
+      "before": "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);",
+      "after": "    h.state.approved.splice(0); assert.deepEqual(h.snapshot().stages[0].dayKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
     }
   ],
   "ownerScopeEdits": [
@@ -3018,7 +3117,7 @@
             "        assert.ok([1, 2, 3, 4].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);"
           ]
         },
         {
@@ -4505,7 +4604,7 @@
             "        assert.ok([1, 2, 3, 4, 5].includes(row.category), `${row.file}:${row.newLine}`);"
           ],
           "after": [
-            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);"
           ]
         },
         {
@@ -6493,6 +6592,494 @@
       "before": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', 'HEAD:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "after": "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\\r\\n', '\\n'));",
       "explanation": "تثبيت المرجع التاريخي بعد اعتماد التحضير المنزلي؛ الطرف الحالي يُعاد حرفياً إلى 1e4152b، فلا يقارن مع HEAD المتحرك الذي يتضمن التغيير المعتمد."
+    }
+  ],
+  "launchHideProductionChanges": [
+    {
+      "file": "index.html",
+      "hunks": [
+        {
+          "oldLine": 923,
+          "newLine": 923,
+          "before": [],
+          "after": [
+            "body.program-general [onclick=\"openSettingsSection('setPanelKnights')\"],",
+            "body.program-general #setPanelKnights,",
+            "body.program-general #supervisorPanel,",
+            "body.program-general #threeKnightsModal,",
+            "body.program-general #hbCardDaily,",
+            "body.program-general #hbCardWeekly { display:none !important; }"
+          ],
+          "anchor": [
+            "body.program-general { background:var(--general-canvas); color:var(--general-ink); }"
+          ]
+        },
+        {
+          "oldLine": 4294,
+          "newLine": 4300,
+          "before": [
+            "            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => c.style.display !== 'none');"
+          ],
+          "after": [
+            "            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => getComputedStyle(c).display !== 'none');"
+          ]
+        },
+        {
+          "oldLine": 4434,
+          "newLine": 4440,
+          "before": [
+            "                        dayKnights: group.map(t => {",
+            "                            const appr = getApprovedKnightsForMode(date, t.id);",
+            "                            return appr ? approved(appr, t.name) : automatic(t);",
+            "                        }).filter(e => e.names.length),",
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),"
+          ],
+          "after": [
+            "                        dayKnights: [],",
+            "                        weekKnights: [],"
+          ]
+        },
+        {
+          "oldLine": 7266,
+          "newLine": 7268,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ],
+          "anchor": [
+            "        function launchThreeKnights() {"
+          ]
+        },
+        {
+          "oldLine": 10687,
+          "newLine": 10690,
+          "before": [],
+          "after": [
+            "            if (panelId === 'setPanelKnights' && isGeneralProgram()) return;"
+          ],
+          "anchor": [
+            "        function openSettingsSection(panelId) {"
+          ]
+        }
+      ],
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    }
+  ],
+  "launchHideTestChanges": [
+    {
+      "file": "tests/board-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 85,
+          "newLine": 85,
+          "before": [
+            "        assert.deepEqual(stage.dayKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].day).name]);",
+            "        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);"
+          ],
+          "after": [
+            "        assert.deepEqual(stage.dayKnights, []);",
+            "        assert.deepEqual(stage.weekKnights, []);"
+          ]
+        },
+        {
+          "oldLine": 156,
+          "newLine": 156,
+          "before": [
+            "    assert.deepEqual(stage.dayKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+            "    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);"
+          ],
+          "after": [
+            "    assert.deepEqual(stage.dayKnights, []);",
+            "    assert.deepEqual(stage.weekKnights, []);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 256,
+          "newLine": 256,
+          "before": [
+            "        assert.deepEqual(stage.dayKnights[0].names,[expected.name]);"
+          ],
+          "after": [
+            "        assert.deepEqual(stage.dayKnights, []);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 149,
+          "newLine": 149,
+          "before": [
+            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+          ],
+          "after": [
+            "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), []);"
+          ]
+        },
+        {
+          "oldLine": 154,
+          "newLine": 154,
+          "before": [
+            "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);"
+          ],
+          "after": [
+            "    h.state.approved.splice(0); assert.deepEqual(h.snapshot().stages[0].dayKnights, []);"
+          ]
+        },
+        {
+          "oldLine": 156,
+          "newLine": 156,
+          "before": [
+            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
+            "        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },",
+            "        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);"
+          ],
+          "after": [
+            "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 128,
+          "newLine": 128,
+          "before": [
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);"
+          ],
+          "after": [
+            "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/board-invariants.cjs",
+      "hunks": [
+        {
+          "oldLine": 6,
+          "newLine": 6,
+          "before": [],
+          "after": [
+            "    for (const hunk of audit.launchHideProductionChanges?.find(row => row.file === file)?.hunks || []) {",
+            "        const after = [...(hunk.anchor || []), ...hunk.after].join('\\n'), before = [...(hunk.anchor || []), ...hunk.before].join('\\n');",
+            "        if (text.includes(after)) {",
+            "            assert.equal(text.split(after).length, 2, file + ': approved launch hide change is unique');",
+            "            text = text.replace(after, before);",
+            "        } else assert.ok(text.includes(before), file + ': only the exact approved launch hide change may differ');",
+            "    }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 376,
+          "newLine": 376,
+          "before": [
+            "        const current = source(name).replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "        const current = source(name, name === 'launchThreeKnights' ? require('./helpers/board-invariants.cjs').beforeBoard(html) : html).replaceAll('\\r\\n', '\\n');"
+          ]
+        }
+      ]
+    }
+  ],
+  "launchHideExpectationChanges": [
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 85,
+      "newLine": 85,
+      "before": "        assert.deepEqual(stage.dayKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].day).name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);\n        assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 85,
+      "newLine": 85,
+      "before": "        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);\n        assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(stage.dayKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+      "after": "    assert.deepEqual(stage.dayKnights, []);\n    assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+      "after": "    assert.deepEqual(stage.dayKnights, []);\n    assert.deepEqual(stage.weekKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "oldLine": 256,
+      "newLine": 256,
+      "before": "        assert.deepEqual(stage.dayKnights[0].names,[expected.name]);",
+      "after": "        assert.deepEqual(stage.dayKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 149,
+      "newLine": 149,
+      "before": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), [{ stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1'] }, { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);",
+      "after": "    assert.deepEqual(s.stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 154,
+      "newLine": 154,
+      "before": "    h.state.approved.splice(0); assert.equal(h.snapshot().stages[0].dayKnights[0].names.length, 3);",
+      "after": "    h.state.approved.splice(0); assert.deepEqual(h.snapshot().stages[0].dayKnights, []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), [",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "        { stage: 'مرحلة أولى', names: ['طالب وهمي ثالث1', 'طالب وهمي ثالث2', 'طالب وهمي ثالث3'] },",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 156,
+      "newLine": 156,
+      "before": "        { stage: 'مرحلة ثانية', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'] }]);",
+      "after": "    assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), []);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6, 7].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "oldLine": 376,
+      "newLine": 376,
+      "before": "        const current = source(name).replaceAll('\\r\\n', '\\n');",
+      "after": "        const current = source(name, name === 'launchThreeKnights' ? require('./helpers/board-invariants.cjs').beforeBoard(html) : html).replaceAll('\\r\\n', '\\n');",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "c1bc38f"
+    }
+  ],
+  "launchHonorCorrectionTestChanges": [
+    {
+      "file": "tests/launch-hide-old-knights-local.test.cjs",
+      "category": 8,
+      "reason": "إخفاء الفرسان القديمة قبل الانطلاق باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "reviewBaseline": "نسخة العمل قبل تصحيح لوحة الشرف",
+      "hunks": [
+        {
+          "oldLine": 50,
+          "newLine": 50,
+          "before": [
+            "test('launch: general hides cards, panels and celebrations and refuses direct opens, including archived seasons and program switches', async () => {"
+          ],
+          "after": [
+            "test('launch: general hides knight settings and celebrations, keeps honor board open, including archived seasons and program switches', async () => {"
+          ]
+        },
+        {
+          "oldLine": 76,
+          "newLine": 76,
+          "before": [
+            "                const forced = ['setPanelKnights', 'supervisorPanel', 'threeKnightsModal', 'honorBoardModal'].map(id => {"
+          ],
+          "after": [
+            "                const forced = ['setPanelKnights', 'supervisorPanel', 'threeKnightsModal'].map(id => {"
+          ]
+        },
+        {
+          "oldLine": 86,
+          "newLine": 86,
+          "before": [
+            "                assert.equal(state.panelDisplay, 'none'); assert.equal(state.honorOpened, false);",
+            "                assert.equal(state.honorDisplay, 'none'); assert.ok(state.buttons.every(s => s === 'none'));"
+          ],
+          "after": [
+            "                assert.equal(state.panelDisplay, 'none'); assert.equal(state.honorOpened, true);",
+            "                assert.notEqual(state.honorDisplay, 'none'); assert.equal(state.buttons.length, 2); assert.ok(state.buttons.some(s => s !== 'none'));"
+          ]
+        },
+        {
+          "oldLine": 99,
+          "newLine": 99,
+          "before": [
+            "            updateCurrentEventBadge(); openSettingsSection('setPanelKnights'); openHonorBoard(); launchThreeKnights();"
+          ],
+          "after": [
+            "            updateCurrentEventBadge(); applyArchivedMode(); openSettingsSection('setPanelKnights'); launchThreeKnights();"
+          ]
+        },
+        {
+          "oldLine": 101,
+          "newLine": 101,
+          "before": [
+            "        assert.equal(await h.page.locator('#generalArchivedHonorButton').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#honorBoardModal').isVisible(), false);"
+          ],
+          "after": [
+            "        assert.equal(await h.page.locator('#generalArchivedHonorButton').isVisible(), true);",
+            "        await h.page.locator('#generalArchivedHonorButton').click();",
+            "        assert.equal(await h.page.locator('#honorBoardModal').isVisible(), true);"
+          ]
+        },
+        {
+          "oldLine": 108,
+          "newLine": 109,
+          "before": [],
+          "after": [
+            "test('launch: honor board keeps exact discipline and progress content; only visible cards reveal with no layout gaps across programs', async () => {",
+            "    for (const width of [1280, 390]) {",
+            "        const h = await newPage(browser, { width });",
+            "        try {",
+            "            for (const program of ['general', 'summer', 'review-day', 'general']) {",
+            "                const result = await h.page.evaluate(({ program, oldSource }) => {",
+            "                    closeHonorBoard(); openProgram(program);",
+            "                    getMostImproved = () => [{ student: { name: 'نجم صاعد وهمي' }, growth: 50, pastAvg: 4, nowAvg: 6 }];",
+            "                    getDisciplineStars = () => ({ stars: [{ student: { name: 'منضبط وهمي' }, criteriaPoints: 8 }], daysCount: 3 });",
+            "                    getDayDisciplineStars = () => [{ student: { name: 'منضبط وهمي' }, criteriaPoints: 8 }];",
+            "                    getDayTitleCandidates = () => [{ student: { id: 901, name: 'فارس آلي وهمي' }, points: 10 }];",
+            "                    getWeekTitleCandidates = () => [{ student: { id: 902, name: 'فارس أسبوع وهمي' }, points: 20, attended: 4, expected: 4 }];",
+            "                    honorKnightsLog = Array.from({ length: 2 }, () => ({ dateStr: getBoardDate(), mode: 'all',",
+            "                        fars: [{ id: 900, name: 'فارس قديم معتمد', achievement: 'إنجاز فارس وهمي' }] }));",
+            "                    const cards = () => [...document.querySelectorAll('#hbBoard .hb-card')];",
+            "                    (0, eval)('(' + oldSource + ')')();",
+            "                    const previous = cards().map(c => c.innerHTML);",
+            "                    // Capture reveal order/delays without waiting for the 15-second loop.",
+            "                    const scheduled = [], nativeTimeout = window.setTimeout;",
+            "                    window.setTimeout = (fn, delay) => { scheduled.push({ fn, delay }); return 0; };",
+            "                    try { openHonorBoard(); } finally { window.setTimeout = nativeTimeout; }",
+            "                    const current = cards().map(c => c.innerHTML);",
+            "                    const reveals = scheduled.map(({ fn, delay }) => {",
+            "                        const before = new Set(cards().filter(c => c.classList.contains('open')).map(c => c.id));",
+            "                        fn();",
+            "                        return { delay, ids: cards().filter(c => c.classList.contains('open') && !before.has(c.id)).map(c => c.id) };",
+            "                    });",
+            "                    const visible = cards().filter(c => getComputedStyle(c).display !== 'none');",
+            "                    const board = document.getElementById('hbBoard');",
+            "                    const rect = el => { const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width }; };",
+            "                    const result = { previous, current, reveals, visible: visible.map(c => c.id),",
+            "                        text: board.innerText, wins: [...board.querySelectorAll('.hb-wins')].filter(c => c.getClientRects().length).length,",
+            "                        gap: parseFloat(getComputedStyle(board).gap), direction: getComputedStyle(board).flexDirection,",
+            "                        board: rect(board), rects: visible.map(rect) };",
+            "                    closeHonorBoard(); return result;",
+            "                }, { program, oldSource: source('renderHonorBoard', baseline) });",
+            "                assert.deepEqual(result.current, result.previous, program + ': card content unchanged');",
+            "                const visible = program === 'general' ? ['hbCardDiscipline', 'hbCardProgress']",
+            "                    : program === 'review-day' ? ['hbCardDaily', 'hbCardDiscipline', 'hbCardWeekly']",
+            "                    : ['hbCardDaily', 'hbCardDiscipline', 'hbCardWeekly', 'hbCardProgress'];",
+            "                assert.deepEqual(result.visible, visible);",
+            "                assert.deepEqual(result.reveals, visible.map((id, i) => ({ delay: 600 + i * 1200, ids: [id] })));",
+            "                assert.match(result.text, /منضبط وهمي/);",
+            "                if (program === 'general') {",
+            "                    assert.match(result.text, /نجوم الانضباط/); assert.match(result.text, /النجم الصاعد/);",
+            "                    assert.match(result.text, /نجم صاعد وهمي/);",
+            "                    assert.doesNotMatch(result.text, /فارس|فرسان|فاز|عدد مرات الفوز/); assert.equal(result.wins, 0);",
+            "                } else assert.match(result.text, /فارس قديم معتمد/);",
+            "                if (result.direction === 'row') {",
+            "                    const rows = result.rects.toSorted((a,b) => a.left - b.left);",
+            "                    assert.ok(Math.abs(rows[0].left - result.board.left) < 1);",
+            "                    assert.ok(Math.abs(rows.at(-1).right - result.board.right) < 1);",
+            "                    for (let i=1; i<rows.length; i++) assert.ok(Math.abs(rows[i].left - rows[i-1].right - result.gap) < 1);",
+            "                } else {",
+            "                    assert.ok(Math.abs(result.rects[0].top - result.board.top) < 1);",
+            "                    assert.ok(Math.abs(result.rects.at(-1).bottom - result.board.bottom) < 1);",
+            "                    for (let i=1; i<result.rects.length; i++) assert.ok(Math.abs(result.rects[i].top - result.rects[i-1].bottom - result.gap) < 1);",
+            "                }",
+            "            }",
+            "            assert.deepEqual(h.errors, []);",
+            "        } finally { await h.close(); }",
+            "    }",
+            "});",
+            ""
+          ]
+        },
+        {
+          "oldLine": 112,
+          "newLine": 177,
+          "before": [
+            "    for (const name of ['openHonorBoard', 'launchThreeKnights'])",
+            "        assert.equal(source(name).replace('            if (isGeneralProgram()) return;\\n', ''), source(name, baseline));"
+          ],
+          "after": [
+            "    assert.equal(source('openHonorBoard'), source('openHonorBoard', baseline));",
+            "    assert.equal(source('renderHonorBoard'), source('renderHonorBoard', baseline));",
+            "    assert.equal(source('launchThreeKnights').replace('            if (isGeneralProgram()) return;\\n', ''), source('launchThreeKnights', baseline));"
+          ]
+        },
+        {
+          "oldLine": 123,
+          "newLine": 189,
+          "before": [],
+          "after": [
+            "    for (const row of audit.launchHonorCorrectionTestChanges) {",
+            "        assert.equal(row.category, 8); assert.equal(row.reason, audit.categories[8]);",
+            "        for (const hunk of row.hunks) assert.ok(fs.readFileSync(path.join(root, row.file), 'utf8').includes(hunk.after.join('\\n')));",
+            "    }"
+          ]
+        }
+      ]
     }
   ]
 }

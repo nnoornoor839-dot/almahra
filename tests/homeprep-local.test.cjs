@@ -253,7 +253,7 @@ test('new scope full answer-key differences, other students unchanged, and day k
     const all=harness();
     for(const [period,expected] of Object.entries(key.dayKnights)){
         const stage=all.snapshot().stages.find(s=>s.period===period);
-        assert.deepEqual(stage.dayKnights[0].names,[expected.name]);
+        assert.deepEqual(stage.dayKnights, []);
         all.ctx.stageId=period==='asr'?'primary':'middle';
         assert.equal(all.run('getDayTitleCandidates(todayStr, stageId)[0].points'),expected.points);
     }

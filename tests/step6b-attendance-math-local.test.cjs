@@ -373,7 +373,7 @@ test('scope: all existing writes, points, settings and deferred group readers re
         'getCumulativeStats', 'getPointsBreakdown', 'getProgramSettings',
         'getWeeklyPointChampions', 'getLastCompletedWeekRange', 'applyGroupWinnerForDate']) {
         // Only the exact general undo and quick-entry guards are exempt.
-        const current = source(name).replaceAll('\r\n', '\n');
+        const current = source(name, name === 'launchThreeKnights' ? require('./helpers/board-invariants.cjs').beforeBoard(html) : html).replaceAll('\r\n', '\n');
         const quickGuard = "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }\n";
         const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
         const goldenGuard = "            if (GOLDEN_BOARD_UNDER_REPAIR) { showToast('اللوحة الذهبية مغلقة للإصلاح', 'error'); return; }\n";

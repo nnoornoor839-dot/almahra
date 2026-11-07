@@ -920,6 +920,12 @@ body.program-general {
 
 /* Approved design, round 1. Every override belongs to general. */
 body.program-general { background:var(--general-canvas); color:var(--general-ink); }
+body.program-general [onclick="openSettingsSection('setPanelKnights')"],
+body.program-general #setPanelKnights,
+body.program-general #supervisorPanel,
+body.program-general #threeKnightsModal,
+body.program-general #hbCardDaily,
+body.program-general #hbCardWeekly { display:none !important; }
 body.program-general #page-home.general-home {
   --gh-brand:var(--general-brand); --gh-brand-600:var(--general-brand); --gh-gold:var(--general-muted);
   --gh-bg:var(--general-canvas); --gh-surface:var(--general-surface); --gh-ink:var(--general-ink);
@@ -4291,7 +4297,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // كشف البطاقات تباعاً: تبدأ كلها أغلفة ثم تنفتح واحدة بعد أخرى
         function playHonorBoardEntranceAnimation() {
             hbResetCards();
-            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => c.style.display !== 'none');
+            const cards = [...document.querySelectorAll('#hbBoard .hb-card')].filter(c => getComputedStyle(c).display !== 'none');
             cards.forEach((card, i) => {
                 hbRevealTimers.push(setTimeout(() => hbSetOpen(card, true), HB_REVEAL_START + i * HB_REVEAL_STEP));
             });
@@ -4431,12 +4437,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             return { name: nameOf(e.student.name), points: e.points,
                                 week: roundPointTotal(sum.points + sum.attended * attendance), rank: e.rank <= 10 ? e.rank : null };
                         }),
-                        dayKnights: group.map(t => {
-                            const appr = getApprovedKnightsForMode(date, t.id);
-                            return appr ? approved(appr, t.name) : automatic(t);
-                        }).filter(e => e.names.length),
-                        weekKnights: group.map(t => ({ stage: t.name,
-                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),
+                        dayKnights: [],
+                        weekKnights: [],
                         prepWeek: getHomePrepWeek(period),
                         risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))
                     };
@@ -7263,6 +7265,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         
         function launchThreeKnights() {
+            if (isGeneralProgram()) return;
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
@@ -10684,6 +10687,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
         }
         function openSettingsSection(panelId) {
+            if (panelId === 'setPanelKnights' && isGeneralProgram()) return;
             if (panelId === 'setPanelFrontierFix') {
                 if (!canOpenGeneralFrontierFix()) return;
                 renderGeneralFrontierFix();
