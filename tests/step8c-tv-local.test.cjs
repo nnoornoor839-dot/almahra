@@ -161,7 +161,7 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
     assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'all', fars: [list[1]] });
     assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);
-    assert.equal(h.run("getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id"), 2);
+    assert.equal(h.run("getApprovedKnightsForMode('2026-11-01', 'all')"), null); // Old approvals cannot be displayed in general.
 });
 
 test('supervisor never builds an unsolicited snapshot; opening is synchronous, popup blocking shows toast, hello reconnects and heartbeat is 30s', () => {
@@ -237,7 +237,7 @@ test('save and undo each send one snapshot via updateAllUIs; honor board renders
     // نعزل رسم الواجهات فقط، ونشغّل الإرسال والتحديث والحفظ والتراجع الفعلية.
     for (const name of ['updateSchoolCalendarAlert', 'updateGeneralAttendanceUI', 'renderCompactTripGrid',
         'renderStudentsGrid', 'renderSettingsStudents', 'renderReportsTable', 'processRealClockPomodoro',
-        'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport', 'renderHomeDashboard']) h.ctx[name] = () => {};
+        'renderGeneralKnightsPanel', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport', 'renderHomeDashboard']) h.ctx[name] = () => {};
     h.ctx.getGeneralTvSnapshot = () => ({ type: 'snapshot' });
     h.install('sendGeneralTvSnapshot', 'updateAllUIs');
     h.range('new', [114, 1], [114, 6]); h.grade('new'); h.preview();

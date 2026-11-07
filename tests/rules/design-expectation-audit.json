@@ -10841,5 +10841,1142 @@
     "addedHelpers": [
       "tests/helpers/knights-release-audit.cjs"
     ]
+  },
+  "generalKnightsCleanupBaseline": "55fd33e",
+  "generalKnightsCleanupChanges": [
+    {
+      "file": "index.html",
+      "hunks": [
+        {
+          "oldLine": 924,
+          "newLine": 924,
+          "before": [],
+          "after": [
+            "body.program-general #supervisorPanel,",
+            "body.program-general #knightCelebrationModal,",
+            "body.program-general .legacy-title-setting,"
+          ]
+        },
+        {
+          "oldLine": 925,
+          "newLine": 928,
+          "before": [],
+          "after": [
+            "body.program-general #hbCardDiscipline,"
+          ]
+        },
+        {
+          "oldLine": 928,
+          "newLine": 932,
+          "before": [],
+          "after": [
+            "#generalKnightsPanel { display:none; }",
+            "body.program-general #generalKnightsPanel { display:grid; gap:var(--general-space-4); padding:var(--general-space-6); background:var(--general-surface); border:1px solid var(--general-line); border-radius:var(--general-radius-md); }",
+            "body.program-general #generalKnightsPanel h2 { font-size:var(--general-text-lg); font-weight:700; }",
+            "body.program-general #generalKnightsPanel label { display:grid; gap:8px; font-weight:600; }",
+            "body.program-general #generalKnightsPanel input,",
+            "body.program-general #generalKnightsPanel select { width:100%; min-height:44px; padding:10px; background:var(--general-surface); color:var(--general-ink); border:1px solid var(--general-line); border-radius:var(--general-radius-sm); }",
+            "body.program-general #generalKnightsPanel p { color:var(--general-muted); }",
+            "body.program-general #generalKnightsChoices { display:grid; gap:var(--general-space-4); }"
+          ]
+        },
+        {
+          "oldLine": 1692,
+          "newLine": 1704,
+          "before": [],
+          "after": [
+            "            <section id=\"generalKnightsPanel\" aria-labelledby=\"generalKnightsTitle\">",
+            "                <h2 id=\"generalKnightsTitle\">فارس الحلقة</h2>",
+            "                <p>فارس الحلقة يختاره البرنامج آلياً كل يوم، ولا يحتاج منك شيئاً. استعمل هذا فقط إذا أردت تبديله يدوياً، مع كتابة السبب.</p>",
+            "                <label for=\"generalKnightsDate\">التاريخ",
+            "                    <input id=\"generalKnightsDate\" type=\"date\" onchange=\"renderGeneralKnightsPanel(true)\">",
+            "                </label>",
+            "                <label for=\"generalKnightsHalaqa\">الحلقة",
+            "                    <select id=\"generalKnightsHalaqa\" onchange=\"renderGeneralKnightsPanel(true)\"></select>",
+            "                </label>",
+            "                <p id=\"generalKnightsAutomatic\" role=\"status\" aria-live=\"polite\"></p>",
+            "                <p id=\"generalKnightsSaved\"></p>",
+            "                <div id=\"generalKnightsChoices\"></div>",
+            "                <label for=\"generalKnightsReason\">سبب التبديل اليدوي (إلزامي)",
+            "                    <input id=\"generalKnightsReason\" type=\"text\" required>",
+            "                </label>",
+            "                <button type=\"button\" class=\"general-knights-action\" onclick=\"saveGeneralKnightsReplacement()\">حفظ التبديل اليدوي</button>",
+            "            </section>",
+            ""
+          ]
+        },
+        {
+          "oldLine": 4592,
+          "newLine": 4622,
+          "before": [],
+          "after": [
+            "            if (!isGeneralProgram()) {"
+          ]
+        },
+        {
+          "oldLine": 4649,
+          "newLine": 4680,
+          "before": [],
+          "after": [
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 4655,
+          "newLine": 4687,
+          "before": [],
+          "after": [
+            "            if (!isGeneralProgram()) {"
+          ]
+        },
+        {
+          "oldLine": 4697,
+          "newLine": 4730,
+          "before": [],
+          "after": [
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 4729,
+          "newLine": 4763,
+          "before": [],
+          "after": [
+            "                if (!isGeneralProgram()) {"
+          ]
+        },
+        {
+          "oldLine": 4747,
+          "newLine": 4782,
+          "before": [],
+          "after": [
+            "                }"
+          ]
+        },
+        {
+          "oldLine": 7172,
+          "newLine": 7208,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 7317,
+          "newLine": 7354,
+          "before": [
+            "            processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();"
+          ],
+          "after": [
+            "            processRealClockPomodoro(); if (isGeneralProgram()) renderGeneralKnightsPanel(); else updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();"
+          ]
+        },
+        {
+          "oldLine": 7330,
+          "newLine": 7367,
+          "before": [
+            "            const mode = document.getElementById('farsAutoMode')?.value || '';"
+          ],
+          "after": [
+            "            const mode = document.getElementById('generalKnightsHalaqa')?.value || '';"
+          ]
+        },
+        {
+          "oldLine": 7332,
+          "newLine": 7369,
+          "before": [
+            "            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 3;"
+          ],
+          "after": [
+            "            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 1;"
+          ]
+        },
+        {
+          "oldLine": 7334,
+          "newLine": 7371,
+          "before": [],
+          "after": [
+            "        function renderGeneralKnightsPanel(reset = false) {",
+            "            if (!isGeneralProgram()) return;",
+            "            const panel = document.getElementById('generalKnightsPanel');",
+            "            if (!panel) return;",
+            "            const date = document.getElementById('generalKnightsDate'), halaqa = document.getElementById('generalKnightsHalaqa');",
+            "            const previous = halaqa.value;",
+            "            halaqa.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)",
+            "                .map(h => `<option value=\"h:${escapeHTML(h.id)}\">${escapeHTML(h.name)}</option>`).join('');",
+            "            if ([...halaqa.options].some(o => o.value === previous)) halaqa.value = previous;",
+            "            if (!date.value) date.value = todayStr;",
+            "            const context = window.almahraPrograms.getCurrentSeasonId() + '|' + date.value + '|' + halaqa.value;",
+            "            reset = reset || panel.dataset.context !== context;",
+            "            panel.dataset.context = context;",
+            "            const id = halaqa.value.slice(2), count = farsSelectionCount();",
+            "            const automatic = getDayHalaqaKnights(date.value, id, students, []);",
+            "            document.getElementById('generalKnightsAutomatic').textContent = automatic.names.length",
+            "                ? 'الفارس الآلي الحالي: ' + automatic.names.join('، ') : 'لا فارس آلياً لهذا اليوم';",
+            "            const saved = honorKnightsLog.find(e => e.dateStr === date.value && e.mode === halaqa.value);",
+            "            document.getElementById('generalKnightsSaved').textContent = saved",
+            "                ? 'التبديل اليدوي المحفوظ: ' + saved.fars.map(f => f.name).join('، ') + ' — السبب: ' + saved.reason : '';",
+            "            const choices = document.getElementById('generalKnightsChoices');",
+            "            const values = reset ? [] : [...choices.querySelectorAll('select')].map(s => s.value);",
+            "            const options = '<option value=\"\">اختر البديل</option>' + students.filter(s => s.halaqaId === id)",
+            "                .slice().sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(s => `<option value=\"${s.id}\">${escapeHTML(s.name)}${getGeneralAttendanceEligibility(s, [date.value], 100).status === 'incomplete' ? ' — غير مكتمل' : ''}</option>`).join('');",
+            "            choices.innerHTML = Array.from({ length: count }, (_, i) => `<label for=\"generalKnightsChoice${i + 1}\">البديل${count > 1 ? ' ' + (i + 1) : ''}<select id=\"generalKnightsChoice${i + 1}\">${options}</select></label>`).join('');",
+            "            values.forEach((value, i) => { const select = document.getElementById('generalKnightsChoice' + (i + 1)); if (select) select.value = value; });",
+            "            if (reset) document.getElementById('generalKnightsReason').value = '';",
+            "        }",
+            "        async function saveGeneralKnightsReplacement() {",
+            "            const saved = await approveGeneralHalaqaKnights();",
+            "            if (saved) renderGeneralKnightsPanel();",
+            "            return saved;",
+            "        }"
+          ]
+        },
+        {
+          "oldLine": 7335,
+          "newLine": 7405,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 7352,
+          "newLine": 7423,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 7368,
+          "newLine": 7440,
+          "before": [
+            "            const mode = document.getElementById('farsAutoMode').value, dateStr = document.getElementById('farsAutoDate').value || todayStr;",
+            "            const reason = document.getElementById('farsHalaqaReason').value.trim();"
+          ],
+          "after": [
+            "            const mode = document.getElementById('generalKnightsHalaqa').value, dateStr = document.getElementById('generalKnightsDate').value || todayStr;",
+            "            const reason = document.getElementById('generalKnightsReason').value.trim();"
+          ]
+        },
+        {
+          "oldLine": 7371,
+          "newLine": 7443,
+          "before": [
+            "            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('fars' + (i + 1) + 'Select').value).filter(Boolean);"
+          ],
+          "after": [
+            "            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('generalKnightsChoice' + (i + 1)).value).filter(Boolean);"
+          ]
+        },
+        {
+          "oldLine": 7391,
+          "newLine": 7463,
+          "before": [
+            "            if (isGeneralProgram()) {",
+            "                if (document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();",
+            "                return;",
+            "            }"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 8163,
+          "newLine": 8232,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return [];"
+          ]
+        },
+        {
+          "oldLine": 8930,
+          "newLine": 9000,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return counts;"
+          ]
+        },
+        {
+          "oldLine": 8940,
+          "newLine": 9011,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return null;"
+          ]
+        },
+        {
+          "oldLine": 8973,
+          "newLine": 9045,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 8983,
+          "newLine": 9056,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 9007,
+          "newLine": 9081,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return;"
+          ]
+        },
+        {
+          "oldLine": 9948,
+          "newLine": 10023,
+          "before": [
+            "            if (total >= 60) {"
+          ],
+          "after": [
+            "            if (total >= 60 && !isGeneralProgram()) {"
+          ]
+        },
+        {
+          "oldLine": 11230,
+          "newLine": 11305,
+          "before": [
+            "            if (knightsPanel) knightsPanel.style.display = (!general && f.knights === false) ? 'none' : '';"
+          ],
+          "after": [
+            "            if (knightsPanel) knightsPanel.style.display = (general || f.knights === false) ? 'none' : '';",
+            "            const generalKnightsPanel = document.getElementById('generalKnightsPanel');",
+            "            if (generalKnightsPanel) generalKnightsPanel.style.display = general ? 'grid' : 'none';",
+            "            if (general) {",
+            "                ['threeKnightsModal', 'knightCelebrationModal'].forEach(id => {",
+            "                    const modal = document.getElementById(id);",
+            "                    if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }",
+            "                });",
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 11895,
+          "newLine": 11978,
+          "before": [
+            "                            تضبط من يستحق الظهور في لوحة الشرف: فارس اليوم، فارس الأسبوع، ونجوم الانضباط."
+          ],
+          "after": [
+            "                            ${isGeneralProgram() ? 'نسبة حضور فرسان الحلقة للأسبوع.' : 'تضبط من يستحق الظهور في لوحة الشرف: فارس اليوم، فارس الأسبوع، ونجوم الانضباط.'}"
+          ]
+        },
+        {
+          "oldLine": 11898,
+          "newLine": 11981,
+          "before": [
+            "                            <label class=\"flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition\">"
+          ],
+          "after": [
+            "                            <label class=\"${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition\">"
+          ]
+        },
+        {
+          "oldLine": 11905,
+          "newLine": 11988,
+          "before": [
+            "                            <label class=\"flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition\">"
+          ],
+          "after": [
+            "                            <label class=\"${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition\">"
+          ]
+        },
+        {
+          "oldLine": 12020,
+          "newLine": 12103,
+          "before": [
+            "                                <label class=\"flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition\">"
+          ],
+          "after": [
+            "                                <label class=\"${isGeneralProgram() && k === 'knights' ? 'legacy-title-setting ' : ''}flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition\">"
+          ]
+        },
+        {
+          "oldLine": 12081,
+          "newLine": 12164,
+          "before": [
+            "            fillFarsModeSelect();"
+          ],
+          "after": [
+            "            if (isGeneralProgram()) renderGeneralKnightsPanel(); else fillFarsModeSelect();"
+          ]
+        },
+        {
+          "oldLine": 12315,
+          "newLine": 12398,
+          "before": [
+            "                    <label class=\"flex items-center gap-2 cursor-pointer px-1\" title=\"لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم\">"
+          ],
+          "after": [
+            "                    <label class=\"${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-center gap-2 cursor-pointer px-1\" title=\"لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم\">"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "c895b01d9490fa481db4eef3a09e6056414cc8e39a030604f313eae791fb55a8"
+    },
+    {
+      "file": "tests/day5-locked-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 208,
+          "newLine": 208,
+          "before": [
+            "            renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });"
+          ],
+          "after": [
+            "            renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, renderGeneralKnightsPanel() {}, updateSettingsBadges() {} });"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "f7f25b555db8f47e78fe9d95eaf4d95fb844726ea79d847ddaf537efb3704a08"
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [],
+          "after": [
+            "    if (baseline === '55fd33e') return diffLines(file, before, currentText.split(/\\r?\\n/));",
+            "    currentText = require('./general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(currentText, file);"
+          ]
+        },
+        {
+          "oldLine": 20,
+          "newLine": 22,
+          "before": [
+            "    const after = currentText.split(/\\r?\\n/);"
+          ],
+          "after": [
+            "    return diffLines(file, before, currentText.split(/\\r?\\n/));",
+            "}",
+            "function diffLines(file, before, after) {"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "58bb7055f67b9231e5eab2844ce6279c46dad6dab2124a5518306a55cde8a603"
+    },
+    {
+      "file": "tests/helpers/knights-release-audit.cjs",
+      "hunks": [
+        {
+          "oldLine": 5,
+          "newLine": 5,
+          "before": [],
+          "after": [
+            "    text = require('./general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(text, file);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "221c2b1fd38087549bb7cb6ab3543bebea2bb542a20139101cc148a1b8436d24"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 755,
+          "newLine": 755,
+          "before": [
+            "            'renderReportsTable', 'processRealClockPomodoro', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport']) h.ctx[name] = () => {};"
+          ],
+          "after": [
+            "            'renderReportsTable', 'processRealClockPomodoro', 'renderGeneralKnightsPanel', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport']) h.ctx[name] = () => {};"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "31358866dd397eff3e04405c21bfaadb043b382fdca4d64cb57b50580fc8f247"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 258,
+          "newLine": 258,
+          "before": [
+            "        assert.equal(all.run('getDayTitleCandidates(todayStr, stageId)[0].points'),expected.points);"
+          ],
+          "after": [
+            "        all.ctx.halaqaId=stage.dayKnights[0].stage;",
+            "        assert.equal(all.run('dayPoints(getDayHalaqaKnights(todayStr, getProgramSettings().halaqas.find(h=>h.name===halaqaId).id).students[0].history[todayStr])'),expected.points);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "76f1e3fe3e9329fc81633e2043cbbc8a1c6c66e9626c0e5d9052e7cf804649a9"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 296,
+          "newLine": 296,
+          "before": [
+            "    const h=harness();h.install('approveGeneralHalaqaKnights');h.ctx.sendGeneralTvSnapshot=()=>{};",
+            "    h.element('farsAutoMode').value='h:b';h.element('farsAutoDate').value=key.days[2];h.element('fars1Select').value='7';"
+          ],
+          "after": [
+            "    const h=harness();h.install('approveGeneralHalaqaKnights');",
+            "    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.",
+            "    h.ctx.sendGeneralTvSnapshot=()=>{};",
+            "    h.element('generalKnightsHalaqa').value='h:b';h.element('generalKnightsDate').value=key.days[2];h.element('generalKnightsChoice1').value='7';"
+          ]
+        },
+        {
+          "oldLine": 299,
+          "newLine": 301,
+          "before": [
+            "    h.element('farsHalaqaReason').value='تقدير المعلم';"
+          ],
+          "after": [
+            "    h.element('generalKnightsReason').value='تقدير المعلم';"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "1090a4829efe2c6265113070e00ccf075d79ba53eaf0504b5d0a86f1cf12906f"
+    },
+    {
+      "file": "tests/knights-r2b-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 258,
+          "newLine": 258,
+          "before": [
+            "        h.install('approveGeneralHalaqaKnights','launchThreeKnights');h.run('let honorKnightsLog=[],currentThreeKnights=null');",
+            "        h.element('farsAutoMode').value='h:a';h.element('farsAutoDate').value='2026-11-22';",
+            "        h.element('farsHalaqaReason').value='تصحيح';h.element('fars1Select').value='1';",
+            "        assert.equal(await h.call('launchThreeKnights'),false);assert.equal(h.run('currentThreeKnights'),null);"
+          ],
+          "after": [
+            "        h.install('approveGeneralHalaqaKnights','launchThreeKnights');",
+            "    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.",
+            "    h.run('let honorKnightsLog=[],currentThreeKnights=null');",
+            "        h.element('generalKnightsHalaqa').value='h:a';h.element('generalKnightsDate').value='2026-11-22';",
+            "        h.element('generalKnightsReason').value='تصحيح';h.element('generalKnightsChoice1').value='1';",
+            "        assert.equal(await h.call('approveGeneralHalaqaKnights'),false);assert.equal(h.run('currentThreeKnights'),null);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "0b4d0680223793813c2401adccea185813036b95e7ecba7ddce248618482d940"
+    },
+    {
+      "file": "tests/knights-r2b-undefined-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 122,
+          "newLine": 122,
+          "before": [],
+          "after": [
+            "    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields."
+          ]
+        },
+        {
+          "oldLine": 124,
+          "newLine": 125,
+          "before": [
+            "    h.element('farsAutoMode').value = 'h:a';",
+            "    h.element('farsAutoDate').value = key.days[0];",
+            "    h.element('farsHalaqaReason').value = 'اعتماد موثق';",
+            "    h.element('fars1Select').value = '1';"
+          ],
+          "after": [
+            "    h.element('generalKnightsHalaqa').value = 'h:a';",
+            "    h.element('generalKnightsDate').value = key.days[0];",
+            "    h.element('generalKnightsReason').value = 'اعتماد موثق';",
+            "    h.element('generalKnightsChoice1').value = '1';"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "d1eb82eb8ac5d9016dc1a86206c7d7b7acbf49792459925353aad642873a678d"
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 22,
+          "newLine": 22,
+          "before": [
+            "test('release general: settings card opens approval only, active h: options, fields, reason and configured counts 1..5/fallback', async () => {"
+          ],
+          "after": [
+            "test('release general: independent replacement panel, active halaqas, automatic winner, scoped sorted students and counts 1..5/default 1', async () => {"
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 35,
+          "before": [
+            "        assert.equal(await h.page.locator('#supervisorPanel').isVisible(), true);",
+            "        assert.deepEqual(await h.page.locator('#farsAutoMode option').evaluateAll(list => list.map(o => o.value)), key.settings.halaqas.filter(h => h.active === true).map(h => 'h:' + h.id));"
+          ],
+          "after": [
+            "        assert.equal(await h.page.locator('#supervisorPanel').isVisible(), false);",
+            "        assert.equal(await h.page.locator('#generalKnightsPanel').isVisible(), true);",
+            "        assert.equal(await h.page.locator('#generalKnightsTitle').innerText(), 'فارس الحلقة');",
+            "        assert.deepEqual(await h.page.locator('#generalKnightsHalaqa option').evaluateAll(list => list.map(o => ({value:o.value,text:o.textContent}))), key.settings.halaqas.filter(h => h.active === true).map(h => ({value:'h:' + h.id,text:h.name})));"
+          ]
+        },
+        {
+          "oldLine": 39,
+          "newLine": 41,
+          "before": [
+            "        assert.equal(await h.page.locator('#farsHalaqaReason').isVisible(), true);",
+            "        assert.doesNotMatch(await h.page.locator('#farsApproveButton').innerText(), /شاشة/);",
+            "        assert.match(await h.page.locator('#farsAutoHelp').innerText(), /بسبب إلزامي/);"
+          ],
+          "after": [
+            "        assert.equal(await h.page.locator('#generalKnightsReason').isVisible(), true);",
+            "        assert.doesNotMatch(await h.page.locator('#generalKnightsPanel').innerText(), /اختيار آلي|يوم الفرسان|الإنجاز|الأول|الثاني|الثالث|🚀/);"
+          ]
+        },
+        {
+          "oldLine": 46,
+          "newLine": 47,
+          "before": [
+            "                document.getElementById('farsAutoMode').value = 'h:a';",
+            "                updateThreeKnightsSelects();"
+          ],
+          "after": [
+            "                document.getElementById('generalKnightsHalaqa').value = 'h:a';",
+            "                renderGeneralKnightsPanel(true);"
+          ]
+        },
+        {
+          "oldLine": 49,
+          "newLine": 50,
+          "before": [
+            "            assert.equal(await shown(h.page), count ?? 3);"
+          ],
+          "after": [
+            "            assert.equal(await h.page.locator('#generalKnightsChoices select').count(), count ?? 1);"
+          ]
+        },
+        {
+          "oldLine": 51,
+          "newLine": 52,
+          "before": [],
+          "after": [
+            "        const data = await h.page.evaluate(() => ({",
+            "            options:[...document.getElementById('generalKnightsChoice1').options].slice(1).map(o=>({id:o.value,text:o.textContent})),",
+            "            expected:students.filter(s=>s.halaqaId==='a').sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(s=>({id:String(s.id),text:s.name+(getGeneralAttendanceEligibility(s,['2026-11-24'],100).status==='incomplete'?' — غير مكتمل':'')})),",
+            "            automatic:document.getElementById('generalKnightsAutomatic').textContent,",
+            "            names:getDayHalaqaKnights('2026-11-24','a',students,[]).names",
+            "        }));",
+            "        assert.deepEqual(data.options,data.expected);for(const name of data.names)assert.ok(data.automatic.includes(name));",
+            "        await h.page.evaluate(() => {delete students.find(s=>s.halaqaId==='a').history['2026-11-23'];document.getElementById('generalKnightsDate').value='2026-11-23';renderGeneralKnightsPanel(true)});",
+            "        assert.match(await h.page.locator('#generalKnightsChoice1').innerText(), /غير مكتمل/);"
+          ]
+        },
+        {
+          "oldLine": 55,
+          "newLine": 65,
+          "before": [
+            "test('release general: non-h modes cannot save/open/auto-pick; h saves exact reason, rejects blank and ignores hidden selections', async () => {"
+          ],
+          "after": [
+            "test('release general: all legacy entry points are inert; replacement rejects blank reason and saves exact entry', async () => {"
+          ]
+        },
+        {
+          "oldLine": 65,
+          "newLine": 75,
+          "before": [],
+          "after": [
+            "            const before = document.getElementById('supervisorPanel').innerHTML;"
+          ]
+        },
+        {
+          "oldLine": 67,
+          "newLine": 78,
+          "before": [
+            "                await launchThreeKnights(); autoPickKnights();"
+          ],
+          "after": [
+            "                const html = document.getElementById('supervisorPanel').innerHTML;",
+            "                await launchThreeKnights(); autoPickKnights(); fillFarsModeSelect(); updateThreeKnightsSelects(); syncFarsDayFromDate();",
+            "                if (html !== document.getElementById('supervisorPanel').innerHTML) throw Error('Legacy mutation');"
+          ]
+        },
+        {
+          "oldLine": 70,
+          "newLine": 83,
+          "before": [
+            "            fillFarsModeSelect(); mode.value = 'h:b';"
+          ],
+          "after": [
+            "            document.getElementById('generalKnightsHalaqa').value = 'h:b';"
+          ]
+        },
+        {
+          "oldLine": 72,
+          "newLine": 85,
+          "before": [
+            "            updateThreeKnightsSelects();",
+            "            document.getElementById('farsAutoDate').value = '2026-11-24';",
+            "            document.getElementById('fars1Select').value = '7';"
+          ],
+          "after": [
+            "            document.getElementById('generalKnightsDate').value = '2026-11-24';",
+            "            renderGeneralKnightsPanel(true);",
+            "            document.getElementById('generalKnightsChoice1').value = '7';"
+          ]
+        },
+        {
+          "oldLine": 76,
+          "newLine": 89,
+          "before": [
+            "            document.getElementById('farsHalaqaReason').value = '  ';",
+            "            const empty = await launchThreeKnights(), emptyWrites = writes.length;",
+            "            document.getElementById('farsHalaqaReason').value = '  تقدير المعلم  ';",
+            "            const saved = await launchThreeKnights();"
+          ],
+          "after": [
+            "            document.getElementById('generalKnightsReason').value = '  ';",
+            "            const empty = await saveGeneralKnightsReplacement(), emptyWrites = writes.length;",
+            "            document.getElementById('generalKnightsReason').value = '  تقدير المعلم  ';",
+            "            const saved = await saveGeneralKnightsReplacement();"
+          ]
+        },
+        {
+          "oldLine": 90,
+          "newLine": 103,
+          "before": [],
+          "after": [
+            "        assert.deepEqual(Object.keys(entry).sort(), ['dateStr','mode','fars','reason','by','at'].sort());",
+            "        assert.match(await h.page.locator('#generalKnightsSaved').innerText(), /ماجد.*تقدير المعلم/);"
+          ]
+        },
+        {
+          "oldLine": 105,
+          "newLine": 120,
+          "before": [
+            "            document.getElementById('farsAutoMode').value='h:b'; updateThreeKnightsSelects();",
+            "            document.getElementById('farsAutoDate').value='2026-11-24';",
+            "            [7,100,101,102,103].forEach((id,i)=>document.getElementById('fars'+(i+1)+'Select').value=String(id));",
+            "            document.getElementById('farsHalaqaReason').value='تقدير المعلم';"
+          ],
+          "after": [
+            "            document.getElementById('generalKnightsHalaqa').value='h:b';",
+            "            document.getElementById('generalKnightsDate').value='2026-11-24';renderGeneralKnightsPanel(true);",
+            "            [7,100,101,102,103].forEach((id,i)=>document.getElementById('generalKnightsChoice'+(i+1)).value=String(id));",
+            "            document.getElementById('generalKnightsReason').value='تقدير المعلم';"
+          ]
+        },
+        {
+          "oldLine": 111,
+          "newLine": 126,
+          "before": [
+            "            return {ok:await launchThreeKnights(),saved};"
+          ],
+          "after": [
+            "            return {ok:await saveGeneralKnightsReplacement(),saved};"
+          ]
+        },
+        {
+          "oldLine": 118,
+          "newLine": 133,
+          "before": [],
+          "after": [
+            "test('general replacement: changing date/halaqa clears draft, no automatic winner, saved reason, and all eligibility rejections', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => {goHome('page-settings');openSettingsSection('setPanelKnights')});",
+            "        await h.page.selectOption('#generalKnightsHalaqa','h:b');",
+            "        await h.page.selectOption('#generalKnightsChoice1','7');",
+            "        await h.page.fill('#generalKnightsReason','سبب سابق');",
+            "        await h.page.selectOption('#generalKnightsHalaqa','h:a');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');",
+            "        await h.page.selectOption('#generalKnightsChoice1','1');",
+            "        await h.page.fill('#generalKnightsReason','سبب آخر');",
+            "        await h.page.fill('#generalKnightsDate','2026-11-23');",
+            "        await h.page.locator('#generalKnightsDate').dispatchEvent('change');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsChoice1'),'');",
+            "        assert.equal(await h.page.inputValue('#generalKnightsReason'),'');",
+            "        await h.page.fill('#generalKnightsDate','2026-11-20');",
+            "        await h.page.locator('#generalKnightsDate').dispatchEvent('change');",
+            "        assert.equal(await h.page.locator('#generalKnightsAutomatic').innerText(),'لا فارس آلياً لهذا اليوم');",
+            "        const result=await h.page.evaluate(async()=>{",
+            "            let writes=0;window.almahraPrograms.saveKnightsEntry=async()=>{writes++;return {success:true}};",
+            "            const student=students.find(s=>s.id===7), original=structuredClone(student.history['2026-11-24']);",
+            "            document.getElementById('generalKnightsDate').value='2026-11-24';",
+            "            document.getElementById('generalKnightsHalaqa').value='h:b';renderGeneralKnightsPanel(true);",
+            "            document.getElementById('generalKnightsReason').value='تصحيح الورقة';",
+            "            const rejected=[];",
+            "            for(const type of ['absent','no-recitation','repeat','blocking','wrong-halaqa']) {",
+            "                student.history['2026-11-24']=structuredClone(original);",
+            "                if(type==='absent')student.history['2026-11-24']={attended:false,absence:'unexcused'};",
+            "                if(type==='no-recitation')student.history['2026-11-24'].entries={};",
+            "                if(type==='repeat')Object.values(student.history['2026-11-24'].entries).forEach(e=>e.grade='repeat');",
+            "                if(type==='blocking') {",
+            "                    const c=getProgramSettings().criteria.find(c=>c.blocksTitles && c.points<0);",
+            "                    student.history['2026-11-24'].criteria[c.id]=c.points;",
+            "                }",
+            "                const select=document.getElementById('generalKnightsChoice1');",
+            "                if(type==='wrong-halaqa') {select.add(new Option('طالب حلقة أخرى','1'));select.value='1'}else select.value='7';",
+            "                rejected.push(await approveGeneralHalaqaKnights());",
+            "            }",
+            "            student.history['2026-11-24']=original;",
+            "            return {writes,rejected};",
+            "        });",
+            "        assert.equal(result.writes,0);assert.deepEqual(result.rejected,[false,false,false,false,false]);",
+            "        assert.deepEqual(h.errors,[]);",
+            "    } finally {await h.close()}",
+            "});",
+            "",
+            "test('general legacy inventory: hidden with forced inline displays, no old ranking reads, settings and text classified', async()=>{",
+            "    const h=await open();",
+            "    try {",
+            "        const result=await h.page.evaluate(()=>{",
+            "            const called=[];",
+            "            for(const name of ['getDayTitleCandidates','getDayRanking','getWeekTitleCandidates','getApprovedKnightsForMode','getDisciplineStars'])",
+            "                window[name]=()=>{called.push(name);throw Error('legacy read')};",
+            "            honorKnightsLog.push({dateStr:'2026-11-24',mode:'all',fars:[{id:1,name:'قديم لا يظهر',achievement:'إنجاز قديم'}]});",
+            "            renderHonorBoard();renderHomeDashboard();renderReportsTable();renderGeneralWeeklyMessages();",
+            "            const counts=getKnightWinCounts();",
+            "            const ids=['supervisorPanel','threeKnightsModal','knightCelebrationModal','hbCardDaily','hbCardWeekly','hbCardDiscipline'];",
+            "            ids.forEach(id=>document.getElementById(id).style.display='flex');",
+            "            const hidden=ids.map(id=>getComputedStyle(document.getElementById(id)).display);",
+            "            openNoLevelModal([students[0]]);",
+            "            const noLevel=document.getElementById('noLevelDescription').textContent;",
+            "            closeNoLevelModal();",
+            "            return {called,counts,hidden,noLevel,",
+            "                requireSard:getComputedStyle(document.getElementById('psTrRequireSard').closest('label')).display,",
+            "                fullWeek:getComputedStyle(document.getElementById('psTrDisciplineFullWeek').closest('label')).display,",
+            "                feature:getComputedStyle(document.querySelector('[data-feat=\"knights\"]').closest('label')).display,",
+            "                discipline:[...document.querySelectorAll('.crit-disc')].map(e=>getComputedStyle(e.closest('label')).display),",
+            "                weekly:document.getElementById('psTrWeeklyAtt').closest('div').textContent,",
+            "                text:document.body.innerText};",
+            "        });",
+            "        assert.deepEqual(result.called,[]);assert.deepEqual(result.counts,{});",
+            "        assert.deepEqual(result.hidden,Array(6).fill('none'));",
+            "        assert.equal(result.requireSard,'none');assert.equal(result.fullWeek,'none');",
+            "        assert.equal(result.feature,'none');",
+            "        assert.ok(result.discipline.length);assert.ok(result.discipline.every(s=>s==='none'));",
+            "        assert.match(result.noLevel,/حلقة فعّالة/);assert.doesNotMatch(result.noLevel,/شريحة|فرسان/);",
+            "        assert.doesNotMatch(result.text,/قديم لا يظهر|إنجاز قديم/);",
+            "        assert.deepEqual(h.errors,[]);",
+            "    } finally {await h.close()}",
+            "});",
+            ""
+          ]
+        },
+        {
+          "oldLine": 226,
+          "newLine": 323,
+          "before": [],
+          "after": [
+            "test('general cleanup audit: every changed line registered in category 11; save validation and entry remain exact',()=>{",
+            "    const audit=require('./rules/design-expectation-audit.json');",
+            "    const {changesFrom}=require('./helpers/design-expectation-audit.cjs');",
+            "    const {beforeGeneralKnightsCleanup}=require('./helpers/general-knights-cleanup-audit.cjs');",
+            "    const changed=cp.execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/)",
+            "        .filter(f=>f&&f!=='tests/rules/design-expectation-audit.json').sort();",
+            "    assert.deepEqual(audit.generalKnightsCleanupChanges.map(r=>r.file).sort(),changed);",
+            "    assert.equal(audit.generalKnightsCleanupBaseline,'55fd33e');",
+            "    for(const row of audit.generalKnightsCleanupChanges) {",
+            "        assert.equal(row.category,11);assert.equal(row.reason,audit.categories['11']);",
+            "        assert.deepEqual({file:row.file,hunks:row.hunks},changesFrom(row.file,'55fd33e'));",
+            "        const original=cp.execFileSync('git',['show','55fd33e:'+row.file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n');",
+            "        assert.equal(createHash('sha256').update(original).digest('hex'),row.beforeSha256);",
+            "        assert.equal(beforeGeneralKnightsCleanup(fs.readFileSync(path.join(root,row.file),'utf8'),row.file),original);",
+            "    }",
+            "    for(const row of audit.generalKnightsCleanupAddedFiles) {",
+            "        const current=fs.readFileSync(path.join(root,row.file));",
+            "        assert.equal(row.category,11);assert.equal(row.reason,audit.categories['11']);",
+            "        assert.equal(createHash('sha256').update(current).digest('hex'),row.sha256);",
+            "        assert.deepEqual(row.hunks,[{oldLine:1,newLine:1,before:[],after:current.toString('utf8').split('\\n')}]);",
+            "    }",
+            "    const baseline=cp.execFileSync('git',['show','55fd33e:index.html'],{cwd:root,encoding:'utf8'});",
+            "    const reads=source('approveGeneralHalaqaKnights').replaceAll('generalKnightsHalaqa','farsAutoMode')",
+            "        .replaceAll('generalKnightsDate','farsAutoDate').replaceAll('generalKnightsReason','farsHalaqaReason')",
+            "        .replace(\"'generalKnightsChoice' + (i + 1)\",\"'fars' + (i + 1) + 'Select'\");",
+            "    assert.equal(reads,source('approveGeneralHalaqaKnights',baseline),'only field reads change');",
+            "    for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars',",
+            "        'saveCurrentThreeKnights','ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','saveSmartProgress'])",
+            "        assert.equal(source(name),source(name,baseline),name);",
+            "    for(const file of ['tv.js','tv.html','programs-store.js','data-store.js','firestore.rules'])",
+            "        assert.deepEqual(fs.readFileSync(path.join(root,file)),cp.execFileSync('git',['show','55fd33e:'+file],{cwd:root}));",
+            "    const mutated=html.replace(\"const options = '<option value=\\\"\\\">اختر البديل</option>'\", \"const options = '<option value=\\\"\\\">تغيير غير معتمد</option>'\");",
+            "    assert.notEqual(mutated,html);",
+            "    assert.notEqual(beforeGeneralKnightsCleanup(mutated),baseline.replaceAll('\\r\\n','\\n'));",
+            "});",
+            ""
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "b2d39997c7e6454bd71977ca84065e884c2bce34bcb50dc971e93be7fc3d0317"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 132,
+          "newLine": 132,
+          "before": [
+            "                getTitleRules: () => ({}), renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });"
+          ],
+          "after": [
+            "                getTitleRules: () => ({}), renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, renderGeneralKnightsPanel() {}, updateSettingsBadges() {} });"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "e88b03b660331616269e293783bffabf5e8acd660a4a73afe21039bfec3f73e9"
+    },
+    {
+      "file": "tests/step6a-absence-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 62,
+          "newLine": 62,
+          "before": [
+            "        processRealClockPomodoro() {}, updateThreeKnightsSelects() {}, renderExamEntryList() {}, renderExamResultsReport() {}, renderHomeDashboard() {} });"
+          ],
+          "after": [
+            "        processRealClockPomodoro() {}, updateThreeKnightsSelects() {}, renderGeneralKnightsPanel() {}, renderExamEntryList() {}, renderExamResultsReport() {}, renderHomeDashboard() {} });"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "db449db41a2df307838ddb7fd52664ff82c8374703e6a58c773e0b4ce6dd9c4a"
+    },
+    {
+      "file": "tests/step6b-attendance-math-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 152,
+          "newLine": 152,
+          "before": [
+            "    assert.match(h.element('hbWeeklyKnights').innerHTML, /غير مكتمل/);",
+            "    assert.match(h.element('hbDisciplineStars').innerHTML, /غير مكتمل/);",
+            "    assert.match(h.element('hbDailyKnights').innerHTML, /غير مكتمل/);",
+            "    assert.match(h.element('fars1Select').innerHTML, /&lt;طالب وهمي&gt; — غير مكتمل/);"
+          ],
+          "after": [
+            "    assert.equal(h.element('hbWeeklyKnights').innerHTML, ''); // Legacy knights are not rendered in general.",
+            "    assert.equal(h.element('hbDisciplineStars').innerHTML, ''); // Legacy discipline award is hidden too.",
+            "    assert.equal(h.element('hbDailyKnights').innerHTML, '');",
+            "    assert.equal(h.element('fars1Select').innerHTML, ''); // Scoped replacement options are covered by the browser suite."
+          ]
+        },
+        {
+          "oldLine": 260,
+          "newLine": 260,
+          "before": [
+            "test('weekly candidates, discipline, incomplete rows and three selects each calculate attendance once per student', () => {"
+          ],
+          "after": [
+            "test('weekly candidates, discipline and incomplete rows calculate attendance once; legacy selects are inert in general', () => {"
+          ]
+        },
+        {
+          "oldLine": 272,
+          "newLine": 272,
+          "before": [
+            "    assert.equal(attendance.calls, h.list.length);"
+          ],
+          "after": [
+            "    assert.equal(attendance.calls, 0);"
+          ]
+        },
+        {
+          "oldLine": 277,
+          "newLine": 277,
+          "before": [
+            "    assert.match(h.element(ids[0]).innerHTML, /طالب وهمي 2 — غير مكتمل/);"
+          ],
+          "after": [
+            "    assert.equal(h.element(ids[0]).innerHTML, '');"
+          ]
+        },
+        {
+          "oldLine": 288,
+          "newLine": 288,
+          "before": [
+            "            'renderSettingsStudents', 'processRealClockPomodoro', 'renderExamEntryList', 'renderExamResultsReport',"
+          ],
+          "after": [
+            "            'renderSettingsStudents', 'processRealClockPomodoro', 'renderGeneralKnightsPanel', 'renderExamEntryList', 'renderExamResultsReport',"
+          ]
+        },
+        {
+          "oldLine": 296,
+          "newLine": 296,
+          "before": [
+            "        assert.equal(attendance.calls, 3 * size); // Reports + their statistics + one set of options; home statistics removed by owner decision 2026-11-02 (ت٢٣)"
+          ],
+          "after": [
+            "        assert.equal(attendance.calls, 2 * size); // Reports + their statistics; legacy options no longer render in general."
+          ]
+        },
+        {
+          "oldLine": 317,
+          "newLine": 317,
+          "before": [
+            "test('weekly honor winner has no fixed zero unrecorded suffix; incomplete student still has a warning', () => {"
+          ],
+          "after": [
+            "test('legacy weekly honor stays empty in general; attendance warnings remain available independently', () => {"
+          ]
+        },
+        {
+          "oldLine": 322,
+          "newLine": 322,
+          "before": [
+            "    assert.match(weekly, /طالب وهمي 1/); assert.match(weekly, /10 نقطة · حضر 2\\/2/);"
+          ],
+          "after": [
+            "    assert.equal(weekly, '');"
+          ]
+        },
+        {
+          "oldLine": 324,
+          "newLine": 324,
+          "before": [
+            "    assert.match(weekly, /طالب وهمي 2.*غير مكتمل.*لم يُسجَّل 1/);"
+          ],
+          "after": [
+            "    assert.match(h.run('generalIncompleteAttendanceHtml(getWorkingDaysList(students))'), /طالب وهمي 2.*غير مكتمل.*لم يُسجَّل 1/);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "5dc8b4795e4efab32f9cf65e490c157016f5f7555b0bdac120f5f7d58c9e9392"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 164,
+          "newLine": 164,
+          "before": [
+            "    assert.equal(h.run(\"getApprovedKnightsForMode('2026-11-01', 'all').fars[0].id\"), 2);"
+          ],
+          "after": [
+            "    assert.equal(h.run(\"getApprovedKnightsForMode('2026-11-01', 'all')\"), null); // Old approvals cannot be displayed in general."
+          ]
+        },
+        {
+          "oldLine": 240,
+          "newLine": 240,
+          "before": [
+            "        'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport', 'renderHomeDashboard']) h.ctx[name] = () => {};"
+          ],
+          "after": [
+            "        'renderGeneralKnightsPanel', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport', 'renderHomeDashboard']) h.ctx[name] = () => {};"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "990b2a58312151e4ce903ed31011f85c0a0298dc6a92367efa85bfea2fe2e27a"
+    },
+    {
+      "file": "tests/trial-fixes-r1-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 85,
+          "newLine": 85,
+          "before": [
+            "test('trial r1: shared celebration HTML, content, both legacy save paths and close behavior remain identical to 82bf19f', () => {"
+          ],
+          "after": [
+            "test('trial r1: legacy celebration HTML and behavior remain identical, with audited general-only presentation guards', () => {"
+          ]
+        },
+        {
+          "oldLine": 90,
+          "newLine": 90,
+          "before": [],
+          "after": [
+            "    const beforeCleanup = require('./helpers/general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(html);"
+          ]
+        },
+        {
+          "oldLine": 91,
+          "newLine": 92,
+          "before": [
+            "        assert.equal(source(name), source(name, baseline), name);"
+          ],
+          "after": [
+            "        assert.equal(source(name, beforeCleanup), source(name, baseline), name);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "a631f437c833c617e1c48739af1f72156f16f87fda4a2924137b8196b83ebdaa"
+    }
+  ],
+  "generalKnightsCleanupAddedFiles": [
+    {
+      "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "sha256": "1b750e0cbc2d043473ea8fb5e4d286575f5c174ff91675876a60e0c209ca7274",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const assert = require('node:assert/strict');",
+            "const { createHash } = require('node:crypto');",
+            "// Reverse only the exact changed lines approved for removing the legacy general UI.",
+            "function beforeGeneralKnightsCleanup(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    const row = require('../rules/design-expectation-audit.json').generalKnightsCleanupChanges?.find(r => r.file === file);",
+            "    if (!row || createHash('sha256').update(text).digest('hex') === row.beforeSha256) return text;",
+            "    const lines = text.split('\\n');",
+            "    // Earlier historical versions are inputs to the older audit layers too.",
+            "    if (!row.hunks.every(h => JSON.stringify(lines.slice(h.newLine - 1, h.newLine - 1 + h.after.length)) === JSON.stringify(h.after))) return text;",
+            "    for (const h of [...row.hunks].reverse()) {",
+            "        assert.deepEqual(lines.slice(h.newLine - 1, h.newLine - 1 + h.after.length), h.after);",
+            "        lines.splice(h.newLine - 1, h.after.length, ...h.before);",
+            "    }",
+            "    return lines.join('\\n');",
+            "}",
+            "module.exports = { beforeGeneralKnightsCleanup };",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "generalKnightsCleanupNotes": {
+    "category": 11,
+    "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+    "existingExpectedResultsChanged": true,
+    "explanation": "إزالة واجهة الفرسان القديمة من general كاملة، واستبدالها بتبديل يدوي استثنائي. تغيرت توقعات ظهور اللوحة القديمة وتعبئة قوائم كل الطلاب وعددها الافتراضي 3 إلى لوحة مستقلة بقوائم الحلقة وافتراضي 1. بقيت شروط الحفظ وشكل entry والحسابات والمخازن والمفاتيح المقفلة كما هي. فروق التدقيق محدودة بالأسطر المسجلة هنا فقط."
   }
 }

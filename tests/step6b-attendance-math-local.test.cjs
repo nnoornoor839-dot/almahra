@@ -149,10 +149,10 @@ test('knights: incomplete never eligible or excluded for attendance; complete 75
     h.list[1].name = '<طالب وهمي>';
     assert.match(h.run('generalIncompleteAttendanceHtml(getWorkingDaysList(students))'), /&lt;طالب وهمي&gt;.*غير مكتمل/);
     h.run('renderHonorBoard(); updateThreeKnightsSelects()');
-    assert.match(h.element('hbWeeklyKnights').innerHTML, /غير مكتمل/);
-    assert.match(h.element('hbDisciplineStars').innerHTML, /غير مكتمل/);
-    assert.match(h.element('hbDailyKnights').innerHTML, /غير مكتمل/);
-    assert.match(h.element('fars1Select').innerHTML, /&lt;طالب وهمي&gt; — غير مكتمل/);
+    assert.equal(h.element('hbWeeklyKnights').innerHTML, ''); // Legacy knights are not rendered in general.
+    assert.equal(h.element('hbDisciplineStars').innerHTML, ''); // Legacy discipline award is hidden too.
+    assert.equal(h.element('hbDailyKnights').innerHTML, '');
+    assert.equal(h.element('fars1Select').innerHTML, ''); // Scoped replacement options are covered by the browser suite.
     h.holiday('2026-11-04');
     for (const call of ["getDayRanking(todayStr)", "getDayTitleCandidates(todayStr)", "getDisciplineRanking(todayStr)", "getDayDisciplineStars(todayStr)"]) assert.deepEqual(copy(h.run(call)), []);
     assert.equal(h.run('getDayHarvest(todayStr).attended'), 0);
@@ -257,7 +257,7 @@ test('summary filters with one enrollment lookup and reuses the supplied attenda
     assert.equal(start.calls, 1); assert.equal(attendance.calls, 0);
 });
 
-test('weekly candidates, discipline, incomplete rows and three selects each calculate attendance once per student', () => {
+test('weekly candidates, discipline and incomplete rows calculate attendance once; legacy selects are inert in general', () => {
     const h = harness([student(1, { '2026-11-01': { ...present(), earnedPoints: 10 }, '2026-11-02': present() }),
         student(2, { '2026-11-01': present() })]);
     h.today('2026-11-02');
@@ -269,12 +269,12 @@ test('weekly candidates, discipline, incomplete rows and three selects each calc
     const ids = ['fars1Select', 'fars2Select', 'fars3Select'];
     ids.forEach((id, i) => { h.element(id).value = String(i % 2 + 1); });
     attendance.calls = 0; h.run('updateThreeKnightsSelects()');
-    assert.equal(attendance.calls, h.list.length);
+    assert.equal(attendance.calls, 0);
     ids.forEach((id, i) => {
         assert.equal(h.element(id).innerHTML, h.element(ids[0]).innerHTML);
         assert.equal(h.element(id).value, String(i % 2 + 1));
     });
-    assert.match(h.element(ids[0]).innerHTML, /طالب وهمي 2 — غير مكتمل/);
+    assert.equal(h.element(ids[0]).innerHTML, '');
 });
 
 test('one updateAllUIs render over about 90 school days keeps calendar calls constant for 1 and 100 students', () => {
@@ -285,7 +285,7 @@ test('one updateAllUIs render over about 90 school days keeps calendar calls con
         assert.ok(h.dates().length >= 90);
         // Keep attendance renders real; unrelated grids, timers and messages are outside this fixture.
         for (const name of ['updateSchoolCalendarAlert', 'updateGeneralAttendanceUI', 'renderCompactTripGrid', 'renderStudentsGrid',
-            'renderSettingsStudents', 'processRealClockPomodoro', 'renderExamEntryList', 'renderExamResultsReport',
+            'renderSettingsStudents', 'processRealClockPomodoro', 'renderGeneralKnightsPanel', 'renderExamEntryList', 'renderExamResultsReport',
             'updateSettingsBadges', 'renderGeneralWeeklyMessages']) h.ctx[name] = () => {};
         h.install('updateAllUIs', 'updateAttendanceAlertBar', 'updateRecordsBadges');
         h.element('recPanelAbsence').classList.contains = cls => cls === 'active';
@@ -293,7 +293,7 @@ test('one updateAllUIs render over about 90 school days keeps calendar calls con
         const calendar = h.countCalls('getWorkingDaysList'), attendance = h.countCalls('calculateStudentAttendance');
         h.run('updateAllUIs()');
         counts.push({ calendar: calendar.calls, attendance: attendance.calls });
-        assert.equal(attendance.calls, 3 * size); // Reports + their statistics + one set of options; home statistics removed by owner decision 2026-11-02 (ت٢٣)
+        assert.equal(attendance.calls, 2 * size); // Reports + their statistics; legacy options no longer render in general.
         assert.match(h.element('reportsTableBody').innerHTML, /2026-11-09/);
     }
     assert.equal(counts[0].calendar, counts[1].calendar);
@@ -314,14 +314,14 @@ test('absence report reads today attendance once, including summary and holiday 
     assert.match(h.element('absenceDetailList').innerHTML, /إجازة/);
 });
 
-test('weekly honor winner has no fixed zero unrecorded suffix; incomplete student still has a warning', () => {
+test('legacy weekly honor stays empty in general; attendance warnings remain available independently', () => {
     const h = harness([student(1, { '2026-11-01': { ...present(), earnedPoints: 10 }, '2026-11-02': present() }),
         student(2, { '2026-11-01': present() })]);
     h.today('2026-11-02'); h.run('renderHonorBoard()');
     const weekly = h.element('hbWeeklyKnights').innerHTML;
-    assert.match(weekly, /طالب وهمي 1/); assert.match(weekly, /10 نقطة · حضر 2\/2/);
+    assert.equal(weekly, '');
     assert.doesNotMatch(weekly, / · لم يُسجَّل 0/);
-    assert.match(weekly, /طالب وهمي 2.*غير مكتمل.*لم يُسجَّل 1/);
+    assert.match(h.run('generalIncompleteAttendanceHtml(getWorkingDaysList(students))'), /طالب وهمي 2.*غير مكتمل.*لم يُسجَّل 1/);
 });
 
 test('saving unrecorded attendance without a choice shows the requested error and never writes', () => {

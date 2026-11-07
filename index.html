@@ -921,10 +921,22 @@ body.program-general {
 /* Approved design, round 1. Every override belongs to general. */
 body.program-general { background:var(--general-canvas); color:var(--general-ink); }
 body.program-general #threeKnightsModal,
+body.program-general #supervisorPanel,
+body.program-general #knightCelebrationModal,
+body.program-general .legacy-title-setting,
 body.program-general #hbCardDaily,
+body.program-general #hbCardDiscipline,
 body.program-general #hbCardWeekly,
 body.program-general #farsDayRow,
 body.program-general #supervisorPanel input[id$="Achievement"] { display:none !important; }
+#generalKnightsPanel { display:none; }
+body.program-general #generalKnightsPanel { display:grid; gap:var(--general-space-4); padding:var(--general-space-6); background:var(--general-surface); border:1px solid var(--general-line); border-radius:var(--general-radius-md); }
+body.program-general #generalKnightsPanel h2 { font-size:var(--general-text-lg); font-weight:700; }
+body.program-general #generalKnightsPanel label { display:grid; gap:8px; font-weight:600; }
+body.program-general #generalKnightsPanel input,
+body.program-general #generalKnightsPanel select { width:100%; min-height:44px; padding:10px; background:var(--general-surface); color:var(--general-ink); border:1px solid var(--general-line); border-radius:var(--general-radius-sm); }
+body.program-general #generalKnightsPanel p { color:var(--general-muted); }
+body.program-general #generalKnightsChoices { display:grid; gap:var(--general-space-4); }
 body.program-general .general-knights-actions { display:flex; flex-wrap:wrap; gap:12px; margin-block:12px; }
 body.program-general .general-knights-action {
   display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:44px; padding:10px 20px;
@@ -1688,6 +1700,24 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
                     <span class="panel-back-title"><i class="fas fa-trophy text-blue-500 ml-1"></i> فرسان الحلقات</span>
                 </div>
+
+            <section id="generalKnightsPanel" aria-labelledby="generalKnightsTitle">
+                <h2 id="generalKnightsTitle">فارس الحلقة</h2>
+                <p>فارس الحلقة يختاره البرنامج آلياً كل يوم، ولا يحتاج منك شيئاً. استعمل هذا فقط إذا أردت تبديله يدوياً، مع كتابة السبب.</p>
+                <label for="generalKnightsDate">التاريخ
+                    <input id="generalKnightsDate" type="date" onchange="renderGeneralKnightsPanel(true)">
+                </label>
+                <label for="generalKnightsHalaqa">الحلقة
+                    <select id="generalKnightsHalaqa" onchange="renderGeneralKnightsPanel(true)"></select>
+                </label>
+                <p id="generalKnightsAutomatic" role="status" aria-live="polite"></p>
+                <p id="generalKnightsSaved"></p>
+                <div id="generalKnightsChoices"></div>
+                <label for="generalKnightsReason">سبب التبديل اليدوي (إلزامي)
+                    <input id="generalKnightsReason" type="text" required>
+                </label>
+                <button type="button" class="general-knights-action" onclick="saveGeneralKnightsReplacement()">حفظ التبديل اليدوي</button>
+            </section>
 
             <!-- بوابة تكريم فرسان اليوم -->
             <div id="supervisorPanel" class="bg-white rounded-3xl shadow-xl border-4 border-blue-500 flex flex-col overflow-hidden w-full shrink-0">
@@ -4589,6 +4619,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             // لكل شريحة اعتمادها المستقل (mode = معرّف الشريحة)، أو الاقتراح الآلي إن لم يُعتمد.
             // اعتماد "كل الطلاب" (mode = all) يُعرض ككتلة واحدة حين لا شرائح أو حين اعتُمد صراحةً.
             // اعتماد الانضباط لا يظهر هنا؛ تحسبه بطاقة نجوم الانضباط تلقائياً.
+            if (!isGeneralProgram()) {
             let dkHtml = '', crowned = 0, groups = 0;
             const crownRow = (w, big) => hbWinnerRow(w.student.name, buildAchievementText(w), {
                 medal: '👑', wins: winCounts[w.student.id] || 0, big
@@ -4646,12 +4677,14 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     : groups > 1 ? `${hbCount(groups, 'tier')} · ${hbCount(crowned, 'knight')}`
                     : hbCount(crowned, 'knight')
             });
+            }
 
             // ═══ تخطيط اللوحة: اليوم المكثف ثلاث بطاقات (تُخفى الرابعة) ═══
             const cardProgress = document.getElementById('hbCardProgress');
             if (cardProgress) cardProgress.style.display = isReviewDay ? 'none' : '';
 
             // ═══ ٢) نجوم الانضباط (للأسبوع في الصيفي، لليوم في اليوم المكثف) ═══
+            if (!isGeneralProgram()) {
             const dsContainer = document.getElementById('hbDisciplineStars');
             let stars, chipText, teaseText, coverText, emptyHint;
             // شروط الانضباط التي أشّرها المشرف تُذكر صراحةً ليعرف الجميع ما يُطالَب به
@@ -4694,6 +4727,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             hbSetCard('hbCardDiscipline', {
                 theme: 'disc', ico: '🛡️', cover: coverText, title: coverText, tease: teaseText
             });
+            }
 
             // ═══ ٣) فرسان الأسبوع (يُستبدل بحصاد اليوم في اليوم القرآني) ═══
             const wkContainer = document.getElementById('hbWeeklyKnights');
@@ -4726,6 +4760,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 }
                 hbSetCard('hbCardWeekly', { theme: 'harv', ico: '🌱', cover: 'حصاد اليوم', title: 'حصاد اليوم', tease: harvestTease });
             } else {
+                if (!isGeneralProgram()) {
                 const weekRow = w => hbWinnerRow(w.student.name, `${w.points} نقطة · حضر ${w.attended}/${w.expected}`, { medal: '🥇', big: true });
                 let wkHtml = '';
                 if (tiersOn) {
@@ -4744,6 +4779,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     theme: 'week', ico: '⭐', cover: 'فرسان الأسبوع', title: 'فرسان الأسبوع',
                     tease: !wkHtml ? 'لا مرشحين هذا الأسبوع' : tiersOn ? (isGeneralProgram() ? 'لكل مرحلة فارس' : 'لكل شريحة فارس') : 'أبرز الأسبوع'
                 });
+                }
             }
 
             // ═══ ٤) الأكثر تقدّماً (أو صدارة الموسم إن لا سابقة) — للصيفي فقط ═══
@@ -7169,6 +7205,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!commitStudentPatch(student, fields)) return;
             updateAllUIs(); closeSmartModal();
 
+            if (isGeneralProgram()) return;
             const totalStats = getCumulativeStats(student); const currentRank = getStudentRank(student.id);
             const celModal = document.getElementById('knightCelebrationModal');
             document.getElementById('celebrationTitle').innerText = "تم تسجيل مراجعة الاستعداد للاختبار بنجاح! ✨"; document.getElementById('celebrationName').innerText = escapeHTML(student.name); document.getElementById('celebrationPoints').innerText = `+ ${weightedPoints} نقطة جديدة مضافة للسباق 🎁`;
@@ -7314,7 +7351,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             updateSchoolCalendarAlert();
             updateGeneralAttendanceUI();
             renderCompactTripGrid(); renderStudentsGrid(); renderSettingsStudents(); renderReportsTable();
-            processRealClockPomodoro(); updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
+            processRealClockPomodoro(); if (isGeneralProgram()) renderGeneralKnightsPanel(); else updateThreeKnightsSelects(); renderExamEntryList(); renderExamResultsReport();
             if (typeof updateAttendanceAlertBar === 'function') updateAttendanceAlertBar();
             if (typeof updateRecordsBadges === 'function') updateRecordsBadges();
             if (typeof updateSettingsBadges === 'function') updateSettingsBadges();
@@ -7327,11 +7364,45 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         
         function farsSelectionCount() {
             if (!isGeneralProgram()) return 3;
-            const mode = document.getElementById('farsAutoMode')?.value || '';
+            const mode = document.getElementById('generalKnightsHalaqa')?.value || '';
             const count = window.almahraPrograms?.getSettings()?.titleRules?.knightsPerHalaqa?.[mode.slice(2)];
-            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 3;
+            return mode.startsWith('h:') && Number.isInteger(count) && count >= 1 && count <= 5 ? count : 1;
+        }
+        function renderGeneralKnightsPanel(reset = false) {
+            if (!isGeneralProgram()) return;
+            const panel = document.getElementById('generalKnightsPanel');
+            if (!panel) return;
+            const date = document.getElementById('generalKnightsDate'), halaqa = document.getElementById('generalKnightsHalaqa');
+            const previous = halaqa.value;
+            halaqa.innerHTML = getProgramSettings().halaqas.filter(h => h.active === true)
+                .map(h => `<option value="h:${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
+            if ([...halaqa.options].some(o => o.value === previous)) halaqa.value = previous;
+            if (!date.value) date.value = todayStr;
+            const context = window.almahraPrograms.getCurrentSeasonId() + '|' + date.value + '|' + halaqa.value;
+            reset = reset || panel.dataset.context !== context;
+            panel.dataset.context = context;
+            const id = halaqa.value.slice(2), count = farsSelectionCount();
+            const automatic = getDayHalaqaKnights(date.value, id, students, []);
+            document.getElementById('generalKnightsAutomatic').textContent = automatic.names.length
+                ? 'الفارس الآلي الحالي: ' + automatic.names.join('، ') : 'لا فارس آلياً لهذا اليوم';
+            const saved = honorKnightsLog.find(e => e.dateStr === date.value && e.mode === halaqa.value);
+            document.getElementById('generalKnightsSaved').textContent = saved
+                ? 'التبديل اليدوي المحفوظ: ' + saved.fars.map(f => f.name).join('، ') + ' — السبب: ' + saved.reason : '';
+            const choices = document.getElementById('generalKnightsChoices');
+            const values = reset ? [] : [...choices.querySelectorAll('select')].map(s => s.value);
+            const options = '<option value="">اختر البديل</option>' + students.filter(s => s.halaqaId === id)
+                .slice().sort((a, b) => a.name.localeCompare(b.name, 'ar')).map(s => `<option value="${s.id}">${escapeHTML(s.name)}${getGeneralAttendanceEligibility(s, [date.value], 100).status === 'incomplete' ? ' — غير مكتمل' : ''}</option>`).join('');
+            choices.innerHTML = Array.from({ length: count }, (_, i) => `<label for="generalKnightsChoice${i + 1}">البديل${count > 1 ? ' ' + (i + 1) : ''}<select id="generalKnightsChoice${i + 1}">${options}</select></label>`).join('');
+            values.forEach((value, i) => { const select = document.getElementById('generalKnightsChoice' + (i + 1)); if (select) select.value = value; });
+            if (reset) document.getElementById('generalKnightsReason').value = '';
+        }
+        async function saveGeneralKnightsReplacement() {
+            const saved = await approveGeneralHalaqaKnights();
+            if (saved) renderGeneralKnightsPanel();
+            return saved;
         }
         function updateFarsApprovalView() {
+            if (isGeneralProgram()) return;
             const general = isGeneralProgram(), count = farsSelectionCount();
             const help = document.getElementById('farsAutoHelp'), button = document.getElementById('farsApproveButton');
             if (help) {
@@ -7349,6 +7420,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
         }
         function updateThreeKnightsSelects() {
+            if (isGeneralProgram()) return;
             if (isGeneralProgram()) updateFarsApprovalView();
             const ids = Array.from({ length: isGeneralProgram() ? 5 : 3 }, (_, i) => 'fars' + (i + 1) + 'Select');
             const date = isGeneralProgram() ? document.getElementById('farsAutoDate')?.value || todayStr : '';
@@ -7365,10 +7437,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         
         async function approveGeneralHalaqaKnights() {
             if (!isGeneralProgram() || !canWriteView()) return false;
-            const mode = document.getElementById('farsAutoMode').value, dateStr = document.getElementById('farsAutoDate').value || todayStr;
-            const reason = document.getElementById('farsHalaqaReason').value.trim();
+            const mode = document.getElementById('generalKnightsHalaqa').value, dateStr = document.getElementById('generalKnightsDate').value || todayStr;
+            const reason = document.getElementById('generalKnightsReason').value.trim();
             if (!reason) { showToast('سبب الاعتماد إلزامي', 'error'); return false; }
-            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('fars' + (i + 1) + 'Select').value).filter(Boolean);
+            const ids = Array.from({ length: farsSelectionCount() }, (_, i) => document.getElementById('generalKnightsChoice' + (i + 1)).value).filter(Boolean);
             const selected = [...new Set(ids)].map(id => students.find(s => String(s.id) === id));
             if (!selected.length || selected.some(s => !s)) { showToast('اختر فارس الحلقة', 'error'); return false; }
             const settings = getProgramSettings(), h = settings.halaqas.find(h => mode === 'h:' + h.id && h.active === true);
@@ -7388,10 +7460,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         async function launchThreeKnights() {
-            if (isGeneralProgram()) {
-                if (document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();
-                return;
-            }
+            if (isGeneralProgram()) return;
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
             const ach1 = document.getElementById('fars1Achievement').value.trim(); const ach2 = document.getElementById('fars2Achievement').value.trim(); const ach3 = document.getElementById('fars3Achievement').value.trim();
@@ -8160,6 +8229,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
         // مرشحو لقب اليوم: حاضر + سرد + بلا مخالفة حاجبة
         function getDayTitleCandidates(dateStr, tierId = null) {
+            if (isGeneralProgram()) return [];
             const rules = getTitleRules();
             const blocking = getBlockingCriteriaIds();
             return getDayRanking(dateStr, tierId).filter(e => {
@@ -8927,6 +8997,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // ولا تُحسب اعتمادات الانضباط لأنها لقب مستقل
         function getKnightWinCounts() {
             const counts = {};
+            if (isGeneralProgram()) return counts;
             (honorKnightsLog || []).forEach(entry => {
                 if ((entry.mode || 'all') === 'discipline') return;
                 const first = (entry.fars || [])[0];
@@ -8937,6 +9008,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
         // اعتماد فرسان يوم محدد لوضع محدد (كل الطلاب / معرّف شريحة). السجلات القديمة بلا mode = "all"
         function getApprovedKnightsForMode(dateStr, mode) {
+            if (isGeneralProgram()) return null;
             return (honorKnightsLog || []).find(e =>
                 e.dateStr === dateStr && (e.mode || 'all') === mode &&
                 (e.fars || []).some(f => f && f.name)
@@ -8970,6 +9042,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
         // مزامنة اسم اليوم مع التاريخ المختار
         function syncFarsDayFromDate() {
+            if (isGeneralProgram()) return;
             const dateStr = document.getElementById('farsAutoDate')?.value;
             if (!dateStr) return;
             const d = new Date(dateStr + 'T12:00:00');
@@ -8980,6 +9053,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
         // تعبئة قائمة أوضاع الاختيار الآلي (كل الطلاب / لكل شريحة / الانضباط)
         function fillFarsModeSelect() {
+            if (isGeneralProgram()) return;
             const sel = document.getElementById('farsAutoMode');
             if (!sel) return;
             const prev = sel.value;
@@ -9004,6 +9078,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         function autoPickKnights() {
+            if (isGeneralProgram()) return;
             const dateInput = document.getElementById('farsAutoDate');
             const dateStr = dateInput?.value || todayStr;
             const mode = document.getElementById('farsAutoMode')?.value || 'all';
@@ -9945,7 +10020,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!commitStudentPatch(student, { examHifz: hifz, examTarteel: tarteel })) return;
             renderExamEntryList(); renderExamResultsReport();
             const total = hifz + tarteel;
-            if (total >= 60) {
+            if (total >= 60 && !isGeneralProgram()) {
                 const celModal = document.getElementById('knightCelebrationModal');
                 document.getElementById('celebrationTitle').innerText = "مجتاز! ✅ مبروك النجاح في الاختبار النهائي";
                 document.getElementById('celebrationName').innerText = escapeHTML(student.name);
@@ -11227,7 +11302,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
             // لوحة الفرسان
             const knightsPanel = document.getElementById('supervisorPanel');
-            if (knightsPanel) knightsPanel.style.display = (!general && f.knights === false) ? 'none' : '';
+            if (knightsPanel) knightsPanel.style.display = (general || f.knights === false) ? 'none' : '';
+            const generalKnightsPanel = document.getElementById('generalKnightsPanel');
+            if (generalKnightsPanel) generalKnightsPanel.style.display = general ? 'grid' : 'none';
+            if (general) {
+                ['threeKnightsModal', 'knightCelebrationModal'].forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
+                });
+            }
 
             // زر لوحة الشرف
             document.querySelectorAll('[onclick*="openHonorBoard"]').forEach(b => {
@@ -11892,17 +11975,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             <i class="fas fa-trophy text-blue-500"></i> شروط استحقاق الألقاب
                         </h3>
                         <p class="text-sm text-slate-500 font-bold mb-4">
-                            تضبط من يستحق الظهور في لوحة الشرف: فارس اليوم، فارس الأسبوع، ونجوم الانضباط.
+                            ${isGeneralProgram() ? 'نسبة حضور فرسان الحلقة للأسبوع.' : 'تضبط من يستحق الظهور في لوحة الشرف: فارس اليوم، فارس الأسبوع، ونجوم الانضباط.'}
                         </p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
+                            <label class="${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
                                 <input type="checkbox" id="psTrRequireSard" class="w-5 h-5 rounded accent-blue-600 mt-0.5" ${tr.requireSard ? 'checked' : ''}>
                                 <span>
                                     <span class="font-bold text-slate-700 block">لا لقب لمن لم يسرد شيئاً</span>
                                     <span class="text-xs text-slate-500 font-bold">الحضور وحده لا يكفي للقب فارس</span>
                                 </span>
                             </label>
-                            <label class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
+                            <label class="${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-start gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 transition">
                                 <input type="checkbox" id="psTrDisciplineFullWeek" class="w-5 h-5 rounded accent-blue-600 mt-0.5" ${tr.disciplineRequiresFullWeek ? 'checked' : ''}>
                                 <span>
                                     <span class="font-bold text-slate-700 block">نجوم الانضباط: أسبوع كامل بلا غياب</span>
@@ -12017,7 +12100,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             ${Object.keys(FEATURE_LABELS).filter(k => !isGeneralProgram() || !['tiers', 'finalExam', 'examPrep'].includes(k)).map(k => `
-                                <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition">
+                                <label class="${isGeneralProgram() && k === 'knights' ? 'legacy-title-setting ' : ''}flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition">
                                     <input type="checkbox" class="ps-feat w-5 h-5 rounded accent-emerald-600" data-feat="${k}" ${feats[k] !== false ? 'checked' : ''}>
                                     <span class="font-bold text-slate-700 text-sm">${FEATURE_LABELS[k]}</span>
                                 </label>
@@ -12078,7 +12161,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             renderCriteriaRows(s.criteria || []);
             if (isGeneralProgram()) refreshGeneralHalaqaOptions();
             renderTierRows(s.tiers || []);
-            fillFarsModeSelect();
+            if (isGeneralProgram()) renderGeneralKnightsPanel(); else fillFarsModeSelect();
             updateSettingsBadges();
         }
 
@@ -12312,7 +12395,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <input type="checkbox" class="crit-block w-5 h-5 rounded accent-red-600" ${c.blocksTitles === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-red-700">تحجب اللقب</span>
                     </label>` : `
-                    <label class="flex items-center gap-2 cursor-pointer px-1" title="لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم">
+                    <label class="${isGeneralProgram() ? 'legacy-title-setting ' : ''}flex items-center gap-2 cursor-pointer px-1" title="لا يُمنح الطالب لقب «منضبط» إلا إذا حقّق هذا المعيار كل يوم">
                         <input type="checkbox" class="crit-disc w-5 h-5 rounded accent-teal-600" ${c.disciplineCriterion === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-teal-700">شرطٌ للانضباط</span>
                     </label>

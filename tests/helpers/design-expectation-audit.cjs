@@ -6,6 +6,8 @@ const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
+    if (baseline === '55fd33e') return diffLines(file, before, currentText.split(/\r?\n/));
+    currentText = require('./general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(currentText, file);
     if (!['2d78da2', '9f2224d'].includes(baseline)) currentText = require('./knights-release-audit.cjs').beforeKnightsRelease(currentText, file);
     if (!['0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);
     if (!['82bf19f', '0c5ec91', '2d78da2', '9f2224d'].includes(baseline)) {
@@ -17,7 +19,9 @@ function changesFrom(file, baseline) {
         }
         currentText = lines.join('\n');
     }
-    const after = currentText.split(/\r?\n/);
+    return diffLines(file, before, currentText.split(/\r?\n/));
+}
+function diffLines(file, before, after) {
     const width = after.length + 1, scores = new Uint16Array((before.length + 1) * width);
     for (let i = before.length - 1; i >= 0; i--) for (let j = after.length - 1; j >= 0; j--)
         scores[i * width + j] = before[i] === after[j] ? scores[(i + 1) * width + j + 1] + 1

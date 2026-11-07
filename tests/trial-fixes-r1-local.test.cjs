@@ -82,13 +82,14 @@ function legacyCelebration(program, method, text) {
     return snapshot;
 }
 
-test('trial r1: shared celebration HTML, content, both legacy save paths and close behavior remain identical to 82bf19f', () => {
+test('trial r1: legacy celebration HTML and behavior remain identical, with audited general-only presentation guards', () => {
     const modal = text => text.slice(text.indexOf('    <div id="knightCelebrationModal"'), text.indexOf('    <div id="knightCelebrationModal"') +
         text.slice(text.indexOf('    <div id="knightCelebrationModal"')).search(/\n    <(?:div|!--)/));
     assert.ok(modal(html).includes('celebrationCanvas'));
     assert.equal(modal(html), modal(baseline));
+    const beforeCleanup = require('./helpers/general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(html);
     for (const name of ['saveSmartProgress', 'saveExamPrepProgress', 'saveExamScore', 'closeKnightCelebration'])
-        assert.equal(source(name), source(name, baseline), name);
+        assert.equal(source(name, beforeCleanup), source(name, baseline), name);
     for (const program of ['summer', 'review-day']) for (const method of ['saveSmartProgress', 'saveExamPrepProgress'])
         assert.deepEqual(legacyCelebration(program, method, html), legacyCelebration(program, method, baseline), `${program}:${method}`);
 });

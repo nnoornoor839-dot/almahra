@@ -255,7 +255,8 @@ test('new scope full answer-key differences, other students unchanged, and day k
         const stage=all.snapshot().stages.find(s=>s.period===period);
         assert.deepEqual(stage.dayKnights[0].names,[expected.name]);
         all.ctx.stageId=period==='asr'?'primary':'middle';
-        assert.equal(all.run('getDayTitleCandidates(todayStr, stageId)[0].points'),expected.points);
+        all.ctx.halaqaId=stage.dayKnights[0].stage;
+        assert.equal(all.run('dayPoints(getDayHalaqaKnights(todayStr, getProgramSettings().halaqas.find(h=>h.name===halaqaId).id).students[0].history[todayStr])'),expected.points);
     }
 });
 test('TV prep slides after week knights, empty hidden, 20 per page, name and points only; celebration text and hiding', () => {

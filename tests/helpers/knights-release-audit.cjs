@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 // Undo only the exact owner-approved release hunks before older invariant checks.
 function beforeKnightsRelease(text, file = 'index.html') {
+    text = require('./general-knights-cleanup-audit.cjs').beforeGeneralKnightsCleanup(text, file);
     text = text.replaceAll('\r\n', '\n');
     const audit = require('../rules/design-expectation-audit.json');
     const row = [...(audit.knightsReleaseProductionChanges || []), ...(audit.knightsReleaseExpectationChanges || [])].find(r => r.file === file);

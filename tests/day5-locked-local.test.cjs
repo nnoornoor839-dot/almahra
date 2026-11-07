@@ -205,7 +205,7 @@ test('season management hides new-season/settings writes and disables deletion, 
         }]));
         api.getSeasons = () => [{ id: 's1', status: 'active' }, { id: 'old', name: 'أرشيف وهمي', status: 'archived' }];
         Object.assign(h.ctx, { getTitleRules: () => ({ blockedByCriteriaIds: [] }),
-            renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });
+            renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, renderGeneralKnightsPanel() {}, updateSettingsBadges() {} });
         h.run("const DAY_NAMES = ['يوم وهمي']; const FEATURE_LABELS = {};");
         h.install('generalPerformanceSettings', 'renderProgramSettings', 'archivedBannerHtml', 'saveBarHtml', 'generalHalaqaRow',
             'refreshGeneralHalaqaOptions', 'collectGeneralSettingRows');

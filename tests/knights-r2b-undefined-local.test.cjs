@@ -119,12 +119,13 @@ test('optional settings, nested row data, refreeze history, actors and round-one
     assert.equal((await data.setMissingJoinedOn('general', 's1', [17], key.season.termStart)).success, true);
     h.ctx.window.almahraAuth.currentUser = { uid: 'fake-admin' };
     h.install('approveGeneralHalaqaKnights');
+    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.
     h.run('let honorKnightsLog = [], currentThreeKnights = null');
     h.ctx.sendGeneralTvSnapshot = () => {};
-    h.element('farsAutoMode').value = 'h:a';
-    h.element('farsAutoDate').value = key.days[0];
-    h.element('farsHalaqaReason').value = 'اعتماد موثق';
-    h.element('fars1Select').value = '1';
+    h.element('generalKnightsHalaqa').value = 'h:a';
+    h.element('generalKnightsDate').value = key.days[0];
+    h.element('generalKnightsReason').value = 'اعتماد موثق';
+    h.element('generalKnightsChoice1').value = '1';
     assert.equal(await h.call('approveGeneralHalaqaKnights'), true);
     assert.equal(server.season().knightsLog.find(entry => entry.mode === 'h:a').by, 'fake-admin');
     for (const write of server.state.writes) assertFirestoreData(write.patch, 'write', write.path);

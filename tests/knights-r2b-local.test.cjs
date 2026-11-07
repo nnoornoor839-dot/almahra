@@ -255,10 +255,12 @@ test('r2b real UI path rejects failed freeze and preserves local and server data
         await h.call('saveGeneralAbsence');assert.equal(h.run('generalAbsenceDraft.saving'),false);
         assert.equal(h.element('generalAbsenceSave').disabled,false);
     }else if(path==='manual'){
-        h.install('approveGeneralHalaqaKnights','launchThreeKnights');h.run('let honorKnightsLog=[],currentThreeKnights=null');
-        h.element('farsAutoMode').value='h:a';h.element('farsAutoDate').value='2026-11-22';
-        h.element('farsHalaqaReason').value='تصحيح';h.element('fars1Select').value='1';
-        assert.equal(await h.call('launchThreeKnights'),false);assert.equal(h.run('currentThreeKnights'),null);
+        h.install('approveGeneralHalaqaKnights','launchThreeKnights');
+    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.
+    h.run('let honorKnightsLog=[],currentThreeKnights=null');
+        h.element('generalKnightsHalaqa').value='h:a';h.element('generalKnightsDate').value='2026-11-22';
+        h.element('generalKnightsReason').value='تصحيح';h.element('generalKnightsChoice1').value='1';
+        assert.equal(await h.call('approveGeneralHalaqaKnights'),false);assert.equal(h.run('currentThreeKnights'),null);
         assert.equal(h.element('threeKnightsModal').classList.contains('hidden'),true);
     }else if(path==='calendar'){
         h.install('saveSeasonCalendar');h.ctx.collectSeasonCalendar=()=>copy(key.season);h.ctx.validateSeasonCalendar=()=>({overlaps:[]});

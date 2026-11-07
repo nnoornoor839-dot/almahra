@@ -129,7 +129,7 @@ function harness() {
     return { state, ctx, run, install, element,
         openSettings() {
             Object.assign(ctx, { DAY_NAMES: [], FEATURE_LABELS: {}, isWriteLockedView: () => state.archived,
-                getTitleRules: () => ({}), renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, updateSettingsBadges() {} });
+                getTitleRules: () => ({}), renderCriteriaRows() {}, renderTierRows() {}, fillFarsModeSelect() {}, renderGeneralKnightsPanel() {}, updateSettingsBadges() {} });
             install('renderProgramSettings', 'generalSettingRow', 'generalHalaqaRow', 'archivedBannerHtml', 'saveBarHtml');
             run('renderProgramSettings()');
         },

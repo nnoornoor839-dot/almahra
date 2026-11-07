@@ -752,7 +752,7 @@ test('حفظ التقويم الحقيقي يبطل اللقطة، ويجدده�
         h.run('let seasonCalendarDraft = calendarDraftFixture;');
         h.run('const weekKnightsChecks = new Map(), weekKnightsState = new Map();');
         for (const name of ['updateGeneralAttendanceUI', 'renderCompactTripGrid', 'renderStudentsGrid', 'renderSettingsStudents',
-            'renderReportsTable', 'processRealClockPomodoro', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport']) h.ctx[name] = () => {};
+            'renderReportsTable', 'processRealClockPomodoro', 'renderGeneralKnightsPanel', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport']) h.ctx[name] = () => {};
         h.install('saveSeasonCalendar', 'updateAllUIs');
         await h.run('saveSeasonCalendar()');
         assert.equal(counts.calculations, visible ? 1 : 0);

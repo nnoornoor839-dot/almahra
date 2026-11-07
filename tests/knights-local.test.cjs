@@ -293,10 +293,12 @@ test('approval transaction replaces only date+mode, preserves over 200 rows and 
 });
 
 test('manual UI requires reason, stores exact row, awaits success and does not publish failure', async () => {
-    const h=harness();h.install('approveGeneralHalaqaKnights');h.ctx.sendGeneralTvSnapshot=()=>{};
-    h.element('farsAutoMode').value='h:b';h.element('farsAutoDate').value=key.days[2];h.element('fars1Select').value='7';
+    const h=harness();h.install('approveGeneralHalaqaKnights');
+    for (let i=1;i<=5;i++) h.element('generalKnightsChoice'+i); // Dynamic replacement fields.
+    h.ctx.sendGeneralTvSnapshot=()=>{};
+    h.element('generalKnightsHalaqa').value='h:b';h.element('generalKnightsDate').value=key.days[2];h.element('generalKnightsChoice1').value='7';
     assert.equal(await h.run('approveGeneralHalaqaKnights()'),false);assert.equal(h.state.knightWrites,0);
-    h.element('farsHalaqaReason').value='تقدير المعلم';
+    h.element('generalKnightsReason').value='تقدير المعلم';
     let release,saved;h.ctx.window.almahraPrograms.saveKnightsEntry=async(p,s,e)=>{saved=copy(e);return new Promise(r=>release=r)};
     const pending=h.run('approveGeneralHalaqaKnights()');assert.equal(h.run('currentThreeKnights'),null);release({success:false,error:'وهمي'});
     assert.equal(await pending,false);assert.equal(h.run('currentThreeKnights'),null);

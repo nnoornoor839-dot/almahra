@@ -59,7 +59,7 @@ function harness(list = [student(1, 'طالب وهمي')]) {
         confirm: message => { state.prompts.push(message); return state.confirm !== false; },
         updateAllUIs() { state.updates++; ctx.updateGeneralAttendanceUI(); }, updateAttendanceEditButtons() {},
         renderCompactTripGrid() {}, renderStudentsGrid() {}, renderSettingsStudents() {}, renderReportsTable() {},
-        processRealClockPomodoro() {}, updateThreeKnightsSelects() {}, renderExamEntryList() {}, renderExamResultsReport() {}, renderHomeDashboard() {} });
+        processRealClockPomodoro() {}, updateThreeKnightsSelects() {}, renderGeneralKnightsPanel() {}, renderExamEntryList() {}, renderExamResultsReport() {}, renderHomeDashboard() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
     require('./helpers/tv-harness.cjs').installTv(run, install);
