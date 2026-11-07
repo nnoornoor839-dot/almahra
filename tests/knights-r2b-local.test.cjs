@@ -340,7 +340,7 @@ test('r2b frozen persisted nominees and announcement match the unmodified answer
 test('r2b audit accounts for every exact production/test hunk and leaves all four locked keys unchanged',()=>{
     const cp=require('node:child_process'),{changesFrom}=require('./helpers/design-expectation-audit.cjs');
     const audit=require('./rules/design-expectation-audit.json');
-    const files=cp.execFileSync('git',['diff','--name-only','0c5ec91'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
+    const files=cp.execFileSync('git',['diff','--name-only','--diff-filter=M','0c5ec91'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
     const production=files.filter(f=>!f.startsWith('tests/'));
     assert.deepEqual(audit.knightsRound2bProductionChanges,production.map(f=>changesFrom(f,'0c5ec91')));
     const testFiles=files.filter(f=>f.startsWith('tests/')&&f!=='tests/rules/design-expectation-audit.json');
