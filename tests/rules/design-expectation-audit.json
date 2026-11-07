@@ -17,8 +17,26 @@
       "file": "tests/day4b-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+          ]
+        },
+        {
+          "oldLine": 43,
+          "newLine": 44,
+          "before": [
+            "    const ctx = vm.createContext({"
+          ],
+          "after": [
+            "    const ctx = firestoreContext({"
+          ]
+        },
+        {
           "oldLine": 57,
-          "newLine": 57,
+          "newLine": 58,
           "before": [
             "    vm.runInContext('let students = [];\\n' + cleanSource + importSource + totalsSource, ctx);"
           ],
@@ -28,18 +46,18 @@
         },
         {
           "oldLine": 83,
-          "newLine": 83,
+          "newLine": 84,
           "before": [
             "    const ctx = vm.createContext({ TextEncoder, structuredClone,"
           ],
           "after": [
             "    class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }",
-            "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
+            "    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
           ]
         },
         {
           "oldLine": 124,
-          "newLine": 125,
+          "newLine": 126,
           "before": [
             "    if (source === html) {",
             "        h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => false;",
@@ -61,7 +79,7 @@
         },
         {
           "oldLine": 132,
-          "newLine": 133,
+          "newLine": 134,
           "before": [
             "        // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
             "        h.ctx.renderGeneralPerformance = () => {};"
@@ -70,7 +88,7 @@
         },
         {
           "oldLine": 135,
-          "newLine": 134,
+          "newLine": 135,
           "before": [],
           "after": [
             "    // حاضنة كميات المصحف لا تختبر رسوم الأداء الجديدة؛ يغطيها home-local.",
@@ -79,7 +97,7 @@
         },
         {
           "oldLine": 217,
-          "newLine": 218,
+          "newLine": 219,
           "before": [
             "    const expected = copy(input); delete expected.id;"
           ],
@@ -89,7 +107,7 @@
         },
         {
           "oldLine": 486,
-          "newLine": 487,
+          "newLine": 488,
           "before": [
             "    let restored = store.replace(/\\r\\n/g, '\\n');"
           ],
@@ -625,8 +643,26 @@
       "file": "tests/step2-halaqas-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+          ]
+        },
+        {
+          "oldLine": 76,
+          "newLine": 77,
+          "before": [
+            "    const ctx = vm.createContext({"
+          ],
+          "after": [
+            "    const ctx = firestoreContext({"
+          ]
+        },
+        {
           "oldLine": 107,
-          "newLine": 107,
+          "newLine": 108,
           "before": [],
           "after": [
             "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
@@ -634,7 +670,7 @@
         },
         {
           "oldLine": 440,
-          "newLine": 441,
+          "newLine": 442,
           "before": [
             "        if (success) { assert.equal(h.state.updates, 1); assert.equal(h.state.confetti, 1); }"
           ],
@@ -644,7 +680,7 @@
         },
         {
           "oldLine": 710,
-          "newLine": 711,
+          "newLine": 712,
           "before": [
             "    const restored = programsStore.replaceAll('\\r\\n', '\\n')"
           ],
@@ -654,19 +690,19 @@
         },
         {
           "oldLine": 725,
-          "newLine": 726,
+          "newLine": 727,
           "before": [
             "        const calls = [], wait = deferred();",
             "        const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
           ],
           "after": [
             "        const calls = [], wait = deferred(), entered = deferred();",
-            "        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+            "        const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
           ]
         },
         {
           "oldLine": 728,
-          "newLine": 729,
+          "newLine": 730,
           "before": [
             "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); await wait.promise; } });"
           ],
@@ -676,7 +712,7 @@
         },
         {
           "oldLine": 731,
-          "newLine": 732,
+          "newLine": 733,
           "before": [],
           "after": [
             "        if (program !== 'general') assert.equal(calls.length, 1);",
@@ -685,12 +721,12 @@
         },
         {
           "oldLine": 742,
-          "newLine": 745,
+          "newLine": 746,
           "before": [
             "    const ctx = vm.createContext({ TextEncoder, structuredClone, doc: () => 'fake-ref',"
           ],
           "after": [
-            "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
+            "    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
           ]
         }
       ]
@@ -744,8 +780,26 @@
       "file": "tests/step4-snapshot-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+          ]
+        },
+        {
+          "oldLine": 54,
+          "newLine": 55,
+          "before": [
+            "    const ctx = vm.createContext({"
+          ],
+          "after": [
+            "    const ctx = firestoreContext({"
+          ]
+        },
+        {
           "oldLine": 79,
-          "newLine": 79,
+          "newLine": 80,
           "before": [],
           "after": [
             "    for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';"
@@ -753,7 +807,7 @@
         },
         {
           "oldLine": 95,
-          "newLine": 96,
+          "newLine": 97,
           "before": [
             "        refreshDraft() { state.draft = copy(state.settings); },"
           ],
@@ -763,7 +817,7 @@
         },
         {
           "oldLine": 106,
-          "newLine": 107,
+          "newLine": 108,
           "before": [],
           "after": [
             "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
@@ -771,12 +825,12 @@
         },
         {
           "oldLine": 232,
-          "newLine": 234,
+          "newLine": 235,
           "before": [
             "    const calls = [], ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
           ],
           "after": [
-            "    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+            "    const calls = [], ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
           ]
         }
       ]
@@ -785,8 +839,26 @@
       "file": "tests/step5-calendar-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+          ]
+        },
+        {
+          "oldLine": 41,
+          "newLine": 42,
+          "before": [
+            "    const ctx = vm.createContext({"
+          ],
+          "after": [
+            "    const ctx = firestoreContext({"
+          ]
+        },
+        {
           "oldLine": 49,
-          "newLine": 49,
+          "newLine": 50,
           "before": [],
           "after": [
             "                saveAllStudents: (...args) => write('restore', ...args),"
@@ -794,17 +866,17 @@
         },
         {
           "oldLine": 246,
-          "newLine": 247,
+          "newLine": 248,
           "before": [
             "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
           ],
           "after": [
-            "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+            "    const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
           ]
         },
         {
           "oldLine": 306,
-          "newLine": 307,
+          "newLine": 308,
           "before": [
             "    h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
           ],
@@ -814,7 +886,7 @@
         },
         {
           "oldLine": 448,
-          "newLine": 449,
+          "newLine": 450,
           "before": [
             "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
             "        ['headerGregorian', 'ar-SA', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
@@ -826,7 +898,7 @@
         },
         {
           "oldLine": 541,
-          "newLine": 542,
+          "newLine": 543,
           "before": [
             "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
           ],
@@ -836,7 +908,7 @@
         },
         {
           "oldLine": 544,
-          "newLine": 545,
+          "newLine": 546,
           "before": [
             "    const withoutCalendar = store.replace(/    \\/\\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\\.[\\s\\S]*?(?=    \\/\\/ تحديث إعدادات البرنامج)/, '')"
           ],
@@ -9054,8 +9126,20 @@
           ]
         },
         {
+          "oldLine": 8239,
+          "newLine": 8509,
+          "before": [
+            "                halaqaId: halaqa.id, halaqaName: halaqa.name, teacherName: teacher?.name || '', halaqaOrder: halaqa.order,"
+          ],
+          "after": [
+            "                halaqaId: halaqa.id, halaqaName: halaqa.name, teacherName: teacher?.name || '',",
+            "                // الإعدادات تعرض الحلقات بترتيب المصفوفة، بما فيها الموقوفة.",
+            "                halaqaOrder: Number.isFinite(halaqa.order) ? halaqa.order : settings.halaqas.findIndex(h => h.id === halaqa.id),"
+          ]
+        },
+        {
           "oldLine": 8323,
-          "newLine": 8593,
+          "newLine": 8595,
           "before": [
             "        function knightsMessageLines(student, rows, weekIsFrozen) {",
             "            if (!weekIsFrozen) return ['الفرسان يُحسمون الأربعاء'];",
@@ -9068,7 +9152,7 @@
         },
         {
           "oldLine": 8337,
-          "newLine": 8606,
+          "newLine": 8608,
           "before": [],
           "after": [
             "        }",
@@ -9079,7 +9163,7 @@
         },
         {
           "oldLine": 10058,
-          "newLine": 10331,
+          "newLine": 10333,
           "before": [
             "        function sendGeneralWeeklyMessage(student) {"
           ],
@@ -9089,7 +9173,7 @@
         },
         {
           "oldLine": 10062,
-          "newLine": 10335,
+          "newLine": 10337,
           "before": [],
           "after": [
             "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
@@ -9103,7 +9187,7 @@
         },
         {
           "oldLine": 10063,
-          "newLine": 10343,
+          "newLine": 10345,
           "before": [],
           "after": [
             "                weekKnightsRows: frozen.weekKnightsLog.filter(r => r.lockedAt), weekIsFrozen: !!frozen.frozenWeeks?.[week.startStr],"
@@ -9111,7 +9195,7 @@
         },
         {
           "oldLine": 12387,
-          "newLine": 12668,
+          "newLine": 12670,
           "before": [
             "        function saveBulkTierAssign() {"
           ],
@@ -9121,7 +9205,7 @@
         },
         {
           "oldLine": 12411,
-          "newLine": 12692,
+          "newLine": 12694,
           "before": [
             "            if (!commitPatches(patches)) return;"
           ],
@@ -9427,13 +9511,39 @@
     },
     {
       "file": "tests/day4b-local.test.cjs",
+      "oldLine": 1,
+      "newLine": 1,
+      "before": [],
+      "after": [
+        "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "oldLine": 43,
+      "newLine": 44,
+      "before": [
+        "    const ctx = vm.createContext({"
+      ],
+      "after": [
+        "    const ctx = firestoreContext({"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
       "oldLine": 84,
-      "newLine": 84,
+      "newLine": 85,
       "before": [
         "    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,"
       ],
       "after": [
-        "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
+        "    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9660,13 +9770,25 @@
     },
     {
       "file": "tests/knights-local.test.cjs",
+      "oldLine": 1,
+      "newLine": 1,
+      "before": [],
+      "after": [
+        "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
       "oldLine": 176,
-      "newLine": 176,
+      "newLine": 177,
       "before": [
         "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',"
       ],
       "after": [
-        "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',"
+        "    const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9675,12 +9797,12 @@
     {
       "file": "tests/knights-local.test.cjs",
       "oldLine": 281,
-      "newLine": 281,
+      "newLine": 282,
       "before": [
         "    const ctx=vm.createContext({db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{"
       ],
       "after": [
-        "    const ctx=vm.createContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{"
+        "    const ctx=firestoreContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9689,12 +9811,26 @@
     {
       "file": "tests/knights-local.test.cjs",
       "oldLine": 310,
-      "newLine": 310,
+      "newLine": 311,
       "before": [
         "    const ctx=vm.createContext({TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',"
       ],
       "after": [
-        "    const ctx=vm.createContext({ beforeWrite: async () => null,TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',"
+        "    const ctx=firestoreContext({ beforeWrite: async () => null,TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "oldLine": 378,
+      "newLine": 379,
+      "before": [
+        "    const ctx=vm.createContext({measureEntry:()=>{throw Object.assign(new Error('unavailable'),{code:'NOT_READY'})}});"
+      ],
+      "after": [
+        "    const ctx=firestoreContext({measureEntry:()=>{throw Object.assign(new Error('unavailable'),{code:'NOT_READY'})}});"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9731,15 +9867,41 @@
     },
     {
       "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 1,
+      "newLine": 1,
+      "before": [],
+      "after": [
+        "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 76,
+      "newLine": 77,
+      "before": [
+        "    const ctx = vm.createContext({"
+      ],
+      "after": [
+        "    const ctx = firestoreContext({"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
       "oldLine": 726,
-      "newLine": 726,
+      "newLine": 727,
       "before": [
         "        const calls = [], wait = deferred();",
         "        const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
       ],
       "after": [
         "        const calls = [], wait = deferred(), entered = deferred();",
-        "        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+        "        const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9748,7 +9910,7 @@
     {
       "file": "tests/step2-halaqas-local.test.cjs",
       "oldLine": 729,
-      "newLine": 729,
+      "newLine": 730,
       "before": [
         "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); await wait.promise; } });"
       ],
@@ -9762,7 +9924,7 @@
     {
       "file": "tests/step2-halaqas-local.test.cjs",
       "oldLine": 732,
-      "newLine": 732,
+      "newLine": 733,
       "before": [],
       "after": [
         "        if (program !== 'general') assert.equal(calls.length, 1);",
@@ -9775,12 +9937,12 @@
     {
       "file": "tests/step2-halaqas-local.test.cjs",
       "oldLine": 743,
-      "newLine": 745,
+      "newLine": 746,
       "before": [
         "    const ctx = vm.createContext({ TextEncoder, structuredClone, doc: () => 'fake-ref',"
       ],
       "after": [
-        "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
+        "    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9844,13 +10006,65 @@
     },
     {
       "file": "tests/step4-snapshot-local.test.cjs",
+      "oldLine": 1,
+      "newLine": 1,
+      "before": [],
+      "after": [
+        "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
+      "oldLine": 54,
+      "newLine": 55,
+      "before": [
+        "    const ctx = vm.createContext({"
+      ],
+      "after": [
+        "    const ctx = firestoreContext({"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
       "oldLine": 234,
-      "newLine": 234,
+      "newLine": 235,
       "before": [
         "    const calls = [], ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
       ],
       "after": [
-        "    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+        "    const calls = [], ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 1,
+      "newLine": 1,
+      "before": [],
+      "after": [
+        "const { firestoreContext } = require('./helpers/firestore-strict.cjs');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 41,
+      "newLine": 42,
+      "before": [
+        "    const ctx = vm.createContext({"
+      ],
+      "after": [
+        "    const ctx = firestoreContext({"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9859,7 +10073,7 @@
     {
       "file": "tests/step5-calendar-local.test.cjs",
       "oldLine": 49,
-      "newLine": 49,
+      "newLine": 50,
       "before": [],
       "after": [
         "                saveAllStudents: (...args) => write('restore', ...args),"
@@ -9871,12 +10085,12 @@
     {
       "file": "tests/step5-calendar-local.test.cjs",
       "oldLine": 246,
-      "newLine": 247,
+      "newLine": 248,
       "before": [
         "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
       ],
       "after": [
-        "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+        "    const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
       ],
       "category": 10,
       "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
@@ -9885,7 +10099,7 @@
     {
       "file": "tests/step5-calendar-local.test.cjs",
       "oldLine": 306,
-      "newLine": 307,
+      "newLine": 308,
       "before": [
         "    h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
       ],
@@ -9899,7 +10113,7 @@
     {
       "file": "tests/step5-calendar-local.test.cjs",
       "oldLine": 541,
-      "newLine": 542,
+      "newLine": 543,
       "before": [
         "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
       ],

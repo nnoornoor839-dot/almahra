@@ -351,8 +351,9 @@ test('r2b audit accounts for every exact production/test hunk and leaves all fou
         const f='tests/rules/'+name+'.json';assert.deepEqual(fs.readFileSync(root+'/'+f),cp.execFileSync('git',['show','0c5ec91:'+f],{cwd:root}));
     }
     const original=cp.execFileSync('git',['show','0c5ec91:index.html'],{cwd:root,encoding:'utf8'});
+    const reviewed=require('./helpers/board-invariants.cjs').beforeKnightsRound2b(fs.readFileSync(root+'/index.html','utf8'));
     for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars','buildWeekKnightsRow','buildRevealSteps','rankHalaqaWeekKnights','buildGeneralWeeklyMessage','buildWeeklyKnightsAnnouncement','buildEntryPatch','saveGeneralQuickEntry'])
-        assert.equal(source(name),source(name,original),name);
+        assert.equal(source(name,name==='buildWeekKnightsRow'?reviewed:undefined),source(name,original),name);
     const oldMessage=source('knightsMessageLines',original);
     const selection=oldMessage.slice(oldMessage.indexOf('            const row ='),oldMessage.indexOf('            if (!row)'));
     assert.equal(source('knightsMessageRow'),'function knightsMessageRow(student, rows) {\n'+selection.replace('const row =','return')+'        }');

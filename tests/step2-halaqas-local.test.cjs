@@ -1,3 +1,4 @@
+const { firestoreContext } = require('./helpers/firestore-strict.cjs');
 // Offline only: production functions with synthetic students, fake DOM and cloud writes.
 // Run: node --test tests/step2-halaqas-local.test.cjs
 const { test } = require('node:test');
@@ -73,7 +74,7 @@ function harness() {
         getAllStudents: async () => copy(state.all), isCurrentSeasonArchived: () => state.archived,
         getDefaultSettings: () => settings(), PROGRAM_DEFS: { general: { defaultSettings: settings() } },
         updateSettings: (...args) => write('settings', ...args), resetSettings: (...args) => write('reset', ...args) };
-    const ctx = vm.createContext({
+    const ctx = firestoreContext({
         // Calendar guards are covered in step5; isolate the earlier step here.
         requireSchoolCalendar: () => true, prepareSchoolDay: () => true, requireSchoolDay: () => true,
         refreshToday() {}, updateSchoolCalendarAlert() {}, seasonCalendarDraft: null, renderSeasonCalendar: () => '',
@@ -724,7 +725,7 @@ test('store reset preserves general teachers and halaqas, waits for cloud, and k
         const old = settings(); old.halaqas[0].active = false;
         const defaults = { teachers: [], stages: [{ id: 'default-stage' }] };
         const calls = [], wait = deferred(), entered = deferred();
-        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
+        const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
             PROGRAM_DEFS: { [program]: { defaultSettings: defaults } }, programsCache: { [program]: { settings: old } },
             doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); entered.resolve(); await wait.promise; } });
         vm.runInContext('const api = {\n' + programsStore.slice(start, end) + '\n};', ctx);
@@ -742,7 +743,7 @@ test('store reset preserves general teachers and halaqas, waits for cloud, and k
 
 test('createGeneralStudentIfAbsent rejects absent or invalid halaqaId before starting a transaction', async () => {
     const state = { transactions: 0 };
-    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',
+    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',
         runTransaction: async (db, callback) => { state.transactions++; await callback({ get: async () => ({ exists: () => false }), set() {} }); } });
     vm.runInContext("const db = {}; const PROGRAMS = 'programs', SEASONS = 'seasons', STUDENTS = 'students'; const activeProgramId = 'general', activeSeasonId = 's1', isReady = true, isReadOnly = false;" +
         source('hasUndefined', dataStore) + source('createGeneralStudentIfAbsent', dataStore), ctx);

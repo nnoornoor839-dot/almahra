@@ -1,3 +1,4 @@
+const { firestoreContext } = require('./helpers/firestore-strict.cjs');
 // Offline only: extracted production functions, synthetic settings/students and fake cloud writes.
 // Run: node --test tests/step4-snapshot-local.test.cjs
 const { test } = require('node:test');
@@ -51,7 +52,7 @@ function harness() {
         getAllStudents: async () => copy(state.all), isCurrentSeasonArchived: () => false,
         PROGRAM_DEFS: { general: { defaultSettings: settings() } },
         updateSettings: (...args) => write('settings', ...args) };
-    const ctx = vm.createContext({
+    const ctx = firestoreContext({
         // Calendar guards are covered in step5; isolate the earlier step here.
         prepareSchoolDay: () => true, requireSchoolDay: () => true, refreshToday() {}, console, structuredClone, document: { getElementById: element, querySelectorAll: () => [] },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } },
@@ -231,7 +232,7 @@ test('UI collection preserves history from opening snapshot and default reset pr
     rows[0].teacherHistory[0].by = 'changed'; assert.equal(baseline[0].teacherHistory[0].by, 'synthetic-admin');
     const start = programsStore.indexOf('    resetSettings: async (programId) => {');
     const end = programsStore.indexOf('\n    },', start) + '\n    },'.length;
-    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
+    const calls = [], ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
         PROGRAM_DEFS: { general: { defaultSettings: {} } }, programsCache: { general: { settings: h.state.settings } },
         doc: () => 'synthetic-ref', updateDoc: async (...args) => calls.push(copy(args)) });
     vm.runInContext('const api = {\n' + programsStore.slice(start, end) + '\n};', ctx);

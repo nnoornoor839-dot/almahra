@@ -8506,7 +8506,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const stage = settings.stages.find(s => s.id === halaqa.stageId);
             const teacher = settings.teachers.find(t => t.id === halaqa.teacherId);
             const row = { key: range.startStr + '|' + halaqa.id, v: 1, weekStart: range.startStr, weekEnd: range.endStr,
-                halaqaId: halaqa.id, halaqaName: halaqa.name, teacherName: teacher?.name || '', halaqaOrder: halaqa.order,
+                halaqaId: halaqa.id, halaqaName: halaqa.name, teacherName: teacher?.name || '',
+                // الإعدادات تعرض الحلقات بترتيب المصفوفة، بما فيها الموقوفة.
+                halaqaOrder: Number.isFinite(halaqa.order) ? halaqa.order : settings.halaqas.findIndex(h => h.id === halaqa.id),
                 stageId: halaqa.stageId, stageName: stage?.name || '', period: stage?.period || '', n,
                 kindMult: { newMemorization: settings.kindMult.newMemorization, review: settings.kindMult.review },
                 weeklyAttendancePct: settings.titleRules?.weeklyAttendancePct ?? 75, schoolDates: knightsSchoolDates(range, settings),

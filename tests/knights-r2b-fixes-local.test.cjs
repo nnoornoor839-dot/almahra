@@ -1,3 +1,4 @@
+const { firestoreContext } = require('./helpers/firestore-strict.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -73,7 +74,7 @@ test('r2b fix 4: startup migrates current server settings and preserves another 
     const text=fs.readFileSync(root+'/programs-store.js','utf8'),settings={kindMult:{newMemorization:3},halaqas:[]};
     let stored={settings,activeSeasonId:'s1'},writes=0,reads=0,transactions=0;
     const snap=()=>{const data=copy(stored);return {exists:()=>true,data:()=>copy(data)}};
-    const ctx=vm.createContext({PROGRAM_DEFS:{general:{id:'general',defaultSettings:copy(key.settings)}},db:{},PROGRAMS:'programs',
+    const ctx=firestoreContext({PROGRAM_DEFS:{general:{id:'general',defaultSettings:copy(key.settings)}},db:{},PROGRAMS:'programs',
         SETTINGS_VERSION:1,initializationErrors:[],console:{log(){},error(e){throw e}},doc:()=> 'programs/general',
         getDoc:async()=>{const s=snap();if(++reads===1)stored.settings={...stored.settings,kindMult:{newMemorization:9,review:2},halaqas:[{id:'other-device'}]};return s},
         updateDoc:async(_,patch)=>{writes++;Object.assign(stored,patch)},

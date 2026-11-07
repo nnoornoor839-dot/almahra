@@ -1,3 +1,4 @@
+const { firestoreContext } = require('./helpers/firestore-strict.cjs');
 // Offline only: production functions, synthetic seasons/students and fake transactions/clock/DOM.
 // Run: node --test tests/*.test.cjs
 const { test } = require('node:test');
@@ -38,7 +39,7 @@ function harness() {
     const programs = { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season.id,
         getCurrentSeason: () => state.season, isCurrentSeasonArchived: () => state.archived,
         updateSeasonCalendar: (...args) => state.calendarSave ? state.calendarSave(...args) : write('calendar', ...args) };
-    const ctx = vm.createContext({
+    const ctx = firestoreContext({
         // Isolate calendar guards; section math and the form DOM are exercised in step8a.
         pinBaseFields: () => ({}), computeLastDaily: () => null, updateGeneralUndoButton() {},
         calculateGeneralQuickEntry: () => ({ errors: [], position: { valid: true }, sections: [], criteria: { changed: false }, total: 0, key: 'attendance-only' }),
@@ -244,7 +245,7 @@ test('successful general season creation suggests season, then opens calendar wi
 
 function storeHarness(current = calendar()) {
     const state = { current, active: 's1', reads: [], writes: [], attempts: 0 };
-    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',
+    const ctx = firestoreContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',
         doc: (...args) => args.slice(1).join('/'),
         runTransaction: async (db, callback) => {
             state.attempts++;

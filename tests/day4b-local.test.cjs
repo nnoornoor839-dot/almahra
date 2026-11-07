@@ -1,3 +1,4 @@
+const { firestoreContext } = require('./helpers/firestore-strict.cjs');
 // Offline only: extract the production functions and inject fake UI/transactions.
 // Run: node --test tests/day4b-local.test.cjs
 const { test } = require('node:test');
@@ -40,7 +41,7 @@ function harness() {
         isReady: () => state.ready, isReadOnly: () => state.readOnly,
         async createGeneralStudentIfAbsent(student, seasonId) { state.calls.push(copy(student)); return state.save ? state.save(student, seasonId) : { success: true }; },
         upsertStudent() { throw Error('legacy upsert must not be used'); } };
-    const ctx = vm.createContext({
+    const ctx = firestoreContext({
         // Calendar guards are covered in step5; isolate the earlier step here.
         requireSchoolCalendar: () => true, console, TextEncoder, structuredClone, document,
         window: { almahraData: data, almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeasonId: () => state.season },
@@ -81,7 +82,7 @@ function harness() {
 function transactionHarness() {
     const docs = new Map(), refs = [], state = { calls: 0, callbacks: 0, writes: 0 };
     class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }
-    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,
+    const ctx = firestoreContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,
         doc: (...segments) => { const ref = segments.slice(1).join('/'); refs.push(ref); return ref; },
         async runTransaction(db, callback) {
             state.calls++;

@@ -1,3 +1,4 @@
+const { strictFirestore } = require('./firestore-strict.cjs');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
@@ -54,7 +55,7 @@ function cloud() {
         const list = [...docs.keys()].filter(p => p.startsWith(path + '/') && !p.slice(path.length+1).includes('/')).map(snapshot);
         return { docs:list, empty:!list.length, forEach:fn=>list.forEach(fn) };
     };
-    const sdk = {
+    const sdk = strictFirestore({
         initializeApp:()=>({}), getApps:()=>[{}], getApp:()=>({}), getFirestore:()=>({}),
         collection:(_, ...parts)=>parts.join('/'), doc:(_, ...parts)=>parts.join('/'),
         getDoc:read, getDocFromServer:read, getDocs, getDocsFromServer:getDocs,
@@ -94,7 +95,7 @@ function cloud() {
             }
             throw Error('transaction retries exhausted');
         }
-    };
+    });
     function stores() {
         const window={addEventListener(){},dispatchEvent(){},almahraAuth:null};
         const ctx=vm.createContext({...sdk,window,TextEncoder,structuredClone,Intl,Date,console:{log(){},warn(){},error(){}},
@@ -109,7 +110,7 @@ function cloud() {
         }
         return window;
     }
-    return { docs,state,stores,season:()=>docs.get('programs/general/seasons/s1'), students:()=>[...docs.entries()].filter(([p])=>p.includes('/students/')).map(([,s])=>copy(s)) };
+    return { docs,state,stores,sdk,season:()=>docs.get('programs/general/seasons/s1'), students:()=>[...docs.entries()].filter(([p])=>p.includes('/students/')).map(([,s])=>copy(s)) };
 }
 const runtimeNames=['knightsFreezeCheckKey','knightsToday','knightsStoredSeason','knightsEndedWeeks','knightsFreezeRow','knightsClockWarning','ensureWeekKnightsFrozen',
     'checkWeekKnightsOnLoad','lockWeekRows','unfreezeHalaqaWeek','knightsPreviousWeekStart','getLockedWeekKnights','lockKnightsForMessage',
