@@ -6,9 +6,10 @@ const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
-    if (baseline === '186a18e' || baseline === 'd51bb42') {
-        // الفئة 12 تُعكس أولاً، فيرى تدقيق الفئة 11 نسخة d51bb42 بالضبط.
-        const text = baseline === 'd51bb42' ? currentText : require('./knights-oneplace-audit.cjs').beforeKnightsOnePlace(currentText, file);
+    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c') {
+        // الفئة 13 ثم 12 تُعكسان أولاً، فيرى تدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط.
+        const onePlace = require('./knights-oneplace-audit.cjs');
+        const text = baseline === 'a002e0c' ? currentText : baseline === 'd51bb42' ? onePlace.beforeKnightsOnePlaceP2(currentText, file) : onePlace.beforeKnightsOnePlace(currentText, file);
         const diff = text === currentText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })
             : diffAgainstText(baseline, file, text);
         const hunks = []; let hunk;

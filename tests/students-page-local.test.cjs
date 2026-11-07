@@ -462,7 +462,7 @@ test('criteria fulfill toggles positives on then off, clears negatives, without 
 });
 
 test('summer and review-day retain the exact legacy rendered cards/buttons and search, without any new general actions', () => {
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
+    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).replaceAll('\r\n', '\n');
     for (const program of ['summer', 'review-day']) {
         const current = harness(), old = harness(); current.state.program = old.state.program = program;
         old.run(source('renderStudentsGrid', baseline)); old.run('renderStudentsGrid()'); current.run('renderStudentsGrid()');

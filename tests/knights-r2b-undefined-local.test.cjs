@@ -61,7 +61,8 @@ test('settings-created halaqas freeze, review and closing slide follow full sett
     await h.call('renderWeekKnightsReview');
     const review = h.element('weekKnightsReview').innerHTML;
     const active = settings.halaqas.filter(circle => circle.active);
-    const positions = active.map(circle => review.indexOf('<h4 class="font-bold">' + circle.name + ' — '));
+    // الفرسان في مكان واحد ١٧ (الجزء ٢): عنوان الحلقة اسمها وحده، بلا معلم ولا تاريخ.
+    const positions = active.map(circle => review.indexOf('<h4 class="font-bold">' + circle.name + '</h4>'));
     assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])));
     for (const stageId of [...new Set(active.map(circle => circle.stageId))]) {
         assert.equal((await h.call('lockWeekRows', key.days[0], stageId)).success, true);

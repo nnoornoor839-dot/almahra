@@ -122,18 +122,20 @@ for(const program of ['summer','review-day']) test('release '+program+': origina
     } finally {await h.close()}
 });
 
-test('release general: review/copy/refreeze buttons share general tokens, icons and 44px targets', async()=>{
+test('release general: review/copy buttons share general tokens, icons and 44px targets; no refreeze button', async()=>{
     const h=await open();
     try {
         const server=cloud(),r=runtime(server);await r.frozen();await r.call('renderWeekKnightsReview');
         const review=r.element('weekKnightsReview').innerHTML;
         // The knights panel renders its own review on open; inject the frozen rows after that render.
         await h.page.evaluate(()=>{goHome('page-settings');openSettingsSection('setPanelGeneralKnights');});
-        await h.page.locator('#setPanelGeneralKnights #weekKnightsReview h3').waitFor();
+        // الفرسان في مكان واحد (الجزء ٢): الجدول بلا عنوان h3 مكرر وبلا زر إعادة حسم؛ يبقى زر النسخ ظاهراً (وزر الحفظ داخل الإعدادات المطوية).
+        await h.page.locator('#setPanelGeneralKnights #weekKnightsReview > *').first().waitFor();
         await h.page.evaluate(review=>{
             const host=document.getElementById('weekKnightsReview');host.innerHTML=review;host.classList.remove('hidden');
         },review);
-        const buttons=h.page.locator('.general-knights-action:visible');assert.ok(await buttons.count()>=3);
+        assert.equal(await h.page.locator('#weekKnightsReview button').count(),0);
+        const buttons=h.page.locator('.general-knights-action:visible');assert.ok(await buttons.count()>=1);
         for(const button of await buttons.all()) {
             assert.ok((await button.boundingBox()).height>=40);
             assert.equal(await button.locator('i.fas').count(),1);

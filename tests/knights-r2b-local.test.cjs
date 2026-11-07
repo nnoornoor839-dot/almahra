@@ -214,7 +214,9 @@ test('r2b clock drift warns strictly above ten minutes and review uses frozen da
     const row=h.rows()[0];row.frozenAt={seconds:(row.frozenAtDevice-600000)/1000};
     assert.equal(await h.call('knightsClockWarning',row),false);
     const text=source('renderWeekKnightsReview');
-    for(const token of ['ensureWeekKnightsFrozen','row.nominees','s.reasons','row.lockedAt','data-refreeze','data-reason'])assert.ok(text.includes(token));
+    for(const token of ['ensureWeekKnightsFrozen','row.nominees','s.reasons'])assert.ok(text.includes(token));
+    // الفرسان في مكان واحد ٧ (الجزء ٢): لا إعادة حسم في الواجهة.
+    for(const token of ['data-refreeze','data-reason','unfreezeHalaqaWeek'])assert.ok(!text.includes(token),token);
 });
 
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -310,14 +312,16 @@ test('r2b an existing key and unrelated rows survive freezing; stale refreeze ca
     assert.equal((await store.refreezeWeekKnightsRow('general','s1',original,original.v,'تصحيح','other')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
     assert.equal(server.state.writes.length,count);
 });
-test('r2b review renders all frozen nominees and exact warnings, and hides refreeze controls after lock',async()=>{
+test('r2b review renders all frozen nominees and exact warnings, and shows no refreeze controls before or after lock',async()=>{
     const server=cloud(),h=runtime(server);await h.frozen();
     await h.call('renderWeekKnightsReview');const host=h.element('weekKnightsReview');
     for(const name of answers.nominees.map(s=>s.name))assert.ok(host.innerHTML.includes(name),name);
-    for(const warning of ['بلا مستوفٍ','تعادل تام','أسبوع غير مكتمل','طالب بلا تاريخ استحقاق: مازن — ثبّت التاريخ من الإعدادات'])assert.ok(host.innerHTML.includes(warning),warning);
-    assert.ok(host.innerHTML.includes('data-refreeze'));
+    // الفرسان في مكان واحد (الجزء ٢): نص التنبيهات الجديد؛ «تعادل تام» و«أسبوع غير مكتمل» حُذفا من الجدول بقرار البطاقة.
+    for(const warning of ['لم يُحسم: لا مستوفٍ','طالب بلا تاريخ استحقاق — ثبّته من الإعدادات أدناه'])assert.ok(host.innerHTML.includes(warning),warning);
+    for(const removed of ['تعادل تام','أسبوع غير مكتمل'])assert.ok(!host.innerHTML.includes(removed),removed);
+    assert.ok(!host.innerHTML.includes('data-refreeze'));
     await h.call('lockWeekRows','2026-11-22','primary');await h.call('lockWeekRows','2026-11-22','middle');await h.call('renderWeekKnightsReview');
-    assert.ok(!host.innerHTML.includes('data-refreeze'));assert.ok(host.innerHTML.includes('أُعلن الأسبوع؛ لا تُعاد الحسبة'));
+    assert.ok(!host.innerHTML.includes('data-refreeze'));assert.ok(!host.innerHTML.includes('أُعلن الأسبوع؛ لا تُعاد الحسبة'));
 });
 
 test('r2b Riyadh Wednesday boundary and the same-day server cache',async()=>{

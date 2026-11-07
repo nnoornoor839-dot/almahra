@@ -189,7 +189,7 @@ test('TV design: stage/name/rising text sizes and every student-facing slide sta
             await safe(h.page, '.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');
             assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');
             if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');
-            else assert.equal(await h.page.locator('.slide.active .muted').evaluate(n => getComputedStyle(n).fontSize), '56px');
+            else assert.equal(await h.page.locator('.slide.active .muted').count(), 0); // الفرسان في مكان واحد ١٤: النجم الصاعد بالاسم وحده.
             if (kind === 'dayKnights') await h.page.screenshot({ path: path.join(root, '.cache/tv-design-knights.png') });
         }
         assert.deepEqual(h.errors, []);

@@ -83,7 +83,7 @@ test('ق2: approve and launch reject general without writes or local changes', a
     } finally { await h.close(); }
 });
 
-test('ق3: weekly count and joinedOn live in the general knights panel with review/refreeze/announcement', async () => {
+test('ق3: weekly count and joinedOn live in the general knights panel with review/announcement and no refreeze control', async () => {
     const h = await open();
     try {
         await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });
@@ -92,7 +92,9 @@ test('ق3: weekly count and joinedOn live in the general knights panel with revi
         assert.equal(await h.page.locator('#setPanelGeneralKnights #gkSettings #psKnights_a').isVisible(), true);
         assert.match(await h.page.locator('#setPanelGeneralKnights #gkSettings').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);
         const server = cloud(), r = runtime(server); await r.frozen(); await r.call('renderWeekKnightsReview');
-        assert.match(r.element('weekKnightsReview').innerHTML, /إعادة الحسم/);
+        // الفرسان في مكان واحد ٧ (الجزء ٢): لا زر إعادة حسم ولا خانة سبب في جدول general.
+        assert.match(r.element('weekKnightsReview').innerHTML, /<th>الحال<\/th>/);
+        assert.doesNotMatch(r.element('weekKnightsReview').innerHTML, /إعادة الحسم|data-refreeze|data-reason/);
         assert.ok(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('onclick="copyWeeklyKnightsAnnouncement()"'));
         assert.deepEqual(h.errors, []);
     } finally { await h.close(); }
@@ -318,7 +320,7 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
     const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
     const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');
     const original = file => cp.execFileSync('git', ['show', '186a18e:' + file], {cwd:root, encoding:'utf8', maxBuffer:4*1024*1024}).replaceAll('\r\n','\n');
-    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();
+    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();
     assert.deepEqual(audit.knightsOwnerAutoChanges.map(r => r.file).sort(), changed);
     for (const row of audit.knightsOwnerAutoChanges) {
         assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);
@@ -343,7 +345,8 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
         assert.equal(source(name,html).replace('            if (isGeneralProgram()) return false;\n',''),
             source(name,old).replace('            if (isGeneralProgram()) return;\n',''),name+': other programs');
     for (const file of ['firestore.rules','data-store.js','tv.js','tv.html', ...['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key'].map(n=>'tests/rules/'+n+'.json')])
-        assert.equal(fs.readFileSync(path.join(root,file),'utf8').replaceAll('\r\n','\n'),original(file),file);
+        // الفئتان 12 و13 تُعكسان بأسطرهما المسجلة فقط (الفئة 13: سطر النجم الصاعد في tv.js)؛ أي تغيير آخر يبقى مكشوفاً.
+        assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlace(fs.readFileSync(path.join(root,file),'utf8'),file),original(file),file);
     const mutated = html.replace("if (isGeneralProgram()) return false;", "if (isGeneralProgram()) return true;");
     assert.notEqual(mutated,html); assert.notEqual(beforeKnightsOwnerAuto(mutated),old);
 });

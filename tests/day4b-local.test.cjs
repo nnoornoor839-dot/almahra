@@ -459,7 +459,7 @@ test('home, full report, statistics and daily table all format raw general total
 });
 
 test('summer and review-day retain their home, report, daily table and cumulative calculations', () => {
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });
+    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
     for (const program of ['summer', 'review-day']) {
         const outputs = [baseline, html].map(source => {
             const h = harness(); h.state.program = program; installReports(h, source);
@@ -491,7 +491,7 @@ test('data-store exception: only the step2 halaqaId guard changes from the appro
 });
 
 test('legacy import preview/confirmation are unchanged for summer and review-day', async () => {
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8' });
+    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
     for (const name of ['buildImportPreview', 'renderImportPreview']) {
         const marker = `        function ${name}(`;
         const before = between(baseline.replace(/\r\n/g, '\n'), marker, '\n        function ');

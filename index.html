@@ -1469,7 +1469,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <button class="panel-card" style="--pc-accent:#10b981; --pc-bg:#ecfdf5" onclick="openSettingsSection('setPanelProgram')">
                         <span class="pc-icon"><i class="fas fa-sliders"></i></span>
                         <span class="pc-title">البرنامج والمواسم</span>
-                        <span class="pc-desc">الاسم · السباق · الميزات · الأرشفة</span>
+                        <span class="pc-desc" id="settingsProgramDesc">الاسم · السباق · الميزات · الأرشفة</span>
                         <span class="pc-badge" id="scBadgeProgram">—</span>
                     </button>
                     <button class="panel-card" style="--pc-accent:#f59e0b; --pc-bg:#fffbeb" onclick="openSettingsSection('setPanelPoints')">
@@ -1573,13 +1573,13 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     </section>
                     <section id="gkCopy" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
                         <h3 class="font-black text-lg mb-3">نسخ أسماء الفرسان للواتساب</h3>
+                        <p id="gkCopyPreview" class="whitespace-pre-wrap bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold"></p>
                         <div class="general-knights-actions flex gap-2 my-3">
-                            <button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="general-knights-action"><i class="fas fa-copy" aria-hidden="true"></i> نسخ أسماء الفرسان</button>
+                            <button id="gkCopyBtn" type="button" onclick="copyWeeklyKnightsAnnouncement()" class="general-knights-action"><i class="fas fa-copy" aria-hidden="true"></i> نسخ أسماء الفرسان</button>
                         </div>
                     </section>
                     <section id="gkRising" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
                         <h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>
-                        <p class="text-slate-500 font-bold">يُبنى في الجزء ٢</p>
                     </section>
                     <details id="gkSettings" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
                         <summary class="font-black text-lg cursor-pointer">الإعدادات</summary>
@@ -8550,32 +8550,54 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const host = document.getElementById('weekKnightsReview');
             if (!host) return;
             host.classList.remove('hidden');
-            const rows = knightsStoredSeason().weekKnightsLog.slice().sort((a,b) => b.weekStart.localeCompare(a.weekStart) || a.halaqaOrder - b.halaqaOrder);
-            host.innerHTML = '<h3 class="font-black text-xl">مراجعة فرسان الأسبوع</h3>' + (rows.length ? rows.map((row, i) => {
-                const alerts = [...(row.warnings || [])];
-                if (!row.knights.length) alerts.push(row.nominees.length ? 'بلا مستوفٍ' : 'لا ترشيحات هذا الأسبوع');
-                if (row.nominees.some((s, i, all) => s.eligible && all.some((other, j) => i !== j && other.eligible && other.rank === s.rank))) alerts.push('تعادل تام');
-                if (row.nominees.some(s => s.attendance.unrecorded > 0)) alerts.push('أسبوع غير مكتمل');
-                if (knightsClockWarning(row)) alerts.push('ساعة الجهاز غير مضبوطة');
-                if (!ready.ok) alerts.push('تعذّر التحقق من اكتمال الأسابيع: ' + ready.error);
-                alerts.push(...row.rejectedApprovals.map(a => a.reason));
-                return '<section class="border rounded-xl p-3 my-3"><h4 class="font-bold">' + escapeHTML(row.halaqaName + ' — ' + row.teacherName + ' — ' + row.weekStart) + '</h4>'
-                    + alerts.map(a => '<p class="text-red-700">' + escapeHTML(a) + '</p>').join('')
-                    + '<div class="overflow-x-auto"><table class="w-full text-right"><thead><tr><th>الطالب</th><th>أيام الترشيح</th><th>الوزن (أعشار الأسطر)</th><th>النقاط</th><th>الأهلية والأسباب</th><th>الرتبة</th></tr></thead><tbody>'
-                    + row.nominees.map(s => '<tr><td>' + escapeHTML(s.name) + '</td><td>' + escapeHTML(s.nominations.join('، ')) + '</td><td>' + s.weightTenths.total + '</td><td>' + s.weekPointsTenths / 10
-                        + '</td><td>' + escapeHTML((s.eligible ? 'مستوفٍ' : 'غير مستوفٍ') + (s.reasons.length ? ' — ' + s.reasons.join('؛ ') : '')) + '</td><td>' + (s.rank ?? '—') + '</td></tr>').join('')
-                    + '</tbody></table></div>' + (row.lockedAt ? '<p>أُعلن الأسبوع؛ لا تُعاد الحسبة</p>' :
-                        '<label>سبب إعادة الحسم <input class="border rounded p-2" data-reason="' + i + '" required></label><button type="button" class="general-knights-action" data-refreeze="' + i + '"><i class="fas fa-rotate-right" aria-hidden="true"></i> إعادة الحسم</button>') + '</section>';
-            }).join('') : '<p>لا أسابيع مجمّدة بعد.</p>');
-            host.querySelectorAll('[data-refreeze]').forEach(button => button.addEventListener('click', async () => {
-                const i = Number(button.dataset.refreeze), row = rows[i];
-                const reason = host.querySelector('[data-reason="' + i + '"]').value.trim();
-                if (!reason) { showToast('سبب إعادة الحسم إلزامي', 'error'); return; }
-                button.disabled = true;
-                const result = await unfreezeHalaqaWeek(row.weekStart, row.halaqaId, reason);
-                if (!result.success) { showToast(result.error, 'error'); button.disabled = false; return; }
-                await renderWeekKnightsReview();
-            }));
+            // الأسبوع الماضي المجمَّد وحده، من السطر المحفوظ بلا إعادة حساب.
+            const weekStart = knightsPreviousWeekStart();
+            const rows = knightsStoredSeason().weekKnightsLog.filter(row => row.weekStart === weekStart)
+                .sort((a, b) => a.halaqaOrder - b.halaqaOrder || knightsIdentityOrder({ id: a.halaqaId }, { id: b.halaqaId }));
+            if (!rows.length) { host.innerHTML = '<p>لم يُحسم أسبوع بعد.</p>'; return; }
+            const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+            const dayName = ds => DAYS[new Date(ds + 'T12:00:00Z').getUTCDay()];
+            const end = rows[0].weekEnd || addDaysToDateStr(weekStart, 3);
+            const weekLabel = 'أسبوع ' + Number(weekStart.slice(8)) + (weekStart.slice(0, 7) === end.slice(0, 7) ? '' : ' ' + MONTHS[Number(weekStart.slice(5, 7)) - 1])
+                + '–' + Number(end.slice(8)) + ' ' + MONTHS[Number(end.slice(5, 7)) - 1];
+            const knightDays = s => (s.nominations.length === 1 ? 'يوم' : s.nominations.length === 2 ? 'يومان' : s.nominations.length + ' أيام')
+                + ' (' + s.nominations.map(dayName).join('، ') + ')';
+            const memorized = s => {
+                const w = s.weightTenths, m = s.weightMultipliers || {};
+                // المعامل غائب (تغيّر وسط الأسبوع): لا تُفصل الأوجه، والمجموع بالوزن.
+                if ((w.new > 0 && !m.new) || (w.review > 0 && !m.review)) return 'الحفظ: ' + (w.total / 150).toFixed(1) + ' بالوزن';
+                const parts = [];
+                if (w.new > 0) parts.push('جديد ' + (w.new / (150 * m.new)).toFixed(1));
+                if (w.review > 0) parts.push('مراجعة ' + (w.review / (150 * m.review)).toFixed(1));
+                return parts.length ? parts[0] + ' وجه' + parts.slice(1).map(p => ' · ' + p).join('') : '—';
+            };
+            const reasonText = (s, reason) => {
+                if (reason.startsWith('حضور ')) return 'حضر ' + s.attendance.present + ' من ' + s.attendance.schoolDays;
+                if (reason.startsWith('بلا تاريخ استحقاق')) return 'بلا تاريخ استحقاق';
+                const day = /^(لم يُسجَّل|مخالفة حاجبة) (\S+) \d{2}-\d{2}$/.exec(reason);
+                if (day) return (day[1] === 'لم يُسجَّل' ? 'لم يُسجَّل حضوره ' : 'مخالفة أدب ') + day[2];
+                return reason;
+            };
+            const status = (row, s) => {
+                const knight = row.knights.find(k => String(k.id) === String(s.id));
+                if (knight) return '🏆 ' + (row.n > 1 ? knightsRankName(knight.rank) : 'فارس الأسبوع');
+                if (s.eligible) return 'مرشح';
+                return 'خارج: ' + s.reasons.map(reason => reasonText(s, reason)).join('، ');
+            };
+            host.innerHTML = '<p class="font-bold mb-2">' + escapeHTML(weekLabel) + '</p>' + rows.map(row => {
+                const alerts = [];
+                if (!row.nominees.length) alerts.push('لا ترشيحات هذا الأسبوع');
+                else if (!row.knights.length) alerts.push('لم يُحسم: لا مستوفٍ');
+                if ((row.warnings || []).length) alerts.push('طالب بلا تاريخ استحقاق — ثبّته من الإعدادات أدناه');
+                return '<section class="border rounded-xl p-3 my-3" data-halaqa="' + escapeHTML(String(row.halaqaId)) + '"><h4 class="font-bold">' + escapeHTML(row.halaqaName) + '</h4>'
+                    + (alerts.length ? '<p class="text-amber-700 font-bold">' + escapeHTML(alerts.join(' · ')) + '</p>' : '')
+                    + row.rejectedApprovals.map(a => '<p class="text-red-700">' + escapeHTML(a.reason) + '</p>').join('')
+                    + (row.nominees.length ? '<div class="overflow-x-auto"><table class="w-full text-right"><thead><tr><th>الطالب</th><th>فارس اليوم</th><th>الحفظ المقبول</th><th>النقاط</th><th>الحال</th></tr></thead><tbody>'
+                        + row.nominees.map(s => '<tr><td>' + escapeHTML(s.name) + '</td><td>' + escapeHTML(knightDays(s)) + '</td><td>' + escapeHTML(memorized(s)) + '</td><td>' + s.weekPointsTenths / 10
+                            + '</td><td>' + escapeHTML(status(row, s)) + '</td></tr>').join('')
+                        + '</tbody></table></div>' : '') + '</section>';
+            }).join('');
         }
 
         function buildWeekKnightsRow(range, halaqa, students, approvals, settings) {
@@ -11212,6 +11234,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (levelTitle) levelTitle.textContent = general ? 'المراحل والمعلمون' : 'الشرائح';
             const levelDesc = document.getElementById('settingsLevelDesc');
             if (levelDesc) levelDesc.textContent = general ? 'تحديد المراحل والمعلمين' : 'المستويات وإسناد الطلاب';
+            const programDesc = document.getElementById('settingsProgramDesc');
+            if (programDesc) programDesc.textContent = general ? 'الاسم · المواسم · الميزات · الأرشفة' : 'الاسم · السباق · الميزات · الأرشفة';
             const levelHeading = document.getElementById('settingsLevelHeading');
             if (levelHeading) levelHeading.textContent = general ? 'المراحل والمعلمون' : 'الشرائح (المستويات)';
             const settings = window.almahraPrograms.getSettings();
@@ -12043,7 +12067,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         </label>
                     </div>` : ''}
 
-                    <div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
+                    ${isGeneralProgram() ? '' : `<div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
                         <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
                             <i class="fas fa-flag-checkered text-amber-500"></i> السباق التحفيزي
                         </h3>
@@ -12054,14 +12078,14 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <label class="block text-sm font-bold text-slate-600 mb-1">الوصف تحت الاسم</label>
                         <input type="text" id="psRaceSub" value="${escapeHTML(s.raceSubtitle || '')}"
                                class="w-full p-3 border-2 border-slate-300 rounded-xl font-bold text-sm focus:border-amber-500 outline-none">
-                    </div>
+                    </div>`}
 
                     <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 lg:col-span-2">
                         <h3 class="font-black text-lg text-slate-700 mb-4 flex items-center gap-2">
                             <i class="fas fa-toggle-on text-emerald-500"></i> الميزات المفعّلة
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            ${Object.keys(FEATURE_LABELS).filter(k => !isGeneralProgram() || !['tiers', 'finalExam', 'examPrep'].includes(k)).map(k => `
+                            ${Object.keys(FEATURE_LABELS).filter(k => !isGeneralProgram() || !['tiers', 'finalExam', 'examPrep', 'honorBoard'].includes(k)).map(k => `
                                 <label class="${isGeneralProgram() && k === 'knights' ? 'legacy-title-setting ' : ''}flex items-center gap-3 p-3 bg-slate-50 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-emerald-400 transition">
                                     <input type="checkbox" class="ps-feat w-5 h-5 rounded accent-emerald-600" data-feat="${k}" ${feats[k] !== false ? 'checked' : ''}>
                                     <span class="font-bold text-slate-700 text-sm">${FEATURE_LABELS[k]}</span>
@@ -12443,7 +12467,30 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 <p class="my-3">بلا تاريخ استحقاق: <span id="gkJoinedOnMissing">${students.filter(st => !st.joinedOn).length}</span> طالب</p>
                 <button type="button" onclick="fixGeneralJoinedOn()" ${locked ? 'disabled' : ''} class="p-3 border-2 rounded-xl">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>
                 <div class="mt-4"><button id="gkSaveBtn" type="button" onclick="saveGeneralKnightsSettings()" ${locked ? 'disabled' : ''} class="general-knights-action"><i class="fas fa-save" aria-hidden="true"></i> حفظ</button></div>`;
-            Promise.resolve().then(renderWeekKnightsReview).catch(err => showToast('تعذّر عرض فرسان الأسبوع: ' + err.message, 'error'));
+            renderGeneralKnightsRising();
+            Promise.resolve().then(renderWeekKnightsReview).catch(err => showToast('تعذّر عرض فرسان الأسبوع: ' + err.message, 'error'))
+                .then(renderGeneralKnightsCopyPreview).catch(err => showToast('تعذّر عرض نص الفرسان: ' + err.message, 'error'));
+        }
+        // معاينة نص النسخ من السطور المجمَّدة للأسبوع الماضي، بلا قفل وبلا كتابة؛ الزر وحده يقفل ثم ينسخ النص نفسه.
+        function renderGeneralKnightsCopyPreview() {
+            if (!isGeneralProgram()) return;
+            const preview = document.getElementById('gkCopyPreview'), button = document.getElementById('gkCopyBtn');
+            if (!preview) return;
+            const weekStart = knightsPreviousWeekStart();
+            const text = buildWeeklyKnightsAnnouncement(knightsStoredSeason().weekKnightsLog.filter(row => row.weekStart === weekStart));
+            preview.textContent = text || 'لا سجل فرسان لهذا الأسبوع';
+            if (button) button.disabled = !text;
+        }
+        // النجم الصاعد لكل فترة بنسخة التلفاز نفسها، بالأسماء فقط.
+        function renderGeneralKnightsRising() {
+            if (!isGeneralProgram()) return;
+            const box = document.getElementById('gkRising');
+            if (!box) return;
+            const line = (label, period) => {
+                const names = getMostImproved(3, period).map(e => e.student.name);
+                return '<p class="font-bold my-1">' + escapeHTML(label + ': ' + (names.length ? names.join('، ') : 'لا نجم صاعد هذا الأسبوع')) + '</p>';
+            };
+            box.innerHTML = '<h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>' + line('حلقات العصر', 'asr') + line('حلقات المغرب', 'maghrib');
         }
         async function saveGeneralKnightsSettings() {
             if (!isGeneralProgram() || !canWriteView()) return;
@@ -12553,8 +12600,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             const settings = {
                 ...(general ? prog.settings : {}),
-                raceName: document.getElementById('psRaceName').value.trim(),
-                raceSubtitle: document.getElementById('psRaceSub').value.trim(),
+                // في العام لا يُرسم صندوق السباق: الاسم والوصف يبقيان كما حُفظا (من prog.settings أعلاه، بلا مفتاح undefined).
+                ...(general ? {} : { raceName: document.getElementById('psRaceName').value.trim(), raceSubtitle: document.getElementById('psRaceSub').value.trim() }),
                 points: general ? { ...prog.settings.points, attendance: attendancePoints } : {
                     attendance: parseInt(document.getElementById('psPtAtt').value) || 0,
                     newMemorization: parseInt(document.getElementById('psPtNew').value) || 0,

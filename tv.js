@@ -245,7 +245,7 @@ if (typeof document !== 'undefined') {
                     }
                 } else slide.items.forEach(item => {
                     const card = node('div', 'card' + (slide.kind === 'dayKnights' ? ' day-knight' : '')), cardBody = node('div', 'card-body');
-                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));
+                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name));
                     else {
                         card.append(node('p', 'stage', item.stage));
                         item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));
