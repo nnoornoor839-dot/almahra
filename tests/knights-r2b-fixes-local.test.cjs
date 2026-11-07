@@ -34,7 +34,8 @@ test('r2b fix 2: moved Hani message locks the stage of its selected frozen winni
     const server=cloud(),h=runtime(server);await h.frozen();
     const hani=server.students().find(s=>s.name==='هاني');
     await h.ctx.window.almahraData.patchStudent(hani.id,{halaqaId:'a'});
-    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل الطالب')).success,true);
+    // الجزء ٣: لا إعادة حسم في general؛ الرسالة تقفل مرحلة سطر فوزه المجمَّد الأصلي.
+    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل الطالب')).error,'الحسم نهائي؛ لا تُعاد الحسبة');
     h.install('sendGeneralWeeklyMessage');h.element('generalMessageWeek').value='previous';
     h.ctx.getGeneralMessageWeek=()=>({startStr:'2026-11-22',endStr:'2026-11-28'});
     h.install('getGeneralSchoolDates','getSchoolDayInfo','schoolCivilDate','isSeasonCalendarComplete');
@@ -43,7 +44,7 @@ test('r2b fix 2: moved Hani message locks the stage of its selected frozen winni
     await h.call('sendGeneralWeeklyMessage',{...hani,halaqaId:'a'});
     assert.match(decodeURIComponent(h.ctx.window.location.href),/🏆 فارس حلقته للأسبوع/);
     assert.ok(rows(server).find(r=>r.halaqaId==='e').lockedAt);
-    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','e','تصحيح')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','e','تصحيح')).error,'الحسم نهائي؛ لا تُعاد الحسبة');
 });
 
 for(const failure of ['guard','throw','reject','pending-success'])test('r2b fix 3: backup preserves the original local list until confirmed save: '+failure,async()=>{
@@ -113,20 +114,21 @@ test('r2b fix 6: overlapping reads retry the losing device without another freez
     assert.deepEqual(server.state.transactionCommits.map(t=>t.writes),[1,0]);
 });
 
-test('r2b fix 6: concurrent lock wins over a refreeze read and the retry rejects recalculation',async()=>{
+// الجزء ٣ (٢٠٢٦-١١-٠٨): إعادة الحسم في general تُرفض قبل أي قراءة معاملة، فلا سباق؛ القفل يمضي وحده.
+test('r2b fix 6: beside a concurrent lock, a general refreeze is refused before any transaction read and the lock commits alone',async()=>{
     const server=cloud(),h=runtime(server);await h.frozen();
     const old=copy(rows(server).find(r=>r.halaqaId==='a')),store=h.ctx.window.almahraPrograms;
     let release;const gate=new Promise(r=>release=r),reads=[];
     server.state.onTransactionRead=async info=>{if(info.attempt===0){reads.push(info);await gate}};
     const pending=Promise.all([store.lockWeekRows('general','s1','2026-11-22','primary','a'),
         store.refreezeWeekKnightsRow('general','s1',{...old,halaqaName:'تغيير'},old.v,'تصحيح','b')]);
-    await tick();try{assert.equal(reads.length,2);assert.equal(server.state.writes.length,1);}finally{release()}
+    await tick();try{assert.equal(reads.length,1);assert.equal(server.state.writes.length,1);}finally{release()}
     const result=await pending;
-    assert.equal(result[0].success,true);assert.equal(result[1].error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
-    assert.ok(server.state.transactionConflicts>=1);assert.equal(rows(server).find(r=>r.halaqaId==='a').halaqaName,old.halaqaName);
+    assert.equal(result[0].success,true);assert.equal(result[1].error,'الحسم نهائي؛ لا تُعاد الحسبة');
+    assert.equal(server.state.writes.length,2);assert.equal(rows(server).find(r=>r.halaqaId==='a').halaqaName,old.halaqaName);
 });
 
-test('r2b fix 6: when concurrent refreeze commits first, lock retries and locks the new version',async()=>{
+test('r2b fix 6: a general refreeze issued before a concurrent lock is refused with no read or write; the lock locks the original version',async()=>{
     const server=cloud(),h=runtime(server);await h.frozen();
     const old=copy(rows(server).find(r=>r.halaqaId==='a')),store=h.ctx.window.almahraPrograms;
     let release;const gate=new Promise(r=>release=r),reads=[];
@@ -134,9 +136,9 @@ test('r2b fix 6: when concurrent refreeze commits first, lock retries and locks 
     const pending=Promise.all([
         store.refreezeWeekKnightsRow('general','s1',{...old,halaqaName:'حلقة مصححة'},old.v,'تصحيح','b'),
         store.lockWeekRows('general','s1','2026-11-22','primary','a')]);
-    await tick();try{assert.equal(reads.length,2);assert.equal(server.state.writes.length,1);}finally{release()}
-    const result=await pending;assert.ok(result.every(r=>r.success));
+    await tick();try{assert.equal(reads.length,1);assert.equal(server.state.writes.length,1);}finally{release()}
+    const result=await pending;assert.equal(result[0].error,'الحسم نهائي؛ لا تُعاد الحسبة');assert.equal(result[1].success,true);
     const row=rows(server).find(r=>r.halaqaId==='a');
-    assert.equal(row.halaqaName,'حلقة مصححة');assert.ok(row.lockedAt);assert.equal(row.v,old.v+2);
-    assert.ok(server.state.transactionConflicts>=1);assert.equal(server.state.writes.length,3);
+    assert.equal(row.halaqaName,old.halaqaName);assert.ok(row.lockedAt);assert.equal(row.v,old.v+1);
+    assert.equal(server.state.writes.length,2);
 });

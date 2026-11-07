@@ -7,9 +7,14 @@ function reverseRow(text, row) {
     for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);
     return lines.join('\n');
 }
+// Category 14: reverse only the exact «الفرسان في مكان واحد — الجزء ٣» lines, so category 13 sees 5fbff4e.
+function beforeKnightsOnePlaceP3(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceP3Changes?.find(r => r.file === file));
+}
 // Category 13: reverse only the exact «الفرسان في مكان واحد — الجزء ٢» lines, so category 12 sees a002e0c.
 function beforeKnightsOnePlaceP2(text, file = 'index.html') {
-    text = text.replaceAll('\r\n', '\n');
+    text = beforeKnightsOnePlaceP3(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceP2Changes?.find(r => r.file === file));
 }
 // Category 12: reverse only the exact «الفرسان في مكان واحد — الجزء ١» lines, so older audit layers see d51bb42.
@@ -17,4 +22,4 @@ function beforeKnightsOnePlace(text, file = 'index.html') {
     text = beforeKnightsOnePlaceP2(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file));
 }
-module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2 };
+module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3 };

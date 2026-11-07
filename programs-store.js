@@ -575,6 +575,7 @@ window.almahraPrograms = {
         return changed ? { weekKnightsLog: log } : null;
     }),
     refreezeWeekKnightsRow: async (programId, seasonId, row, expect, reason, by) => {
+        if (programId === 'general') return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };
         if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };
         return mutateWeekKnights(programId, seasonId, (season, log) => {
             const key = seasonId + '|' + row.weekStart + '|' + row.halaqaId, old = log[key];

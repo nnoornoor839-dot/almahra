@@ -13,7 +13,9 @@ test('homeprep fixed answer key sha256', () => {
     assert.equal(createHash('sha256').update(fs.readFileSync(root + '/tests/rules/homeprep-answer-key.json')).digest('hex'),
         '04ff5202829c63859b5a75437de866ea90b5e42d388d36b576ccdae5bac9a8f5');
     assert.match(html, /const HOMEPREP_SCOPE = 'all';/);
-    assert.match(html, /const HOMEPREP_MIN_PERCENT = 75;/);
+    // الجزء ٣ (٢٠٢٦-١١-٠٨): الحد صار إعداداً (homePrepMinGrade، الغائب = good)؛ مفتاح الإجابة مبني على «جيد جداً» فتضبطه الاختبارات صراحة.
+    assert.doesNotMatch(html, /HOMEPREP_MIN_PERCENT/);
+    assert.match(source('homePrepQualifies'), /settings\.homePrepMinGrade \|\| 'good'/);
 });
 function entry(kind, page, grade, at = 1) {
     const spec = copy(key.pages[page]);
@@ -46,7 +48,7 @@ function fixture(row) {
 }
 function harness(scope = 'all') {
     const list = key.students.map(fixture), h = quick(list[0]);
-    Object.assign(h.state.settings, copy(key.settings)); h.state.calendar = copy(key.season);
+    Object.assign(h.state.settings, copy(key.settings), { homePrepMinGrade: 'very-good' }); h.state.calendar = copy(key.season);
     h.ctx.fixtures = list; h.ctx.fixedToday = key.today;
     h.run('students = fixtures; todayStr = fixedToday; currentEditingStudentId = 1; let honorKnightsLog = [];');
     for (const name of ['snapQuarters', 'dayPoints']) h.run(html.match(new RegExp('const ' + name + ' = .*;'))[0]);
@@ -304,7 +306,7 @@ test('browser: general opt-in has distinct pressed colors, checkmark, hover, foc
     const browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
     try {
         for (const width of [390, 1280]) {
-            const h = await newPage(browser, { width, today: key.today, settings: key.settings,
+            const h = await newPage(browser, { width, today: key.today, settings: { ...key.settings, homePrepMinGrade: 'very-good' },
                 list: [student({}, { id: 1, sid: 'synthetic-homeprep', halaqaId: 'a', lastSurah: 2, lastAyah: 29, history: {} })] });
             try {
                 await h.page.evaluate(() => openSmartModal(1));

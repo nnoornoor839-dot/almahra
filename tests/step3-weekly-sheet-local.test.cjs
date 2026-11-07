@@ -280,7 +280,8 @@ test('summer and review-day cannot open, normalize or print weekly sheets', () =
 test('legacy exam printing and shared settings reader remain byte-equivalent to task baseline', () => {
     const baseline = cp.execFileSync('git', ['show', '043a6f4:index.html'], { cwd: root, encoding: 'utf8' });
     for (const name of ['printExamCards', 'buildExamCardHtml', 'buildExamCardsPagesHtml', 'getProgramSettings', 'getStudentHalaqa']) {
-        assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baseline).replaceAll('\r\n', '\n'), name);
+        // الفئة 14 (الجزء ٣: getProgramSettings يمرّر homePrepMinGrade في general) تُعكس بأسطرها المسجلة فقط.
+        assert.equal(source(name, require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)).replaceAll('\r\n', '\n'), source(name, baseline).replaceAll('\r\n', '\n'), name);
     }
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
     for (const script of scripts) new vm.Script(script[1]);

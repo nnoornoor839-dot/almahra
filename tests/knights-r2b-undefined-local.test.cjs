@@ -92,7 +92,7 @@ test('only finite numeric halaqa order is preserved; fallback uses index includi
     }
 });
 
-test('optional settings, nested row data, refreeze history, actors and round-one writes contain no undefined', async () => {
+test('optional settings, nested row data, refused refreeze, actors and round-one writes contain no undefined', async () => {
     const server = cloud(), settings = settingsWithoutOrder(server);
     for (const stage of settings.stages) delete stage.period;
     settings.halaqas.find(circle => circle.id === 'a').teacherId = '';
@@ -107,11 +107,15 @@ test('optional settings, nested row data, refreeze history, actors and round-one
         assert.equal(row.period, row.stageId === 'primary' ? 'asr' : 'maghrib');
     }
     const data = h.ctx.window.almahraData;
-    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح موثق')).success, true);
+    // الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ الرفض بلا كتابة والسطر المجمَّد كما هو.
+    const frozen = JSON.parse(JSON.stringify(rows(server).find(row => row.halaqaId === 'a'))), writes = server.state.writes.length;
+    const refused = await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح موثق');
+    assert.equal(refused.success, false); assert.equal(refused.error, 'الحسم نهائي؛ لا تُعاد الحسبة');
+    assert.equal(server.state.writes.length, writes);
     const corrected = rows(server).find(row => row.halaqaId === 'a');
+    assert.deepEqual(JSON.parse(JSON.stringify(corrected)), frozen);
     assert.equal(corrected.frozenBy, '');
-    assert.equal(corrected.refreeze[0].by, '');
-    assert.equal(corrected.refreeze[0].previous.frozenBy, '');
+    assert.equal(corrected.refreeze, undefined);
     assert.equal(typeof corrected.frozenAtDevice, 'number');
     assert.equal((await h.call('lockWeekRows', key.days[0], 'primary')).success, true);
     const locked = rows(server).find(row => row.halaqaId === 'a');

@@ -101,21 +101,24 @@ test('r2b empty school week writes its marker only; failure is retried and never
     server.state.failRead=false;assert.equal((await h.frozen()).ok,true);
     assert.equal(rows(server).length,0);assert.ok(server.season().frozenWeeks['2026-11-22']);
 });
-test('r2b mandatory refreeze reason, fresh server sheet, history, lock denial and idempotent lock',async()=>{
+// الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ إعادة الحسم تُرفض بسبب أو بلا سبب، بلا كتابة، ثم القفل كما كان.
+test('r2b refreeze is final in general: empty or valid reason refused with no write despite corrected server sheet; lock denial and idempotent lock',async()=>{
     const server=cloud(),h=runtime(server);await h.frozen();
-    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','')).success,false);
     const saad=server.docs.get('programs/general/seasons/s1/students/2');
     saad.history['2026-11-25']=copy(server.docs.get('programs/general/seasons/s1/students/1').history['2026-11-22']);
-    let result=await h.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح ورقة سعد');
-    assert.equal(result.success,true);
+    const frozen=copy(rows(server)),writes=server.state.writes.length;
+    for(const reason of ['','تصحيح ورقة سعد']){
+        const refused=await h.call('unfreezeHalaqaWeek','2026-11-22','a',reason);
+        assert.equal(refused.success,false);assert.equal(refused.error,'الحسم نهائي؛ لا تُعاد الحسبة');
+    }
+    assert.equal(server.state.writes.length,writes);assert.deepEqual(copy(rows(server)),frozen);
     let row=rows(server).find(r=>r.halaqaId==='a');
-    assert.equal(row.knights[0].name,'سعد');assert.equal(row.v,2);assert.equal(row.refreeze.length,1);
-    assert.equal(row.refreeze[0].previous.knights[0].name,'فهد');assert.equal(row.refreeze[0].reason,'تصحيح ورقة سعد');
-    result=await h.call('lockWeekRows','2026-11-22','primary','fake-admin');assert.equal(result.success,true);
+    assert.equal(row.knights[0].name,'فهد');assert.equal(row.v,1);assert.equal(row.refreeze,undefined);
+    let result=await h.call('lockWeekRows','2026-11-22','primary','fake-admin');assert.equal(result.success,true);
     row=rows(server).find(r=>r.halaqaId==='a');assert.ok(row.lockedAt);assert.deepEqual(row.lockedSteps,row.steps);
     const count=server.state.writes.length;
     await h.call('lockWeekRows','2026-11-22','primary','another');assert.equal(server.state.writes.length,count);
-    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','تغيير')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','تغيير')).error,'الحسم نهائي؛ لا تُعاد الحسبة');
 });
 test('r2b size guard rejects atomically including marker and keeps unrelated fields',async()=>{
     const server=cloud(),h=runtime(server);
@@ -309,7 +312,7 @@ test('r2b an existing key and unrelated rows survive freezing; stale refreeze ca
     const result=await store.saveWeekKnightsRows('general','s1',[{...original,halaqaName:'تغيير',knights:[]}],{weekStart:'2026-11-22',frozenAtDevice:0,frozenBy:'other'});
     assert.equal(result.success,true);assert.deepEqual(rows(server)[0],original);assert.equal(rows(server).length,7);
     await h.call('lockWeekRows','2026-11-22','primary');const count=server.state.writes.length;
-    assert.equal((await store.refreezeWeekKnightsRow('general','s1',original,original.v,'تصحيح','other')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    assert.equal((await store.refreezeWeekKnightsRow('general','s1',original,original.v,'تصحيح','other')).error,'الحسم نهائي؛ لا تُعاد الحسبة'); // الجزء ٣: الرفض العام يسبق فحص القفل
     assert.equal(server.state.writes.length,count);
 });
 test('r2b review renders all frozen nominees and exact warnings, and shows no refreeze controls before or after lock',async()=>{

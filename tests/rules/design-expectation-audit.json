@@ -13,7 +13,8 @@
     "10": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
     "11": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
     "12": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
-    "13": "الفرسان في مكان واحد — الجزء ٢ (٢٠٢٦-١١-٠٨)"
+    "13": "الفرسان في مكان واحد — الجزء ٢ (٢٠٢٦-١١-٠٨)",
+    "14": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)"
   },
   "files": [
     {
@@ -733,6 +734,10 @@
           ]
         }
       ]
+    },
+    {
+      "file": "tests/step3-weekly-sheet-local.test.cjs",
+      "hunks": []
     },
     {
       "file": "tests/step3b-restore-halaqa-local.test.cjs",
@@ -14733,6 +14738,1047 @@
             "        assert.equal(await s.page.locator('#setPanelProgram .ps-feat[data-feat=\"honorBoard\"]').count(), 1);",
             "        assert.deepEqual(s.errors, []);",
             "    } finally { await s.close(); }",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOnePlaceP3Baseline": "5fbff4e",
+  "knightsOnePlaceP3Changes": [
+    {
+      "file": "index.html",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "3648cd147a6896e041edf3df075c6c0051458e4b3301304a064f9bf8c4537da7",
+      "hunks": [
+        {
+          "oldLine": 2889,
+          "newLine": 2889,
+          "before": [
+            "                    absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence"
+          ],
+          "after": [
+            "                    absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence,",
+            "                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {})"
+          ]
+        },
+        {
+          "oldLine": 7319,
+          "newLine": 7320,
+          "before": [
+            "        const HOMEPREP_MIN_PERCENT = 75;"
+          ],
+          "after": [
+            "        // أقل تقدير للتحضير المنزلي إعداد في general (homePrepMinGrade: معرّف تقدير)؛ الغائب = «جيد»"
+          ]
+        },
+        {
+          "oldLine": 7325,
+          "newLine": 7326,
+          "before": [
+            "            return pool.every(e => pct(e.grade) >= HOMEPREP_MIN_PERCENT);"
+          ],
+          "after": [
+            "            const min = settings.grades.find(g => g.id === (settings.homePrepMinGrade || 'good'))?.percent ?? 50;",
+            "            return pool.every(e => pct(e.grade) >= min);",
+            "        }",
+            "        function homePrepRejectionMessage(settings) {",
+            "            const id = settings?.homePrepMinGrade || 'good';",
+            "            const name = (settings?.grades || []).find(g => g.id === id)?.name || 'جيد';",
+            "            return 'التحضير المنزلي يحتاج تسميعاً بتقدير ' + name + ' فأعلى في كل أقسام اليوم';"
+          ]
+        },
+        {
+          "oldLine": 8472,
+          "newLine": 8479,
+          "before": [],
+          "after": [
+            "            if (isGeneralProgram()) return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };"
+          ]
+        },
+        {
+          "oldLine": 9602,
+          "newLine": 9610,
+          "before": [
+            "                error('criteria', 'generalHomePrepBtn', 'التحضير المنزلي يحتاج تسميعاً بتقدير جيد جداً فأعلى في كل أقسام اليوم');"
+          ],
+          "after": [
+            "                error('criteria', 'generalHomePrepBtn', homePrepRejectionMessage(settings));"
+          ]
+        },
+        {
+          "oldLine": 12390,
+          "newLine": 12398,
+          "before": [
+            "                    ${isGeneralProgram() ? `<label class=\"flex items-center gap-2 cursor-pointer px-1\"><input type=\"checkbox\" class=\"crit-optin w-5 h-5 rounded accent-emerald-600\" ${c.optIn === true ? 'checked' : ''}><span class=\"text-xs font-bold text-slate-600\">يُؤشَّر عند تحققه فقط</span></label>` : ''} `}"
+          ],
+          "after": [
+            "                    ${isGeneralProgram() ? `<label class=\"flex items-center gap-2 cursor-pointer px-1\"><input type=\"checkbox\" class=\"crit-optin w-5 h-5 rounded accent-emerald-600\" ${c.optIn === true ? 'checked' : ''}><span class=\"text-xs font-bold text-slate-600\">يُؤشَّر عند تحققه فقط</span></label>` : ''}",
+            "                    ${isGeneralProgram() && c.id === 'homeprep' ? homePrepMinGradeSelectHtml() : ''} `}"
+          ]
+        },
+        {
+          "oldLine": 12398,
+          "newLine": 12407,
+          "before": [],
+          "after": [
+            "        // قائمة «أقل تقدير» في سطر «التحضير المنزلي» (general): جيد / جيد جداً / ممتاز؛ الغائب = جيد",
+            "        function homePrepMinGradeSelectHtml(settings = getProgramSettings()) {",
+            "            const chosen = settings.homePrepMinGrade || 'good';",
+            "            const options = ['good', 'very-good', 'excellent'].map(id => (settings.grades || []).find(g => g.id === id)).filter(Boolean)",
+            "                .map(g => `<option value=\"${escapeHTML(g.id)}\"${g.id === chosen ? ' selected' : ''}>${escapeHTML(g.name)}</option>`).join('');",
+            "            return `<label class=\"flex items-center gap-2 px-1\"><span class=\"text-xs font-bold text-slate-600\">أقل تقدير</span>",
+            "                        <select id=\"psHomePrepMinGrade\" class=\"min-w-[7rem] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm focus:border-emerald-500 outline-none\">${options}</select></label>`;",
+            "        }",
+            ""
+          ]
+        },
+        {
+          "oldLine": 12610,
+          "newLine": 12628,
+          "before": [
+            "                ...(general ? { kindMult, grades, tvPrayer } : {}),"
+          ],
+          "after": [
+            "                ...(general ? { kindMult, grades, tvPrayer,",
+            "                    homePrepMinGrade: document.getElementById('psHomePrepMinGrade')?.value || prog.settings.homePrepMinGrade || 'good' } : {}),"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "programs-store.js",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "6a582b7ed013721bc2181dc3b7f086e28e9abb2f5472cada3cf33ef3f85ce232",
+      "hunks": [
+        {
+          "oldLine": 578,
+          "newLine": 578,
+          "before": [],
+          "after": [
+            "        if (programId === 'general') return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "a3e529b335de11e1e5d753ccab0105c19909467a21048bbf68272296b3fae4d9",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c') {",
+            "        // الفئة 13 ثم 12 تُعكسان أولاً، فيرى تدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط."
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e') {",
+            "        // الفئة 14 ثم 13 ثم 12 تُعكس أولاً، فيرى تدقيق الفئة 13 نسخة 5fbff4e وتدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط."
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [
+            "        const text = baseline === 'a002e0c' ? currentText : baseline === 'd51bb42' ? onePlace.beforeKnightsOnePlaceP2(currentText, file) : onePlace.beforeKnightsOnePlace(currentText, file);"
+          ],
+          "after": [
+            "        const text = baseline === '5fbff4e' ? currentText : baseline === 'a002e0c' ? onePlace.beforeKnightsOnePlaceP3(currentText, file)",
+            "            : baseline === 'd51bb42' ? onePlace.beforeKnightsOnePlaceP2(currentText, file) : onePlace.beforeKnightsOnePlace(currentText, file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "ecdcaa3f065baa773d8ff359f47eb427d6801f78234d1fbd27620dfe5192bd96",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "// Category 14: reverse only the exact «الفرسان في مكان واحد — الجزء ٣» lines, so category 13 sees 5fbff4e.",
+            "function beforeKnightsOnePlaceP3(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceP3Changes?.find(r => r.file === file));",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 17,
+          "before": [
+            "    text = text.replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "    text = beforeKnightsOnePlaceP3(text, file);"
+          ]
+        },
+        {
+          "oldLine": 20,
+          "newLine": 25,
+          "before": [
+            "module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2 };"
+          ],
+          "after": [
+            "module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3 };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/quick-entry-harness.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "bd42de9bfddbbfdab3cd05dae7791508bf90fa8e21fc22164a85c73b376e4bcd",
+      "hunks": [
+        {
+          "oldLine": 131,
+          "newLine": 131,
+          "before": [
+            "    run(html.match(/const HOMEPREP_MIN_PERCENT = .*;/)[0]);"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 136,
+          "newLine": 135,
+          "before": [
+            "    install('homePrepQualifies', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ],
+          "after": [
+            "    install('homePrepQualifies', 'homePrepRejectionMessage', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "447e5eb9ccf0979ed4eebc63e575a49f219d726135986aacb4668703f50a37b1",
+      "hunks": [
+        {
+          "oldLine": 494,
+          "newLine": 494,
+          "before": [
+            "    for (const name of ['getProgramSettings', 'getAttendanceState', 'getSchoolDayInfo', 'computeComplexStats', 'generalRecitationTotals']) assert.equal(source(name), source(name, baseline));"
+          ],
+          "after": [
+            "    // الفئة 14 (الجزء ٣: getProgramSettings يمرّر homePrepMinGrade في general) تُعكس بأسطرها المسجلة فقط.",
+            "    const reviewed = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html);",
+            "    for (const name of ['getProgramSettings', 'getAttendanceState', 'getSchoolDayInfo', 'computeComplexStats', 'generalRecitationTotals']) assert.equal(source(name, reviewed), source(name, baseline));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "06910f09c91d92a622f80fd624414c5fa4d2209c0603986f726a2232bccba540",
+      "hunks": [
+        {
+          "oldLine": 16,
+          "newLine": 16,
+          "before": [
+            "    assert.match(html, /const HOMEPREP_MIN_PERCENT = 75;/);"
+          ],
+          "after": [
+            "    // الجزء ٣ (٢٠٢٦-١١-٠٨): الحد صار إعداداً (homePrepMinGrade، الغائب = good)؛ مفتاح الإجابة مبني على «جيد جداً» فتضبطه الاختبارات صراحة.",
+            "    assert.doesNotMatch(html, /HOMEPREP_MIN_PERCENT/);",
+            "    assert.match(source('homePrepQualifies'), /settings\\.homePrepMinGrade \\|\\| 'good'/);"
+          ]
+        },
+        {
+          "oldLine": 49,
+          "newLine": 51,
+          "before": [
+            "    Object.assign(h.state.settings, copy(key.settings)); h.state.calendar = copy(key.season);"
+          ],
+          "after": [
+            "    Object.assign(h.state.settings, copy(key.settings), { homePrepMinGrade: 'very-good' }); h.state.calendar = copy(key.season);"
+          ]
+        },
+        {
+          "oldLine": 307,
+          "newLine": 309,
+          "before": [
+            "            const h = await newPage(browser, { width, today: key.today, settings: key.settings,"
+          ],
+          "after": [
+            "            const h = await newPage(browser, { width, today: key.today, settings: { ...key.settings, homePrepMinGrade: 'very-good' },"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "d21130408987b657c6be3b4d668b6a0a99dc5f5239a6c0c8cc8996997f8516a9",
+      "hunks": [
+        {
+          "oldLine": 371,
+          "newLine": 371,
+          "before": [
+            "        assert.equal(source(name),source(name,baseline),name);"
+          ],
+          "after": [
+            "        // الفئة 14 (الجزء ٣: حدّ التحضير صار إعداد homePrepMinGrade) تُعكس بأسطرها المسجلة فقط.",
+            "        assert.equal(source(name,require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)),source(name,baseline),name);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "0759ef9da78faf0116bbe90aaa9bf311fe3272d82efe8afe48b0ea7fe7981b7d",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [
+            "const { beforeKnightsOnePlaceP2 } = require('./helpers/knights-oneplace-audit.cjs');"
+          ],
+          "after": [
+            "const { beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3 } = require('./helpers/knights-oneplace-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 17,
+          "newLine": 17,
+          "before": [
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "// الفئة 14 (الجزء ٣) تُعكس أولاً، فيرى هذا التدقيق نسخة 5fbff4e بالضبط.",
+            "const current = file => beforeKnightsOnePlaceP3(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
+        },
+        {
+          "oldLine": 24,
+          "newLine": 25,
+          "before": [
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();"
+          ],
+          "after": [
+            "    // ملفات الفئة 13 المضافة صارت متتبَّعة بعد 5fbff4e، وملفات الفئة 14 المضافة لها تدقيقها.",
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || [])].map(r => r.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 32,
+          "newLine": 36,
+          "before": [
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceP2AddedFiles.map(r => r.file).sort(), untracked);"
+          ],
+          "after": [
+            "    // المضافة في الجزء ٢ متتبَّعة منذ 5fbff4e: لا وجود لها في a002e0c، ونصها بعد عكس الفئة 14 مطابق لما سُجّل."
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 38,
+          "before": [
+            "        const text = fs.readFileSync(path.join(root, row.file), 'utf8');"
+          ],
+          "after": [
+            "        assert.throws(() => git('cat-file', '-e', BASE + ':' + row.file), undefined, row.file + ' ليس في ' + BASE);",
+            "        const text = current(row.file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "d4201632f2274c75ed36ae3c8e9a29f378cf0789eca8f36ebbef8fb21cda8409",
+      "hunks": [
+        {
+          "oldLine": 150,
+          "newLine": 150,
+          "before": [
+            "    for (const reason of ['', '   ']) assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', reason)).success, false);",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد')).success, true);",
+            "    const fresh = rows(server).find(r => r.halaqaId === 'a');",
+            "    assert.equal(fresh.knights[0].name, 'سعد'); assert.equal(fresh.refreeze[0].reason, 'تصحيح ورقة سعد');"
+          ],
+          "after": [
+            "    // الجزء ٣ (٢٠٢٦-١١-٠٨): في general الحسم نهائي؛ إعادة الحسم بسبب صحيح تُرفض بلا أي كتابة.",
+            "    const writes = server.state.writes.length;",
+            "    const result = await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد');",
+            "    assert.equal(result.success, false); assert.match(String(result.error || ''), /الحسم نهائي/);",
+            "    assert.deepEqual(rows(server).find(r => r.halaqaId === 'a'), old, 'السطر المجمَّد لا يتغير');",
+            "    assert.equal(server.state.writes.length, writes, 'صفر كتابات');"
+          ]
+        },
+        {
+          "oldLine": 155,
+          "newLine": 157,
+          "before": [
+            "    assert.equal(h.run('students.find(s=>s.id===2).history[\"2026-11-25\"]'), undefined, 'refreeze used server, not stale local students');"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 157,
+          "newLine": 158,
+          "before": [
+            "test('ق5: after freeze, reason is mandatory and corrected server data changes weekly knight', refreeze);",
+            "test('ق17: frozen row persists until refreeze, blank/whitespace refused and fresh server reason recorded', refreeze);"
+          ],
+          "after": [
+            "test('ق5: in general, after freeze a refreeze with a valid reason is refused («الحسم نهائي»); the frozen weekly knight stays despite corrected server data', refreeze);",
+            "test('ق17: frozen row is final: a valid-reason refreeze is refused with «الحسم نهائي», zero writes, frozen row unchanged and knightsLog empty', refreeze);"
+          ]
+        },
+        {
+          "oldLine": 169,
+          "newLine": 170,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    // الجزء ٣: الرفض العام في general يسبق فحص القفل.",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 257,
+          "newLine": 259,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    // الجزء ٣: الرفض العام في general يسبق فحص القفل.",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 337,
+          "newLine": 340,
+          "before": [
+            "    const html = fs.readFileSync(path.join(root,'index.html'),'utf8'), old = original('index.html');"
+          ],
+          "after": [
+            "    // الفئة 14 (الجزء ٣: سطر رفض إعادة الحسم الأول في unfreezeHalaqaWeek) تُعكس بأسطرها المسجلة فقط.",
+            "    const html = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(fs.readFileSync(path.join(root,'index.html'),'utf8')), old = original('index.html');"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-r2b-fixes-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "5c49b63550a4a0fb634c18e036b6dca10fd599d230173fce787e0c6d98d12535",
+      "hunks": [
+        {
+          "oldLine": 37,
+          "newLine": 37,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل الطالب')).success,true);"
+          ],
+          "after": [
+            "    // الجزء ٣: لا إعادة حسم في general؛ الرسالة تقفل مرحلة سطر فوزه المجمَّد الأصلي.",
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل الطالب')).error,'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 46,
+          "newLine": 47,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','e','تصحيح')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','e','تصحيح')).error,'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 116,
+          "newLine": 117,
+          "before": [
+            "test('r2b fix 6: concurrent lock wins over a refreeze read and the retry rejects recalculation',async()=>{"
+          ],
+          "after": [
+            "// الجزء ٣ (٢٠٢٦-١١-٠٨): إعادة الحسم في general تُرفض قبل أي قراءة معاملة، فلا سباق؛ القفل يمضي وحده.",
+            "test('r2b fix 6: beside a concurrent lock, a general refreeze is refused before any transaction read and the lock commits alone',async()=>{"
+          ]
+        },
+        {
+          "oldLine": 123,
+          "newLine": 125,
+          "before": [
+            "    await tick();try{assert.equal(reads.length,2);assert.equal(server.state.writes.length,1);}finally{release()}"
+          ],
+          "after": [
+            "    await tick();try{assert.equal(reads.length,1);assert.equal(server.state.writes.length,1);}finally{release()}"
+          ]
+        },
+        {
+          "oldLine": 125,
+          "newLine": 127,
+          "before": [
+            "    assert.equal(result[0].success,true);assert.equal(result[1].error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');",
+            "    assert.ok(server.state.transactionConflicts>=1);assert.equal(rows(server).find(r=>r.halaqaId==='a').halaqaName,old.halaqaName);"
+          ],
+          "after": [
+            "    assert.equal(result[0].success,true);assert.equal(result[1].error,'الحسم نهائي؛ لا تُعاد الحسبة');",
+            "    assert.equal(server.state.writes.length,2);assert.equal(rows(server).find(r=>r.halaqaId==='a').halaqaName,old.halaqaName);"
+          ]
+        },
+        {
+          "oldLine": 129,
+          "newLine": 131,
+          "before": [
+            "test('r2b fix 6: when concurrent refreeze commits first, lock retries and locks the new version',async()=>{"
+          ],
+          "after": [
+            "test('r2b fix 6: a general refreeze issued before a concurrent lock is refused with no read or write; the lock locks the original version',async()=>{"
+          ]
+        },
+        {
+          "oldLine": 137,
+          "newLine": 139,
+          "before": [
+            "    await tick();try{assert.equal(reads.length,2);assert.equal(server.state.writes.length,1);}finally{release()}",
+            "    const result=await pending;assert.ok(result.every(r=>r.success));"
+          ],
+          "after": [
+            "    await tick();try{assert.equal(reads.length,1);assert.equal(server.state.writes.length,1);}finally{release()}",
+            "    const result=await pending;assert.equal(result[0].error,'الحسم نهائي؛ لا تُعاد الحسبة');assert.equal(result[1].success,true);"
+          ]
+        },
+        {
+          "oldLine": 140,
+          "newLine": 142,
+          "before": [
+            "    assert.equal(row.halaqaName,'حلقة مصححة');assert.ok(row.lockedAt);assert.equal(row.v,old.v+2);",
+            "    assert.ok(server.state.transactionConflicts>=1);assert.equal(server.state.writes.length,3);"
+          ],
+          "after": [
+            "    assert.equal(row.halaqaName,old.halaqaName);assert.ok(row.lockedAt);assert.equal(row.v,old.v+1);",
+            "    assert.equal(server.state.writes.length,2);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-r2b-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "c37a476f2d34fa7e03ab6dccc9ad5b028a4b98314f70a30eb71ad959144e2e89",
+      "hunks": [
+        {
+          "oldLine": 104,
+          "newLine": 104,
+          "before": [
+            "test('r2b mandatory refreeze reason, fresh server sheet, history, lock denial and idempotent lock',async()=>{"
+          ],
+          "after": [
+            "// الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ إعادة الحسم تُرفض بسبب أو بلا سبب، بلا كتابة، ثم القفل كما كان.",
+            "test('r2b refreeze is final in general: empty or valid reason refused with no write despite corrected server sheet; lock denial and idempotent lock',async()=>{"
+          ]
+        },
+        {
+          "oldLine": 106,
+          "newLine": 107,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','')).success,false);"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 109,
+          "newLine": 109,
+          "before": [
+            "    let result=await h.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح ورقة سعد');",
+            "    assert.equal(result.success,true);"
+          ],
+          "after": [
+            "    const frozen=copy(rows(server)),writes=server.state.writes.length;",
+            "    for(const reason of ['','تصحيح ورقة سعد']){",
+            "        const refused=await h.call('unfreezeHalaqaWeek','2026-11-22','a',reason);",
+            "        assert.equal(refused.success,false);assert.equal(refused.error,'الحسم نهائي؛ لا تُعاد الحسبة');",
+            "    }",
+            "    assert.equal(server.state.writes.length,writes);assert.deepEqual(copy(rows(server)),frozen);"
+          ]
+        },
+        {
+          "oldLine": 112,
+          "newLine": 116,
+          "before": [
+            "    assert.equal(row.knights[0].name,'سعد');assert.equal(row.v,2);assert.equal(row.refreeze.length,1);",
+            "    assert.equal(row.refreeze[0].previous.knights[0].name,'فهد');assert.equal(row.refreeze[0].reason,'تصحيح ورقة سعد');",
+            "    result=await h.call('lockWeekRows','2026-11-22','primary','fake-admin');assert.equal(result.success,true);"
+          ],
+          "after": [
+            "    assert.equal(row.knights[0].name,'فهد');assert.equal(row.v,1);assert.equal(row.refreeze,undefined);",
+            "    let result=await h.call('lockWeekRows','2026-11-22','primary','fake-admin');assert.equal(result.success,true);"
+          ]
+        },
+        {
+          "oldLine": 118,
+          "newLine": 121,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','تغيير')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','تغيير')).error,'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 312,
+          "newLine": 315,
+          "before": [
+            "    assert.equal((await store.refreezeWeekKnightsRow('general','s1',original,original.v,'تصحيح','other')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    assert.equal((await store.refreezeWeekKnightsRow('general','s1',original,original.v,'تصحيح','other')).error,'الحسم نهائي؛ لا تُعاد الحسبة'); // الجزء ٣: الرفض العام يسبق فحص القفل"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-r2b-review2-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "018ce0c46e7d9829210792e2df1b1e4c80e9b36728b042d923aabd7880ddcc0d",
+      "hunks": [
+        {
+          "oldLine": 40,
+          "newLine": 40,
+          "before": [
+            "for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, concurrent correction commits '+first+' first',async()=>{"
+          ],
+          "after": [
+            "// الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ محاولة إعادة الحسم قبل الإرسال أو بعده تُرفض بلا معاملة، والرسالة تُبنى من السطر الأصلي المقفل.",
+            "for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, a correction refreeze attempted '+(first==='refreeze'?'before':'after')+' the send is refused; the message uses the original locked row',async()=>{"
+          ]
+        },
+        {
+          "oldLine": 44,
+          "newLine": 45,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل هاني')).success,true);"
+          ],
+          "after": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل هاني')).error,'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 54,
+          "newLine": 55,
+          "before": [
+            "    let releaseLockResult;",
+            "    if(first==='lock'){",
+            "        const lock=h.ctx.lockWeekRows,gate=new Promise(resolve=>releaseLockResult=resolve);",
+            "        h.ctx.lockWeekRows=async(...args)=>{const result=await lock(...args);await gate;return result};",
+            "    }"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 67,
+          "newLine": 63,
+          "before": [
+            "    const reads=[];",
+            "    server.state.onTransactionRead=async info=>{",
+            "        if(info.attempt===0&&reads.length<2)await new Promise(resolve=>reads.push({resolve,...info}));",
+            "    };",
+            "    const refreeze=other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');",
+            "    await tick();",
+            "    const send=h.call('sendGeneralWeeklyMessage',moved);await tick();",
+            "    assert.equal(reads.length,2);assert.equal(h.ctx.window.location.href,'unchanged');",
+            "    reads[first==='refreeze'?0:1].resolve();await tick();",
+            "    reads[first==='refreeze'?1:0].resolve();",
+            "    const result=await refreeze;",
+            "    if(releaseLockResult)releaseLockResult();",
+            "    await send;",
+            "    assert.equal(result.success,true);assert.ok(server.state.transactionConflicts>=1);",
+            "    assert.equal(built.halaqaId,first==='refreeze'?'a':'e');assert.ok(built.lockedAt);"
+          ],
+          "after": [
+            "    const before=server.state.writes.length;",
+            "    let result;",
+            "    if(first==='refreeze')result=await other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');",
+            "    if(first==='refreeze')assert.equal(server.state.writes.length,before);",
+            "    await h.call('sendGeneralWeeklyMessage',moved);",
+            "    if(first==='lock')result=await other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');",
+            "    assert.equal(result.success,false);assert.equal(result.error,'الحسم نهائي؛ لا تُعاد الحسبة');",
+            "    assert.equal(built.halaqaId,'e');assert.ok(built.lockedAt);"
+          ]
+        },
+        {
+          "oldLine": 83,
+          "newLine": 72,
+          "before": [
+            "    if(first==='refreeze')assert.match(message,/3 أيام من 4/);"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 86,
+          "newLine": 74,
+          "before": [
+            "    assert.equal((await other.call('unfreezeHalaqaWeek','2026-11-22',built.halaqaId,'بعد الإرسال')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    assert.equal((await other.call('unfreezeHalaqaWeek','2026-11-22',built.halaqaId,'بعد الإرسال')).error,'الحسم نهائي؛ لا تُعاد الحسبة');"
+          ]
+        },
+        {
+          "oldLine": 110,
+          "newLine": 98,
+          "before": [
+            "    for(const row of built)assert.equal((await h.call('unfreezeHalaqaWeek',row.weekStart,row.halaqaId,'بعد النسخ')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');"
+          ],
+          "after": [
+            "    for(const row of built)assert.equal((await h.call('unfreezeHalaqaWeek',row.weekStart,row.halaqaId,'بعد النسخ')).error,'الحسم نهائي؛ لا تُعاد الحسبة'); // الجزء ٣: الرفض العام يسبق فحص القفل"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-r2b-undefined-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "df652ea3f32cd477f6fc2d509e7a8391e68713b6608283e80205d5e5ccc990f1",
+      "hunks": [
+        {
+          "oldLine": 95,
+          "newLine": 95,
+          "before": [
+            "test('optional settings, nested row data, refreeze history, actors and round-one writes contain no undefined', async () => {"
+          ],
+          "after": [
+            "test('optional settings, nested row data, refused refreeze, actors and round-one writes contain no undefined', async () => {"
+          ]
+        },
+        {
+          "oldLine": 110,
+          "newLine": 110,
+          "before": [
+            "    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح موثق')).success, true);"
+          ],
+          "after": [
+            "    // الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ الرفض بلا كتابة والسطر المجمَّد كما هو.",
+            "    const frozen = JSON.parse(JSON.stringify(rows(server).find(row => row.halaqaId === 'a'))), writes = server.state.writes.length;",
+            "    const refused = await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح موثق');",
+            "    assert.equal(refused.success, false); assert.equal(refused.error, 'الحسم نهائي؛ لا تُعاد الحسبة');",
+            "    assert.equal(server.state.writes.length, writes);"
+          ]
+        },
+        {
+          "oldLine": 112,
+          "newLine": 116,
+          "before": [],
+          "after": [
+            "    assert.deepEqual(JSON.parse(JSON.stringify(corrected)), frozen);"
+          ]
+        },
+        {
+          "oldLine": 113,
+          "newLine": 118,
+          "before": [
+            "    assert.equal(corrected.refreeze[0].by, '');",
+            "    assert.equal(corrected.refreeze[0].previous.frozenBy, '');"
+          ],
+          "after": [
+            "    assert.equal(corrected.refreeze, undefined);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "1964caba2e6ca029593e2292c18dd90cd90372b42719a7e37fbcf4cedf82112e",
+      "hunks": [
+        {
+          "oldLine": 181,
+          "newLine": 181,
+          "before": [
+            "    for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars','ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','knightsToday']) assert.equal(source(name),source(name,original),name);"
+          ],
+          "after": [
+            "    for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars','ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','knightsToday']) assert.equal(source(name,require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)),source(name,original),name); // الفئة 14 تُعكس بأسطرها فقط"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step3-weekly-sheet-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "b5e80afae34558ae0b28dbe78d6109dd96b0a1c547a5b157639fe63f41cd85d9",
+      "hunks": [
+        {
+          "oldLine": 283,
+          "newLine": 283,
+          "before": [
+            "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baseline).replaceAll('\\r\\n', '\\n'), name);"
+          ],
+          "after": [
+            "        // الفئة 14 (الجزء ٣: getProgramSettings يمرّر homePrepMinGrade في general) تُعكس بأسطرها المسجلة فقط.",
+            "        assert.equal(source(name, require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)).replaceAll('\\r\\n', '\\n'), source(name, baseline).replaceAll('\\r\\n', '\\n'), name);"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOnePlaceP3AddedFiles": [
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "sha256": "9289d4c7835e9f9ac92a98bc5fa87e1ef72b301708fa167af4e4991491a3c882",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// تدقيق الفئة 14: «الفرسان في مكان واحد — الجزء ٣» مقابل 5fbff4e — كل سطر تغيّر مسجَّل، ولا شيء محميّ تغيّر،",
+            "// وسطر المخزن الوحيد (رفض إعادة الحسم في general، البند 9) مستثنى بنصه.",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
+            "const { beforeKnightsOnePlaceP3 } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source } = require('./helpers/quick-entry-harness.cjs');",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = '5fbff4e';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "const STORE_LINE = \"        if (programId === 'general') return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };\";",
+            "const PAGE_LINE = \"            if (isGeneralProgram()) return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };\";",
+            "",
+            "test('category 14 audit: every changed line since 5fbff4e is registered and reverses exactly to 5fbff4e', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.knightsOnePlaceP3Baseline, BASE);",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceP3Changes.map(r => r.file).sort(), changed);",
+            "    for (const row of audit.knightsOnePlaceP3Changes) {",
+            "        assert.equal(row.category, 14); assert.equal(row.reason, audit.categories['14']);",
+            "        assert.deepEqual({ file: row.file, hunks: row.hunks }, changesFrom(row.file, BASE), row.file);",
+            "        assert.equal(sha(original(row.file)), row.beforeSha256, row.file);",
+            "        assert.equal(beforeKnightsOnePlaceP3(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceP3AddedFiles.map(r => r.file).sort(), untracked);",
+            "    for (const row of audit.knightsOnePlaceP3AddedFiles) {",
+            "        const text = fs.readFileSync(path.join(root, row.file), 'utf8');",
+            "        assert.equal(row.category, 14); assert.equal(row.reason, audit.categories['14']);",
+            "        assert.equal(sha(text), row.sha256, row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }]);",
+            "    }",
+            "    const mutated = current('index.html').replace(PAGE_LINE, PAGE_LINE.replace('success: false', 'success: true'));",
+            "    assert.notEqual(mutated, current('index.html')); assert.notEqual(beforeKnightsOnePlaceP3(mutated), original('index.html'));",
+            "});",
+            "",
+            "test('category 14 audit: programs-store.js differs from 5fbff4e only by the general refreeze refusal line; any other store change stays exposed', () => {",
+            "    const row = require('./rules/design-expectation-audit.json').knightsOnePlaceP3Changes.find(r => r.file === 'programs-store.js');",
+            "    assert.equal(row.hunks.length, 1);",
+            "    assert.deepEqual(row.hunks[0].before, []); assert.deepEqual(row.hunks[0].after, [STORE_LINE]);",
+            "    assert.equal(current('programs-store.js').replace(STORE_LINE + '\\n', ''), original('programs-store.js'));",
+            "    const changed = current('programs-store.js').replace(\"if (old.v !== expect) throw new Error('تغيّر السطر من جهاز آخر؛ أعد المراجعة');\", \"if (old.v !== expect) throw new Error('نص');\");",
+            "    assert.notEqual(changed, current('programs-store.js'), 'mutation must exercise production code');",
+            "    assert.notEqual(beforeKnightsOnePlaceP3(changed, 'programs-store.js'), original('programs-store.js'), 'unapproved store change remains visible');",
+            "});",
+            "",
+            "test('category 14 audit: unfreezeHalaqaWeek differs only by its first-line general refusal; protected knights functions, files and answer keys are unchanged since 5fbff4e', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    assert.equal(source('unfreezeHalaqaWeek', html).replace(PAGE_LINE + '\\n', ''), source('unfreezeHalaqaWeek', old));",
+            "    for (const name of ['dayStats', 'getCumulativeStats', 'getDayHalaqaKnights', 'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow',",
+            "        'ensureWeekKnightsFrozen', 'knightsFreezeRow', 'lockWeekRows', 'lockKnightsForMessage', 'copyWeeklyKnightsAnnouncement',",
+            "        'buildWeeklyKnightsAnnouncement', 'getLockedWeekKnights', 'getMostImproved', 'renderWeekKnightsReview', 'readKnightsPerHalaqa', 'fixGeneralJoinedOn',",
+            "        'commitProgramSettings', 'saveGeneralKnightsSettings', 'getGeneralTvSnapshot', 'goRace', 'dayAcceptedWeightTenths', 'generalCriteriaChange', 'undoLastGeneralEntry'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    assert.equal(html.match(/const dayPoints = .*;/)[0], old.match(/const dayPoints = .*;/)[0]);",
+            "    assert.equal(html.match(/const HOMEPREP_SCOPE = .*;/)[0], old.match(/const HOMEPREP_SCOPE = .*;/)[0]);",
+            "    for (const file of ['firestore.rules', 'data-store.js', 'general-points.js', 'tv.js', 'tv.html',",
+            "        'tests/knights-oneplace-local.test.cjs', 'tests/knights-oneplace-p2-local.test.cjs',",
+            "        ...['knights-answer-key', 'knights-r2-answer-key', 'board-answer-key', 'homeprep-answer-key', 'home-answer-key'].map(n => 'tests/rules/' + n + '.json')])",
+            "        assert.equal(current(file), original(file), file);",
+            "    // البرامج الأخرى: افتراضات summer وreview-day وgeneral كما هي (homePrepMinGrade غير مضاف: الغائب = good بلا ترحيل).",
+            "    const defs = text => require('node:vm').runInNewContext('(' + text.match(/export const PROGRAM_DEFS = ([\\s\\S]*?);\\n/)[1] + ')');",
+            "    assert.deepEqual(JSON.parse(JSON.stringify(defs(current('programs-store.js')))), JSON.parse(JSON.stringify(defs(original('programs-store.js')))));",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-local.test.cjs",
+      "category": 14,
+      "reason": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+      "sha256": "46d7b87b237ebda5781554a1e91ddc57e99957283c50f3ab43e123bf62fdb7fa",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبارات قبول الجزء ٣ من «الفرسان في مكان واحد» (البطاقة: D:/المهره/notes/features/knights/one-place-card.md): ف5 وف9. حمراء قبل البناء.",
+            "const { before, after, test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const path = require('node:path');",
+            "const { cloud, runtime, key } = require('./helpers/knights-r2b-harness.cjs');",
+            "const { harness: quick, student, copy, source, html, QuranMeasure, generalEntryPoints } = require('./helpers/quick-entry-harness.cjs');",
+            "const { newPage } = require('./helpers/t25-browser.cjs');",
+            "const hp = require('./rules/homeprep-answer-key.json');",
+            "const rows = server => copy(Object.values(server.season().weekKnightsLog || {}));",
+            "let browser;",
+            "before(async () => {",
+            "    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,",
+            "        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));",
+            "    browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });",
+            "});",
+            "after(async () => { await browser?.close(); });",
+            "",
+            "test('ف5: in general, refreeze is refused at both the page and the store with zero writes; the frozen row and local state stay; a non-general program is not short-circuited by the general refusal', async () => {",
+            "    const server = cloud(); server.season().knightsLog = [];",
+            "    const h = runtime(server); await h.frozen();",
+            "    const before = rows(server), writes = server.state.writes.length, local = copy(h.run('[...weekKnightsState.entries()]'));",
+            "    const page = await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد');",
+            "    assert.equal(page.success, false); assert.match(String(page.error || ''), /الحسم نهائي/);",
+            "    const stores = h.ctx.window.almahraPrograms;",
+            "    const row = before.find(r => r.halaqaId === 'a');",
+            "    const direct = await stores.refreezeWeekKnightsRow('general', 's1', row, row.v, 'سبب مباشر', 'fake-admin');",
+            "    assert.equal(direct.success, false); assert.match(String(direct.error || ''), /الحسم نهائي/);",
+            "    assert.equal(server.state.writes.length, writes, 'صفر كتابات');",
+            "    assert.deepEqual(rows(server), before, 'السطر المجمَّد كما هو');",
+            "    assert.deepEqual(copy(h.run('[...weekKnightsState.entries()]')), local, 'الحالة المحلية كما هي');",
+            "    // برنامج آخر لا يمر برفض general: يصل إلى مسار المخزن الأصلي (يفشل هنا لغياب السطر، لا بـ«الحسم نهائي»)",
+            "    const other = await stores.refreezeWeekKnightsRow('summer', 's1', row, row.v, 'سبب', 'fake-admin');",
+            "    assert.doesNotMatch(String(other.error || ''), /الحسم نهائي/);",
+            "    assert.ok(!source('renderWeekKnightsReview').includes('unfreezeHalaqaWeek'), 'لا استدعاء من الجدول');",
+            "});",
+            "",
+            "function entry(kind, page, grade) {",
+            "    const spec = copy(hp.pages[page]);",
+            "    const measured = QuranMeasure.measure({ spec });",
+            "    const score = generalEntryPoints({ lines: measured.lines, kind, gradeId: grade, settings: hp.settings });",
+            "    return { kind, grade, spec, iv: measured.intervals, mult: score.mult, points: score.points, rep: 1, at: 1, by: 'fake-admin' };",
+            "}",
+            "function pure(minGrade) {",
+            "    const h = quick();",
+            "    Object.assign(h.state.settings, copy(hp.settings));",
+            "    if (minGrade === undefined) delete h.state.settings.homePrepMinGrade; else h.state.settings.homePrepMinGrade = minGrade;",
+            "    return (saved, sections) => { h.ctx.saved = saved; h.ctx.sections = sections; return h.run('homePrepQualifies(saved, sections, getProgramSettings())'); };",
+            "}",
+            "",
+            "test('ف9: home-prep minimum grade is a setting: absent = «جيد» accepts a good recitation; «جيد جداً» rejects it; «ممتاز» rejects very-good; repeat never qualifies', () => {",
+            "    const good = entry('new', 5, 'good'), veryGood = entry('new', 6, 'very-good'), excellent = entry('review', 4, 'excellent');",
+            "    assert.ok(!html.includes('const HOMEPREP_MIN_PERCENT = 75;'), 'لا رقم ثابت 75 في الكود');",
+            "    const q0 = pure(undefined);",
+            "    assert.equal(q0([], [good]), true, 'الافتراضي جيد: تسميع جيد يستوفي');",
+            "    assert.equal(q0([good], [veryGood]), true);",
+            "    assert.equal(q0([], [{ ...good, grade: 'repeat' }]), false);",
+            "    const q1 = pure('very-good');",
+            "    assert.equal(q1([], [good]), false, 'جيد جداً: جيد لا يستوفي');",
+            "    assert.equal(q1([], [veryGood]), true);",
+            "    assert.equal(q1([veryGood], [good]), false, 'كل أقسام اليوم');",
+            "    const q2 = pure('excellent');",
+            "    assert.equal(q2([], [veryGood]), false); assert.equal(q2([], [excellent]), true);",
+            "});",
+            "",
+            "test('ف9ب: the rejection message names the chosen grade; the settings row carries the select; saving stores homePrepMinGrade and the TV/points of earlier saved days do not change', async () => {",
+            "    const h = await newPage(browser, { width: 1280, today: key.days[1] });",
+            "    try {",
+            "        await h.page.evaluate(() => {",
+            "            window.almahraPrograms.updateSettings = async (id, settings) => {",
+            "                window.__fixture.programs[id].settings = settings;",
+            "                window.__fixture.writes.push({ id, settings: structuredClone(settings) });",
+            "                return { success: true };",
+            "            };",
+            "            window.almahraPrograms.getAllStudents = async () => window.__fixture.list;",
+            "            window.almahraData.getStudents = () => window.__fixture.list;",
+            "            goHome('page-settings'); openSettingsSection('setPanelPoints');",
+            "        });",
+            "        const sel = h.page.locator('#setPanelPoints #psHomePrepMinGrade');",
+            "        assert.equal(await sel.count(), 1, 'قائمة أقل تقدير في سطر التحضير');",
+            "        assert.equal(await sel.inputValue(), 'good', 'الافتراضي جيد');",
+            "        assert.deepEqual(await sel.locator('option').allTextContents(), ['جيد', 'جيد جداً', 'ممتاز']);",
+            "        await sel.selectOption('very-good');",
+            "        const before = await h.page.evaluate(() => window.__fixture.writes.length);",
+            "        await h.page.evaluate(async () => { await saveProgramSettings(); });",
+            "        await h.page.waitForFunction(n => window.__fixture.writes.length > n, before);",
+            "        const saved = await h.page.evaluate(() => window.__fixture.writes.filter(w => w.settings).at(-1).settings);",
+            "        assert.equal(saved.homePrepMinGrade, 'very-good');",
+            "        const msg = await h.page.evaluate(() => { const s = document.documentElement.outerHTML; return s.includes('التحضير المنزلي يحتاج تسميعاً بتقدير جيد جداً فأعلى') ? 'static' : 'dynamic'; });",
+            "        assert.equal(msg, 'dynamic', 'رسالة الرفض ليست نصاً ثابتاً');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "    const h2 = quick(); Object.assign(h2.state.settings, copy(hp.settings)); h2.state.settings.homePrepMinGrade = 'very-good';",
+            "    h2.ctx.saved = []; h2.ctx.sections = [entry('new', 5, 'good')];",
+            "    assert.equal(h2.run('homePrepQualifies(saved, sections, getProgramSettings())'), false);",
+            "    const text = h2.run('typeof homePrepRejectionMessage === \"function\" ? homePrepRejectionMessage(getProgramSettings()) : \"\"');",
+            "    assert.match(text, /جيد جداً/, 'الرسالة تذكر التقدير المختار');",
+            "    h2.state.settings.homePrepMinGrade = 'excellent';",
+            "    assert.match(h2.run('homePrepRejectionMessage(getProgramSettings())'), /ممتاز/);",
+            "});",
+            "",
+            "test('ف9ج: changing the home-prep minimum grade has no retroactive effect on saved days (points and homeprep criterion unchanged)', () => {",
+            "    const h = quick(); Object.assign(h.state.settings, copy(hp.settings)); delete h.state.settings.homePrepMinGrade;",
+            "    h.install('summarizeRange');",
+            "    const day = { attended: true, entries: { e0: entry('new', 5, 'good') }, criteria: { homeprep: 10 }, criteriaPoints: 10 };",
+            "    h.ctx.fixtureStudent = { id: 9, name: 'طالب', halaqaId: 'a', history: { [hp.days[0]]: copy(day) } };",
+            "    h.ctx.fixtureDates = [hp.days[0]];",
+            "    const before = copy(h.run('summarizeRange(fixtureStudent, fixtureDates)'));",
+            "    h.state.settings.homePrepMinGrade = 'excellent';",
+            "    const after = copy(h.run('summarizeRange(fixtureStudent, fixtureDates)'));",
+            "    assert.deepEqual(after, before, 'يوم محفوظ لا يتغير بتغيير الإعداد');",
+            "    assert.equal(h.ctx.fixtureStudent.history[hp.days[0]].criteria.homeprep, 10);",
+            "});",
+            "",
+            "test('ف9د: with the setting absent (= «جيد»), the real save path stores a good-graded recitation with home prep +10; with «جيد جداً» the same save is refused with no write', async () => {",
+            "    const run = async minGrade => {",
+            "        const h = quick(student({}, { id: 1, sid: 'p3-1', name: 'طالب', halaqaId: 'a', lastSurah: 2, lastAyah: 24, history: {} })); Object.assign(h.state.settings, copy(hp.settings));",
+            "        if (minGrade) h.state.settings.homePrepMinGrade = minGrade; else delete h.state.settings.homePrepMinGrade;",
+            "        Object.assign(h.ctx.window.almahraData, { isReady: () => true, getActiveProgramId: () => 'general', getActiveSeasonId: () => 's1' });",
+            "        h.run('generalTv.enabled = false');",
+            "        h.run('currentEditingStudentId = students[0].id; initGeneralQuickEntry(students[0], todayStr);'); // إعادة الفتح بعد ضبط الإعدادات حتى تُرسم التقديرات منها",
+            "        h.range('new', null, [2, 29]); h.grade('new', 'good');",
+            "        h.run(\"toggleGeneralOptIn(document.getElementById('generalHomePrepBtn'))\");",
+            "        const preview = h.preview();",
+            "        const writes = h.state.writes.length; await h.save(); // يضغط ثانية عند تذكير المراجعة كما في المسار الحقيقي",
+            "        return { errors: preview.errors.map(e => e.message), wrote: h.state.writes.length > writes, fields: h.state.writes.at(-1)?.fields || {} };",
+            "    };",
+            "    const absent = await run(undefined);",
+            "    assert.deepEqual(absent.errors, [], 'بلا إعداد: لا خطأ');",
+            "    assert.equal(absent.wrote, true, 'حُفظ');",
+            "    const prepKey = Object.keys(absent.fields).find(k => k.endsWith('.criteria'));",
+            "    assert.ok(prepKey, 'حقل المعايير في الحفظ');",
+            "    assert.equal(absent.fields[prepKey].homeprep, 10, '+10');",
+            "    assert.equal(absent.fields[prepKey.replace(/.criteria$/, '.criteriaPoints')], 10, 'نقاط الانضباط 10');",
+            "    const strict = await run('very-good');",
+            "    assert.ok(strict.errors.some(m => /جيد جداً/.test(m)), 'جيد جداً: رسالة الرفض بالتقدير');",
+            "    assert.equal(strict.wrote, false, 'لا كتابة');",
             "});",
             ""
           ]

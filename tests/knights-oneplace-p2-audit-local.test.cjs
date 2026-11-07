@@ -7,21 +7,25 @@ const path = require('node:path');
 const cp = require('node:child_process');
 const { createHash } = require('node:crypto');
 const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
-const { beforeKnightsOnePlaceP2 } = require('./helpers/knights-oneplace-audit.cjs');
+const { beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3 } = require('./helpers/knights-oneplace-audit.cjs');
 const { source } = require('./helpers/quick-entry-harness.cjs');
 const root = path.resolve(__dirname, '..');
 const BASE = 'a002e0c';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+// الفئة 14 (الجزء ٣) تُعكس أولاً، فيرى هذا التدقيق نسخة 5fbff4e بالضبط.
+const current = file => beforeKnightsOnePlaceP3(fs.readFileSync(path.join(root, file), 'utf8'), file);
 const TV_OLD = "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));";
 const TV_NEW = "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name));";
 
 test('category 13 audit: every changed line since a002e0c is registered and reverses exactly to a002e0c', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsOnePlaceP2Baseline, BASE);
-    const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();
+    // ملفات الفئة 13 المضافة صارت متتبَّعة بعد 5fbff4e، وملفات الفئة 14 المضافة لها تدقيقها.
+    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || [])].map(r => r.file));
+    const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
+        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsOnePlaceP2Changes.map(r => r.file).sort(), changed);
     for (const row of audit.knightsOnePlaceP2Changes) {
         assert.equal(row.category, 13); assert.equal(row.reason, audit.categories['13']);
@@ -29,10 +33,10 @@ test('category 13 audit: every changed line since a002e0c is registered and reve
         assert.equal(sha(original(row.file)), row.beforeSha256, row.file);
         assert.equal(beforeKnightsOnePlaceP2(current(row.file), row.file), original(row.file), row.file);
     }
-    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
-    assert.deepEqual(audit.knightsOnePlaceP2AddedFiles.map(r => r.file).sort(), untracked);
+    // المضافة في الجزء ٢ متتبَّعة منذ 5fbff4e: لا وجود لها في a002e0c، ونصها بعد عكس الفئة 14 مطابق لما سُجّل.
     for (const row of audit.knightsOnePlaceP2AddedFiles) {
-        const text = fs.readFileSync(path.join(root, row.file), 'utf8');
+        assert.throws(() => git('cat-file', '-e', BASE + ':' + row.file), undefined, row.file + ' ليس في ' + BASE);
+        const text = current(row.file);
         assert.equal(row.category, 13); assert.equal(row.reason, audit.categories['13']);
         assert.equal(sha(text), row.sha256, row.file);
         assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\n') }]);

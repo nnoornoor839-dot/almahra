@@ -37,11 +37,12 @@ function prepareSender(h){
     h.ctx.normalizeSaudiPhone=()=> '966500000000';h.ctx.measureReady=()=>true;
 }
 
-for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, concurrent correction commits '+first+' first',async()=>{
+// الجزء ٣ (٢٠٢٦-١١-٠٨): الحسم نهائي في general؛ محاولة إعادة الحسم قبل الإرسال أو بعده تُرفض بلا معاملة، والرسالة تُبنى من السطر الأصلي المقفل.
+for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, a correction refreeze attempted '+(first==='refreeze'?'before':'after')+' the send is refused; the message uses the original locked row',async()=>{
     const server=cloud(),h=runtime(server),other=runtime(server);await h.frozen();
     const hani=server.students().find(s=>s.name==='هاني');
     await h.ctx.window.almahraData.patchStudent(hani.id,{halaqaId:'a'});
-    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل هاني')).success,true);
+    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل هاني')).error,'الحسم نهائي؛ لا تُعاد الحسبة');
     const moved={...hani,halaqaId:'a'};
     assert.equal((await h.call('knightsMessageRow',moved,h.rows())).halaqaId,'e');
     await other.ctx.window.almahraData.patchStudent(hani.id,{
@@ -51,11 +52,6 @@ for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, co
     prepareSender(h);
     // اشتراك الموسم يرى حسم أ الجديد حتى إن كانت نتيجة قفل هـ قد سبقتْه.
     h.ctx.window.almahraPrograms.getCurrentSeason=()=>server.season();
-    let releaseLockResult;
-    if(first==='lock'){
-        const lock=h.ctx.lockWeekRows,gate=new Promise(resolve=>releaseLockResult=resolve);
-        h.ctx.lockWeekRows=async(...args)=>{const result=await lock(...args);await gate;return result};
-    }
     let built;
     const build=h.ctx.buildGeneralWeeklyMessage;
     h.ctx.buildGeneralWeeklyMessage=(student,week,settings)=>{
@@ -64,26 +60,18 @@ for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, co
         assert.deepEqual(copy(built),rows(server).find(r=>r.key===built.key),'build from the confirmed locked server version');
         return build(student,week,settings);
     };
-    const reads=[];
-    server.state.onTransactionRead=async info=>{
-        if(info.attempt===0&&reads.length<2)await new Promise(resolve=>reads.push({resolve,...info}));
-    };
-    const refreeze=other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');
-    await tick();
-    const send=h.call('sendGeneralWeeklyMessage',moved);await tick();
-    assert.equal(reads.length,2);assert.equal(h.ctx.window.location.href,'unchanged');
-    reads[first==='refreeze'?0:1].resolve();await tick();
-    reads[first==='refreeze'?1:0].resolve();
-    const result=await refreeze;
-    if(releaseLockResult)releaseLockResult();
-    await send;
-    assert.equal(result.success,true);assert.ok(server.state.transactionConflicts>=1);
-    assert.equal(built.halaqaId,first==='refreeze'?'a':'e');assert.ok(built.lockedAt);
+    const before=server.state.writes.length;
+    let result;
+    if(first==='refreeze')result=await other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');
+    if(first==='refreeze')assert.equal(server.state.writes.length,before);
+    await h.call('sendGeneralWeeklyMessage',moved);
+    if(first==='lock')result=await other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');
+    assert.equal(result.success,false);assert.equal(result.error,'الحسم نهائي؛ لا تُعاد الحسبة');
+    assert.equal(built.halaqaId,'e');assert.ok(built.lockedAt);
     const message=decodeURIComponent(h.ctx.window.location.href);
-    if(first==='refreeze')assert.match(message,/3 أيام من 4/);
     for(const line of await h.call('knightsMessageLines',moved,[built],true))assert.ok(message.includes(line));
     const count=server.state.writes.length;
-    assert.equal((await other.call('unfreezeHalaqaWeek','2026-11-22',built.halaqaId,'بعد الإرسال')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    assert.equal((await other.call('unfreezeHalaqaWeek','2026-11-22',built.halaqaId,'بعد الإرسال')).error,'الحسم نهائي؛ لا تُعاد الحسبة');
     assert.equal(server.state.writes.length,count);
 });
 
@@ -107,5 +95,5 @@ test('r2b review2 announcement: builds only from confirmed locked rows',async()=
     };
     await h.call('copyWeeklyKnightsAnnouncement');
     assert.equal(built.length,7);assert.equal(h.state.copies.length,1);
-    for(const row of built)assert.equal((await h.call('unfreezeHalaqaWeek',row.weekStart,row.halaqaId,'بعد النسخ')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    for(const row of built)assert.equal((await h.call('unfreezeHalaqaWeek',row.weekStart,row.halaqaId,'بعد النسخ')).error,'الحسم نهائي؛ لا تُعاد الحسبة'); // الجزء ٣: الرفض العام يسبق فحص القفل
 });

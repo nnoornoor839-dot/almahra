@@ -2886,7 +2886,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     halaqas: Array.isArray(s?.halaqas) ? s.halaqas : [],
                     grades: Array.isArray(s?.grades) ? s.grades : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.grades,
                     kindMult: s?.kindMult || window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.kindMult,
-                    absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence
+                    absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence,
+                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {})
                 } : {})
             };
         }
@@ -7316,13 +7317,19 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         //  • بحاجة متابعة: يومان فأكثر — تنبيه مبكّر للتواصل مع ولي الأمر
         //  • منقطع: ثلاثة أيام فأكثر — وهو وحده الذي يُستثنى من نسبة حضور النشطين في الإحصاءات
         const HOMEPREP_SCOPE = 'all';
-        const HOMEPREP_MIN_PERCENT = 75;
+        // أقل تقدير للتحضير المنزلي إعداد في general (homePrepMinGrade: معرّف تقدير)؛ الغائب = «جيد»
         function homePrepQualifies(dayEntries, sections, settings) {
             const all = [...dayEntries, ...sections].filter(e => e.kind === 'new' || e.kind === 'review');
             const pool = HOMEPREP_SCOPE === 'new' ? all.filter(e => e.kind === 'new') : all;
             if (pool.length === 0) return false;
             const pct = id => settings.grades.find(g => g.id === id)?.percent ?? 0;
-            return pool.every(e => pct(e.grade) >= HOMEPREP_MIN_PERCENT);
+            const min = settings.grades.find(g => g.id === (settings.homePrepMinGrade || 'good'))?.percent ?? 50;
+            return pool.every(e => pct(e.grade) >= min);
+        }
+        function homePrepRejectionMessage(settings) {
+            const id = settings?.homePrepMinGrade || 'good';
+            const name = (settings?.grades || []).find(g => g.id === id)?.name || 'جيد';
+            return 'التحضير المنزلي يحتاج تسميعاً بتقدير ' + name + ' فأعلى في كل أقسام اليوم';
         }
         const FOLLOWUP_MIN_STREAK = 2;
         const CHRONIC_MIN_STREAK = 3;
@@ -8469,6 +8476,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             } catch (error) { return { success: false, error: error.message }; }
         }
         async function unfreezeHalaqaWeek(weekStart, halaqaId, reason) {
+            if (isGeneralProgram()) return { success: false, error: 'الحسم نهائي؛ لا تُعاد الحسبة' };
             if (!isGeneralProgram() || !canWriteView()) return { success: false };
             if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };
             const store = window.almahraPrograms, seasonId = store.getCurrentSeasonId();
@@ -9599,7 +9607,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const criteria = generalCriteriaChange(student);
             const dayEntries = Object.values(student.history?.[generalQuickEntry.dateStr || todayStr]?.entries || {});
             if ((criteria.selection.homeprep || 0) > 0 && !homePrepQualifies(dayEntries, sections, settings))
-                error('criteria', 'generalHomePrepBtn', 'التحضير المنزلي يحتاج تسميعاً بتقدير جيد جداً فأعلى في كل أقسام اليوم');
+                error('criteria', 'generalHomePrepBtn', homePrepRejectionMessage(settings));
             const total = roundPointTotal(sections.reduce((sum, entry) => sum + entry.points, 0) + criteria.delta);
             return { sections, criteria, total, errors, used, frontier, position,
                 key: JSON.stringify([sections, criteria.selection, criteria.delta, total, position, errors]) };
@@ -12387,12 +12395,22 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <input type="checkbox" class="crit-disc w-5 h-5 rounded accent-teal-600" ${c.disciplineCriterion === true ? 'checked' : ''}>
                         <span class="text-xs font-bold text-teal-700">شرطٌ للانضباط</span>
                     </label>
-                    ${isGeneralProgram() ? `<label class="flex items-center gap-2 cursor-pointer px-1"><input type="checkbox" class="crit-optin w-5 h-5 rounded accent-emerald-600" ${c.optIn === true ? 'checked' : ''}><span class="text-xs font-bold text-slate-600">يُؤشَّر عند تحققه فقط</span></label>` : ''} `}
+                    ${isGeneralProgram() ? `<label class="flex items-center gap-2 cursor-pointer px-1"><input type="checkbox" class="crit-optin w-5 h-5 rounded accent-emerald-600" ${c.optIn === true ? 'checked' : ''}><span class="text-xs font-bold text-slate-600">يُؤشَّر عند تحققه فقط</span></label>` : ''}
+                    ${isGeneralProgram() && c.id === 'homeprep' ? homePrepMinGradeSelectHtml() : ''} `}
                     <button type="button" onclick="if (canWriteView()) this.closest('.crit-row').remove()"
                             class="bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 w-9 h-9 rounded-lg shrink-0" title="حذف">
                         <i class="fas fa-trash text-sm"></i>
                     </button>
                 </div>`;
+        }
+
+        // قائمة «أقل تقدير» في سطر «التحضير المنزلي» (general): جيد / جيد جداً / ممتاز؛ الغائب = جيد
+        function homePrepMinGradeSelectHtml(settings = getProgramSettings()) {
+            const chosen = settings.homePrepMinGrade || 'good';
+            const options = ['good', 'very-good', 'excellent'].map(id => (settings.grades || []).find(g => g.id === id)).filter(Boolean)
+                .map(g => `<option value="${escapeHTML(g.id)}"${g.id === chosen ? ' selected' : ''}>${escapeHTML(g.name)}</option>`).join('');
+            return `<label class="flex items-center gap-2 px-1"><span class="text-xs font-bold text-slate-600">أقل تقدير</span>
+                        <select id="psHomePrepMinGrade" class="min-w-[7rem] p-2 border-2 border-slate-300 rounded-lg font-bold text-sm focus:border-emerald-500 outline-none">${options}</select></label>`;
         }
 
         function addCriterionRow(kind, preset = null) {
@@ -12607,7 +12625,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     newMemorization: parseInt(document.getElementById('psPtNew').value) || 0,
                     review: parseInt(document.getElementById('psPtRev').value) || 0
                 },
-                ...(general ? { kindMult, grades, tvPrayer } : {}),
+                ...(general ? { kindMult, grades, tvPrayer,
+                    homePrepMinGrade: document.getElementById('psHomePrepMinGrade')?.value || prog.settings.homePrepMinGrade || 'good' } : {}),
                 workingDays: workingDays.length ? workingDays : [0, 1, 2, 3],
                 criteria: collectCriteriaFromRows(),
                 ...(isGeneralProgram() ? {} : { tiers: newTiers }),

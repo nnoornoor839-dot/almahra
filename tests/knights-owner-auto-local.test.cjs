@@ -147,15 +147,16 @@ async function refreeze() {
     const { server, h, old } = await correction();
     assert.equal(old.knights[0].name, 'فهد');
     assert.deepEqual(rows(server).find(r => r.halaqaId === 'a'), old);
-    for (const reason of ['', '   ']) assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', reason)).success, false);
-    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد')).success, true);
-    const fresh = rows(server).find(r => r.halaqaId === 'a');
-    assert.equal(fresh.knights[0].name, 'سعد'); assert.equal(fresh.refreeze[0].reason, 'تصحيح ورقة سعد');
+    // الجزء ٣ (٢٠٢٦-١١-٠٨): في general الحسم نهائي؛ إعادة الحسم بسبب صحيح تُرفض بلا أي كتابة.
+    const writes = server.state.writes.length;
+    const result = await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح ورقة سعد');
+    assert.equal(result.success, false); assert.match(String(result.error || ''), /الحسم نهائي/);
+    assert.deepEqual(rows(server).find(r => r.halaqaId === 'a'), old, 'السطر المجمَّد لا يتغير');
+    assert.equal(server.state.writes.length, writes, 'صفر كتابات');
     assert.deepEqual(server.season().knightsLog, []);
-    assert.equal(h.run('students.find(s=>s.id===2).history["2026-11-25"]'), undefined, 'refreeze used server, not stale local students');
 }
-test('ق5: after freeze, reason is mandatory and corrected server data changes weekly knight', refreeze);
-test('ق17: frozen row persists until refreeze, blank/whitespace refused and fresh server reason recorded', refreeze);
+test('ق5: in general, after freeze a refreeze with a valid reason is refused («الحسم نهائي»); the frozen weekly knight stays despite corrected server data', refreeze);
+test('ق17: frozen row is final: a valid-reason refreeze is refused with «الحسم نهائي», zero writes, frozen row unchanged and knightsLog empty', refreeze);
 
 test('ق6: after announcement refreeze refuses and correction updates points/report but not announced knight', async () => {
     const { server, h } = await correction();
@@ -166,7 +167,8 @@ test('ق6: after announcement refreeze refuses and correction updates points/rep
     await h.call('commitGeneralStudentPatch', student, { ['history.' + key.days[0] + '.criteriaPoints']: -100 });
     const after = copy(await h.call('summarizeRange', student, key.days));
     assert.notEqual(after.points, before.points);
-    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    // الجزء ٣: الرفض العام في general يسبق فحص القفل.
+    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'الحسم نهائي؛ لا تُعاد الحسبة');
     await h.call('copyWeeklyKnightsAnnouncement');
     assert.equal(h.state.copies[1], announcement); assert.deepEqual(rows(server), old);
     await h.call('renderWeekKnightsReview'); assert.doesNotMatch(h.element('weekKnightsReview').innerHTML, /onclick="refreeze/);
@@ -254,7 +256,8 @@ for (const route of ['snapshot', 'message', 'announcement']) test('ق18: '+route
     if (route === 'announcement') { await h.call('copyWeeklyKnightsAnnouncement'); assert.equal(h.state.copies.length, 1); }
     if (route === 'message') { sender(h); await h.call('sendGeneralWeeklyMessage', server.students()[0]); assert.notEqual(h.ctx.window.location.href, 'unchanged'); }
     const row = rows(server).find(r => r.halaqaId === 'a'); assert.ok(row.lockedAt);
-    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    // الجزء ٣: الرفض العام في general يسبق فحص القفل.
+    assert.equal((await h.call('unfreezeHalaqaWeek', key.days[0], 'a', 'تصحيح')).error, 'الحسم نهائي؛ لا تُعاد الحسبة');
     assert.deepEqual(row.lockedSteps, row.steps);
 });
 
@@ -334,7 +337,8 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
         assert.equal(createHash('sha256').update(text).digest('hex'),row.sha256);
         assert.deepEqual(row.hunks,[{oldLine:1,newLine:1,before:[],after:text.split('\n')}]);
     }
-    const html = fs.readFileSync(path.join(root,'index.html'),'utf8'), old = original('index.html');
+    // الفئة 14 (الجزء ٣: سطر رفض إعادة الحسم الأول في unfreezeHalaqaWeek) تُعكس بأسطرها المسجلة فقط.
+    const html = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(fs.readFileSync(path.join(root,'index.html'),'utf8')), old = original('index.html');
     for (const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars',
         'getDayHalaqaKnights','getWeekNominations','rankHalaqaWeekKnights','buildWeekKnightsRow','buildRevealSteps',
         'ensureWeekKnightsFrozen','lockWeekRows','unfreezeHalaqaWeek','lockKnightsForMessage','getGeneralTvSnapshot',

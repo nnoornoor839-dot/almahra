@@ -368,7 +368,8 @@ test('weight reports unavailable measure and protected calculations remain exact
     assert.throws(()=>vm.runInContext('dayAcceptedWeightTenths({entries:{e:{kind:"new",spec:{}}}},{newMemorization:3,review:1})',ctx),/unavailable/);
     const baseline=cp.execFileSync('git',['show','c1bc38f:index.html'],{cwd:root,encoding:'utf8'});
     for(const name of ['dayStats','getCumulativeStats','getWeekTitleCandidates','getDisciplineStars','getMostImproved','getGeneralTvBoard','homePrepQualifies','buildEntryPatch','saveGeneralQuickEntry'])
-        assert.equal(source(name),source(name,baseline),name);
+        // الفئة 14 (الجزء ٣: حدّ التحضير صار إعداد homePrepMinGrade) تُعكس بأسطرها المسجلة فقط.
+        assert.equal(source(name,require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)),source(name,baseline),name);
     assert.equal(html.match(/const dayPoints = .*;/)[0],baseline.match(/const dayPoints = .*;/)[0]);
     assert.deepEqual(cp.execFileSync('git',['diff','c1bc38f','--','firestore.rules','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');
 });

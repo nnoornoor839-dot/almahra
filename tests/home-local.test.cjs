@@ -491,7 +491,9 @@ test('عزل الجولة الثانية: الملف المشترك والدوا
     const store = fs.readFileSync(path.join(root, 'programs-store.js'), 'utf8');
     assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js'), cp.execFileSync('git', ['show', '1e4152b:programs-store.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n'));
     const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
-    for (const name of ['getProgramSettings', 'getAttendanceState', 'getSchoolDayInfo', 'computeComplexStats', 'generalRecitationTotals']) assert.equal(source(name), source(name, baseline));
+    // الفئة 14 (الجزء ٣: getProgramSettings يمرّر homePrepMinGrade في general) تُعكس بأسطرها المسجلة فقط.
+    const reviewed = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html);
+    for (const name of ['getProgramSettings', 'getAttendanceState', 'getSchoolDayInfo', 'computeComplexStats', 'generalRecitationTotals']) assert.equal(source(name, reviewed), source(name, baseline));
     assert.equal(html.match(/const measureEntry = .*;/)[0], baseline.match(/const measureEntry = .*;/)[0]);
     const defs = store.slice(store.indexOf('export const PROGRAM_DEFS'), store.indexOf('// الحالة الداخلية')).replace('export ', '');
     const ctx = vm.createContext({});
