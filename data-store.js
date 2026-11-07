@@ -39,6 +39,18 @@ let lastError = null;
 let activeProgramId = null;
 let activeSeasonId = null;
 let isReadOnly = false;
+let writeGuard = null;
+const WRITE_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';
+async function beforeWrite(programId = activeProgramId, seasonId = activeSeasonId) {
+    if (programId !== 'general') return null;
+    try {
+        const result = writeGuard && await writeGuard(programId, seasonId);
+        if (result?.ok === true || result?.success === true) {
+            if (activeProgramId === programId && activeSeasonId === seasonId) return null;
+        }
+    } catch (_) {}
+    return { success: false, error: WRITE_GUARD_ERROR };
+}
 
 function studentsCollectionRef(programId = activeProgramId, seasonId = activeSeasonId) {
     if (!programId || !seasonId) return null;
@@ -75,6 +87,8 @@ function toFirestoreFields(fields) {
 
 // إنشاء general فقط: معاملة تحمي مستند الرقم من الاستبدال، ولا تضمن تفرد الاسم بين الأجهزة.
 async function createGeneralStudentIfAbsent(student, expectedSeasonId) {
+    const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+    if (blocked) return blocked;
     const programId = activeProgramId, seasonId = activeSeasonId;
     const validId = value => typeof value === 'string' && value.trim() === value &&
         value.length > 0 && new TextEncoder().encode(value).length <= 1500 &&
@@ -159,6 +173,7 @@ function stopStudentsListener() {
 // ================================================================
 window.almahraData = {
 
+    setWriteGuard: fn => { writeGuard = fn; },
     createGeneralStudentIfAbsent,
 
     getStudents: () => [...studentsCache],
@@ -189,6 +204,8 @@ window.almahraData = {
     },
 
     upsertStudent: async (student) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
         if (!student || student.id === undefined || student.id === null) {
@@ -207,6 +224,8 @@ window.almahraData = {
     // كتابة حقول طالب واحد بمساراتها المنقّطة (history.<تاريخ>.entries.<مفتاح>…) بدل الوثيقة كلها:
     // جهازان يحفظان للطالب نفسه في اللحظة نفسها لا يطمس أحدهما ما كتبه الآخر
     patchStudent: async (id, fields) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
         if (!fields || typeof fields !== 'object' || !Object.keys(fields).length) return { success: false, error: 'لا حقول للحفظ' };
@@ -225,6 +244,8 @@ window.almahraData = {
     // committed يقول كم هبط فعلاً قبل أول دفعة فاشلة
     // دفعة واحدة بمعاملة: جميع القراءات تسبق الكتابة، والعدّ من المحاولة التي التزمت فعلاً.
     setMissingJoinedOn: async (programId, seasonId, ids, dateStr) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         const empty = { committed: 0, skipped: 0, notFound: 0, committedIds: [] };
         const sameContext = () => programId === 'general' && activeProgramId === programId && activeSeasonId === seasonId;
         const guard = () => {
@@ -259,6 +280,8 @@ window.almahraData = {
     },
 
     commitBatch: async (ops) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, committed: 0, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, committed: 0, error: 'لم تُحدَّد جلسة عمل' };
         if (!Array.isArray(ops)) return { success: false, committed: 0, error: 'ops يجب أن تكون مصفوفة' };
@@ -285,6 +308,8 @@ window.almahraData = {
     },
 
     removeStudent: async (id) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
         try {
@@ -296,6 +321,8 @@ window.almahraData = {
     },
 
     saveAllStudents: async (students) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, error: 'هذا موسم مؤرشف — للقراءة فقط' };
         if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
         if (!Array.isArray(students)) return { success: false, error: 'students يجب أن تكون مصفوفة' };
@@ -325,6 +352,8 @@ window.almahraData = {
 
     // استيراد طلاب من موسم سابق (للمتابعة أو البدء بنفس الأسماء)
     importStudentsFromSeason: async (srcProgramId, srcSeasonId, keepProgress = true) => {
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
         if (isReadOnly) return { success: false, error: 'موسم مؤرشف' };
         if (!activeProgramId || !activeSeasonId) return { success: false, error: 'لم تُحدَّد جلسة عمل' };
         try {

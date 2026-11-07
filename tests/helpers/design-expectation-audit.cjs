@@ -5,7 +5,18 @@ const root = path.resolve(__dirname, '../..');
 const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' }).split(/\r?\n/);
-    const after = fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);
+    let currentText = fs.readFileSync(path.join(root, file), 'utf8');
+    if (baseline !== '0c5ec91') currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);
+    if (!['82bf19f', '0c5ec91'].includes(baseline)) {
+        const rows = require('../rules/design-expectation-audit.json').knightsRound2bExpectationChanges || [];
+        const lines = currentText.split(/\r?\n/);
+        for (const hunk of rows.filter(row => row.file === file).reverse()) {
+            require('node:assert/strict').deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after);
+            lines.splice(hunk.newLine - 1, hunk.after.length, ...hunk.before);
+        }
+        currentText = lines.join('\n');
+    }
+    const after = currentText.split(/\r?\n/);
     const width = after.length + 1, scores = new Uint16Array((before.length + 1) * width);
     for (let i = before.length - 1; i >= 0; i--) for (let j = after.length - 1; j >= 0; j--)
         scores[i * width + j] = before[i] === after[j] ? scores[(i + 1) * width + j + 1] + 1

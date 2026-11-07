@@ -46,6 +46,7 @@ function harness() {
         document: { getElementById: element, querySelectorAll: selector => selector === '.school-calendar-row' ? state.rows : [] },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'synthetic-admin' } },
             almahraData: { getActiveSeasonId: () => state.season.id, isReadOnly: () => state.archived,
+                saveAllStudents: (...args) => write('restore', ...args),
                 createGeneralStudentIfAbsent: (...args) => write('create', ...args), patchStudent: (...args) => write('patch', ...args) } },
         FileReader: class { constructor() { state.reader = this; } readAsText() {} },
         showToast: (message, type) => state.messages.push({ message, type }),
@@ -243,7 +244,7 @@ test('successful general season creation suggests season, then opens calendar wi
 
 function storeHarness(current = calendar()) {
     const state = { current, active: 's1', reads: [], writes: [], attempts: 0 };
-    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',
+    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',
         doc: (...args) => args.slice(1).join('/'),
         runTransaction: async (db, callback) => {
             state.attempts++;
@@ -303,7 +304,7 @@ test('mandatory calendar blocks every student/import/restore/registration/attend
     await h.run('saveGeneralQuickEntry()'); assert.equal(h.state.writes.at(-1).kind, 'patch');
     h.run('saveAttendanceEdit()'); assert.equal(h.state.writes.at(-1).kind, 'patch');
     h.run("importNuclearBackup({ target: { files: [{}] } })");
-    h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });
+    await h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });
     assert.equal(h.state.writes.at(-1).kind, 'restore');
 });
 
@@ -538,7 +539,7 @@ test('scope: points, patch/builder and shared settings are unchanged; store adds
     const baselineStore = cp.execFileSync('git', ['show', 'e608836:programs-store.js'], { cwd: root, encoding: 'utf8' });
     // ٦ب غيّرت قارئات الحضور عمداً؛ اختبارها يحمي المسارين الآخرين مقابل خط أساس ٦أ.
     for (const name of ['getProgramSettings', 'commitStudentPatch', 'buildEntryPatch', 'getCumulativeStats']) {
-        assert.equal(source(name).replaceAll('\r\n', '\n'), source(name, baselineHtml).replaceAll('\r\n', '\n'), name);
+        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\r\n', '\n'), source(name, baselineHtml).replaceAll('\r\n', '\n'), name);
     }
     // الخطوة ٧ تطفئ افتراضي ميزتين في العام وحده؛ بقية الملف تبقى محمية.
     const withoutCalendar = require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace(/    \/\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\.[\s\S]*?(?=    \/\/ تحديث إعدادات البرنامج)/, '')

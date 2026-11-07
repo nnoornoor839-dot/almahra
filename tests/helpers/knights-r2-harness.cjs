@@ -25,7 +25,7 @@ function fixtures(variant) {
 const functions = ['roundPointTotal', 'dayPoints', 'dayHasBlockingViolation', 'dayAcceptedWeightTenths', 'topTiedBy', 'knightsEligibilityStart',
     'getDayHalaqaKnights', 'knightsSchoolDates', 'knightsAttendanceState', 'knightsDayPointsTenths', 'knightsIdentityOrder',
     'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow', 'knightsDaysText', 'knightsRankName', 'buildRevealSteps',
-    'knightsMessageLines', 'buildWeeklyKnightsAnnouncement', 'buildGeneralWeeklyMessage'];
+    'knightsMessageRow', 'knightsMessageLines', 'buildWeeklyKnightsAnnouncement', 'buildGeneralWeeklyMessage'];
 function harness(variant) {
     const list = fixtures(variant), settings = { ...copy(key.settings), season: copy(key.season) };
     if (variant) settings.kindMult = copy(key.variants[variant].kindMult);

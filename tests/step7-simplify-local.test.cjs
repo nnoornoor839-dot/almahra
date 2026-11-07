@@ -102,7 +102,7 @@ test('general defaults are off; legacy programs and migrateSettings are unchange
         const result = copy(vm.runInContext('migrateSettings(idFixture, settingsFixture)', ctx));
         assert.equal(result.changed, false, id); assert.deepEqual(result.settings, before); assert.deepEqual(settings, before);
     }
-    assert.equal(source('migrateSettings', store), source('migrateSettings', oldStore));
+    assert.equal(source('migrateSettings', require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')), source('migrateSettings', oldStore));
     assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')
         .replace('pomodoro: false, tiers: false', 'pomodoro: true, tiers: false'), oldStore);
 });
@@ -379,7 +379,7 @@ test('golden messages and today harvest respect general switch; points readers a
     assert.ok(source('saveSmartProgress').startsWith('function saveSmartProgress() {\n' + quickGuard + guard));
     assert.equal(source('saveSmartProgress').replace(quickGuard, '').replace(guard, ''), source('saveSmartProgress', baseline));
     for (const name of ['buildEntryPatch', 'getCumulativeStats', 'getPointsBreakdown', 'dayStats', 'commitStudentPatch'])
-        assert.equal(source(name), source(name, baseline), name);
+        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)), source(name, baseline), name);
     assert.match(source('openPointsBreakdownModal'), /generalGoldenHidden\(\)/);
     // General reports, daily production and Excel already use new/review-only quantities.
     for (const name of ['renderReportsTable', 'exportToExcel', 'computeComplexStats']) assert.match(source(name), /generalRecitation(?:Html|Totals)/);

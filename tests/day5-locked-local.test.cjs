@@ -138,12 +138,12 @@ test('summer group scoring and tie resolution leave all local data/storage intac
     assert.ok(h.state.messages.length > 0); assert.ok(h.state.messages.every(m => m.type === 'error' && /مقفل/.test(m.message)));
 });
 
-test('saveData, per-student patch and batch never schedule or mutate in a locked view', () => {
+test('saveData, per-student patch and batch never schedule or mutate in a locked view', async () => {
     for (const [program, archived] of [['summer', false], ['review-day', false], ['general', true]]) {
         const h = harness(program, archived), before = h.snapshot();
         h.run('saveData()');
         assert.equal(h.run('commitStudentPatch(students[0], {name: "تغيير وهمي"})'), false);
-        assert.equal(h.run('commitPatches([{student: students[0], fields: {name: "تغيير وهمي"}}])'), false);
+        assert.equal(await h.run('commitPatches([{student: students[0], fields: {name: "تغيير وهمي"}}])'), false);
         assert.equal(h.snapshot(), before); assert.equal(h.state.timers.size, 0); assert.deepEqual(h.state.writes, []);
     }
 });

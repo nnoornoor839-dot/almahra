@@ -334,7 +334,7 @@ test('scope: recitation and commit functions remain exactly as the step6 base', 
     // قارئات التقارير أُصلحت في ٦ب؛ حماية الكتابة والتسميع باقية.
     for (const name of ['commitStudentPatch', 'commitPatches', 'buildEntryPatch', 'saveSmartProgress', 'getProgramSettings']) {
         // Only the exact general undo and quick-entry guards are exempt.
-        const current = source(name).replaceAll('\r\n', '\n');
+        const current = source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\r\n', '\n');
         const quickGuard = "            if (isGeneralProgram()) { showToast('استعمل نموذج التسجيل الجديد', 'error'); return; }\n";
         const guard = "            if (isGeneralProgram() && generalUndoInProgress) { showToast('انتظر حتى ينتهي التراجع', 'error'); return; }\n";
         assert.equal(name === 'saveSmartProgress' ? current.replace(quickGuard, '').replace(guard, '') : current, source(name, baseline).replaceAll('\r\n', '\n'), name);

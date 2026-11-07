@@ -81,7 +81,7 @@ function harness() {
 function transactionHarness() {
     const docs = new Map(), refs = [], state = { calls: 0, callbacks: 0, writes: 0 };
     class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }
-    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,
+    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,
         doc: (...segments) => { const ref = segments.slice(1).join('/'); refs.push(ref); return ref; },
         async runTransaction(db, callback) {
             state.calls++;

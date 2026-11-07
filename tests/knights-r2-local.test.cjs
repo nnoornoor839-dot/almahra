@@ -308,9 +308,10 @@ test('r2 joinedOn excludes earlier dates and an empty school week produces no no
 test('r2 forbidden functions, senders, stores and original fixed answer keys stay byte-for-byte at round-one HEAD', () => {
     const baseline=cp.execFileSync('git',['show','8880f84:index.html'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n');
     for(const name of ['dayStats','getCumulativeStats','topTied','getWeekTitleCandidates','getDisciplineStars','getGeneralTvBoard','getGeneralTvSnapshot','sendGeneralWeeklyMessage','sendGeneralTvSnapshot','homePrepQualifies'])
-        assert.equal(source(name),source(name,baseline),name);
+        assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)),source(name,baseline),name);
     assert.equal(html.match(/const dayPoints = .*;/)[0],baseline.match(/const dayPoints = .*;/)[0]);
-    assert.equal(cp.execFileSync('git',['diff','8880f84','--','data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');
+    for(const file of ['data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'])
+        assert.equal(require('./helpers/board-invariants.cjs').beforeKnightsRound2b(fs.readFileSync(root+'/'+file,'utf8'),file),cp.execFileSync('git',['show','8880f84:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'),file);
     for(const name of functions.filter(n=>!['roundPointTotal','dayPoints','buildGeneralWeeklyMessage'].includes(n)))
         assert.doesNotMatch(source(name),/Date\.now|new Date\(\)|setTimeout|setInterval|serverTimestamp|saveWeek|updateDoc|setDoc|localStorage/);
 });

@@ -43,6 +43,9 @@ function harness(program = 'general') {
         showToast: (message, type) => state.messages.push({ message, type }),
         tiersFeatureOn: () => true,
         saveData: () => state.saves.push(copy(run('students'))),
+        window: { almahraData: { saveAllStudents: async students => {
+            state.saves.push(copy(students)); return { success: true };
+        } } },
         updateAllUIs: () => state.updates++
     });
     const run = code => vm.runInContext(code, ctx);
@@ -57,7 +60,7 @@ function harness(program = 'general') {
         ctx.event = { target: { files: [file] } };
         run('importNuclearBackup(event)');
         assert.equal(state.file, file);
-        state.reader.onload({ target: { result: JSON.stringify(data) } });
+        return state.reader.onload({ target: { result: JSON.stringify(data) } });
     } };
 }
 function assertRejected(h, before, message) {
@@ -70,12 +73,12 @@ function assertRejected(h, before, message) {
     assert.deepEqual(h.state.messages, [{ message, type: 'error' }]);
 }
 
-test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', () => {
+test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', async () => {
     const h = harness(), first = student(1, { teacherId: 'missing-teacher', stage: 'missing-stage', tierId: 'old-tier' });
     const second = student(2, { halaqaId: 'h2', memorizedJuz: 4 });
     delete first.sid; delete second.teacherId; delete second.stage;
     const data = [first, second], before = JSON.stringify(data);
-    h.restore(data);
+    await h.restore(data);
     assert.equal(JSON.stringify(data), before);
     assert.equal(h.state.saves.length, 1);
     assert.equal(h.state.prompts.length, 1);

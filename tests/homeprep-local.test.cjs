@@ -289,7 +289,7 @@ test('weekly sheet optIn independent box; settings preset id and optIn roundtrip
     for(const id of ['summer','review-day'])assert.deepEqual(copy(defs(store)[id]),copy(defs(baseline)[id]));
     assert.deepEqual(copy(defs(store).general.defaultSettings.criteria.find(c=>c.id==='homeprep')),
         {id:'homeprep',name:'التحضير المنزلي',points:10,enabled:true,optIn:true});
-    assert.equal(source('migrateSettings',store),source('migrateSettings',baseline));
+    assert.equal(source('migrateSettings',require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')),source('migrateSettings',baseline));
     for(const name of ['dayStats','getCumulativeStats','summarizeRange','getCriteriaSelection','getDisciplineCriteriaIds','getGeneralTvBoard','getGeneralCelebrationRank','resetStudentToday','buildEntryPatch','commitGeneralStudentPatch'])
         assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnights(html)),source(name,cp.execFileSync('git',['show','1e4152b:index.html'],{cwd:root,encoding:'utf8'})),name);
 });

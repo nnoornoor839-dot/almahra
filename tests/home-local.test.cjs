@@ -750,6 +750,7 @@ test('حفظ التقويم الحقيقي يبطل اللقطة، ويجدده�
         h.ctx.window.almahraPrograms.updateSeasonCalendar = async () => ({ success: true });
         h.ctx.calendarDraftFixture = { seasonId: h.state.season.id, expected: copy(h.state.season) };
         h.run('let seasonCalendarDraft = calendarDraftFixture;');
+        h.run('const weekKnightsChecks = new Map(), weekKnightsState = new Map();');
         for (const name of ['updateGeneralAttendanceUI', 'renderCompactTripGrid', 'renderStudentsGrid', 'renderSettingsStudents',
             'renderReportsTable', 'processRealClockPomodoro', 'updateThreeKnightsSelects', 'renderExamEntryList', 'renderExamResultsReport']) h.ctx[name] = () => {};
         h.install('saveSeasonCalendar', 'updateAllUIs');

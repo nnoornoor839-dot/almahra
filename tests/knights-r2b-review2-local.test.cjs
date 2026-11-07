@@ -1,0 +1,111 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {cloud,runtime,LOCK}=require('./helpers/knights-r2b-harness.cjs');
+const {copy}=require('./helpers/quick-entry-harness.cjs');
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const rows=server=>Object.values(server.season().weekKnightsLog||{});
+
+for(const context of ['summer','season'])test('r2b review2 restore: pending general backup preserves the newly opened '+context,async()=>{
+    const server=cloud(),h=runtime(server);
+    h.install('isValidStudentBackup','importNuclearBackup','generalStudentMembership');
+    const backup=[{...copy(h.run('students[0]')),history:{},sid:'backup-sid',name:'نسخة العام'}];
+    h.ctx.requireSchoolCalendar=()=>true;h.ctx.studentsCountLabel=String;h.ctx.confirm=()=>true;
+    h.run("let _noLevelWarned={key:'unchanged',ids:[]}");
+    h.ctx.FileReader=class{readAsText(){h.ctx.readBackup=()=>this.onload({target:{result:JSON.stringify(backup)}})}};
+    let release;
+    const writes=[];
+    h.ctx.window.almahraData.saveAllStudents=()=>new Promise(resolve=>release=()=>{writes.push('general:s1');resolve({success:true})});
+    h.ctx.saveData=()=>writes.push('wrong-context');
+    await h.call('importNuclearBackup',{target:{files:[{}]}});
+    const pending=h.ctx.readBackup();await tick();assert.equal(typeof release,'function');
+    h.ctx.window.almahraPrograms.getCurrentProgramId=()=>context==='summer'?'summer':'general';
+    h.ctx.window.almahraPrograms.getCurrentSeasonId=()=>context==='summer'?'summer-s1':'s2';
+    h.ctx.openedStudents=[{id:901,name:'طالب القائمة المفتوحة',history:{'2026-11-22':{attended:true,entries:{saved:{points:33}}}}}];
+    h.run('students=openedStudents');const opened=h.run('students'),before=copy(opened),updates=h.state.updates;
+    release();await pending;
+    assert.equal(h.run('students'),opened);assert.deepEqual(copy(opened),before);
+    assert.deepEqual(writes,['general:s1']);assert.equal(h.state.updates,updates);
+    assert.equal(h.run('_noLevelWarned.key'),'unchanged');
+    assert.ok(!h.state.messages.some(m=>m.type==='success'));
+});
+
+function prepareSender(h){
+    h.install('sendGeneralWeeklyMessage','getGeneralSchoolDates','getSchoolDayInfo','schoolCivilDate','isSeasonCalendarComplete');
+    h.element('generalMessageWeek').value='previous';
+    h.ctx.getGeneralMessageWeek=()=>({startStr:'2026-11-22',endStr:'2026-11-28'});
+    h.ctx.quranMeta={surahs:{references:[]}};h.ctx.programBrandName=()=> 'المهرة';
+    h.ctx.normalizeSaudiPhone=()=> '966500000000';h.ctx.measureReady=()=>true;
+}
+
+for(const first of ['refreeze','lock'])test('r2b review2 message: moved Hani, concurrent correction commits '+first+' first',async()=>{
+    const server=cloud(),h=runtime(server),other=runtime(server);await h.frozen();
+    const hani=server.students().find(s=>s.name==='هاني');
+    await h.ctx.window.almahraData.patchStudent(hani.id,{halaqaId:'a'});
+    assert.equal((await h.call('unfreezeHalaqaWeek','2026-11-22','a','نقل هاني')).success,true);
+    const moved={...hani,halaqaId:'a'};
+    assert.equal((await h.call('knightsMessageRow',moved,h.rows())).halaqaId,'e');
+    await other.ctx.window.almahraData.patchStudent(hani.id,{
+        'history.2026-11-22.groupDisciplinePoints':100,
+        'history.2026-11-23':{...copy(hani.history['2026-11-22']),groupDisciplinePoints:100}
+    });
+    prepareSender(h);
+    // اشتراك الموسم يرى حسم أ الجديد حتى إن كانت نتيجة قفل هـ قد سبقتْه.
+    h.ctx.window.almahraPrograms.getCurrentSeason=()=>server.season();
+    let releaseLockResult;
+    if(first==='lock'){
+        const lock=h.ctx.lockWeekRows,gate=new Promise(resolve=>releaseLockResult=resolve);
+        h.ctx.lockWeekRows=async(...args)=>{const result=await lock(...args);await gate;return result};
+    }
+    let built;
+    const build=h.ctx.buildGeneralWeeklyMessage;
+    h.ctx.buildGeneralWeeklyMessage=(student,week,settings)=>{
+        built=h.ctx.knightsMessageRow(student,settings.weekKnightsRows.filter(r=>r.weekStart===week.startStr));
+        assert.ok(built?.lockedAt,'the row used to build the outgoing message must be locked');
+        assert.deepEqual(copy(built),rows(server).find(r=>r.key===built.key),'build from the confirmed locked server version');
+        return build(student,week,settings);
+    };
+    const reads=[];
+    server.state.onTransactionRead=async info=>{
+        if(info.attempt===0&&reads.length<2)await new Promise(resolve=>reads.push({resolve,...info}));
+    };
+    const refreeze=other.call('unfreezeHalaqaWeek','2026-11-22','a','تصحيح تسجيلات هاني');
+    await tick();
+    const send=h.call('sendGeneralWeeklyMessage',moved);await tick();
+    assert.equal(reads.length,2);assert.equal(h.ctx.window.location.href,'unchanged');
+    reads[first==='refreeze'?0:1].resolve();await tick();
+    reads[first==='refreeze'?1:0].resolve();
+    const result=await refreeze;
+    if(releaseLockResult)releaseLockResult();
+    await send;
+    assert.equal(result.success,true);assert.ok(server.state.transactionConflicts>=1);
+    assert.equal(built.halaqaId,first==='refreeze'?'a':'e');assert.ok(built.lockedAt);
+    const message=decodeURIComponent(h.ctx.window.location.href);
+    if(first==='refreeze')assert.match(message,/3 أيام من 4/);
+    for(const line of await h.call('knightsMessageLines',moved,[built],true))assert.ok(message.includes(line));
+    const count=server.state.writes.length;
+    assert.equal((await other.call('unfreezeHalaqaWeek','2026-11-22',built.halaqaId,'بعد الإرسال')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+    assert.equal(server.state.writes.length,count);
+});
+
+test('r2b review2 message: stop after three locks if selection still points to an unlocked row',async()=>{
+    const server=cloud(),h=runtime(server);await h.frozen();prepareSender(h);
+    let attempts=0,builds=0;
+    h.ctx.lockWeekRows=async()=>{attempts++;return {success:true,season:copy(server.season())}};
+    h.ctx.buildGeneralWeeklyMessage=()=>{builds++;return 'must not send'};
+    await h.call('sendGeneralWeeklyMessage',server.students()[0]);
+    assert.equal(attempts,3);assert.equal(builds,0);
+    assert.equal(h.ctx.window.location.href,'unchanged');assert.equal(h.state.messages.at(-1).message,LOCK);
+});
+
+test('r2b review2 announcement: builds only from confirmed locked rows',async()=>{
+    const server=cloud(),h=runtime(server);await h.frozen();
+    const build=h.ctx.buildWeeklyKnightsAnnouncement;let built;
+    h.ctx.buildWeeklyKnightsAnnouncement=list=>{
+        built=copy(list);assert.ok(list.length&&list.every(r=>r.lockedAt));
+        for(const row of list)assert.deepEqual(copy(row),rows(server).find(r=>r.key===row.key));
+        return build(list);
+    };
+    await h.call('copyWeeklyKnightsAnnouncement');
+    assert.equal(built.length,7);assert.equal(h.state.copies.length,1);
+    for(const row of built)assert.equal((await h.call('unfreezeHalaqaWeek',row.weekStart,row.halaqaId,'بعد النسخ')).error,'أُعلن الأسبوع؛ لا تُعاد الحسبة');
+});

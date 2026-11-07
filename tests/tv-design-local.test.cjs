@@ -49,6 +49,19 @@ async function safe(page, selectors) {
     for (const r of bounds) assert.ok(r.x >= 95.5 && r.y >= 53.5 && r.right <= 1824.5 && r.bottom <= 1026.5, JSON.stringify(r));
 }
 
+test('r2b fix 7: closing slide renders names alone while retaining ranks in snapshot data', async () => {
+    const h = await openTv();
+    try {
+        const message = snapshot();
+        message.stages[0].weekKnights = [{ stage: 'سلمان الفارسي', names: [{ name: 'هاني', rank: 1 }, { name: 'وليد', rank: 2 }] }];
+        await h.snapshot(message);
+        const names = await h.page.locator('.slide').filter({ hasText: 'فرسان الحلقات للأسبوع الماضي' }).locator('.kname').allTextContents();
+        assert.deepEqual(names, ['هاني', 'وليد']);
+        assert.deepEqual(message.stages[0].weekKnights[0].names.map(s => s.rank), [1, 2]);
+        assert.deepEqual(h.errors, []);
+    } finally { await h.close(); }
+});
+
 test('TV design: core state, calculations, filtering and all existing timings remain byte-identical', () => {
     const original = cp.execFileSync('git', ['show', '5a952da:tv.js'], { cwd: root, encoding: 'utf8' }).replaceAll('\r\n', '\n');
     assert.equal(tvInvariant('tv.js', fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), tvInvariant('tv.js', original));
@@ -172,7 +185,7 @@ test('TV design: stage/name/rising text sizes and every student-facing slide sta
         for (const kind of ['dayKnights', 'weekKnights', 'risingStars']) {
             await h.page.clock.runFor(15000);
             const title = await h.page.locator('.slide.active h2').innerText();
-            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \(مؤقت حتى الحسم\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);
+            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \(مؤقت حتى الحسم\)/ : kind === 'weekKnights' ? /^فرسان الحلقات للأسبوع الماضي$/ : /النجم الصاعد/);
             await safe(h.page, '.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');
             assert.equal(await h.page.locator('.slide.active h3').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '56px' : '80px');
             if (kind !== 'risingStars') assert.equal(await h.page.locator('.slide.active .stage').first().evaluate(n => getComputedStyle(n).fontSize), kind === 'dayKnights' ? '44px' : '64px');
@@ -237,4 +250,37 @@ test('TV design: one peripheral burst per celebration, cancellation starts the n
             assert.deepEqual(h.errors, []);
         } finally { await h.close(); }
     }
+});
+
+
+test('TV r2b: closing cards use locked rows, exact title, names alone, teachers and empty statuses inside the safe area',async()=>{
+    const {cloud,runtime}=require('./helpers/knights-r2b-harness.cjs');
+    const server=cloud(),app=runtime(server);await app.frozen();
+    await app.call('lockWeekRows','2026-11-22','primary');await app.call('lockWeekRows','2026-11-22','middle');
+    const h=await openTv();
+    try{
+        for(const period of ['asr','maghrib']){
+            const cards=copyCards(await app.call('getLockedWeekKnights',period));
+            const message=snapshot();message.stages[0].weekKnights=cards;
+            await h.snapshot(message);
+            await h.page.waitForFunction(stage=>[...document.querySelectorAll('.stage')].some(n=>n.textContent===stage),cards[0].stage);
+            for(let i=0;i<4;i++){
+                if((await h.page.locator('.slide.active h2').innerText()).includes('للأسبوع الماضي'))break;
+                await h.page.clock.runFor(15000);
+            }
+            const slide=h.page.locator('.slide.active');
+            assert.equal(await slide.locator('h2').innerText(),'فرسان الحلقات للأسبوع الماضي');
+            assert.equal(await slide.locator('.card').count(),cards.length);
+            assert.deepEqual(await slide.locator('.stage').allTextContents(),cards.map(c=>c.stage));
+            for(const item of cards){
+                assert.ok((await slide.innerText()).includes(item.teacher));
+                for(const knight of item.names)assert.ok((await slide.locator('.kname').allTextContents()).includes(knight.name));
+                if(item.status)assert.ok((await slide.innerText()).includes(item.status));
+            }
+            await safe(h.page,'.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');
+            assert.ok(await slide.locator('.card').evaluateAll(cards=>cards.every(card=>card.scrollHeight<=card.clientHeight+1)));
+        }
+        assert.deepEqual(h.errors,[]);
+    }finally{await h.close();}
+    function copyCards(value){return JSON.parse(JSON.stringify(value));}
 });

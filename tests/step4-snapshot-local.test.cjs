@@ -231,7 +231,7 @@ test('UI collection preserves history from opening snapshot and default reset pr
     rows[0].teacherHistory[0].by = 'changed'; assert.equal(baseline[0].teacherHistory[0].by, 'synthetic-admin');
     const start = programsStore.indexOf('    resetSettings: async (programId) => {');
     const end = programsStore.indexOf('\n    },', start) + '\n    },'.length;
-    const calls = [], ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
+    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
         PROGRAM_DEFS: { general: { defaultSettings: {} } }, programsCache: { general: { settings: h.state.settings } },
         doc: () => 'synthetic-ref', updateDoc: async (...args) => calls.push(copy(args)) });
     vm.runInContext('const api = {\n' + programsStore.slice(start, end) + '\n};', ctx);

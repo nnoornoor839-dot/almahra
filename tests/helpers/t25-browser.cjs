@@ -74,6 +74,13 @@ async function newPage(browser, { width = 390, program = 'general', today = key.
         state.start = () => { state.ready = true; };
         window.almahraAuth = { currentUser: { uid: 'synthetic-admin' }, isAdmin: () => true };
         window.almahraPrograms = {
+            setWriteGuard() {},
+            getSeasonFromServer: async () => {
+                const season = seasons[state.current] || {}, frozenWeeks = {};
+                for (let date = new Date((season.termStart || '2026-01-01') + 'T12:00:00Z'); date <= new Date(); date.setUTCDate(date.getUTCDate() + 1))
+                    if (date.getUTCDay() === 0) frozenWeeks[date.toISOString().slice(0,10)] = true;
+                return { ...season, frozenWeeks };
+            },
             PROGRAM_DEFS: defs, getInitializationErrors: () => [], isReady: () => state.ready,
             getSavedProgramId: () => program, getCurrentProgramId: () => state.current,
             getPrograms: () => programs, getCurrentProgram: () => programs[state.current] || null,
@@ -90,6 +97,7 @@ async function newPage(browser, { width = 390, program = 'general', today = key.
             }
         };
         window.almahraData = {
+            setWriteGuard() {},
             subscribeStudents: fn => studentListeners.push(fn), isReady: () => !config.studentLoadError, isReadOnly: () => false,
             lastError: () => state.studentError,
             getActiveProgramId: () => state.current, getActiveSeasonId: () => seasons[state.current]?.id,

@@ -186,6 +186,49 @@ let seasonsCache = {};         // { summer: [...], 'review-day': [...] }
 let currentProgramId = null;
 let currentSeasonId = null;
 let programsReady = false;
+let writeGuard = null;
+const WRITE_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';
+async function beforeWrite(programId, seasonId = programsCache[programId]?.activeSeasonId) {
+    if (programId !== 'general') return null;
+    try {
+        const result = writeGuard && await writeGuard(programId, seasonId);
+        if (result?.ok === true || result?.success === true) return null;
+    } catch (_) {}
+    return { success: false, error: WRITE_GUARD_ERROR };
+}
+
+// الخريطة تسمح بطابع الخادم داخل السطر؛ Firestore يرفض التحويلات داخل المصفوفات.
+function weekKnightsRows(season) {
+    const log = season?.weekKnightsLog;
+    return Array.isArray(log) ? log : Object.values(log || {});
+}
+function weekKnightsMap(seasonId, season) {
+    return Object.fromEntries(weekKnightsRows(season).map(row => [seasonId + '|' + row.weekStart + '|' + row.halaqaId, row]));
+}
+function checkKnightsSize(season) {
+    // هامش لأسماء الحقول وفهارس الوثيقة والطوابع فوق حجم UTF-8.
+    if (new TextEncoder().encode(JSON.stringify(season)).length * 1.2 + 4096 > 800 * 1024)
+        throw new Error('سجل الفرسان كبير؛ راجع المدير');
+}
+async function mutateWeekKnights(programId, seasonId, mutate) {
+    if (programId !== 'general' || !seasonId) return { success: false, error: 'لا يوجد موسم عام نشط' };
+    try {
+        const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);
+        const result = await runTransaction(db, async transaction => {
+            const snap = await transaction.get(ref);
+            if (!snap.exists()) throw new Error('الموسم غير موجود');
+            const season = snap.data(), log = weekKnightsMap(seasonId, season);
+            const patch = mutate(season, log);
+            if (patch) {
+                checkKnightsSize({ ...season, ...patch });
+                transaction.update(ref, patch);
+            }
+        });
+        // نقرأ الطوابع المحلولة من الخادم، ولا نعرض تحويلاً محلياً على أنه قفل مؤكّد.
+        const snap = await getDocFromServer(ref);
+        return { success: true, season: snap.data(), rows: weekKnightsRows(snap.data()) };
+    } catch (error) { return { success: false, error: error.message }; }
+}
 const programsSettled = new Set();
 let initializationErrors = [];
 let subscribers = [];
@@ -233,20 +276,19 @@ function migrateSettings(programId, settings) {
     let changed = false;
 
     if (programId === 'general') {
-        // مفاتيح البرنامج العام وحده؛ لا شرائح ولا minJuz ولا رفع لإصدار البرنامجين السابقين.
-        for (const key of Object.keys(defaults)) {
-            if (s[key] === undefined) {
-                s[key] = JSON.parse(JSON.stringify(defaults[key]));
-                changed = true;
+        // الإقلاع يضيف المفاتيح الناقصة فقط؛ null والمصفوفات والقيم المقصودة محفوظة.
+        const addMissing = (target, fallback) => {
+            if (!target || typeof target !== 'object' || Array.isArray(target)) return;
+            for (const key of Object.keys(fallback)) {
+                if (!Object.hasOwn(target, key)) {
+                    target[key] = JSON.parse(JSON.stringify(fallback[key]));
+                    changed = true;
+                } else if (fallback[key] && typeof fallback[key] === 'object' && !Array.isArray(fallback[key])) {
+                    addMissing(target[key], fallback[key]);
+                }
             }
-        }
-        for (const key of Object.keys(defaults.features || {})) {
-            if (s.features?.[key] === undefined) {
-                if (!s.features) s.features = {};
-                s.features[key] = defaults.features[key];
-                changed = true;
-            }
-        }
+        };
+        addMissing(s, defaults);
         return { settings: s, changed };
     }
 
@@ -357,11 +399,20 @@ async function ensureProgramsExist() {
             });
         } else {
             // ترقية إعدادات برنامج قائم
+            if (def.id === 'general') {
+                await runTransaction(db, async transaction => {
+                    const latest = await transaction.get(progRef);
+                    if (!latest.exists()) throw new Error('برنامج غير موجود');
+                    const { settings: upgraded, changed } = migrateSettings(def.id, latest.data().settings);
+                    if (changed) transaction.update(progRef, { settings: upgraded });
+                });
+            } else {
             const current = snap.data();
             const { settings: upgraded, changed } = migrateSettings(def.id, current.settings);
             if (changed) {
                 console.log(`⬆️ ترقية إعدادات: ${def.name} → v${SETTINGS_VERSION}`);
                 await updateDoc(progRef, { settings: upgraded });
+            }
             }
         }
 
@@ -485,6 +536,58 @@ async function getAllStudents(programId) {
 // الواجهة العامة
 // ================================================================
 window.almahraPrograms = {
+    setWriteGuard: fn => { writeGuard = fn; },
+    getSettingsFromServer: async programId => {
+        const snap = await getDocFromServer(doc(db, PROGRAMS, programId));
+        if (!snap.exists()) throw new Error('البرنامج غير موجود');
+        return snap.data().settings;
+    },
+    getSeasonFromServer: async (programId, seasonId) => {
+        const snap = await getDocFromServer(doc(db, PROGRAMS, programId, SEASONS, seasonId));
+        if (!snap.exists()) throw new Error('الموسم غير موجود');
+        return snap.data();
+    },
+    getStudentsFromServer: async (programId, seasonId) => {
+        const snap = await getDocsFromServer(collection(db, PROGRAMS, programId, SEASONS, seasonId, 'students'));
+        return snap.docs.map(s => ({ ...s.data(), id: /^\d+$/.test(s.id) ? Number(s.id) : s.id }));
+    },
+    getWeekKnightsLog: (programId, seasonId) => weekKnightsRows((seasonsCache[programId] || []).find(s => s.id === seasonId)),
+    saveWeekKnightsRows: async (programId, seasonId, rows, meta) => mutateWeekKnights(programId, seasonId, (season, log) => {
+        const weekStart = meta.weekStart;
+        if (season.frozenWeeks?.[weekStart]) return null;
+        for (const row of rows) {
+            if (row.weekStart !== weekStart) throw new Error('أسبوع السطر غير مطابق');
+            const key = seasonId + '|' + weekStart + '|' + row.halaqaId;
+            if (!log[key]) log[key] = { ...row, key, v: 1, frozenAt: serverTimestamp(),
+                frozenAtDevice: meta.frozenAtDevice, frozenBy: meta.frozenBy };
+        }
+        return { weekKnightsLog: log, frozenWeeks: { ...season.frozenWeeks, [weekStart]: serverTimestamp() } };
+    }),
+    lockWeekRows: async (programId, seasonId, weekStart, stageId, by) => mutateWeekKnights(programId, seasonId, (season, log) => {
+        if (!season.frozenWeeks?.[weekStart]) throw new Error('الأسبوع غير مجمّد');
+        let changed = false;
+        for (const [key, row] of Object.entries(log)) {
+            if (row.weekStart !== weekStart || row.stageId !== stageId || row.lockedAt) continue;
+            log[key] = { ...row, v: row.v + 1, lockedAt: serverTimestamp(), lockedBy: by,
+                lockedSteps: row.steps };
+            changed = true;
+        }
+        return changed ? { weekKnightsLog: log } : null;
+    }),
+    refreezeWeekKnightsRow: async (programId, seasonId, row, expect, reason, by) => {
+        if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };
+        return mutateWeekKnights(programId, seasonId, (season, log) => {
+            const key = seasonId + '|' + row.weekStart + '|' + row.halaqaId, old = log[key];
+            if (!old) throw new Error('السطر غير موجود');
+            if (old.lockedAt) throw new Error('أُعلن الأسبوع؛ لا تُعاد الحسبة');
+            if (old.v !== expect) throw new Error('تغيّر السطر من جهاز آخر؛ أعد المراجعة');
+            const { refreeze = [], ...previous } = old;
+            log[key] = { ...row, key, v: old.v + 1, frozenAt: serverTimestamp(),
+                frozenAtDevice: Date.now(), frozenBy: by,
+                refreeze: [...refreeze, { reason: reason.trim(), by, atDevice: Date.now(), previous }] };
+            return { weekKnightsLog: log };
+        });
+    },
 
     PROGRAM_DEFS,
 
@@ -555,6 +658,8 @@ window.almahraPrograms = {
 
     // التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة.
     updateSeasonCalendar: async (programId, seasonId, expected, next) => {
+        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;
+        if (blocked) return blocked;
         try {
             if (programId !== 'general') throw new Error('التقويم الدراسي للبرنامج العام فقط');
             await runTransaction(db, async (transaction) => {
@@ -583,6 +688,8 @@ window.almahraPrograms = {
 
     // تحديث إعدادات البرنامج
     updateSettings: async (programId, newSettings) => {
+        const blocked = programId === 'general' ? await beforeWrite(programId) : null;
+        if (blocked) return blocked;
         try {
             const payload = { ...newSettings, settingsVersion: SETTINGS_VERSION };
             await updateDoc(doc(db, PROGRAMS, programId), { settings: payload });
@@ -595,6 +702,10 @@ window.almahraPrograms = {
 
     // إعادة ضبط إعدادات برنامج للافتراضي (زر طوارئ)
     resetSettings: async (programId) => {
+        if (programId === 'general') {
+            const blocked = await beforeWrite(programId);
+            if (blocked) return blocked;
+        }
         try {
             const def = PROGRAM_DEFS[programId];
             if (!def) return { success: false, error: 'برنامج غير معروف' };
@@ -626,6 +737,8 @@ window.almahraPrograms = {
     // المسار: programs/{programId}/seasons/{seasonId} → حقل knightsLog
     // ============================================================
     saveKnightsEntry: async (programId, seasonId, entry) => {
+        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;
+        if (blocked) return blocked;
         if (!programId || !seasonId) return { success: false, error: 'لا يوجد موسم نشط' };
         try {
             const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);

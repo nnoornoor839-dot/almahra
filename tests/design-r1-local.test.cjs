@@ -125,7 +125,7 @@ test('design r2: every expectation edit has an exact reviewed diff and owner-app
         }
     }
     for (const row of audit.expectations) {
-        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9].includes(row.category), `${row.file}:${row.newLine}`);
+        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(row.category), `${row.file}:${row.newLine}`);
         if (row.category === 1 && !row.policy) {
             const normalized = digits(row.before).replaceAll('103.5/', '103\\.5/').replaceAll('22.5 نقطة/', '22\\.5 نقطة/');
             assert.equal(row.after, normalized, 'same values and precision, changed numeral representation only');

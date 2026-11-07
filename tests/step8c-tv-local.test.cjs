@@ -143,10 +143,10 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
     assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'stages'].sort());
     assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);
     for (const stage of s.stages) {
-        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());
+        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());
         for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
         for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);
-        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);
+        assert.equal(stage.weekKnights, undefined);
         for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
         for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
     }

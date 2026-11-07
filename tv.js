@@ -33,8 +33,8 @@ function makeSlides(snapshot, period) {
     const board = stage.board || [], pages = Math.ceil(board.length / 20);
     for (let page = 1; page <= pages; page++) slides.push({ kind: 'board',
         title: '🏆 لوحة النقاط — ' + stage.name, page, pages, items: board.slice((page - 1) * 20, page * 20) });
-    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {
-        const items = (stage[kind] || []).filter(item => item.names?.length);
+    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', 'فرسان الحلقات للأسبوع الماضي']]) {
+        const items = (stage[kind] || []).filter(item => item.names?.length || kind === 'weekKnights' && item.status);
         if (items.length) slides.push({ kind, title, items });
     }
     const prep = stage.prepWeek || [], prepPages = Math.ceil(prep.length / 20);
@@ -206,7 +206,7 @@ if (typeof document !== 'undefined') {
             el('slides').replaceChildren(); el('dots').replaceChildren(); sections = [];
             view.slides.forEach((slide, index) => {
                 const section = node('section', 'slide'), heading = node('div', 'slide-title'), badge = node('span', 'slide-icon');
-                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
+                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.kind === 'weekKnights' ? slide.title : slide.title.replace(/^\S+\s/u, ''))); section.append(heading);
                 const body = node('div', slide.kind === 'board' ? 'board' : 'cards');
                 if (slide.kind === 'board') {
                     section.append(node('p', 'board-page', 'صفحة ' + slide.page + ' من ' + slide.pages));
@@ -248,10 +248,11 @@ if (typeof document !== 'undefined') {
                     if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name), node('p', 'muted', 'يتقدّم على نفسه هذا الأسبوع'));
                     else {
                         card.append(node('p', 'stage', item.stage));
-                        if (slide.kind === 'dayKnights') {
+                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {
                             if (item.teacher) cardBody.append(node('p', 'muted', item.teacher));
                         }
-                        item.names.forEach(name => cardBody.append(node('h3', 'kname', name)));
+                        item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));
+                        if (item.status) cardBody.append(node('p', 'muted', item.status));
                     }
                     Array.from(cardBody.children).filter(child => child.className === 'kname').forEach(protectName);
                     card.append(cardBody);

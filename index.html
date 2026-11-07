@@ -1880,6 +1880,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                     </select>
                                     <span id="generalMessageWeekDates" class="text-slate-600 font-bold"></span>
                                 </div>
+                                <div class="flex gap-2 my-3"><button type="button" onclick="renderWeekKnightsReview()" class="border rounded-xl p-2">مراجعة فرسان الأسبوع</button><button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="border rounded-xl p-2">نسخ إعلان الفرسان</button></div>
+                                <div id="weekKnightsReview" class="hidden"></div>
                                 <div id="generalWeeklyMessageList" class="space-y-2"></div>
                             </div>
                             <div id="absenceDetailList" class="space-y-2"></div>
@@ -3446,6 +3448,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             try {
                 const result = await window.almahraPrograms.updateSeasonCalendar('general', draft.seasonId, draft.expected, next);
                 if (!result.success) { showToast(result.error, 'error'); return; }
+                weekKnightsChecks.delete(draft.seasonId);
+                const frozen = weekKnightsState.get(draft.seasonId);
+                if (frozen) weekKnightsState.set(draft.seasonId, { ...frozen, ...structuredClone(next) });
                 if (seasonCalendarDraft !== draft || !isGeneralProgram() || window.almahraPrograms.getCurrentSeasonId() !== draft.seasonId) return;
                 // لقطة محلية بعد تأكيد المعاملة، حتى وصول اشتراك الموسم.
                 Object.assign(window.almahraPrograms.getCurrentSeason(), structuredClone(next));
@@ -4217,15 +4222,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         async function saveCurrentThreeKnights(data) {
-            if (!canWriteView()) return;
-            currentThreeKnights = data;
-
+            if (!canWriteView()) return false;
             const programId = window.almahraPrograms?.getCurrentProgramId();
             const seasonId  = window.almahraPrograms?.getCurrentSeasonId();
             if (!programId || !seasonId) return;
 
             const res = await window.almahraPrograms.saveKnightsEntry(programId, seasonId, data);
-            if (!res.success) showToast('تعذّر حفظ الفرسان سحابياً: ' + res.error, 'error');
+            if (!res.success) { showToast(res.error, 'error'); return false; }
+            currentThreeKnights = data;
+            return true;
         }
 
         // --- لوحة الشرف ---
@@ -4437,8 +4442,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                 return { stage: h.name, teacher: getProgramSettings().teachers.find(t => t.id === h.teacherId)?.name || '',
                                     names: knights.names.map(nameOf), times: knights.times, provisional: true };
                             }).filter(e => e.names.length),
-                        weekKnights: group.map(t => ({ stage: t.name,
-                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),
+                        ...(getLockedWeekKnights(period).length ? { weekKnights: getLockedWeekKnights(period) } : {}),
                         prepWeek: getHomePrepWeek(period),
                         risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))
                     };
@@ -4462,6 +4466,28 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function sendGeneralTvSnapshot() {
             if (!generalTv.enabled || !generalTvReady()) return;
             postGeneralTv(getGeneralTvSnapshot());
+            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart(), context = generalTvContext();
+            const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);
+            if (!season.frozenWeeks?.[weekStart]) {
+                const key = context + '|freeze';
+                if (!weekKnightsTvLocks.has(key)) {
+                    weekKnightsTvLocks.add(key);
+                    ensureWeekKnightsFrozen().then(result => {
+                        if (result.ok && generalTv.enabled && generalTvReady() && generalTvContext() === context)
+                            sendGeneralTvSnapshot();
+                    }).finally(() => weekKnightsTvLocks.delete(key));
+                }
+                return;
+            }
+            for (const stageId of [...new Set(rows.filter(r => !r.lockedAt).map(r => r.stageId))]) {
+                const key = context + '|' + weekStart + '|' + stageId;
+                if (weekKnightsTvLocks.has(key)) continue;
+                weekKnightsTvLocks.add(key);
+                lockWeekRows(weekStart, stageId).then(result => {
+                    if (result.success && generalTv.enabled && generalTvReady() && generalTvContext() === context)
+                        postGeneralTv(getGeneralTvSnapshot());
+                }).finally(() => weekKnightsTvLocks.delete(key));
+            }
         }
         function clearGeneralTv(disconnect = false) {
             postGeneralTv({ type: 'clear' });
@@ -4867,15 +4893,18 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             students = []; // بداية فارغة حتى يصل أول snapshot من السحابة
 
             function attachToCloud() {
-                if (!window.almahraData) {
+                if (!window.almahraData || !window.almahraPrograms?.setWriteGuard) {
                     // data-store.js لم يُحمَّل بعد - انتظر قليلاً
                     setTimeout(attachToCloud, 100);
                     return;
                 }
+                window.almahraData.setWriteGuard(ensureWeekKnightsFrozen);
+                window.almahraPrograms.setWriteGuard(ensureWeekKnightsFrozen);
                 // نشترك في المزامنة اللحظية - كل تحديث يصل هنا
                 window.almahraData.subscribeStudents((newStudents) => {
                     students = newStudents;
                     generalTv.dataContext = generalTvContext();
+                    checkWeekKnightsOnLoad();
                     if (typeof updateAllUIs === 'function') {
                         try { updateAllUIs(); } catch (e) { console.error('updateAllUIs error:', e); }
                     }
@@ -5049,6 +5078,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (r.success) return;
                 restoreStudent(student, backup); updateAllUIs();
                 showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+            }).catch(error => {
+                restoreStudent(student, backup); updateAllUIs();
+                showToast('فشل الحفظ السحابي: ' + error.message, 'error');
             });
             return true;
         }
@@ -5066,21 +5098,25 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (current) applyFieldsLocally(current, fields);
             return true;
         }
-        function commitPatches(list) {
+        async function commitPatches(list) {
             if (!canWriteCloud()) return false;
             // عدة طلاب ([{ student, fields }]) في commitBatch واحدة — للمجموعات والتوزيع الجماعي
             if (list.some(p => !canWriteHistory(p.fields))) return false;
             if (!list.length) return true;
             const backups = list.map(p => structuredClone(p.student));
             list.forEach(p => applyFieldsLocally(p.student, p.fields));
-            window.almahraData.commitBatch(list.map(p => ({ type: 'update', id: p.student.id, fields: p.fields }))).then(r => {
-                if (r.success) return;
+            return window.almahraData.commitBatch(list.map(p => ({ type: 'update', id: p.student.id, fields: p.fields }))).then(r => {
+                if (r.success) return true;
                 // الدفعات بالترتيب: أول committed عملية هبطت فعلاً، وما بعدها وحده يعود كما كان
                 list.forEach((p, i) => { if (i >= (r.committed || 0)) restoreStudent(p.student, backups[i]); });
                 updateAllUIs();
                 showToast('فشل الحفظ السحابي: ' + (r.error || 'خطأ غير معروف'), 'error');
+                return false;
+            }).catch(error => {
+                list.forEach((p, i) => restoreStudent(p.student, backups[i]));
+                updateAllUIs(); showToast('فشل الحفظ السحابي: ' + error.message, 'error');
+                return false;
             });
-            return true;
         }
         function restoreStudent(student, backup) {
             // يعيد الكائن نفسه (لا نسخة جديدة) لأن الشاشات والمتغيرات تمسك به. إن استبدلته لقطة من السحابة فلا يُعاد شيء:
@@ -5112,7 +5148,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!canWriteCloud()) return;
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 if (!requireSchoolCalendar()) return;
                 if (!canWriteCloud()) return;
                 document.getElementById('importBackupFile').value = "";
@@ -5172,9 +5208,21 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             : '';
                         if(confirm(`تنبيه هام ⚠️: استيراد هذا الملف سيمسح البيانات الحالية (${studentsCountLabel(students.length)}) ويضع بيانات الملف (${studentsCountLabel(clean.length)}) مكانها.${warn}\n\nهل أنت متأكد؟`)) {
                             if (!requireSchoolCalendar()) return;
+                            const programId = window.almahraPrograms?.getCurrentProgramId?.();
+                            const seasonId = window.almahraPrograms?.getCurrentSeasonId?.();
+                            if (isGeneralProgram()) {
+                                try {
+                                    const result = await window.almahraData.saveAllStudents(clean);
+                                    if (!result.success) { showToast('فشل الحفظ السحابي: ' + (result.error || 'خطأ غير معروف'), 'error'); return; }
+                                } catch (error) { showToast('فشل الحفظ السحابي: ' + error.message, 'error'); return; }
+                                // نجاح الاستعادة يخص سياقها الأصلي؛ لا نلمس القائمة التي فُتحت أثناء الانتظار.
+                                if (programId !== window.almahraPrograms?.getCurrentProgramId?.()
+                                    || seasonId !== window.almahraPrograms?.getCurrentSeasonId?.()) return;
+                            }
                             students = clean;
                             _noLevelWarned = { key: '', ids: [] }; // استبدال كامل للبيانات: يستحق تنبيهاً جديداً
-                            saveData(); updateAllUIs(); showToast("🎉 تم استعادة البيانات من الملف بنجاح!", "success");
+                            if (!isGeneralProgram()) saveData();
+                            updateAllUIs(); showToast("🎉 تم استعادة البيانات من الملف بنجاح!", "success");
                         }
                     } else { showToast("ملف النسخة الاحتياطية غير صالح أو بنية بياناته ناقصة", "error"); }
                 } catch(err) { showToast("حدث خطأ أثناء قراءة الملف", "error"); }
@@ -5668,6 +5716,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 setupQuranLogic({
                     surahs: { references: M.surahs.map((s, i) => ({ number: i + 1, name: M.titles[i], numberOfAyahs: s[1] })) }   // العناوين المشكولة نفسها التي عرضها البرنامج دائماً
                 });
+                checkWeekKnightsOnLoad();
             } catch (e) {
                 console.error("Quran meta error:", e);
                 setTimeout(() => showToast("تعذّر تحميل خريطة المصحف، أعد تحميل الصفحة", "error"), 1000);
@@ -7288,7 +7337,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             sendGeneralTvSnapshot(); showToast('حُفظ اعتماد فارس الحلقة'); return true;
         }
 
-        function launchThreeKnights() {
+        async function launchThreeKnights() {
             if (isGeneralProgram() && document.getElementById('farsAutoMode').value.startsWith('h:')) return approveGeneralHalaqaKnights();
             if (!canWriteView()) return;
             const s1 = document.getElementById('fars1Select').value; const s2 = document.getElementById('fars2Select').value; const s3 = document.getElementById('fars3Select').value;
@@ -7302,7 +7351,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
             document.getElementById('threeKnightsDayTitle').innerText = `فرسان يوم ${farsDay}`;
 
-            saveCurrentThreeKnights({
+            const saved = await saveCurrentThreeKnights({
                 day: farsDay,
                 dateStr: document.getElementById('farsAutoDate')?.value || todayStr,
                 mode: document.getElementById('farsAutoMode')?.value || 'all', // كل الطلاب / معرّف شريحة / انضباط
@@ -7314,6 +7363,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 ]
             });
 
+            if (!saved) return;
             const modal = document.getElementById('threeKnightsModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             
             const canvasEl = document.getElementById('threeKnightsCanvas');
@@ -8230,6 +8280,226 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             return { nominees, knights: eligible.filter(s => s.rank <= n), rejectedApprovals: nominated.rejectedApprovals };
         }
 
+
+        // الجولة ٢ب: حدود الخادم والقفل؛ الحساب النقي في الجولة ٢أ يبقى كما هو.
+        const weekKnightsState = new Map();
+        const weekKnightsChecks = new Map();
+        const weekKnightsPending = new Map();
+        const weekKnightsTvLocks = new Set();
+        const KNIGHTS_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';
+        const KNIGHTS_LOCK_ERROR = 'تعذّر قفل فرسان الأسبوع؛ لم تُرسل الرسالة (تحقق من الاتصال ثم أعد المحاولة)';
+        function knightsToday() {
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+        }
+        function knightsStoredSeason(seasonId = window.almahraPrograms.getCurrentSeasonId()) {
+            const remote = window.almahraPrograms.getCurrentSeason() || {};
+            const saved = weekKnightsState.get(seasonId) || {};
+            const map = new Map();
+            for (const season of [remote, saved]) {
+                const log = season.weekKnightsLog || {};
+                for (const row of Array.isArray(log) ? log : Object.values(log)) {
+                    const key = row.weekStart + '|' + row.halaqaId, old = map.get(key);
+                    if (!old || row.v > old.v) map.set(key, row);
+                }
+            }
+            return { ...remote, ...saved, frozenWeeks: { ...remote.frozenWeeks, ...saved.frozenWeeks }, weekKnightsLog: [...map.values()] };
+        }
+        function knightsEndedWeeks(season, date) {
+            if (!season.termStart) return [];
+            const weeks = [];
+            const start = getWeekStartDate(season.termStart);
+            for (let week = start; week <= (season.termEnd || date); week = addDaysToDateStr(week, 7)) {
+                const end = addDaysToDateStr(week, 3);
+                if (end >= date) break;
+                weeks.push({ startStr: week, endStr: end });
+            }
+            return weeks;
+        }
+        function knightsFreezeRow(range, halaqa, students, approvals, settings) {
+            const frozenSettings = { ...settings, stages: settings.stages.map(stage => ({
+                ...stage, period: generalPerformanceSettings(settings).periodOf(stage)
+            })) };
+            const row = buildWeekKnightsRow(range, halaqa, students, approvals, frozenSettings);
+            row.warnings = students.filter(s => s.halaqaId === halaqa.id && !s.joinedOn).map(s => 'طالب بلا تاريخ استحقاق: ' + s.name + ' — ثبّت التاريخ من الإعدادات');
+            return row;
+        }
+        function knightsClockWarning(row) {
+            const stamp = row.frozenAt;
+            const server = stamp?.toMillis ? stamp.toMillis() : stamp?.seconds !== undefined ? stamp.seconds * 1000 : Number(stamp);
+            return Number.isFinite(server) && Number.isFinite(row.frozenAtDevice) && Math.abs(server - row.frozenAtDevice) > 600000;
+        }
+        function knightsFreezeCheckKey(seasonId) {
+            const season = window.almahraPrograms.getCurrentSeason() || {};
+            return JSON.stringify([seasonId, knightsToday(), season.termStart || '', season.termEnd || '']);
+        }
+        async function ensureWeekKnightsFrozen(programId = 'general', seasonId = window.almahraPrograms?.getCurrentSeasonId()) {
+            if (programId !== 'general') return { ok: true };
+            const date = knightsToday(), key = knightsFreezeCheckKey(seasonId);
+            if (!seasonId) return { ok: false, error: KNIGHTS_GUARD_ERROR };
+            if (weekKnightsChecks.get(seasonId) === key) return { ok: true };
+            if (weekKnightsPending.has(key)) {
+                const result = await weekKnightsPending.get(key);
+                return result.ok && knightsFreezeCheckKey(seasonId) !== key ? ensureWeekKnightsFrozen(programId, seasonId) : result;
+            }
+            const pending = (async () => {
+                try {
+                    const store = window.almahraPrograms;
+                    let season = await store.getSeasonFromServer(programId, seasonId);
+                    const ended = knightsEndedWeeks(season, date);
+                    for (const range of ended) {
+                        if (season.frozenWeeks?.[range.startStr]) continue;
+                        const students = await store.getStudentsFromServer(programId, seasonId);
+                        season = await store.getSeasonFromServer(programId, seasonId);
+                        if (season.frozenWeeks?.[range.startStr]) continue;
+                        const settings = { ...await store.getSettingsFromServer(programId), season };
+                        const hasSchoolDays = knightsSchoolDates(range, settings).length > 0;
+                        if (hasSchoolDays && !measureReady()) throw new Error('ميزان المصحف غير جاهز');
+                        const rows = hasSchoolDays
+                            ? settings.halaqas.filter(h => h.active === true).map(h => knightsFreezeRow(range, h, students, season.knightsLog || [], settings)) : [];
+                        const result = await store.saveWeekKnightsRows(programId, seasonId, rows,
+                            { weekStart: range.startStr, frozenAtDevice: Date.now(), frozenBy: window.almahraAuth?.currentUser?.uid || '' });
+                        if (!result.success) throw new Error(result.error);
+                        season = result.season;
+                    }
+                    if (!ended.every(range => season.frozenWeeks?.[range.startStr])) throw new Error('لم يكتمل التجميد');
+                    weekKnightsState.set(seasonId, season);
+                    weekKnightsChecks.set(seasonId, key);
+                    const log = season.weekKnightsLog || {};
+                    if ((Array.isArray(log) ? log : Object.values(log)).some(knightsClockWarning))
+                        showToast('ساعة الجهاز غير مضبوطة', 'error');
+                    return { ok: true };
+                } catch (error) { return { ok: false, error: KNIGHTS_GUARD_ERROR, detail: error.message }; }
+            })();
+            weekKnightsPending.set(key, pending);
+            try {
+                const result = await pending;
+                return result.ok && knightsFreezeCheckKey(seasonId) !== key ? ensureWeekKnightsFrozen(programId, seasonId) : result;
+            } finally { weekKnightsPending.delete(key); }
+        }
+        async function checkWeekKnightsOnLoad() {
+            if (!isGeneralProgram() || !measureReady() || !canWriteView() || !window.almahraData?.isReady()) return;
+            const result = await ensureWeekKnightsFrozen();
+            if (!result.ok && isGeneralProgram()) showToast(result.error, 'error');
+        }
+        async function lockWeekRows(weekStart, stageId, by = window.almahraAuth?.currentUser?.uid || '') {
+            if (!isGeneralProgram() || !canWriteView()) return { success: false };
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            try {
+                const result = await window.almahraPrograms.lockWeekRows('general', seasonId, weekStart, stageId, by);
+                if (result.success) weekKnightsState.set(seasonId, result.season);
+                return result;
+            } catch (error) { return { success: false, error: error.message }; }
+        }
+        async function unfreezeHalaqaWeek(weekStart, halaqaId, reason) {
+            if (!isGeneralProgram() || !canWriteView()) return { success: false };
+            if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };
+            const store = window.almahraPrograms, seasonId = store.getCurrentSeasonId();
+            try {
+                const season = await store.getSeasonFromServer('general', seasonId);
+                const log = season.weekKnightsLog || {};
+                const old = (Array.isArray(log) ? log : Object.values(log)).find(r => r.weekStart === weekStart && r.halaqaId === halaqaId);
+                if (!old) throw new Error('السطر غير موجود');
+                if (old.lockedAt) throw new Error('أُعلن الأسبوع؛ لا تُعاد الحسبة');
+                if (!measureReady()) throw new Error('ميزان المصحف غير جاهز');
+                const students = await store.getStudentsFromServer('general', seasonId);
+                const freshSeason = await store.getSeasonFromServer('general', seasonId);
+                const settings = { ...await store.getSettingsFromServer('general'), season: freshSeason };
+                const halaqa = settings.halaqas.find(h => h.id === halaqaId && h.active === true);
+                if (!halaqa) throw new Error('الحلقة غير فعّالة');
+                const row = knightsFreezeRow({ startStr: weekStart, endStr: old.weekEnd }, halaqa, students, freshSeason.knightsLog || [], settings);
+                const result = await store.refreezeWeekKnightsRow('general', seasonId, row, old.v, reason, window.almahraAuth?.currentUser?.uid || '');
+                if (result.success) weekKnightsState.set(seasonId, result.season);
+                return result;
+            } catch (error) { return { success: false, error: error.message }; }
+        }
+        function knightsPreviousWeekStart() {
+            return addDaysToDateStr(getWeekStartDate(todayStr), -7);
+        }
+        function getLockedWeekKnights(period) {
+            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart();
+            if (!season.frozenWeeks?.[weekStart]) return [];
+            return season.weekKnightsLog.filter(row => row.weekStart === weekStart && row.period === period && row.lockedAt)
+                .sort((a, b) => a.halaqaOrder - b.halaqaOrder || String(a.halaqaId).localeCompare(String(b.halaqaId)))
+                .map(row => ({ stage: row.halaqaName, teacher: row.teacherName,
+                    names: row.knights.map(s => ({ name: s.name, rank: s.rank })),
+                    status: row.knights.length ? '' : row.nominees.length ? 'لم يُحسم فارسها هذا الأسبوع' : 'لا ترشيحات هذا الأسبوع' }));
+        }
+        async function lockKnightsForMessage(weekStart, student = null) {
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            let season = knightsStoredSeason();
+            const selectedRows = () => {
+                const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);
+                const row = student && knightsMessageRow(student, rows);
+                return student ? (row ? [row] : []) : rows;
+            };
+            for (let attempt = 0; attempt < 3; attempt++) {
+                if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;
+                if (!season.frozenWeeks?.[weekStart] || selectedRows().every(r => r.lockedAt)) return season;
+                for (const stageId of [...new Set(selectedRows().filter(r => !r.lockedAt).map(r => r.stageId))]) {
+                    if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;
+                    const result = await lockWeekRows(weekStart, stageId);
+                    if (!result.success) { showToast(KNIGHTS_LOCK_ERROR, 'error'); return false; }
+                    // قد تغيّر إعادة الحسم المتزامنة السطر المختار؛ نختار مجدداً من نتيجة المعاملة نفسها.
+                    season = { ...result.season, weekKnightsLog: Object.values(result.season.weekKnightsLog || {}) };
+                }
+                if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;
+                if (selectedRows().every(r => r.lockedAt)) return season;
+            }
+            showToast(KNIGHTS_LOCK_ERROR, 'error'); return false;
+        }
+        async function copyWeeklyKnightsAnnouncement() {
+            if (!isGeneralProgram()) return;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const ready = await ensureWeekKnightsFrozen();
+            if (!ready.ok) { showToast(ready.error, 'error'); return; }
+            const weekStart = knightsPreviousWeekStart();
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const frozen = await lockKnightsForMessage(weekStart);
+            if (!frozen) return;
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const rows = frozen.weekKnightsLog.filter(r => r.weekStart === weekStart && r.lockedAt);
+            const text = buildWeeklyKnightsAnnouncement(rows);
+            if (!text) { showToast('لا سجل فرسان لهذا الأسبوع'); return; }
+            try { await navigator.clipboard.writeText(text); showToast('نُسخ إعلان الفرسان'); }
+            catch (_) { showToast('تعذّر نسخ الإعلان', 'error'); }
+        }
+        async function renderWeekKnightsReview() {
+            if (!isGeneralProgram() || !window.almahraAuth?.isAdmin?.()) return;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const ready = await ensureWeekKnightsFrozen();
+            if (!ready.ok) showToast(ready.error, 'error');
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const host = document.getElementById('weekKnightsReview');
+            if (!host) return;
+            host.classList.remove('hidden');
+            const rows = knightsStoredSeason().weekKnightsLog.slice().sort((a,b) => b.weekStart.localeCompare(a.weekStart) || a.halaqaOrder - b.halaqaOrder);
+            host.innerHTML = '<h3 class="font-black text-xl">مراجعة فرسان الأسبوع</h3>' + (rows.length ? rows.map((row, i) => {
+                const alerts = [...(row.warnings || [])];
+                if (!row.knights.length) alerts.push(row.nominees.length ? 'بلا مستوفٍ' : 'لا ترشيحات هذا الأسبوع');
+                if (row.nominees.some((s, i, all) => s.eligible && all.some((other, j) => i !== j && other.eligible && other.rank === s.rank))) alerts.push('تعادل تام');
+                if (row.nominees.some(s => s.attendance.unrecorded > 0)) alerts.push('أسبوع غير مكتمل');
+                if (knightsClockWarning(row)) alerts.push('ساعة الجهاز غير مضبوطة');
+                if (!ready.ok) alerts.push('تعذّر التحقق من اكتمال الأسابيع: ' + ready.error);
+                alerts.push(...row.rejectedApprovals.map(a => a.reason));
+                return '<section class="border rounded-xl p-3 my-3"><h4 class="font-bold">' + escapeHTML(row.halaqaName + ' — ' + row.teacherName + ' — ' + row.weekStart) + '</h4>'
+                    + alerts.map(a => '<p class="text-red-700">' + escapeHTML(a) + '</p>').join('')
+                    + '<div class="overflow-x-auto"><table class="w-full text-right"><thead><tr><th>الطالب</th><th>أيام الترشيح</th><th>الوزن (أعشار الأسطر)</th><th>النقاط</th><th>الأهلية والأسباب</th><th>الرتبة</th></tr></thead><tbody>'
+                    + row.nominees.map(s => '<tr><td>' + escapeHTML(s.name) + '</td><td>' + escapeHTML(s.nominations.join('، ')) + '</td><td>' + s.weightTenths.total + '</td><td>' + s.weekPointsTenths / 10
+                        + '</td><td>' + escapeHTML((s.eligible ? 'مستوفٍ' : 'غير مستوفٍ') + (s.reasons.length ? ' — ' + s.reasons.join('؛ ') : '')) + '</td><td>' + (s.rank ?? '—') + '</td></tr>').join('')
+                    + '</tbody></table></div>' + (row.lockedAt ? '<p>أُعلن الأسبوع؛ لا تُعاد الحسبة</p>' :
+                        '<label>سبب إعادة الحسم <input class="border rounded p-2" data-reason="' + i + '" required></label><button type="button" class="border rounded p-2" data-refreeze="' + i + '">إعادة الحسم</button>') + '</section>';
+            }).join('') : '<p>لا أسابيع مجمّدة بعد.</p>');
+            host.querySelectorAll('[data-refreeze]').forEach(button => button.addEventListener('click', async () => {
+                const i = Number(button.dataset.refreeze), row = rows[i];
+                const reason = host.querySelector('[data-reason="' + i + '"]').value.trim();
+                if (!reason) { showToast('سبب إعادة الحسم إلزامي', 'error'); return; }
+                button.disabled = true;
+                const result = await unfreezeHalaqaWeek(row.weekStart, row.halaqaId, reason);
+                if (!result.success) { showToast(result.error, 'error'); button.disabled = false; return; }
+                await renderWeekKnightsReview();
+            }));
+        }
+
         function buildWeekKnightsRow(range, halaqa, students, approvals, settings) {
             const n = settings.titleRules?.knightsPerHalaqa?.[halaqa.id] ?? 1;
             const ranked = rankHalaqaWeekKnights(range, halaqa.id, n, students, approvals, settings);
@@ -8320,9 +8590,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             return steps;
         }
 
-        function knightsMessageLines(student, rows, weekIsFrozen) {
-            if (!weekIsFrozen) return ['الفرسان يُحسمون الأربعاء'];
-            const row = rows.map(row => ({ row,
+        function knightsMessageRow(student, rows) {
+            return rows.map(row => ({ row,
                 nominee: row.nominees.find(s => String(s.id) === String(student.id)),
                 knight: row.knights.find(s => String(s.id) === String(student.id))
             })).filter(candidate => candidate.nominee).sort((a, b) => {
@@ -8334,6 +8603,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     || (aId < bId ? -1 : aId > bId ? 1 : 0);
             })[0]?.row
                 || rows.find(r => Object.prototype.hasOwnProperty.call(r.homePrepPointsTenths || {}, String(student.id)));
+        }
+        function knightsMessageLines(student, rows, weekIsFrozen) {
+            if (!weekIsFrozen) return ['الفرسان يُحسمون الأربعاء'];
+            const row = knightsMessageRow(student, rows);
             if (!row) return [];
             const nominee = row.nominees.find(s => String(s.id) === String(student.id));
             const lines = [], knight = row.knights.find(s => String(s.id) === String(student.id));
@@ -10055,11 +10328,19 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             });
         }
 
-        function sendGeneralWeeklyMessage(student) {
+        async function sendGeneralWeeklyMessage(student) {
             if (!isGeneralProgram() || !student) return;
             if (!measureReady() || !quranMeta) { showToast('ميزان المصحف غير جاهز؛ افتح الرسائل بعد اكتمال تحميله', 'error'); return; }
             const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const ready = await ensureWeekKnightsFrozen();
+            if (!ready.ok) { showToast(ready.error, 'error'); return; }
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const frozen = await lockKnightsForMessage(week.startStr, student);
+            if (!frozen) return;
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
             const settings = { ...getProgramSettings(), measureEntry, dayPoints, todayStr,
+                weekKnightsRows: frozen.weekKnightsLog.filter(r => r.lockedAt), weekIsFrozen: !!frozen.frozenWeeks?.[week.startStr],
                 attendanceSummary: (s, from, to) => calculateStudentAttendance(s, getGeneralSchoolDates(from, to)),
                 surahName: n => quranMeta.surahs?.references?.[n - 1]?.name?.replace('سُورَةُ ', '') || `سورة ${n}`,
                 brandName: programBrandName() };
@@ -12384,7 +12665,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.getElementById('bulkTierModal').classList.replace('flex', 'hidden');
         }
 
-        function saveBulkTierAssign() {
+        async function saveBulkTierAssign() {
             if (!canWriteCloud()) return;
             const rows = [...document.querySelectorAll('#bulkTierList .bulk-row')];
             // ⛔ البوابة: لا يُسحب مستوى طالب له مستوى (لا يُترك طالب بلا مستوى)
@@ -12408,7 +12689,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 patches.push({ student: st, fields: { memorizedJuz: mem, tierId: DEL_FIELD, tierManual: DEL_FIELD } });
             });
             if (patches.length === 0) { showToast('لا تغييرات'); closeBulkTierModal(); return; }
-            if (!commitPatches(patches)) return;
+            if (!await commitPatches(patches)) return;
             updateAllUIs(); closeBulkTierModal();
             showToast(`✅ حُدِّث ${patches.length} طالب`);
             renderProgramSettings();

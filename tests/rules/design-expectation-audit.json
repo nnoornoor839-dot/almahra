@@ -9,7 +9,8 @@
     "6": "لوحة النقاط باعتماد المالك ٢٠٢٦-١١-٠٦",
     "7": "التحضير المنزلي باعتماد المالك ٢٠٢٦-١١-٠٦",
     "8": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
-    "9": "الفرسان الجولة ٢أ باعتماد المالك ٢٠٢٦-١١-٠٦"
+    "9": "الفرسان الجولة ٢أ باعتماد المالك ٢٠٢٦-١١-٠٦",
+    "10": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦"
   },
   "files": [
     {
@@ -33,7 +34,7 @@
           ],
           "after": [
             "    class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-24T09:00:00Z'])); } }",
-            "    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,"
+            "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
           ]
         },
         {
@@ -94,6 +95,31 @@
           ],
           "after": [
             "    let restored = require('./helpers/board-invariants.cjs').beforeKnights(store, 'data-store.js');"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/day5-locked-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 141,
+          "newLine": 141,
+          "before": [
+            "test('saveData, per-student patch and batch never schedule or mutate in a locked view', () => {"
+          ],
+          "after": [
+            "test('saveData, per-student patch and batch never schedule or mutate in a locked view', async () => {"
+          ]
+        },
+        {
+          "oldLine": 146,
+          "newLine": 146,
+          "before": [
+            "        assert.equal(h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);"
+          ],
+          "after": [
+            "        assert.equal(await h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);"
           ]
         }
       ]
@@ -324,6 +350,28 @@
           "after": [
             "[class~=\"z-[2000]\"]{z-index:2000}"
           ]
+        },
+        {
+          "oldLine": 76,
+          "newLine": 77,
+          "before": [],
+          "after": [
+            "            setWriteGuard() {},",
+            "            getSeasonFromServer: async () => {",
+            "                const season = seasons[state.current] || {}, frozenWeeks = {};",
+            "                for (let date = new Date((season.termStart || '2026-01-01') + 'T12:00:00Z'); date <= new Date(); date.setUTCDate(date.getUTCDate() + 1))",
+            "                    if (date.getUTCDay() === 0) frozenWeeks[date.toISOString().slice(0,10)] = true;",
+            "                return { ...season, frozenWeeks };",
+            "            },"
+          ]
+        },
+        {
+          "oldLine": 92,
+          "newLine": 100,
+          "before": [],
+          "after": [
+            "            setWriteGuard() {},"
+          ]
         }
       ]
     },
@@ -337,22 +385,26 @@
             "    install('tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralCelebrationRank', 'getGeneralTvSnapshot',"
           ],
           "after": [
-            "    install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',",
+            "    run(\"const weekKnightsState = new Map(), weekKnightsTvLocks = new Set();\");",
+            "    run(\"const weekKnightsChecks = new Map(), weekKnightsPending = new Map();\");",
+            "    run(html.match(/const KNIGHTS_GUARD_ERROR = .*;/)[0]);",
+            "    install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'getLockedWeekKnights', 'lockWeekRows');",
+            "    install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageRow', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',",
             "        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',"
           ]
         },
         {
           "oldLine": 10,
-          "newLine": 11,
+          "newLine": 15,
           "before": [],
           "after": [
-            "    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])",
+            "    for (const name of ['formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr', 'getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])",
             "        if (!run(`typeof ${name} === 'function'`)) install(name);"
           ]
         },
         {
           "oldLine": 11,
-          "newLine": 14,
+          "newLine": 18,
           "before": [
             "module.exports = { installTv };"
           ],
@@ -518,6 +570,14 @@
           "after": [
             "        if (change.id === 'psNewGoalPerDay') assert.match(h.element('generalAchievementCard').innerHTML, /gh-kpi-value\">38٪/);"
           ]
+        },
+        {
+          "oldLine": 750,
+          "newLine": 753,
+          "before": [],
+          "after": [
+            "        h.run('const weekKnightsChecks = new Map(), weekKnightsState = new Map();');"
+          ]
         }
       ]
     },
@@ -591,6 +651,92 @@
           "after": [
             "    const restored = require('./helpers/board-invariants.cjs').beforeBoard(programsStore, 'programs-store.js')"
           ]
+        },
+        {
+          "oldLine": 725,
+          "newLine": 726,
+          "before": [
+            "        const calls = [], wait = deferred();",
+            "        const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+          ],
+          "after": [
+            "        const calls = [], wait = deferred(), entered = deferred();",
+            "        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+          ]
+        },
+        {
+          "oldLine": 728,
+          "newLine": 729,
+          "before": [
+            "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); await wait.promise; } });"
+          ],
+          "after": [
+            "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); entered.resolve(); await wait.promise; } });"
+          ]
+        },
+        {
+          "oldLine": 731,
+          "newLine": 732,
+          "before": [],
+          "after": [
+            "        if (program !== 'general') assert.equal(calls.length, 1);",
+            "        await entered.promise;"
+          ]
+        },
+        {
+          "oldLine": 742,
+          "newLine": 745,
+          "before": [
+            "    const ctx = vm.createContext({ TextEncoder, structuredClone, doc: () => 'fake-ref',"
+          ],
+          "after": [
+            "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step3b-restore-halaqa-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 46,
+          "newLine": 46,
+          "before": [],
+          "after": [
+            "        window: { almahraData: { saveAllStudents: async students => {",
+            "            state.saves.push(copy(students)); return { success: true };",
+            "        } } },"
+          ]
+        },
+        {
+          "oldLine": 60,
+          "newLine": 63,
+          "before": [
+            "        state.reader.onload({ target: { result: JSON.stringify(data) } });"
+          ],
+          "after": [
+            "        return state.reader.onload({ target: { result: JSON.stringify(data) } });"
+          ]
+        },
+        {
+          "oldLine": 73,
+          "newLine": 76,
+          "before": [
+            "test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', () => {"
+          ],
+          "after": [
+            "test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', async () => {"
+          ]
+        },
+        {
+          "oldLine": 78,
+          "newLine": 81,
+          "before": [
+            "    h.restore(data);"
+          ],
+          "after": [
+            "    await h.restore(data);"
+          ]
         }
       ]
     },
@@ -622,6 +768,16 @@
           "after": [
             "    await h.pressSave(); // نؤكد غياب المراجعة قبل عدّ قراءات عملية الحفظ الفعلية."
           ]
+        },
+        {
+          "oldLine": 232,
+          "newLine": 234,
+          "before": [
+            "    const calls = [], ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+          ],
+          "after": [
+            "    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+          ]
         }
       ]
     },
@@ -629,8 +785,36 @@
       "file": "tests/step5-calendar-local.test.cjs",
       "hunks": [
         {
+          "oldLine": 49,
+          "newLine": 49,
+          "before": [],
+          "after": [
+            "                saveAllStudents: (...args) => write('restore', ...args),"
+          ]
+        },
+        {
+          "oldLine": 246,
+          "newLine": 247,
+          "before": [
+            "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+          ],
+          "after": [
+            "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+          ]
+        },
+        {
+          "oldLine": 306,
+          "newLine": 307,
+          "before": [
+            "    h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
+          ],
+          "after": [
+            "    await h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
+          ]
+        },
+        {
           "oldLine": 448,
-          "newLine": 448,
+          "newLine": 449,
           "before": [
             "        ['hijriDateDisplay', 'ar-SA-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }],",
             "        ['headerGregorian', 'ar-SA', { calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric' }]"
@@ -641,8 +825,18 @@
           ]
         },
         {
+          "oldLine": 541,
+          "newLine": 542,
+          "before": [
+            "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
+          ],
+          "after": [
+            "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
+          ]
+        },
+        {
           "oldLine": 544,
-          "newLine": 544,
+          "newLine": 545,
           "before": [
             "    const withoutCalendar = store.replace(/    \\/\\/ التقويم مستقل عن الإعدادات، مع كشف تعارض الأجهزة\\.[\\s\\S]*?(?=    \\/\\/ تحديث إعدادات البرنامج)/, '')"
           ],
@@ -673,6 +867,16 @@
           ],
           "after": [
             "        [2, 0, 'حُفظ: 2 غائب'], [0, 1, 'أُزيل غياب 1'], [2, 1, 'حُفظ: 2 غائب، وأُزيل غياب 1']"
+          ]
+        },
+        {
+          "oldLine": 337,
+          "newLine": 337,
+          "before": [
+            "        const current = source(name).replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "        const current = source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\\r\\n', '\\n');"
           ]
         }
       ]
@@ -716,12 +920,14 @@
       "file": "tests/step7-simplify-local.test.cjs",
       "hunks": [
         {
-          "oldLine": 106,
-          "newLine": 106,
+          "oldLine": 105,
+          "newLine": 105,
           "before": [
+            "    assert.equal(source('migrateSettings', store), source('migrateSettings', oldStore));",
             "    assert.equal(store.replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')"
           ],
           "after": [
+            "    assert.equal(source('migrateSettings', require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')), source('migrateSettings', oldStore));",
             "    assert.equal(require('./helpers/board-invariants.cjs').beforeBoard(store, 'programs-store.js').replace('goldenBoard: false, attendance: true', 'goldenBoard: true, attendance: true')"
           ]
         },
@@ -753,6 +959,16 @@
           ],
           "after": [
             "        const suffix = `(النقاط: ${points.toLocaleString('ar-SA-u-nu-latn', { useGrouping: false })})`;"
+          ]
+        },
+        {
+          "oldLine": 382,
+          "newLine": 382,
+          "before": [
+            "        assert.equal(source(name), source(name, baseline), name);"
+          ],
+          "after": [
+            "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)), source(name, baseline), name);"
           ]
         }
       ]
@@ -1071,10 +1287,10 @@
           ],
           "after": [
             "    for (const stage of s.stages) {",
-            "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
+            "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());",
             "        for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);",
             "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);",
-            "        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+            "        assert.equal(stage.weekKnights, undefined);",
             "        for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);",
             "        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);",
             "    }",
@@ -3225,6 +3441,146 @@
       "reason": "الفرسان الجولة ٢أ باعتماد المالك ٢٠٢٦-١١-٠٦",
       "reviewBaseline": "8880f84",
       "newLine": 128
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 86,
+      "newLine": 86,
+      "before": "        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);",
+      "after": "        assert.equal(stage.weekKnights, undefined); // السجل غير مقفل؛ القيم اليومية القديمة ما زالت تُختبر مستقلة.",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 157,
+      "newLine": 157,
+      "before": "    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);",
+      "after": "    assert.equal(stage.weekKnights, undefined);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day5-locked-local.test.cjs",
+      "oldLine": 146,
+      "newLine": 146,
+      "before": "        assert.equal(h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);",
+      "after": "        assert.equal(await h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9].includes(row.category), `${row.file}:${row.newLine}`);",
+      "after": "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(row.category), `${row.file}:${row.newLine}`);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "oldLine": 292,
+      "newLine": 292,
+      "before": "    assert.equal(source('migrateSettings',store),source('migrateSettings',baseline));",
+      "after": "    assert.equal(source('migrateSettings',require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')),source('migrateSettings',baseline));",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-r2-local.test.cjs",
+      "oldLine": 311,
+      "newLine": 311,
+      "before": "        assert.equal(source(name),source(name,baseline),name);",
+      "after": "        assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)),source(name,baseline),name);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-r2-local.test.cjs",
+      "oldLine": 313,
+      "newLine": 313,
+      "before": "    assert.equal(cp.execFileSync('git',['diff','8880f84','--','data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');",
+      "after": "    for(const file of ['data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'])\n        assert.equal(require('./helpers/board-invariants.cjs').beforeKnightsRound2b(fs.readFileSync(root+'/'+file,'utf8'),file),cp.execFileSync('git',['show','8880f84:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n'),file);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 541,
+      "newLine": 541,
+      "before": "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);",
+      "after": "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 105,
+      "newLine": 105,
+      "before": "    assert.equal(source('migrateSettings', store), source('migrateSettings', oldStore));",
+      "after": "    assert.equal(source('migrateSettings', require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')), source('migrateSettings', oldStore));",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 382,
+      "newLine": 382,
+      "before": "        assert.equal(source(name), source(name, baseline), name);",
+      "after": "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)), source(name, baseline), name);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 146,
+      "newLine": 146,
+      "before": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());",
+      "after": "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 149,
+      "newLine": 149,
+      "before": "        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);",
+      "after": "        assert.equal(stage.weekKnights, undefined);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "oldLine": 175,
+      "newLine": 175,
+      "before": "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);",
+      "after": "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /^فرسان الحلقات للأسبوع الماضي$/ : /النجم الصاعد/);",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "oldLine": 264,
+      "newLine": 277,
+      "before": "                for(const knight of item.names)assert.ok((await slide.innerText()).includes(knight.name+' — '+knight.rank));",
+      "after": "                for(const knight of item.names)assert.ok((await slide.locator('.kname').allTextContents()).includes(knight.name));",
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "working-tree-round2b-before-fix1"
     }
   ],
   "ownerScopeEdits": [
@@ -8123,6 +8479,1588 @@
       "reviewBaseline": "8880f84",
       "newLine": 324,
       "detail": "عدد سجلات التدقيق: 2 إلى 9 بعد توثيق هذه التغييرات السبعة."
+    }
+  ],
+  "knightsRound2bProductionChanges": [
+    {
+      "file": "data-store.js",
+      "hunks": [
+        {
+          "oldLine": 42,
+          "newLine": 42,
+          "before": [],
+          "after": [
+            "let writeGuard = null;",
+            "const WRITE_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';",
+            "async function beforeWrite(programId = activeProgramId, seasonId = activeSeasonId) {",
+            "    if (programId !== 'general') return null;",
+            "    try {",
+            "        const result = writeGuard && await writeGuard(programId, seasonId);",
+            "        if (result?.ok === true || result?.success === true) {",
+            "            if (activeProgramId === programId && activeSeasonId === seasonId) return null;",
+            "        }",
+            "    } catch (_) {}",
+            "    return { success: false, error: WRITE_GUARD_ERROR };",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 78,
+          "newLine": 90,
+          "before": [],
+          "after": [
+            "    const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "    if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 162,
+          "newLine": 176,
+          "before": [],
+          "after": [
+            "    setWriteGuard: fn => { writeGuard = fn; },"
+          ]
+        },
+        {
+          "oldLine": 192,
+          "newLine": 207,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 210,
+          "newLine": 227,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 228,
+          "newLine": 247,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 262,
+          "newLine": 283,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 288,
+          "newLine": 311,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 299,
+          "newLine": 324,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 328,
+          "newLine": 355,
+          "before": [],
+          "after": [
+            "        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;",
+            "        if (blocked) return blocked;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "index.html",
+      "hunks": [
+        {
+          "oldLine": 1883,
+          "newLine": 1883,
+          "before": [],
+          "after": [
+            "                                <div class=\"flex gap-2 my-3\"><button type=\"button\" onclick=\"renderWeekKnightsReview()\" class=\"border rounded-xl p-2\">مراجعة فرسان الأسبوع</button><button type=\"button\" onclick=\"copyWeeklyKnightsAnnouncement()\" class=\"border rounded-xl p-2\">نسخ إعلان الفرسان</button></div>",
+            "                                <div id=\"weekKnightsReview\" class=\"hidden\"></div>"
+          ]
+        },
+        {
+          "oldLine": 3449,
+          "newLine": 3451,
+          "before": [],
+          "after": [
+            "                weekKnightsChecks.delete(draft.seasonId);",
+            "                const frozen = weekKnightsState.get(draft.seasonId);",
+            "                if (frozen) weekKnightsState.set(draft.seasonId, { ...frozen, ...structuredClone(next) });"
+          ]
+        },
+        {
+          "oldLine": 4220,
+          "newLine": 4225,
+          "before": [
+            "            if (!canWriteView()) return;",
+            "            currentThreeKnights = data;",
+            ""
+          ],
+          "after": [
+            "            if (!canWriteView()) return false;"
+          ]
+        },
+        {
+          "oldLine": 4228,
+          "newLine": 4231,
+          "before": [
+            "            if (!res.success) showToast('تعذّر حفظ الفرسان سحابياً: ' + res.error, 'error');"
+          ],
+          "after": [
+            "            if (!res.success) { showToast(res.error, 'error'); return false; }",
+            "            currentThreeKnights = data;",
+            "            return true;"
+          ]
+        },
+        {
+          "oldLine": 4440,
+          "newLine": 4445,
+          "before": [
+            "                        weekKnights: group.map(t => ({ stage: t.name,",
+            "                            names: topTied(getWeekTitleCandidates(t.id), e => e.points).map(e => nameOf(e.student.name)) })).filter(e => e.names.length),"
+          ],
+          "after": [
+            "                        ...(getLockedWeekKnights(period).length ? { weekKnights: getLockedWeekKnights(period) } : {}),"
+          ]
+        },
+        {
+          "oldLine": 4465,
+          "newLine": 4469,
+          "before": [],
+          "after": [
+            "            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart(), context = generalTvContext();",
+            "            const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);",
+            "            if (!season.frozenWeeks?.[weekStart]) {",
+            "                const key = context + '|freeze';",
+            "                if (!weekKnightsTvLocks.has(key)) {",
+            "                    weekKnightsTvLocks.add(key);",
+            "                    ensureWeekKnightsFrozen().then(result => {",
+            "                        if (result.ok && generalTv.enabled && generalTvReady() && generalTvContext() === context)",
+            "                            sendGeneralTvSnapshot();",
+            "                    }).finally(() => weekKnightsTvLocks.delete(key));",
+            "                }",
+            "                return;",
+            "            }",
+            "            for (const stageId of [...new Set(rows.filter(r => !r.lockedAt).map(r => r.stageId))]) {",
+            "                const key = context + '|' + weekStart + '|' + stageId;",
+            "                if (weekKnightsTvLocks.has(key)) continue;",
+            "                weekKnightsTvLocks.add(key);",
+            "                lockWeekRows(weekStart, stageId).then(result => {",
+            "                    if (result.success && generalTv.enabled && generalTvReady() && generalTvContext() === context)",
+            "                        postGeneralTv(getGeneralTvSnapshot());",
+            "                }).finally(() => weekKnightsTvLocks.delete(key));",
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 4870,
+          "newLine": 4896,
+          "before": [
+            "                if (!window.almahraData) {"
+          ],
+          "after": [
+            "                if (!window.almahraData || !window.almahraPrograms?.setWriteGuard) {"
+          ]
+        },
+        {
+          "oldLine": 4875,
+          "newLine": 4901,
+          "before": [],
+          "after": [
+            "                window.almahraData.setWriteGuard(ensureWeekKnightsFrozen);",
+            "                window.almahraPrograms.setWriteGuard(ensureWeekKnightsFrozen);"
+          ]
+        },
+        {
+          "oldLine": 4879,
+          "newLine": 4907,
+          "before": [],
+          "after": [
+            "                    checkWeekKnightsOnLoad();"
+          ]
+        },
+        {
+          "oldLine": 5052,
+          "newLine": 5081,
+          "before": [],
+          "after": [
+            "            }).catch(error => {",
+            "                restoreStudent(student, backup); updateAllUIs();",
+            "                showToast('فشل الحفظ السحابي: ' + error.message, 'error');"
+          ]
+        },
+        {
+          "oldLine": 5069,
+          "newLine": 5101,
+          "before": [
+            "        function commitPatches(list) {"
+          ],
+          "after": [
+            "        async function commitPatches(list) {"
+          ]
+        },
+        {
+          "oldLine": 5076,
+          "newLine": 5108,
+          "before": [
+            "            window.almahraData.commitBatch(list.map(p => ({ type: 'update', id: p.student.id, fields: p.fields }))).then(r => {",
+            "                if (r.success) return;"
+          ],
+          "after": [
+            "            return window.almahraData.commitBatch(list.map(p => ({ type: 'update', id: p.student.id, fields: p.fields }))).then(r => {",
+            "                if (r.success) return true;"
+          ]
+        },
+        {
+          "oldLine": 5082,
+          "newLine": 5114,
+          "before": [],
+          "after": [
+            "                return false;",
+            "            }).catch(error => {",
+            "                list.forEach((p, i) => restoreStudent(p.student, backups[i]));",
+            "                updateAllUIs(); showToast('فشل الحفظ السحابي: ' + error.message, 'error');",
+            "                return false;"
+          ]
+        },
+        {
+          "oldLine": 5083,
+          "newLine": 5120,
+          "before": [
+            "            return true;"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 5115,
+          "newLine": 5151,
+          "before": [
+            "            reader.onload = function(e) {"
+          ],
+          "after": [
+            "            reader.onload = async function(e) {"
+          ]
+        },
+        {
+          "oldLine": 5175,
+          "newLine": 5211,
+          "before": [],
+          "after": [
+            "                            const programId = window.almahraPrograms?.getCurrentProgramId?.();",
+            "                            const seasonId = window.almahraPrograms?.getCurrentSeasonId?.();",
+            "                            if (isGeneralProgram()) {",
+            "                                try {",
+            "                                    const result = await window.almahraData.saveAllStudents(clean);",
+            "                                    if (!result.success) { showToast('فشل الحفظ السحابي: ' + (result.error || 'خطأ غير معروف'), 'error'); return; }",
+            "                                } catch (error) { showToast('فشل الحفظ السحابي: ' + error.message, 'error'); return; }",
+            "                                // نجاح الاستعادة يخص سياقها الأصلي؛ لا نلمس القائمة التي فُتحت أثناء الانتظار.",
+            "                                if (programId !== window.almahraPrograms?.getCurrentProgramId?.()",
+            "                                    || seasonId !== window.almahraPrograms?.getCurrentSeasonId?.()) return;",
+            "                            }"
+          ]
+        },
+        {
+          "oldLine": 5177,
+          "newLine": 5224,
+          "before": [
+            "                            saveData(); updateAllUIs(); showToast(\"🎉 تم استعادة البيانات من الملف بنجاح!\", \"success\");"
+          ],
+          "after": [
+            "                            if (!isGeneralProgram()) saveData();",
+            "                            updateAllUIs(); showToast(\"🎉 تم استعادة البيانات من الملف بنجاح!\", \"success\");"
+          ]
+        },
+        {
+          "oldLine": 5671,
+          "newLine": 5719,
+          "before": [],
+          "after": [
+            "                checkWeekKnightsOnLoad();"
+          ]
+        },
+        {
+          "oldLine": 7291,
+          "newLine": 7340,
+          "before": [
+            "        function launchThreeKnights() {"
+          ],
+          "after": [
+            "        async function launchThreeKnights() {"
+          ]
+        },
+        {
+          "oldLine": 7305,
+          "newLine": 7354,
+          "before": [
+            "            saveCurrentThreeKnights({"
+          ],
+          "after": [
+            "            const saved = await saveCurrentThreeKnights({"
+          ]
+        },
+        {
+          "oldLine": 7317,
+          "newLine": 7366,
+          "before": [],
+          "after": [
+            "            if (!saved) return;"
+          ]
+        },
+        {
+          "oldLine": 8233,
+          "newLine": 8283,
+          "before": [],
+          "after": [
+            "",
+            "        // الجولة ٢ب: حدود الخادم والقفل؛ الحساب النقي في الجولة ٢أ يبقى كما هو.",
+            "        const weekKnightsState = new Map();",
+            "        const weekKnightsChecks = new Map();",
+            "        const weekKnightsPending = new Map();",
+            "        const weekKnightsTvLocks = new Set();",
+            "        const KNIGHTS_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';",
+            "        const KNIGHTS_LOCK_ERROR = 'تعذّر قفل فرسان الأسبوع؛ لم تُرسل الرسالة (تحقق من الاتصال ثم أعد المحاولة)';",
+            "        function knightsToday() {",
+            "            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());",
+            "        }",
+            "        function knightsStoredSeason(seasonId = window.almahraPrograms.getCurrentSeasonId()) {",
+            "            const remote = window.almahraPrograms.getCurrentSeason() || {};",
+            "            const saved = weekKnightsState.get(seasonId) || {};",
+            "            const map = new Map();",
+            "            for (const season of [remote, saved]) {",
+            "                const log = season.weekKnightsLog || {};",
+            "                for (const row of Array.isArray(log) ? log : Object.values(log)) {",
+            "                    const key = row.weekStart + '|' + row.halaqaId, old = map.get(key);",
+            "                    if (!old || row.v > old.v) map.set(key, row);",
+            "                }",
+            "            }",
+            "            return { ...remote, ...saved, frozenWeeks: { ...remote.frozenWeeks, ...saved.frozenWeeks }, weekKnightsLog: [...map.values()] };",
+            "        }",
+            "        function knightsEndedWeeks(season, date) {",
+            "            if (!season.termStart) return [];",
+            "            const weeks = [];",
+            "            const start = getWeekStartDate(season.termStart);",
+            "            for (let week = start; week <= (season.termEnd || date); week = addDaysToDateStr(week, 7)) {",
+            "                const end = addDaysToDateStr(week, 3);",
+            "                if (end >= date) break;",
+            "                weeks.push({ startStr: week, endStr: end });",
+            "            }",
+            "            return weeks;",
+            "        }",
+            "        function knightsFreezeRow(range, halaqa, students, approvals, settings) {",
+            "            const frozenSettings = { ...settings, stages: settings.stages.map(stage => ({",
+            "                ...stage, period: generalPerformanceSettings(settings).periodOf(stage)",
+            "            })) };",
+            "            const row = buildWeekKnightsRow(range, halaqa, students, approvals, frozenSettings);",
+            "            row.warnings = students.filter(s => s.halaqaId === halaqa.id && !s.joinedOn).map(s => 'طالب بلا تاريخ استحقاق: ' + s.name + ' — ثبّت التاريخ من الإعدادات');",
+            "            return row;",
+            "        }",
+            "        function knightsClockWarning(row) {",
+            "            const stamp = row.frozenAt;",
+            "            const server = stamp?.toMillis ? stamp.toMillis() : stamp?.seconds !== undefined ? stamp.seconds * 1000 : Number(stamp);",
+            "            return Number.isFinite(server) && Number.isFinite(row.frozenAtDevice) && Math.abs(server - row.frozenAtDevice) > 600000;",
+            "        }",
+            "        function knightsFreezeCheckKey(seasonId) {",
+            "            const season = window.almahraPrograms.getCurrentSeason() || {};",
+            "            return JSON.stringify([seasonId, knightsToday(), season.termStart || '', season.termEnd || '']);",
+            "        }",
+            "        async function ensureWeekKnightsFrozen(programId = 'general', seasonId = window.almahraPrograms?.getCurrentSeasonId()) {",
+            "            if (programId !== 'general') return { ok: true };",
+            "            const date = knightsToday(), key = knightsFreezeCheckKey(seasonId);",
+            "            if (!seasonId) return { ok: false, error: KNIGHTS_GUARD_ERROR };",
+            "            if (weekKnightsChecks.get(seasonId) === key) return { ok: true };",
+            "            if (weekKnightsPending.has(key)) {",
+            "                const result = await weekKnightsPending.get(key);",
+            "                return result.ok && knightsFreezeCheckKey(seasonId) !== key ? ensureWeekKnightsFrozen(programId, seasonId) : result;",
+            "            }",
+            "            const pending = (async () => {",
+            "                try {",
+            "                    const store = window.almahraPrograms;",
+            "                    let season = await store.getSeasonFromServer(programId, seasonId);",
+            "                    const ended = knightsEndedWeeks(season, date);",
+            "                    for (const range of ended) {",
+            "                        if (season.frozenWeeks?.[range.startStr]) continue;",
+            "                        const students = await store.getStudentsFromServer(programId, seasonId);",
+            "                        season = await store.getSeasonFromServer(programId, seasonId);",
+            "                        if (season.frozenWeeks?.[range.startStr]) continue;",
+            "                        const settings = { ...await store.getSettingsFromServer(programId), season };",
+            "                        const hasSchoolDays = knightsSchoolDates(range, settings).length > 0;",
+            "                        if (hasSchoolDays && !measureReady()) throw new Error('ميزان المصحف غير جاهز');",
+            "                        const rows = hasSchoolDays",
+            "                            ? settings.halaqas.filter(h => h.active === true).map(h => knightsFreezeRow(range, h, students, season.knightsLog || [], settings)) : [];",
+            "                        const result = await store.saveWeekKnightsRows(programId, seasonId, rows,",
+            "                            { weekStart: range.startStr, frozenAtDevice: Date.now(), frozenBy: window.almahraAuth?.currentUser?.uid || '' });",
+            "                        if (!result.success) throw new Error(result.error);",
+            "                        season = result.season;",
+            "                    }",
+            "                    if (!ended.every(range => season.frozenWeeks?.[range.startStr])) throw new Error('لم يكتمل التجميد');",
+            "                    weekKnightsState.set(seasonId, season);",
+            "                    weekKnightsChecks.set(seasonId, key);",
+            "                    const log = season.weekKnightsLog || {};",
+            "                    if ((Array.isArray(log) ? log : Object.values(log)).some(knightsClockWarning))",
+            "                        showToast('ساعة الجهاز غير مضبوطة', 'error');",
+            "                    return { ok: true };",
+            "                } catch (error) { return { ok: false, error: KNIGHTS_GUARD_ERROR, detail: error.message }; }",
+            "            })();",
+            "            weekKnightsPending.set(key, pending);",
+            "            try {",
+            "                const result = await pending;",
+            "                return result.ok && knightsFreezeCheckKey(seasonId) !== key ? ensureWeekKnightsFrozen(programId, seasonId) : result;",
+            "            } finally { weekKnightsPending.delete(key); }",
+            "        }",
+            "        async function checkWeekKnightsOnLoad() {",
+            "            if (!isGeneralProgram() || !measureReady() || !canWriteView() || !window.almahraData?.isReady()) return;",
+            "            const result = await ensureWeekKnightsFrozen();",
+            "            if (!result.ok && isGeneralProgram()) showToast(result.error, 'error');",
+            "        }",
+            "        async function lockWeekRows(weekStart, stageId, by = window.almahraAuth?.currentUser?.uid || '') {",
+            "            if (!isGeneralProgram() || !canWriteView()) return { success: false };",
+            "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            try {",
+            "                const result = await window.almahraPrograms.lockWeekRows('general', seasonId, weekStart, stageId, by);",
+            "                if (result.success) weekKnightsState.set(seasonId, result.season);",
+            "                return result;",
+            "            } catch (error) { return { success: false, error: error.message }; }",
+            "        }",
+            "        async function unfreezeHalaqaWeek(weekStart, halaqaId, reason) {",
+            "            if (!isGeneralProgram() || !canWriteView()) return { success: false };",
+            "            if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };",
+            "            const store = window.almahraPrograms, seasonId = store.getCurrentSeasonId();",
+            "            try {",
+            "                const season = await store.getSeasonFromServer('general', seasonId);",
+            "                const log = season.weekKnightsLog || {};",
+            "                const old = (Array.isArray(log) ? log : Object.values(log)).find(r => r.weekStart === weekStart && r.halaqaId === halaqaId);",
+            "                if (!old) throw new Error('السطر غير موجود');",
+            "                if (old.lockedAt) throw new Error('أُعلن الأسبوع؛ لا تُعاد الحسبة');",
+            "                if (!measureReady()) throw new Error('ميزان المصحف غير جاهز');",
+            "                const students = await store.getStudentsFromServer('general', seasonId);",
+            "                const freshSeason = await store.getSeasonFromServer('general', seasonId);",
+            "                const settings = { ...await store.getSettingsFromServer('general'), season: freshSeason };",
+            "                const halaqa = settings.halaqas.find(h => h.id === halaqaId && h.active === true);",
+            "                if (!halaqa) throw new Error('الحلقة غير فعّالة');",
+            "                const row = knightsFreezeRow({ startStr: weekStart, endStr: old.weekEnd }, halaqa, students, freshSeason.knightsLog || [], settings);",
+            "                const result = await store.refreezeWeekKnightsRow('general', seasonId, row, old.v, reason, window.almahraAuth?.currentUser?.uid || '');",
+            "                if (result.success) weekKnightsState.set(seasonId, result.season);",
+            "                return result;",
+            "            } catch (error) { return { success: false, error: error.message }; }",
+            "        }",
+            "        function knightsPreviousWeekStart() {",
+            "            return addDaysToDateStr(getWeekStartDate(todayStr), -7);",
+            "        }",
+            "        function getLockedWeekKnights(period) {",
+            "            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart();",
+            "            if (!season.frozenWeeks?.[weekStart]) return [];",
+            "            return season.weekKnightsLog.filter(row => row.weekStart === weekStart && row.period === period && row.lockedAt)",
+            "                .sort((a, b) => a.halaqaOrder - b.halaqaOrder || String(a.halaqaId).localeCompare(String(b.halaqaId)))",
+            "                .map(row => ({ stage: row.halaqaName, teacher: row.teacherName,",
+            "                    names: row.knights.map(s => ({ name: s.name, rank: s.rank })),",
+            "                    status: row.knights.length ? '' : row.nominees.length ? 'لم يُحسم فارسها هذا الأسبوع' : 'لا ترشيحات هذا الأسبوع' }));",
+            "        }",
+            "        async function lockKnightsForMessage(weekStart, student = null) {",
+            "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            let season = knightsStoredSeason();",
+            "            const selectedRows = () => {",
+            "                const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);",
+            "                const row = student && knightsMessageRow(student, rows);",
+            "                return student ? (row ? [row] : []) : rows;",
+            "            };",
+            "            for (let attempt = 0; attempt < 3; attempt++) {",
+            "                if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;",
+            "                if (!season.frozenWeeks?.[weekStart] || selectedRows().every(r => r.lockedAt)) return season;",
+            "                for (const stageId of [...new Set(selectedRows().filter(r => !r.lockedAt).map(r => r.stageId))]) {",
+            "                    if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;",
+            "                    const result = await lockWeekRows(weekStart, stageId);",
+            "                    if (!result.success) { showToast(KNIGHTS_LOCK_ERROR, 'error'); return false; }",
+            "                    // قد تغيّر إعادة الحسم المتزامنة السطر المختار؛ نختار مجدداً من نتيجة المعاملة نفسها.",
+            "                    season = { ...result.season, weekKnightsLog: Object.values(result.season.weekKnightsLog || {}) };",
+            "                }",
+            "                if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return false;",
+            "                if (selectedRows().every(r => r.lockedAt)) return season;",
+            "            }",
+            "            showToast(KNIGHTS_LOCK_ERROR, 'error'); return false;",
+            "        }",
+            "        async function copyWeeklyKnightsAnnouncement() {",
+            "            if (!isGeneralProgram()) return;",
+            "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            const ready = await ensureWeekKnightsFrozen();",
+            "            if (!ready.ok) { showToast(ready.error, 'error'); return; }",
+            "            const weekStart = knightsPreviousWeekStart();",
+            "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;",
+            "            const frozen = await lockKnightsForMessage(weekStart);",
+            "            if (!frozen) return;",
+            "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;",
+            "            const rows = frozen.weekKnightsLog.filter(r => r.weekStart === weekStart && r.lockedAt);",
+            "            const text = buildWeeklyKnightsAnnouncement(rows);",
+            "            if (!text) { showToast('لا سجل فرسان لهذا الأسبوع'); return; }",
+            "            try { await navigator.clipboard.writeText(text); showToast('نُسخ إعلان الفرسان'); }",
+            "            catch (_) { showToast('تعذّر نسخ الإعلان', 'error'); }",
+            "        }",
+            "        async function renderWeekKnightsReview() {",
+            "            if (!isGeneralProgram() || !window.almahraAuth?.isAdmin?.()) return;",
+            "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            const ready = await ensureWeekKnightsFrozen();",
+            "            if (!ready.ok) showToast(ready.error, 'error');",
+            "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;",
+            "            const host = document.getElementById('weekKnightsReview');",
+            "            if (!host) return;",
+            "            host.classList.remove('hidden');",
+            "            const rows = knightsStoredSeason().weekKnightsLog.slice().sort((a,b) => b.weekStart.localeCompare(a.weekStart) || a.halaqaOrder - b.halaqaOrder);",
+            "            host.innerHTML = '<h3 class=\"font-black text-xl\">مراجعة فرسان الأسبوع</h3>' + (rows.length ? rows.map((row, i) => {",
+            "                const alerts = [...(row.warnings || [])];",
+            "                if (!row.knights.length) alerts.push(row.nominees.length ? 'بلا مستوفٍ' : 'لا ترشيحات هذا الأسبوع');",
+            "                if (row.nominees.some((s, i, all) => s.eligible && all.some((other, j) => i !== j && other.eligible && other.rank === s.rank))) alerts.push('تعادل تام');",
+            "                if (row.nominees.some(s => s.attendance.unrecorded > 0)) alerts.push('أسبوع غير مكتمل');",
+            "                if (knightsClockWarning(row)) alerts.push('ساعة الجهاز غير مضبوطة');",
+            "                if (!ready.ok) alerts.push('تعذّر التحقق من اكتمال الأسابيع: ' + ready.error);",
+            "                alerts.push(...row.rejectedApprovals.map(a => a.reason));",
+            "                return '<section class=\"border rounded-xl p-3 my-3\"><h4 class=\"font-bold\">' + escapeHTML(row.halaqaName + ' — ' + row.teacherName + ' — ' + row.weekStart) + '</h4>'",
+            "                    + alerts.map(a => '<p class=\"text-red-700\">' + escapeHTML(a) + '</p>').join('')",
+            "                    + '<div class=\"overflow-x-auto\"><table class=\"w-full text-right\"><thead><tr><th>الطالب</th><th>أيام الترشيح</th><th>الوزن (أعشار الأسطر)</th><th>النقاط</th><th>الأهلية والأسباب</th><th>الرتبة</th></tr></thead><tbody>'",
+            "                    + row.nominees.map(s => '<tr><td>' + escapeHTML(s.name) + '</td><td>' + escapeHTML(s.nominations.join('، ')) + '</td><td>' + s.weightTenths.total + '</td><td>' + s.weekPointsTenths / 10",
+            "                        + '</td><td>' + escapeHTML((s.eligible ? 'مستوفٍ' : 'غير مستوفٍ') + (s.reasons.length ? ' — ' + s.reasons.join('؛ ') : '')) + '</td><td>' + (s.rank ?? '—') + '</td></tr>').join('')",
+            "                    + '</tbody></table></div>' + (row.lockedAt ? '<p>أُعلن الأسبوع؛ لا تُعاد الحسبة</p>' :",
+            "                        '<label>سبب إعادة الحسم <input class=\"border rounded p-2\" data-reason=\"' + i + '\" required></label><button type=\"button\" class=\"border rounded p-2\" data-refreeze=\"' + i + '\">إعادة الحسم</button>') + '</section>';",
+            "            }).join('') : '<p>لا أسابيع مجمّدة بعد.</p>');",
+            "            host.querySelectorAll('[data-refreeze]').forEach(button => button.addEventListener('click', async () => {",
+            "                const i = Number(button.dataset.refreeze), row = rows[i];",
+            "                const reason = host.querySelector('[data-reason=\"' + i + '\"]').value.trim();",
+            "                if (!reason) { showToast('سبب إعادة الحسم إلزامي', 'error'); return; }",
+            "                button.disabled = true;",
+            "                const result = await unfreezeHalaqaWeek(row.weekStart, row.halaqaId, reason);",
+            "                if (!result.success) { showToast(result.error, 'error'); button.disabled = false; return; }",
+            "                await renderWeekKnightsReview();",
+            "            }));",
+            "        }",
+            ""
+          ]
+        },
+        {
+          "oldLine": 8323,
+          "newLine": 8593,
+          "before": [
+            "        function knightsMessageLines(student, rows, weekIsFrozen) {",
+            "            if (!weekIsFrozen) return ['الفرسان يُحسمون الأربعاء'];",
+            "            const row = rows.map(row => ({ row,"
+          ],
+          "after": [
+            "        function knightsMessageRow(student, rows) {",
+            "            return rows.map(row => ({ row,"
+          ]
+        },
+        {
+          "oldLine": 8337,
+          "newLine": 8606,
+          "before": [],
+          "after": [
+            "        }",
+            "        function knightsMessageLines(student, rows, weekIsFrozen) {",
+            "            if (!weekIsFrozen) return ['الفرسان يُحسمون الأربعاء'];",
+            "            const row = knightsMessageRow(student, rows);"
+          ]
+        },
+        {
+          "oldLine": 10058,
+          "newLine": 10331,
+          "before": [
+            "        function sendGeneralWeeklyMessage(student) {"
+          ],
+          "after": [
+            "        async function sendGeneralWeeklyMessage(student) {"
+          ]
+        },
+        {
+          "oldLine": 10062,
+          "newLine": 10335,
+          "before": [],
+          "after": [
+            "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+            "            const ready = await ensureWeekKnightsFrozen();",
+            "            if (!ready.ok) { showToast(ready.error, 'error'); return; }",
+            "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;",
+            "            const frozen = await lockKnightsForMessage(week.startStr, student);",
+            "            if (!frozen) return;",
+            "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;"
+          ]
+        },
+        {
+          "oldLine": 10063,
+          "newLine": 10343,
+          "before": [],
+          "after": [
+            "                weekKnightsRows: frozen.weekKnightsLog.filter(r => r.lockedAt), weekIsFrozen: !!frozen.frozenWeeks?.[week.startStr],"
+          ]
+        },
+        {
+          "oldLine": 12387,
+          "newLine": 12668,
+          "before": [
+            "        function saveBulkTierAssign() {"
+          ],
+          "after": [
+            "        async function saveBulkTierAssign() {"
+          ]
+        },
+        {
+          "oldLine": 12411,
+          "newLine": 12692,
+          "before": [
+            "            if (!commitPatches(patches)) return;"
+          ],
+          "after": [
+            "            if (!await commitPatches(patches)) return;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "programs-store.js",
+      "hunks": [
+        {
+          "oldLine": 189,
+          "newLine": 189,
+          "before": [],
+          "after": [
+            "let writeGuard = null;",
+            "const WRITE_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';",
+            "async function beforeWrite(programId, seasonId = programsCache[programId]?.activeSeasonId) {",
+            "    if (programId !== 'general') return null;",
+            "    try {",
+            "        const result = writeGuard && await writeGuard(programId, seasonId);",
+            "        if (result?.ok === true || result?.success === true) return null;",
+            "    } catch (_) {}",
+            "    return { success: false, error: WRITE_GUARD_ERROR };",
+            "}",
+            "",
+            "// الخريطة تسمح بطابع الخادم داخل السطر؛ Firestore يرفض التحويلات داخل المصفوفات.",
+            "function weekKnightsRows(season) {",
+            "    const log = season?.weekKnightsLog;",
+            "    return Array.isArray(log) ? log : Object.values(log || {});",
+            "}",
+            "function weekKnightsMap(seasonId, season) {",
+            "    return Object.fromEntries(weekKnightsRows(season).map(row => [seasonId + '|' + row.weekStart + '|' + row.halaqaId, row]));",
+            "}",
+            "function checkKnightsSize(season) {",
+            "    // هامش لأسماء الحقول وفهارس الوثيقة والطوابع فوق حجم UTF-8.",
+            "    if (new TextEncoder().encode(JSON.stringify(season)).length * 1.2 + 4096 > 800 * 1024)",
+            "        throw new Error('سجل الفرسان كبير؛ راجع المدير');",
+            "}",
+            "async function mutateWeekKnights(programId, seasonId, mutate) {",
+            "    if (programId !== 'general' || !seasonId) return { success: false, error: 'لا يوجد موسم عام نشط' };",
+            "    try {",
+            "        const ref = doc(db, PROGRAMS, programId, SEASONS, seasonId);",
+            "        const result = await runTransaction(db, async transaction => {",
+            "            const snap = await transaction.get(ref);",
+            "            if (!snap.exists()) throw new Error('الموسم غير موجود');",
+            "            const season = snap.data(), log = weekKnightsMap(seasonId, season);",
+            "            const patch = mutate(season, log);",
+            "            if (patch) {",
+            "                checkKnightsSize({ ...season, ...patch });",
+            "                transaction.update(ref, patch);",
+            "            }",
+            "        });",
+            "        // نقرأ الطوابع المحلولة من الخادم، ولا نعرض تحويلاً محلياً على أنه قفل مؤكّد.",
+            "        const snap = await getDocFromServer(ref);",
+            "        return { success: true, season: snap.data(), rows: weekKnightsRows(snap.data()) };",
+            "    } catch (error) { return { success: false, error: error.message }; }",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 236,
+          "newLine": 279,
+          "before": [
+            "        // مفاتيح البرنامج العام وحده؛ لا شرائح ولا minJuz ولا رفع لإصدار البرنامجين السابقين.",
+            "        for (const key of Object.keys(defaults)) {",
+            "            if (s[key] === undefined) {",
+            "                s[key] = JSON.parse(JSON.stringify(defaults[key]));",
+            "                changed = true;",
+            "            }",
+            "        }",
+            "        for (const key of Object.keys(defaults.features || {})) {",
+            "            if (s.features?.[key] === undefined) {",
+            "                if (!s.features) s.features = {};",
+            "                s.features[key] = defaults.features[key];",
+            "                changed = true;"
+          ],
+          "after": [
+            "        // الإقلاع يضيف المفاتيح الناقصة فقط؛ null والمصفوفات والقيم المقصودة محفوظة.",
+            "        const addMissing = (target, fallback) => {",
+            "            if (!target || typeof target !== 'object' || Array.isArray(target)) return;",
+            "            for (const key of Object.keys(fallback)) {",
+            "                if (!Object.hasOwn(target, key)) {",
+            "                    target[key] = JSON.parse(JSON.stringify(fallback[key]));",
+            "                    changed = true;",
+            "                } else if (fallback[key] && typeof fallback[key] === 'object' && !Array.isArray(fallback[key])) {",
+            "                    addMissing(target[key], fallback[key]);",
+            "                }"
+          ]
+        },
+        {
+          "oldLine": 249,
+          "newLine": 290,
+          "before": [
+            "        }"
+          ],
+          "after": [
+            "        };",
+            "        addMissing(s, defaults);"
+          ]
+        },
+        {
+          "oldLine": 360,
+          "newLine": 402,
+          "before": [],
+          "after": [
+            "            if (def.id === 'general') {",
+            "                await runTransaction(db, async transaction => {",
+            "                    const latest = await transaction.get(progRef);",
+            "                    if (!latest.exists()) throw new Error('برنامج غير موجود');",
+            "                    const { settings: upgraded, changed } = migrateSettings(def.id, latest.data().settings);",
+            "                    if (changed) transaction.update(progRef, { settings: upgraded });",
+            "                });",
+            "            } else {"
+          ]
+        },
+        {
+          "oldLine": 366,
+          "newLine": 416,
+          "before": [],
+          "after": [
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 488,
+          "newLine": 539,
+          "before": [],
+          "after": [
+            "    setWriteGuard: fn => { writeGuard = fn; },",
+            "    getSettingsFromServer: async programId => {",
+            "        const snap = await getDocFromServer(doc(db, PROGRAMS, programId));",
+            "        if (!snap.exists()) throw new Error('البرنامج غير موجود');",
+            "        return snap.data().settings;",
+            "    },",
+            "    getSeasonFromServer: async (programId, seasonId) => {",
+            "        const snap = await getDocFromServer(doc(db, PROGRAMS, programId, SEASONS, seasonId));",
+            "        if (!snap.exists()) throw new Error('الموسم غير موجود');",
+            "        return snap.data();",
+            "    },",
+            "    getStudentsFromServer: async (programId, seasonId) => {",
+            "        const snap = await getDocsFromServer(collection(db, PROGRAMS, programId, SEASONS, seasonId, 'students'));",
+            "        return snap.docs.map(s => ({ ...s.data(), id: /^\\d+$/.test(s.id) ? Number(s.id) : s.id }));",
+            "    },",
+            "    getWeekKnightsLog: (programId, seasonId) => weekKnightsRows((seasonsCache[programId] || []).find(s => s.id === seasonId)),",
+            "    saveWeekKnightsRows: async (programId, seasonId, rows, meta) => mutateWeekKnights(programId, seasonId, (season, log) => {",
+            "        const weekStart = meta.weekStart;",
+            "        if (season.frozenWeeks?.[weekStart]) return null;",
+            "        for (const row of rows) {",
+            "            if (row.weekStart !== weekStart) throw new Error('أسبوع السطر غير مطابق');",
+            "            const key = seasonId + '|' + weekStart + '|' + row.halaqaId;",
+            "            if (!log[key]) log[key] = { ...row, key, v: 1, frozenAt: serverTimestamp(),",
+            "                frozenAtDevice: meta.frozenAtDevice, frozenBy: meta.frozenBy };",
+            "        }",
+            "        return { weekKnightsLog: log, frozenWeeks: { ...season.frozenWeeks, [weekStart]: serverTimestamp() } };",
+            "    }),",
+            "    lockWeekRows: async (programId, seasonId, weekStart, stageId, by) => mutateWeekKnights(programId, seasonId, (season, log) => {",
+            "        if (!season.frozenWeeks?.[weekStart]) throw new Error('الأسبوع غير مجمّد');",
+            "        let changed = false;",
+            "        for (const [key, row] of Object.entries(log)) {",
+            "            if (row.weekStart !== weekStart || row.stageId !== stageId || row.lockedAt) continue;",
+            "            log[key] = { ...row, v: row.v + 1, lockedAt: serverTimestamp(), lockedBy: by,",
+            "                lockedSteps: row.steps };",
+            "            changed = true;",
+            "        }",
+            "        return changed ? { weekKnightsLog: log } : null;",
+            "    }),",
+            "    refreezeWeekKnightsRow: async (programId, seasonId, row, expect, reason, by) => {",
+            "        if (!String(reason || '').trim()) return { success: false, error: 'سبب إعادة الحسم إلزامي' };",
+            "        return mutateWeekKnights(programId, seasonId, (season, log) => {",
+            "            const key = seasonId + '|' + row.weekStart + '|' + row.halaqaId, old = log[key];",
+            "            if (!old) throw new Error('السطر غير موجود');",
+            "            if (old.lockedAt) throw new Error('أُعلن الأسبوع؛ لا تُعاد الحسبة');",
+            "            if (old.v !== expect) throw new Error('تغيّر السطر من جهاز آخر؛ أعد المراجعة');",
+            "            const { refreeze = [], ...previous } = old;",
+            "            log[key] = { ...row, key, v: old.v + 1, frozenAt: serverTimestamp(),",
+            "                frozenAtDevice: Date.now(), frozenBy: by,",
+            "                refreeze: [...refreeze, { reason: reason.trim(), by, atDevice: Date.now(), previous }] };",
+            "            return { weekKnightsLog: log };",
+            "        });",
+            "    },"
+          ]
+        },
+        {
+          "oldLine": 558,
+          "newLine": 661,
+          "before": [],
+          "after": [
+            "        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 586,
+          "newLine": 691,
+          "before": [],
+          "after": [
+            "        const blocked = programId === 'general' ? await beforeWrite(programId) : null;",
+            "        if (blocked) return blocked;"
+          ]
+        },
+        {
+          "oldLine": 598,
+          "newLine": 705,
+          "before": [],
+          "after": [
+            "        if (programId === 'general') {",
+            "            const blocked = await beforeWrite(programId);",
+            "            if (blocked) return blocked;",
+            "        }"
+          ]
+        },
+        {
+          "oldLine": 629,
+          "newLine": 740,
+          "before": [],
+          "after": [
+            "        const blocked = programId === 'general' ? await beforeWrite(programId, seasonId) : null;",
+            "        if (blocked) return blocked;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.js",
+      "hunks": [
+        {
+          "oldLine": 36,
+          "newLine": 36,
+          "before": [
+            "    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', '🛡️ فرسان الأسبوع']]) {",
+            "        const items = (stage[kind] || []).filter(item => item.names?.length);"
+          ],
+          "after": [
+            "    for (const [kind, title] of [['dayKnights', '⭐ فارس اليوم (مؤقت حتى الحسم)'], ['weekKnights', 'فرسان الحلقات للأسبوع الماضي']]) {",
+            "        const items = (stage[kind] || []).filter(item => item.names?.length || kind === 'weekKnights' && item.status);"
+          ]
+        },
+        {
+          "oldLine": 209,
+          "newLine": 209,
+          "before": [
+            "                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.title.replace(/^\\S+\\s/u, ''))); section.append(heading);"
+          ],
+          "after": [
+            "                badge.append(icon(slide.kind === 'board' ? 'leaders' : slide.kind === 'prepWeek' ? 'weekKnights' : slide.kind)); heading.append(badge, node('h2', '', slide.kind === 'weekKnights' ? slide.title : slide.title.replace(/^\\S+\\s/u, ''))); section.append(heading);"
+          ]
+        },
+        {
+          "oldLine": 251,
+          "newLine": 251,
+          "before": [
+            "                        if (slide.kind === 'dayKnights') {"
+          ],
+          "after": [
+            "                        if (slide.kind === 'dayKnights' || slide.kind === 'weekKnights') {"
+          ]
+        },
+        {
+          "oldLine": 254,
+          "newLine": 254,
+          "before": [
+            "                        item.names.forEach(name => cardBody.append(node('h3', 'kname', name)));"
+          ],
+          "after": [
+            "                        item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));",
+            "                        if (item.status) cardBody.append(node('p', 'muted', item.status));"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsRound2bExpectationChanges": [
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 86,
+      "newLine": 86,
+      "before": [
+        "        assert.deepEqual(stage.weekKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].week).name]);"
+      ],
+      "after": [
+        "        assert.equal(stage.weekKnights, undefined); // السجل غير مقفل؛ القيم اليومية القديمة ما زالت تُختبر مستقلة."
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/board-local.test.cjs",
+      "oldLine": 157,
+      "newLine": 157,
+      "before": [
+        "    assert.deepEqual(stage.weekKnights.map(k => k.names), [['يوسف'],['زياد']]);"
+      ],
+      "after": [
+        "    assert.equal(stage.weekKnights, undefined);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day4b-local.test.cjs",
+      "oldLine": 84,
+      "newLine": 84,
+      "before": [
+        "    const ctx = vm.createContext({ TextEncoder, structuredClone, Date: Clock,"
+      ],
+      "after": [
+        "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, Date: Clock,"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day5-locked-local.test.cjs",
+      "oldLine": 141,
+      "newLine": 141,
+      "before": [
+        "test('saveData, per-student patch and batch never schedule or mutate in a locked view', () => {"
+      ],
+      "after": [
+        "test('saveData, per-student patch and batch never schedule or mutate in a locked view', async () => {"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/day5-locked-local.test.cjs",
+      "oldLine": 146,
+      "newLine": 146,
+      "before": [
+        "        assert.equal(h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);"
+      ],
+      "after": [
+        "        assert.equal(await h.run('commitPatches([{student: students[0], fields: {name: \"تغيير وهمي\"}}])'), false);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/design-r1-local.test.cjs",
+      "oldLine": 128,
+      "newLine": 128,
+      "before": [
+        "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9].includes(row.category), `${row.file}:${row.newLine}`);"
+      ],
+      "after": [
+        "        assert.ok([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(row.category), `${row.file}:${row.newLine}`);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/board-invariants.cjs",
+      "oldLine": 2,
+      "newLine": 2,
+      "before": [],
+      "after": [
+        "function beforeKnightsRound2b(text, file = 'index.html') {",
+        "    text = text.replaceAll('\\r\\n', '\\n');",
+        "    const marker = { 'index.html': 'const weekKnightsState =', 'data-store.js': 'setWriteGuard:',",
+        "        'programs-store.js': 'setWriteGuard:', 'tv.js': 'فرسان الحلقات للأسبوع الماضي' }[file];",
+        "    if (!marker || !text.includes(marker)) return text;",
+        "    const approved = require('../rules/design-expectation-audit.json').knightsRound2bProductionChanges;",
+        "    const lines = text.split('\\n');",
+        "    for (const hunk of [...(approved?.find(row => row.file === file)?.hunks || [])].reverse()) {",
+        "        assert.deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after, file + ': exact round 2b change');",
+        "        lines.splice(hunk.newLine - 1, hunk.after.length, ...hunk.before);",
+        "    }",
+        "    return lines.join('\\n');",
+        "}"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/board-invariants.cjs",
+      "oldLine": 3,
+      "newLine": 16,
+      "before": [],
+      "after": [
+        "    text = beforeKnightsRound2b(text, file);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/board-invariants.cjs",
+      "oldLine": 55,
+      "newLine": 69,
+      "before": [
+        "module.exports = { beforeBoard, beforeKnights, beforeKnightsRound2 };"
+      ],
+      "after": [
+        "module.exports = { beforeBoard, beforeKnights, beforeKnightsRound2, beforeKnightsRound2b };"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "oldLine": 8,
+      "newLine": 8,
+      "before": [
+        "    const after = fs.readFileSync(path.join(root, file), 'utf8').split(/\\r?\\n/);"
+      ],
+      "after": [
+        "    let currentText = fs.readFileSync(path.join(root, file), 'utf8');",
+        "    if (baseline !== '0c5ec91') currentText = require('./board-invariants.cjs').beforeKnightsRound2b(currentText, file);",
+        "    if (!['82bf19f', '0c5ec91'].includes(baseline)) {",
+        "        const rows = require('../rules/design-expectation-audit.json').knightsRound2bExpectationChanges || [];",
+        "        const lines = currentText.split(/\\r?\\n/);",
+        "        for (const hunk of rows.filter(row => row.file === file).reverse()) {",
+        "            require('node:assert/strict').deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after);",
+        "            lines.splice(hunk.newLine - 1, hunk.after.length, ...hunk.before);",
+        "        }",
+        "        currentText = lines.join('\\n');",
+        "    }",
+        "    const after = currentText.split(/\\r?\\n/);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/knights-r2-harness.cjs",
+      "oldLine": 28,
+      "newLine": 28,
+      "before": [
+        "    'knightsMessageLines', 'buildWeeklyKnightsAnnouncement', 'buildGeneralWeeklyMessage'];"
+      ],
+      "after": [
+        "    'knightsMessageRow', 'knightsMessageLines', 'buildWeeklyKnightsAnnouncement', 'buildGeneralWeeklyMessage'];"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/t25-browser.cjs",
+      "oldLine": 77,
+      "newLine": 77,
+      "before": [],
+      "after": [
+        "            setWriteGuard() {},",
+        "            getSeasonFromServer: async () => {",
+        "                const season = seasons[state.current] || {}, frozenWeeks = {};",
+        "                for (let date = new Date((season.termStart || '2026-01-01') + 'T12:00:00Z'); date <= new Date(); date.setUTCDate(date.getUTCDate() + 1))",
+        "                    if (date.getUTCDay() === 0) frozenWeeks[date.toISOString().slice(0,10)] = true;",
+        "                return { ...season, frozenWeeks };",
+        "            },"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/t25-browser.cjs",
+      "oldLine": 93,
+      "newLine": 100,
+      "before": [],
+      "after": [
+        "            setWriteGuard() {},"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/tv-harness.cjs",
+      "oldLine": 7,
+      "newLine": 7,
+      "before": [
+        "    install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',"
+      ],
+      "after": [
+        "    run(\"const weekKnightsState = new Map(), weekKnightsTvLocks = new Set();\");",
+        "    run(\"const weekKnightsChecks = new Map(), weekKnightsPending = new Map();\");",
+        "    run(html.match(/const KNIGHTS_GUARD_ERROR = .*;/)[0]);",
+        "    install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'getLockedWeekKnights', 'lockWeekRows');",
+        "    install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageRow', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/helpers/tv-harness.cjs",
+      "oldLine": 11,
+      "newLine": 15,
+      "before": [
+        "    for (const name of ['getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])"
+      ],
+      "after": [
+        "    for (const name of ['formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr', 'getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "oldLine": 753,
+      "newLine": 753,
+      "before": [],
+      "after": [
+        "        h.run('const weekKnightsChecks = new Map(), weekKnightsState = new Map();');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/homeprep-local.test.cjs",
+      "oldLine": 292,
+      "newLine": 292,
+      "before": [
+        "    assert.equal(source('migrateSettings',store),source('migrateSettings',baseline));"
+      ],
+      "after": [
+        "    assert.equal(source('migrateSettings',require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')),source('migrateSettings',baseline));"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "oldLine": 176,
+      "newLine": 176,
+      "before": [
+        "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',"
+      ],
+      "after": [
+        "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "oldLine": 281,
+      "newLine": 281,
+      "before": [
+        "    const ctx=vm.createContext({db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{"
+      ],
+      "after": [
+        "    const ctx=vm.createContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "oldLine": 310,
+      "newLine": 310,
+      "before": [
+        "    const ctx=vm.createContext({TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',"
+      ],
+      "after": [
+        "    const ctx=vm.createContext({ beforeWrite: async () => null,TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-r2-local.test.cjs",
+      "oldLine": 311,
+      "newLine": 311,
+      "before": [
+        "        assert.equal(source(name),source(name,baseline),name);"
+      ],
+      "after": [
+        "        assert.equal(source(name,require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)),source(name,baseline),name);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/knights-r2-local.test.cjs",
+      "oldLine": 313,
+      "newLine": 313,
+      "before": [
+        "    assert.equal(cp.execFileSync('git',['diff','8880f84','--','data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');"
+      ],
+      "after": [
+        "    for(const file of ['data-store.js','programs-store.js','firestore.rules','tv.js','tv.html','tests/rules/knights-answer-key.json','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'])",
+        "        assert.equal(require('./helpers/board-invariants.cjs').beforeKnightsRound2b(fs.readFileSync(root+'/'+file,'utf8'),file),cp.execFileSync('git',['show','8880f84:'+file],{cwd:root,encoding:'utf8'}).replaceAll('\\r\\n','\\n'),file);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 726,
+      "newLine": 726,
+      "before": [
+        "        const calls = [], wait = deferred();",
+        "        const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+      ],
+      "after": [
+        "        const calls = [], wait = deferred(), entered = deferred();",
+        "        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 729,
+      "newLine": 729,
+      "before": [
+        "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); await wait.promise; } });"
+      ],
+      "after": [
+        "            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); entered.resolve(); await wait.promise; } });"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 732,
+      "newLine": 732,
+      "before": [],
+      "after": [
+        "        if (program !== 'general') assert.equal(calls.length, 1);",
+        "        await entered.promise;"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step2-halaqas-local.test.cjs",
+      "oldLine": 743,
+      "newLine": 745,
+      "before": [
+        "    const ctx = vm.createContext({ TextEncoder, structuredClone, doc: () => 'fake-ref',"
+      ],
+      "after": [
+        "    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step3b-restore-halaqa-local.test.cjs",
+      "oldLine": 46,
+      "newLine": 46,
+      "before": [],
+      "after": [
+        "        window: { almahraData: { saveAllStudents: async students => {",
+        "            state.saves.push(copy(students)); return { success: true };",
+        "        } } },"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step3b-restore-halaqa-local.test.cjs",
+      "oldLine": 60,
+      "newLine": 63,
+      "before": [
+        "        state.reader.onload({ target: { result: JSON.stringify(data) } });"
+      ],
+      "after": [
+        "        return state.reader.onload({ target: { result: JSON.stringify(data) } });"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step3b-restore-halaqa-local.test.cjs",
+      "oldLine": 73,
+      "newLine": 76,
+      "before": [
+        "test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', () => {"
+      ],
+      "after": [
+        "test('general restore accepts active halaqas and derives teacher/stage copies even when file copies disagree or are absent', async () => {"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step3b-restore-halaqa-local.test.cjs",
+      "oldLine": 78,
+      "newLine": 81,
+      "before": [
+        "    h.restore(data);"
+      ],
+      "after": [
+        "    await h.restore(data);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step4-snapshot-local.test.cjs",
+      "oldLine": 234,
+      "newLine": 234,
+      "before": [
+        "    const calls = [], ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+      ],
+      "after": [
+        "    const calls = [], ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 49,
+      "newLine": 49,
+      "before": [],
+      "after": [
+        "                saveAllStudents: (...args) => write('restore', ...args),"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 246,
+      "newLine": 247,
+      "before": [
+        "    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+      ],
+      "after": [
+        "    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons',"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 306,
+      "newLine": 307,
+      "before": [
+        "    h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
+      ],
+      "after": [
+        "    await h.state.reader.onload({ target: { result: JSON.stringify([{ id: 3, name: 'طالب نسخة وهمي', history: {}, halaqaId: 'h1' }]) } });"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step5-calendar-local.test.cjs",
+      "oldLine": 541,
+      "newLine": 542,
+      "before": [
+        "        assert.equal(source(name).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
+      ],
+      "after": [
+        "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\\r\\n', '\\n'), source(name, baselineHtml).replaceAll('\\r\\n', '\\n'), name);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step6a-absence-local.test.cjs",
+      "oldLine": 337,
+      "newLine": 337,
+      "before": [
+        "        const current = source(name).replaceAll('\\r\\n', '\\n');"
+      ],
+      "after": [
+        "        const current = source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)).replaceAll('\\r\\n', '\\n');"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 105,
+      "newLine": 105,
+      "before": [
+        "    assert.equal(source('migrateSettings', store), source('migrateSettings', oldStore));"
+      ],
+      "after": [
+        "    assert.equal(source('migrateSettings', require('./helpers/board-invariants.cjs').beforeKnightsRound2b(store,'programs-store.js')), source('migrateSettings', oldStore));"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step7-simplify-local.test.cjs",
+      "oldLine": 382,
+      "newLine": 382,
+      "before": [
+        "        assert.equal(source(name), source(name, baseline), name);"
+      ],
+      "after": [
+        "        assert.equal(source(name, require('./helpers/board-invariants.cjs').beforeKnightsRound2b(html)), source(name, baseline), name);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 146,
+      "newLine": 146,
+      "before": [
+        "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'weekKnights', 'prepWeek', 'risingStars'].sort());"
+      ],
+      "after": [
+        "        assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "oldLine": 149,
+      "newLine": 149,
+      "before": [
+        "        for (const e of stage.weekKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'stage']);"
+      ],
+      "after": [
+        "        assert.equal(stage.weekKnights, undefined);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "oldLine": 52,
+      "newLine": 52,
+      "before": [],
+      "after": [
+        "test('r2b fix 7: closing slide renders names alone while retaining ranks in snapshot data', async () => {",
+        "    const h = await openTv();",
+        "    try {",
+        "        const message = snapshot();",
+        "        message.stages[0].weekKnights = [{ stage: 'سلمان الفارسي', names: [{ name: 'هاني', rank: 1 }, { name: 'وليد', rank: 2 }] }];",
+        "        await h.snapshot(message);",
+        "        const names = await h.page.locator('.slide').filter({ hasText: 'فرسان الحلقات للأسبوع الماضي' }).locator('.kname').allTextContents();",
+        "        assert.deepEqual(names, ['هاني', 'وليد']);",
+        "        assert.deepEqual(message.stages[0].weekKnights[0].names.map(s => s.rank), [1, 2]);",
+        "        assert.deepEqual(h.errors, []);",
+        "    } finally { await h.close(); }",
+        "});",
+        ""
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "oldLine": 175,
+      "newLine": 188,
+      "before": [
+        "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /فرسان الأسبوع/ : /النجم الصاعد/);"
+      ],
+      "after": [
+        "            assert.match(title, kind === 'dayKnights' ? /فارس اليوم \\(مؤقت حتى الحسم\\)/ : kind === 'weekKnights' ? /^فرسان الحلقات للأسبوع الماضي$/ : /النجم الصاعد/);"
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
+    },
+    {
+      "file": "tests/tv-design-local.test.cjs",
+      "oldLine": 242,
+      "newLine": 255,
+      "before": [],
+      "after": [
+        "",
+        "test('TV r2b: closing cards use locked rows, exact title, names alone, teachers and empty statuses inside the safe area',async()=>{",
+        "    const {cloud,runtime}=require('./helpers/knights-r2b-harness.cjs');",
+        "    const server=cloud(),app=runtime(server);await app.frozen();",
+        "    await app.call('lockWeekRows','2026-11-22','primary');await app.call('lockWeekRows','2026-11-22','middle');",
+        "    const h=await openTv();",
+        "    try{",
+        "        for(const period of ['asr','maghrib']){",
+        "            const cards=copyCards(await app.call('getLockedWeekKnights',period));",
+        "            const message=snapshot();message.stages[0].weekKnights=cards;",
+        "            await h.snapshot(message);",
+        "            await h.page.waitForFunction(stage=>[...document.querySelectorAll('.stage')].some(n=>n.textContent===stage),cards[0].stage);",
+        "            for(let i=0;i<4;i++){",
+        "                if((await h.page.locator('.slide.active h2').innerText()).includes('للأسبوع الماضي'))break;",
+        "                await h.page.clock.runFor(15000);",
+        "            }",
+        "            const slide=h.page.locator('.slide.active');",
+        "            assert.equal(await slide.locator('h2').innerText(),'فرسان الحلقات للأسبوع الماضي');",
+        "            assert.equal(await slide.locator('.card').count(),cards.length);",
+        "            assert.deepEqual(await slide.locator('.stage').allTextContents(),cards.map(c=>c.stage));",
+        "            for(const item of cards){",
+        "                assert.ok((await slide.innerText()).includes(item.teacher));",
+        "                for(const knight of item.names)assert.ok((await slide.locator('.kname').allTextContents()).includes(knight.name));",
+        "                if(item.status)assert.ok((await slide.innerText()).includes(item.status));",
+        "            }",
+        "            await safe(h.page,'.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');",
+        "            assert.ok(await slide.locator('.card').evaluateAll(cards=>cards.every(card=>card.scrollHeight<=card.clientHeight+1)));",
+        "        }",
+        "        assert.deepEqual(h.errors,[]);",
+        "    }finally{await h.close();}",
+        "    function copyCards(value){return JSON.parse(JSON.stringify(value));}",
+        "});",
+        ""
+      ],
+      "category": 10,
+      "reason": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
+      "reviewBaseline": "0c5ec91"
     }
   ]
 }

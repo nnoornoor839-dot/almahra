@@ -1,5 +1,19 @@
 const assert = require('node:assert/strict');
+function beforeKnightsRound2b(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    const marker = { 'index.html': 'const weekKnightsState =', 'data-store.js': 'setWriteGuard:',
+        'programs-store.js': 'setWriteGuard:', 'tv.js': 'فرسان الحلقات للأسبوع الماضي' }[file];
+    if (!marker || !text.includes(marker)) return text;
+    const approved = require('../rules/design-expectation-audit.json').knightsRound2bProductionChanges;
+    const lines = text.split('\n');
+    for (const hunk of [...(approved?.find(row => row.file === file)?.hunks || [])].reverse()) {
+        assert.deepEqual(lines.slice(hunk.newLine - 1, hunk.newLine - 1 + hunk.after.length), hunk.after, file + ': exact round 2b change');
+        lines.splice(hunk.newLine - 1, hunk.after.length, ...hunk.before);
+    }
+    return lines.join('\n');
+}
 function beforeKnightsRound2(text, file = 'index.html') {
+    text = beforeKnightsRound2b(text, file);
     text = text.replaceAll('\r\n', '\n');
     if (file !== 'index.html' || !text.includes('function getWeekNominations(')) return text;
     const approved = require('../rules/design-expectation-audit.json').knightsRound2ProductionChanges;
@@ -52,4 +66,4 @@ function beforeBoard(text, file = 'index.html') {
     }
     return text;
 }
-module.exports = { beforeBoard, beforeKnights, beforeKnightsRound2 };
+module.exports = { beforeBoard, beforeKnights, beforeKnightsRound2, beforeKnightsRound2b };

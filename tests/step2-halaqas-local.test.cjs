@@ -723,12 +723,14 @@ test('store reset preserves general teachers and halaqas, waits for cloud, and k
     for (const program of ['general', 'summer', 'review-day']) {
         const old = settings(); old.halaqas[0].active = false;
         const defaults = { teachers: [], stages: [{ id: 'default-stage' }] };
-        const calls = [], wait = deferred();
-        const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
+        const calls = [], wait = deferred(), entered = deferred();
+        const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SETTINGS_VERSION: 1,
             PROGRAM_DEFS: { [program]: { defaultSettings: defaults } }, programsCache: { [program]: { settings: old } },
-            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); await wait.promise; } });
+            doc: (...args) => args.slice(1).join('/'), updateDoc: async (...args) => { calls.push(copy(args)); entered.resolve(); await wait.promise; } });
         vm.runInContext('const api = {\n' + programsStore.slice(start, end) + '\n};', ctx);
         const result = vm.runInContext(`api.resetSettings('${program}')`, ctx);
+        if (program !== 'general') assert.equal(calls.length, 1);
+        await entered.promise;
         assert.equal(calls.length, 1);
         const saved = calls[0][1].settings;
         if (program === 'general') {
@@ -740,7 +742,7 @@ test('store reset preserves general teachers and halaqas, waits for cloud, and k
 
 test('createGeneralStudentIfAbsent rejects absent or invalid halaqaId before starting a transaction', async () => {
     const state = { transactions: 0 };
-    const ctx = vm.createContext({ TextEncoder, structuredClone, doc: () => 'fake-ref',
+    const ctx = vm.createContext({ beforeWrite: async () => null, TextEncoder, structuredClone, doc: () => 'fake-ref',
         runTransaction: async (db, callback) => { state.transactions++; await callback({ get: async () => ({ exists: () => false }), set() {} }); } });
     vm.runInContext("const db = {}; const PROGRAMS = 'programs', SEASONS = 'seasons', STUDENTS = 'students'; const activeProgramId = 'general', activeSeasonId = 's1', isReady = true, isReadOnly = false;" +
         source('hasUndefined', dataStore) + source('createGeneralStudentIfAbsent', dataStore), ctx);

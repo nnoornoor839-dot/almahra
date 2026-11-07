@@ -173,7 +173,7 @@ function joinedOnHarness(list = [{id: 1}]) {
     h.ctx.requireSchoolCalendar = () => true; h.ctx.renderProgramSettings = () => {};
     const server = new Map(h.list.map(s => ['general/s1/' + s.id, copy(s)]));
     const state = { calls: [], writes: [], retry: null, afterCommit: null, beforeRead: null, failAt: null };
-    const ctx = vm.createContext({ db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',
+    const ctx = vm.createContext({ beforeWrite: async () => null, db: {}, PROGRAMS: 'programs', SEASONS: 'seasons', STUDENTS: 'students',
         doc: (db, programs, program, seasons, season, students, id) => program + '/' + season + '/' + id,
         runTransaction: async (db, fn) => {
             const call = { reads: [], writes: [] }; state.calls.push(call);
@@ -278,7 +278,7 @@ test('approval transaction replaces only date+mode, preserves over 200 rows and 
     const log=Array.from({length:205},(_,i)=>({dateStr:'2026-10-'+i,mode:'all',fars:[]}));
     log.push(copy(key.manualApproval),{dateStr:key.days[2],mode:'discipline',fars:[]},{dateStr:key.days[2],fars:[]});
     const state={log:copy(log),reads:0,updates:0};
-    const ctx=vm.createContext({db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{
+    const ctx=vm.createContext({ beforeWrite: async () => null,db:{},PROGRAMS:'programs',SEASONS:'seasons',console,doc:()=> 'season',runTransaction:async(db,fn)=>{
         const tx={get:async()=>{state.reads++;return {exists:()=>true,data:()=>({knightsLog:copy(state.log)})}},update:(ref,patch)=>{state.updates++;state.log=copy(patch.knightsLog)}};
         await fn(tx);state.log.push({dateStr:key.days[2],mode:'h:a',fars:[]});await fn(tx);
     }});
@@ -307,7 +307,7 @@ test('manual UI requires reason, stores exact row, awaits success and does not p
 
 test('create assigns Riyadh addition day, season import assigns new termStart for keep/reset', async () => {
     const writes=[];class FixedDate extends Date{constructor(...a){super(...(a.length?a:['2026-11-23T21:30:00Z']))}}
-    const ctx=vm.createContext({TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',
+    const ctx=vm.createContext({ beforeWrite: async () => null,TextEncoder,structuredClone,Date:FixedDate,Intl,console,db:{},PROGRAMS:'programs',SEASONS:'seasons',STUDENTS:'students',
         activeProgramId:'general',activeSeasonId:'s1',isReady:true,isReadOnly:false,doc:()=> 'student',
         window:{almahraPrograms:{getCurrentSeason:()=>({termStart:key.season.termStart})}},
         runTransaction:async(db,fn)=>fn({get:async()=>({exists:()=>false}),set:(ref,data)=>writes.push(copy(data))}),
