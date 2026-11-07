@@ -317,7 +317,7 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
     const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
     const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');
     const original = file => cp.execFileSync('git', ['show', '186a18e:' + file], {cwd:root, encoding:'utf8', maxBuffer:4*1024*1024}).replaceAll('\r\n','\n');
-    const changed = cp.execFileSync('git', ['diff','--name-only'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();
+    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f)).sort();
     assert.deepEqual(audit.knightsOwnerAutoChanges.map(r => r.file).sort(), changed);
     for (const row of audit.knightsOwnerAutoChanges) {
         assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);

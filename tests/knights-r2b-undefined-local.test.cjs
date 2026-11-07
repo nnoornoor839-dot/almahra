@@ -126,8 +126,8 @@ test('optional settings, nested row data, refreeze history, actors and round-one
     h.element('generalKnightsDate').value = key.days[0];
     h.element('generalKnightsReason').value = 'اعتماد موثق';
     h.element('generalKnightsChoice1').value = '1';
-    assert.equal(await h.call('approveGeneralHalaqaKnights'), true);
-    assert.equal(server.season().knightsLog.find(entry => entry.mode === 'h:a').by, 'fake-admin');
+    assert.equal(await h.call('approveGeneralHalaqaKnights'), false); // قرار المالك ٢٠٢٦-١١-٠٧: الاختيار آلي كله؛ لا اعتماد يدوي في general
+    assert.equal(server.season().knightsLog.find(entry => entry.mode === 'h:a'), undefined);
     for (const write of server.state.writes) assertFirestoreData(write.patch, 'write', write.path);
     assertFirestoreData(server.season(), 'write', 'season');
 });

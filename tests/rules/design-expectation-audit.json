@@ -12670,6 +12670,26 @@
       "category": 11,
       "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
       "beforeSha256": "a8965e27a1052327d4ab4ef6ca10da002a44bb1a90781e41dbd73333831b9ab0"
+    },
+    {
+      "file": "tests/knights-r2b-undefined-local.test.cjs",
+      "hunks": [
+        {
+          "oldLine": 129,
+          "newLine": 129,
+          "before": [
+            "    assert.equal(await h.call('approveGeneralHalaqaKnights'), true);",
+            "    assert.equal(server.season().knightsLog.find(entry => entry.mode === 'h:a').by, 'fake-admin');"
+          ],
+          "after": [
+            "    assert.equal(await h.call('approveGeneralHalaqaKnights'), false); // قرار المالك ٢٠٢٦-١١-٠٧: الاختيار آلي كله؛ لا اعتماد يدوي في general",
+            "    assert.equal(server.season().knightsLog.find(entry => entry.mode === 'h:a'), undefined);"
+          ]
+        }
+      ],
+      "category": 11,
+      "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+      "beforeSha256": "5635bd0dc175dbf0ae94b7dffef6b1a562dc9b251412a601c03aa4d060ec3cdc"
     }
   ],
   "knightsOwnerAutoAddedFiles": [
@@ -12705,7 +12725,7 @@
       "file": "tests/knights-owner-auto-local.test.cjs",
       "category": 11,
       "reason": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
-      "sha256": "0862c4be31773a2d0691af76dd4b348f7452e944ffa68a6b49a1d7902676979d",
+      "sha256": "13aea0d18eb4dc406d7ec9b4b3b7645fa25221abe7f6e3ab4c81779c1ece29f2",
       "hunks": [
         {
           "oldLine": 1,
@@ -13031,7 +13051,7 @@
             "    const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
             "    const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');",
             "    const original = file => cp.execFileSync('git', ['show', '186a18e:' + file], {cwd:root, encoding:'utf8', maxBuffer:4*1024*1024}).replaceAll('\\r\\n','\\n');",
-            "    const changed = cp.execFileSync('git', ['diff','--name-only'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();",
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f)).sort();",
             "    assert.deepEqual(audit.knightsOwnerAutoChanges.map(r => r.file).sort(), changed);",
             "    for (const row of audit.knightsOwnerAutoChanges) {",
             "        assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);",
