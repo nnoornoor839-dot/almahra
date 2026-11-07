@@ -14,7 +14,8 @@
     "11": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
     "12": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
     "13": "الفرسان في مكان واحد — الجزء ٢ (٢٠٢٦-١١-٠٨)",
-    "14": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)"
+    "14": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
+    "15": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)"
   },
   "files": [
     {
@@ -15779,6 +15780,619 @@
             "    const strict = await run('very-good');",
             "    assert.ok(strict.errors.some(m => /جيد جداً/.test(m)), 'جيد جداً: رسالة الرفض بالتقدير');",
             "    assert.equal(strict.wrote, false, 'لا كتابة');",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOnePlaceP4Baseline": "263c942",
+  "knightsOnePlaceP4Changes": [
+    {
+      "file": "index.html",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "7a6a43e46ab029e8ceeadd1ddea23cd6e0c68de2f47649f436b2f5f21668279f",
+      "hunks": [
+        {
+          "oldLine": 945,
+          "newLine": 945,
+          "before": [],
+          "after": [
+            "#gkHelpModal { background:rgba(15,23,42,.7); }",
+            "#gkHelpModal .gk-help-card { width:100%; max-width:720px; max-height:90vh; overflow-y:auto; background:var(--general-surface, #fff);",
+            "  padding:var(--general-space-6, 24px); border-radius:var(--general-radius-lg, 16px); box-shadow:0 20px 48px rgba(15,23,42,.25); color:var(--general-ink, #21372b); }",
+            "#gkHelpModal .gk-guide { line-height:1.9; }",
+            "#gkHelpModal .gk-guide section + section { margin-top:var(--general-space-6, 24px); padding-top:var(--general-space-4, 16px); border-top:1px solid var(--general-line, #dce4de); }",
+            "#gkHelpModal .gk-guide h3 { font-size:var(--general-text-lg, 20px); font-weight:800; color:var(--general-brand, #125c2f); margin-bottom:var(--general-space-2, 8px); }",
+            "#gkHelpModal .gk-guide ol { list-style:decimal; padding-right:var(--general-space-6, 24px); margin-block:var(--general-space-1, 4px); }",
+            "#gkHelpModal .gk-guide ul { list-style:disc; padding-right:var(--general-space-6, 24px); margin-block:var(--general-space-1, 4px); }",
+            "#gkHelpModal .gk-guide table { width:100%; border-collapse:collapse; margin-block:var(--general-space-2, 8px); }",
+            "#gkHelpModal .gk-guide th, #gkHelpModal .gk-guide td { border:1px solid var(--general-line, #dce4de); padding:6px 12px; text-align:right; }",
+            "#gkHelpModal .gk-guide th { background:var(--general-soft, #edf4ee); font-weight:800; }"
+          ]
+        },
+        {
+          "oldLine": 1567,
+          "newLine": 1578,
+          "before": [
+            "                    <button id=\"gkHelpBtn\" type=\"button\" onclick=\"showToast('قريباً')\" aria-label=\"شرح الفرسان\" title=\"شرح الفرسان\" class=\"w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center\">!</button>"
+          ],
+          "after": [
+            "                    <button id=\"gkHelpBtn\" type=\"button\" onclick=\"openGeneralKnightsGuide()\" aria-label=\"شرح الفرسان\" title=\"شرح الفرسان\" class=\"w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center\">!</button>"
+          ]
+        },
+        {
+          "oldLine": 2829,
+          "newLine": 2840,
+          "before": [],
+          "after": [
+            "    <!-- نافذة «!» في «الفرسان» (البرنامج العام): نص الدليل وأرقامه من الإعدادات؛ لا تُطبع. -->",
+            "    <div id=\"gkHelpModal\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"gkHelpTitle\" onclick=\"if (event.target === this) closeGeneralKnightsGuide()\" class=\"no-print hidden fixed inset-0 z-[2000] bg-slate-900/70 items-center justify-center p-4\" dir=\"rtl\">",
+            "        <div class=\"gk-help-card bg-white rounded-2xl shadow-xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto p-6 space-y-4\">",
+            "            <div class=\"flex items-center justify-between gap-3\">",
+            "                <h2 id=\"gkHelpTitle\" class=\"text-xl font-black text-slate-800\">🏆 الفرسان: كيف يُختارون؟</h2>",
+            "                <button id=\"gkHelpClose\" type=\"button\" onclick=\"closeGeneralKnightsGuide()\" aria-label=\"إغلاق\" class=\"text-slate-500 text-3xl px-2\">&times;</button>",
+            "            </div>",
+            "            <div id=\"gkHelpBody\"></div>",
+            "            <div class=\"flex justify-end\"><button type=\"button\" onclick=\"closeGeneralKnightsGuide()\" class=\"general-knights-action\">إغلاق</button></div>",
+            "        </div>",
+            "    </div>",
+            ""
+          ]
+        },
+        {
+          "oldLine": 2890,
+          "newLine": 2913,
+          "before": [
+            "                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {})"
+          ],
+          "after": [
+            "                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {}),",
+            "                    ...(s?.titleRules ? { titleRules: s.titleRules } : {})"
+          ]
+        },
+        {
+          "oldLine": 11235,
+          "newLine": 11259,
+          "before": [],
+          "after": [
+            "                const gkHelp = document.getElementById('gkHelpModal');",
+            "                if (gkHelp) { gkHelp.classList.remove('flex'); gkHelp.classList.add('hidden'); }",
+            "                const gkHelpBody = document.getElementById('gkHelpBody');",
+            "                if (gkHelpBody) gkHelpBody.innerHTML = '';"
+          ]
+        },
+        {
+          "oldLine": 12513,
+          "newLine": 12541,
+          "before": [],
+          "after": [
+            "        // نص نافذة «!» (knights-guide-text.md باعتماد المالك)؛ كل رقم من الإعدادات الممرَّرة، بلا DOM ولا متغيرات عامة.",
+            "        function renderGeneralKnightsGuide(settings) {",
+            "            const grades = Array.isArray(settings?.grades) ? settings.grades : [];",
+            "            const criteria = (Array.isArray(settings?.criteria) ? settings.criteria : []).filter(c => c && c.enabled !== false);",
+            "            const mult = { new: Number(settings?.kindMult?.newMemorization ?? 3), review: Number(settings?.kindMult?.review ?? 1) };",
+            "            const fmt = n => String(Math.round(n * 100) / 100);",
+            "            const esc = value => escapeHTML(String(value ?? ''));",
+            "            const grade = id => grades.find(g => g.id === id);",
+            "            const face = (kind, g) => 15 * mult[kind] * (Number(g?.percent) || 0) / 100;",
+            "            const share = p => p === 100 ? 'كاملة' : p === 75 ? 'ثلاثة أرباعها' : p === 50 ? 'نصفها' : p === 0 ? 'لا شيء' : fmt(p) + '٪';",
+            "            const days = n => n === 1 ? 'يوماً واحداً' : n === 2 ? 'يومين' : n <= 10 ? n + ' أيام' : n + ' يوماً';",
+            "            const prep = criteria.find(c => c.id === 'homeprep');",
+            "            const prepPoints = prep ? Number(prep.points ?? 10) : 0;",
+            "            const minGrade = grade(settings?.homePrepMinGrade || 'good');",
+            "            const positives = criteria.filter(c => c.id !== 'homeprep' && Number(c.points) > 0);",
+            "            const negatives = criteria.filter(c => Number(c.points) < 0);",
+            "            const repeatName = grades.find(g => Number(g.percent) === 0)?.name || 'يُعاد';",
+            "            // مثال سالم: جديد وجه بأعلى تقدير + مراجعة 4 أوجه بالتقدير الذي يليه + الانضباط + التحضير إن بلغ كل تسميعه الحد؛ المجموع يُحسب.",
+            "            const top = grade('excellent') || grades[0], second = grade('very-good') || grades[1];",
+            "            const acts = { early: 'حضر مبكراً', manners: 'التزم الأدب', uniform: 'لبس الزي' };",
+            "            let picked = positives.filter(c => ['early', 'manners', 'uniform'].includes(c.id));",
+            "            const named = picked.length > 0;",
+            "            if (!named) picked = positives.slice(0, 3);",
+            "            const discipline = picked.reduce((sum, c) => sum + Number(c.points), 0);",
+            "            const newTop = face('new', top), reviewFour = 4 * face('review', second);",
+            "            const minPct = Number((minGrade || grade('good'))?.percent ?? 0);",
+            "            const keeps = (...gs) => gs.every(g => Number(g?.percent) >= minPct);",
+            "            const salemPrep = prep && keeps(top, second) ? prepPoints : 0;",
+            "            const total = newTop + reviewFour + discipline + salemPrep;",
+            "            // الفقرة البديلة بتقدير «جيد» دائماً (النص المعتمد)؛ يخسر التحضير إن كان «جيد» دون الحد وكان المثال قد استحقه.",
+            "            const altGrade = grade('good');",
+            "            const altPrep = prep && keeps(altGrade, second) ? prepPoints : 0;",
+            "            const altLoses = salemPrep > 0 && altPrep === 0;",
+            "            const alt = altGrade ? face('new', altGrade) + reviewFour + discipline + altPrep : null;",
+            "            const workingDays = Array.isArray(settings?.workingDays) && settings.workingDays.length ? settings.workingDays.length : 4;",
+            "            const attendDays = Math.ceil(workingDays * Number(settings?.titleRules?.weeklyAttendancePct ?? 75) / 100);",
+            "            const cell = 'border border-slate-200 p-2', head = cell + ' bg-slate-50 font-black';",
+            "            const h3 = text => '<h3 class=\"font-black text-lg text-slate-800\">' + text + '</h3>';",
+            "            const row = (label, value, strong = false) => '<tr><td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + label + '</td><td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + value + '</td></tr>';",
+            "            const disciplineLine = [positives.map(c => esc(c.name) + ' +' + fmt(Number(c.points))).join('، '),",
+            "                negatives.map(c => 'و' + esc(c.name) + ' −' + fmt(-Number(c.points)) + (c.blocksTitles === true ? ' وتمنعك من الفروسية' : '')).join('، ')]",
+            "                .filter(Boolean).map(part => part + '.').join(' ');",
+            "            return '<div class=\"gk-guide space-y-5 text-slate-700 leading-8\">'",
+            "                + '<section>' + h3('1. فارس الحلقة (كل يوم)')",
+            "                + '<p class=\"font-bold\">تدخل المنافسة إذا:</p><ol class=\"list-decimal pr-6\">'",
+            "                + '<li>حضرتَ اليوم.</li><li>سمّعتَ تسميعاً مقبولاً، لا «' + esc(repeatName) + '» كله.</li><li>لم تُسجَّل عليك مخالفة أدب.</li></ol>'",
+            "                + '<p><b>من يفوز؟</b> الأعلى نقاطاً في حلقته اليوم.</p><ul class=\"list-disc pr-6\">'",
+            "                + '<li>إن تساويتم في النقاط: الأكثر حفظاً.</li><li>إن تساويتم في الحفظ أيضاً: كلاكما فارس.</li></ul></section>'",
+            "                + '<section>' + h3('2. كيف تُحسب نقاطك؟')",
+            "                + '<p class=\"font-bold\">نقاطك = حفظك الجديد + مراجعتك (بتقديرهما) + الانضباط' + (prep ? ' + التحضير المنزلي' : '') + '.</p>'",
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\">التقدير</th><th class=\"' + head + '\">تأخذ من النقاط</th><th class=\"' + head + '\">الوجه الجديد</th><th class=\"' + head + '\">وجه المراجعة</th></tr></thead><tbody>'",
+            "                + grades.map(g => '<tr><td class=\"' + cell + '\">' + esc(g.name) + '</td><td class=\"' + cell + '\">' + share(Number(g.percent)) + '</td><td class=\"' + cell + '\">' + fmt(face('new', g)) + '</td><td class=\"' + cell + '\">' + fmt(face('review', g)) + '</td></tr>').join('')",
+            "                + '</tbody></table><ul class=\"list-disc pr-6\">'",
+            "                + (disciplineLine ? '<li><b>الانضباط:</b> ' + disciplineLine + '</li>' : '')",
+            "                + (prep ? '<li><b>التحضير المنزلي:</b> +' + fmt(prepPoints) + '، بشرط أن يكون كل تسميعك اليوم «' + esc(minGrade?.name || 'جيد') + '» فأعلى.</li>' : '')",
+            "                + '</ul><p class=\"font-black mt-3\">مثال: سالم اليوم</p>'",
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\">ما فعله</th><th class=\"' + head + '\">النقاط</th></tr></thead><tbody>'",
+            "                + row('حفظ وجهاً جديداً بتقدير ' + esc(top?.name), fmt(newTop))",
+            "                + row('راجع 4 أوجه بتقدير ' + esc(second?.name), fmt(reviewFour))",
+            "                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), fmt(discipline)) : '')",
+            "                + (salemPrep ? row('التحضير المنزلي', fmt(salemPrep)) : '')",
+            "                + row('المجموع', fmt(total), true) + '</tbody></table>'",
+            "                + (altGrade ? '<p><b>ولو كان تقدير حفظه الجديد «' + esc(altGrade.name) + '»:</b> يأخذ ' + fmt(face('new', altGrade)) + ' بدل ' + fmt(newTop)",
+            "                    + (altLoses ? '، ويخسر التحضير المنزلي' : '') + '. فيصير مجموعه <b>' + fmt(alt) + '</b>.</p>' : '')",
+            "                + '<p class=\"font-black\">الخلاصة: الإتقان يرفع نقاطك أكثر من الكثرة.</p></section>'",
+            "                + '<section>' + h3('3. فارس الأسبوع (لكل حلقة)')",
+            "                + '<p class=\"font-bold\">تدخل المنافسة إذا:</p><ol class=\"list-decimal pr-6\">'",
+            "                + '<li>كنتَ فارس الحلقة يوماً واحداً على الأقل هذا الأسبوع.</li><li>حضرتَ ' + days(attendDays) + ' من ' + workingDays + ' على الأقل.</li>'",
+            "                + '<li>لم تُسجَّل عليك مخالفة أدب في الأسبوع.</li></ol>'",
+            "                + '<p class=\"font-bold\">من يفوز؟</p><ol class=\"list-decimal pr-6\">'",
+            "                + '<li>الأكثر أياماً فارساً للحلقة.</li><li>إن تساويتم: الأكثر حفظاً في الأسبوع.</li><li>إن تساويتم: الأكثر نقاطاً في الأسبوع.</li>'",
+            "                + '<li>إن تساويتم في كل شيء: تشتركون في الفروسية.</li></ol></section>'",
+            "                + '<section>' + h3('4. متى يُعلن؟') + '<ul class=\"list-disc pr-6\">'",
+            "                + '<li><b>فارس الحلقة:</b> يظهر على التلفاز في يومه.</li>'",
+            "                + '<li><b>فارس الأسبوع:</b> يُحسم بعد الأربعاء ولا يتغير، ويُعلن يوم الأحد، ويبقى على التلفاز طوال الأسبوع.</li></ul></section>'",
+            "                + '<section>' + h3('5. النجم الصاعد ⭐') + '<p>لمن تحسّن هذا الأسبوع أكثر من غيره.</p><ul class=\"list-disc pr-6\">'",
+            "                + '<li><b>كيف؟</b> نقارن متوسط نقاطك اليومية هذا الأسبوع بمتوسطك فيما سبق من الفصل. الأكبر تحسّناً يفوز.</li>'",
+            "                + '<li><b>لمن؟</b> لغير العشرة الأوائل في فترتك (العصر أو المغرب)، لتكون فرصة لمن يجتهد ليلحق.</li>'",
+            "                + '<li><b>كم؟</b> حتى 3 طلاب لكل فترة.</li></ul></section></div>';",
+            "        }",
+            "        function openGeneralKnightsGuide() {",
+            "            if (!isGeneralProgram()) return;",
+            "            const modal = document.getElementById('gkHelpModal'), body = document.getElementById('gkHelpBody');",
+            "            if (!modal || !body) return;",
+            "            body.innerHTML = renderGeneralKnightsGuide(getProgramSettings());",
+            "            modal.classList.remove('hidden'); modal.classList.add('flex');",
+            "            document.getElementById('gkHelpClose')?.focus();",
+            "        }",
+            "        function closeGeneralKnightsGuide() {",
+            "            const modal = document.getElementById('gkHelpModal');",
+            "            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }",
+            "        }",
+            "        document.addEventListener('keydown', event => {",
+            "            if (event.key === 'Escape' && document.getElementById('gkHelpModal')?.classList.contains('flex')) closeGeneralKnightsGuide();",
+            "        });"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "14f42c081477ed5c7beab2d0225942ecf05176f188ff39cadf72f226aa53749e",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e') {",
+            "        // الفئة 14 ثم 13 ثم 12 تُعكس أولاً، فيرى تدقيق الفئة 13 نسخة 5fbff4e وتدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط."
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942') {",
+            "        // تدقيق الفئة 15 يرى الفرق عن 263c942 كما هو؛ ثم الفئة 15 فـ14 فـ13 فـ12 تُعكس أولاً، فيرى تدقيق الفئة 14 نسخة 263c942 وتدقيق الفئة 13 نسخة 5fbff4e وتدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط."
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [
+            "        const text = baseline === '5fbff4e' ? currentText : baseline === 'a002e0c' ? onePlace.beforeKnightsOnePlaceP3(currentText, file)"
+          ],
+          "after": [
+            "        const text = baseline === '263c942' ? currentText : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)",
+            "            : baseline === 'a002e0c' ? onePlace.beforeKnightsOnePlaceP3(currentText, file)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "75367556a348f699ab57b795c09ee9dea7b458922e29593bac8c4696c20f80e1",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "// Category 15: reverse only the exact «الفرسان في مكان واحد — الجزء ٤» lines, so category 14 sees 263c942.",
+            "function beforeKnightsOnePlaceP4(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceP4Changes?.find(r => r.file === file));",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 17,
+          "before": [
+            "    text = text.replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "    text = beforeKnightsOnePlaceP4(text, file);"
+          ]
+        },
+        {
+          "oldLine": 25,
+          "newLine": 30,
+          "before": [
+            "module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3 };"
+          ],
+          "after": [
+            "module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "2fd21b881e0ddec82306a8f1c6e2520353c1b9c1c4da0a938e3fad64d7d7e427",
+      "hunks": [
+        {
+          "oldLine": 493,
+          "newLine": 493,
+          "before": [
+            "    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });",
+            "    // الفئة 14 (الجزء ٣: getProgramSettings يمرّر homePrepMinGrade في general) تُعكس بأسطرها المسجلة فقط."
+          ],
+          "after": [
+            "    // الأساس 5fbff4e صريحاً، لا HEAD الذي يتقدّم مع كل التزام؛ الفئتان 15 و14 (getProgramSettings يمرّر titleRules ثم homePrepMinGrade في general) تُعكسان بأسطرهما المسجلة فقط.",
+            "    const baseline = cp.execFileSync('git', ['show', '5fbff4e:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "b92f39643a3e059667ee0b6db6ee5e06dfefcfe1c422816ae34dd21d969a630c",
+      "hunks": [
+        {
+          "oldLine": 22,
+          "newLine": 22,
+          "before": [
+            "    // ملفات الفئة 12 المضافة صارت متتبَّعة بعد a002e0c، وملفات الفئة 13 المضافة لها تدقيقها.",
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    // ملفات الفئة 12 المضافة صارت متتبَّعة بعد a002e0c، وملفات الفئات 13 و14 و15 المضافة لها تدقيقها.",
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "fbe3173fb26ca9c6ffc714c733f351ba332c6149c1e4dd1ebfe42f20ebc9ffa4",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "9289d4c7835e9f9ac92a98bc5fa87e1ef72b301708fa167af4e4991491a3c882",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [
+            "const { beforeKnightsOnePlaceP3 } = require('./helpers/knights-oneplace-audit.cjs');"
+          ],
+          "after": [
+            "const { beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 } = require('./helpers/knights-oneplace-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 17,
+          "newLine": 17,
+          "before": [
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "// الفئة 15 (الجزء ٤) تُعكس أولاً، فيرى هذا التدقيق نسخة 263c942 بالضبط.",
+            "const current = file => beforeKnightsOnePlaceP4(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
+        },
+        {
+          "oldLine": 24,
+          "newLine": 25,
+          "before": [
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();"
+          ],
+          "after": [
+            "    // ملفات الفئة 14 المضافة صارت متتبَّعة في 263c942، وملفات الفئة 15 المضافة لها تدقيقها.",
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 32,
+          "newLine": 36,
+          "before": [
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceP3AddedFiles.map(r => r.file).sort(), untracked);"
+          ],
+          "after": [
+            "    // المضافة في الجزء ٣ متتبَّعة منذ 263c942: لا وجود لها في 5fbff4e، ونصها بعد عكس الفئة 15 مطابق لما سُجّل."
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 38,
+          "before": [
+            "        const text = fs.readFileSync(path.join(root, row.file), 'utf8');"
+          ],
+          "after": [
+            "        assert.throws(() => git('cat-file', '-e', BASE + ':' + row.file), undefined, row.file + ' ليس في ' + BASE);",
+            "        const text = current(row.file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "beforeSha256": "221dec16afa61f7a693bc63a99d119f4c4d7b5dd4e09c2323b8088ccbe1f7f18",
+      "hunks": [
+        {
+          "oldLine": 326,
+          "newLine": 326,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOnePlaceP4AddedFiles": [
+    {
+      "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "sha256": "18367fce1cd182cd057d08413fa47dd6ef7ab28fbca1b48a0c07a58ebd2d94a8",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// تدقيق الفئة 15: «الفرسان في مكان واحد — الجزء ٤» (البند 15: نافذة «!») مقابل 263c942 — كل سطر تغيّر مسجَّل، ولا شيء محميّ تغيّر.",
+            "// المسموح في الكود: الدليل ونافذته وزر «!»، وسطر titleRules في getProgramSettings (general)، وإخفاء النافذة عند مغادرة general.",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
+            "const { beforeKnightsOnePlaceP4 } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source } = require('./helpers/quick-entry-harness.cjs');",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = '263c942';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "const SETTINGS_LINE = '                    ...(s?.titleRules ? { titleRules: s.titleRules } : {})';",
+            "const HIDE_LINES = [\"                const gkHelp = document.getElementById('gkHelpModal');\",",
+            "    \"                if (gkHelp) { gkHelp.classList.remove('flex'); gkHelp.classList.add('hidden'); }\",",
+            "    \"                const gkHelpBody = document.getElementById('gkHelpBody');\",",
+            "    \"                if (gkHelpBody) gkHelpBody.innerHTML = '';\"];",
+            "",
+            "test('category 15 audit: every changed line since 263c942 is registered and reverses exactly to 263c942', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.knightsOnePlaceP4Baseline, BASE);",
+            "    const added = new Set((audit.knightsOnePlaceP4AddedFiles || []).map(r => r.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f)).sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceP4Changes.map(r => r.file).sort(), changed);",
+            "    for (const row of audit.knightsOnePlaceP4Changes) {",
+            "        assert.equal(row.category, 15); assert.equal(row.reason, audit.categories['15']);",
+            "        assert.deepEqual({ file: row.file, hunks: row.hunks }, changesFrom(row.file, BASE), row.file);",
+            "        assert.equal(sha(original(row.file)), row.beforeSha256, row.file);",
+            "        assert.equal(beforeKnightsOnePlaceP4(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    // قبل الالتزام: المضافة غير متتبَّعة؛ بعده: متتبَّعة وليست في 263c942. في الحالين نصها مطابق لما سُجّل.",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean);",
+            "    for (const file of untracked) assert.ok(added.has(file), 'ملف غير مسجَّل: ' + file);",
+            "    for (const row of audit.knightsOnePlaceP4AddedFiles) {",
+            "        assert.throws(() => git('cat-file', '-e', BASE + ':' + row.file), undefined, row.file + ' ليس في ' + BASE);",
+            "        const text = fs.readFileSync(path.join(root, row.file), 'utf8');",
+            "        assert.equal(row.category, 15); assert.equal(row.reason, audit.categories['15']);",
+            "        assert.equal(sha(text), row.sha256, row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }]);",
+            "    }",
+            "    const mutated = current('index.html').replace(\"const days = n => n === 1 ? 'يوماً واحداً'\", \"const days = n => n === 1 ? 'يوم'\");",
+            "    assert.notEqual(mutated, current('index.html')); assert.notEqual(beforeKnightsOnePlaceP4(mutated), original('index.html'));",
+            "});",
+            "",
+            "test('category 15 audit: getProgramSettings gains only the general titleRules line; applyProgramFeatures only hides and empties the guide outside general', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    const settings = source('getProgramSettings', html);",
+            "    assert.equal(settings.replace(',\\n' + SETTINGS_LINE, ''), source('getProgramSettings', old));",
+            "    assert.equal(source('applyProgramFeatures', html).replace(HIDE_LINES.join('\\n') + '\\n', ''), source('applyProgramFeatures', old));",
+            "    // البرامج الأخرى: getProgramSettings لا يُرجع titleRules خارج general (السطر داخل فرع isGeneralProgram).",
+            "    assert.ok(settings.indexOf(SETTINGS_LINE) > settings.indexOf('...(isGeneralProgram() ? {'));",
+            "    assert.ok(settings.indexOf(SETTINGS_LINE) < settings.indexOf('} : {})\\n            };'));",
+            "});",
+            "",
+            "test('category 15 audit: protected knights functions, store, TV, rules, answer keys and parts 1–3 acceptance tests are unchanged since 263c942', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    for (const name of ['dayStats', 'getCumulativeStats', 'getDayHalaqaKnights', 'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow',",
+            "        'ensureWeekKnightsFrozen', 'knightsFreezeRow', 'knightsEndedWeeks', 'lockWeekRows', 'lockKnightsForMessage', 'unfreezeHalaqaWeek', 'copyWeeklyKnightsAnnouncement',",
+            "        'buildWeeklyKnightsAnnouncement', 'getLockedWeekKnights', 'getMostImproved', 'renderWeekKnightsReview', 'readKnightsPerHalaqa', 'fixGeneralJoinedOn',",
+            "        'commitProgramSettings', 'saveGeneralKnightsSettings', 'renderGeneralKnightsOnePlace', 'renderGeneralKnightsCopyPreview', 'renderGeneralKnightsRising',",
+            "        'openSettingsSection', 'getGeneralTvSnapshot', 'goRace', 'dayAcceptedWeightTenths', 'knightsDayPointsTenths', 'generalCriteriaChange', 'undoLastGeneralEntry',",
+            "        'homePrepQualifies', 'homePrepRejectionMessage', 'saveGeneralQuickEntry', 'renderProgramSettings', 'saveProgramSettings'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    assert.equal(html.match(/const dayPoints = .*;/)[0], old.match(/const dayPoints = .*;/)[0]);",
+            "    assert.equal(html.match(/const HOMEPREP_SCOPE = .*;/)[0], old.match(/const HOMEPREP_SCOPE = .*;/)[0]);",
+            "    for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js', 'tv.js', 'tv.html',",
+            "        'tests/knights-oneplace-local.test.cjs', 'tests/knights-oneplace-p2-local.test.cjs', 'tests/knights-oneplace-p3-local.test.cjs',",
+            "        ...['knights-answer-key', 'knights-r2-answer-key', 'board-answer-key', 'homeprep-answer-key', 'home-answer-key'].map(n => 'tests/rules/' + n + '.json')])",
+            "        assert.equal(current(file), original(file), file);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p4-local.test.cjs",
+      "category": 15,
+      "reason": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
+      "sha256": "2d729e1b387f789e90b844683fd29abc19bbd3a0271a7306d10e069516a5567a",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبارات قبول الجزء ٤ من «الفرسان في مكان واحد» (البند 15: نافذة «!» بنص الدليل وأرقامه من الإعدادات). حمراء قبل البناء.",
+            "const { before, after, test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const path = require('node:path');",
+            "const { harness: quick, copy } = require('./helpers/quick-entry-harness.cjs');",
+            "const { newPage } = require('./helpers/t25-browser.cjs');",
+            "const { key } = require('./helpers/knights-r2b-harness.cjs');",
+            "const hp = require('./rules/homeprep-answer-key.json');",
+            "let browser;",
+            "before(async () => {",
+            "    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,",
+            "        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));",
+            "    browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });",
+            "});",
+            "after(async () => { await browser?.close(); });",
+            "const strip = html => html.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ');",
+            "const num = n => String(Math.round(n * 100) / 100);",
+            "function settingsWith(mutate) { const s = copy(hp.settings); mutate?.(s); return s; }",
+            "function guide(settings) {",
+            "    const h = quick(); h.state.settings = settings;",
+            "    h.install('renderGeneralKnightsGuide');",
+            "    return strip(h.run('renderGeneralKnightsGuide(getProgramSettings())'));",
+            "}",
+            "function expected(s) {",
+            "    const pct = id => (s.grades.find(g => g.id === id)?.percent ?? 0) / 100;",
+            "    const mult = { new: s.kindMult?.newMemorization ?? 3, review: s.kindMult?.review ?? 1 };",
+            "    const face = (kind, grade) => 15 * mult[kind] * pct(grade);",
+            "    const crit = id => { const c = (s.criteria || []).find(x => x.id === id); return c && c.enabled !== false ? c.points : 0; };",
+            "    const discipline = crit('early') + crit('manners') + crit('uniform');",
+            "    const prep = crit('homeprep');",
+            "    const minId = s.homePrepMinGrade || 'good';",
+            "    const minPct = pct(minId);",
+            "    const keeps = (...grades) => grades.every(g => pct(g) >= minPct); // يستحق التحضير إن بلغ كل تسميعه الحد",
+            "    const salem = face('new', 'excellent') + 4 * face('review', 'very-good') + discipline + (keeps('excellent', 'very-good') ? prep : 0);",
+            "    const alt = face('new', 'good') + 4 * face('review', 'very-good') + discipline + (keeps('good', 'very-good') ? prep : 0);",
+            "    const altLoses = keeps('excellent', 'very-good') && !keeps('good', 'very-good'); // «يخسر» فقط إن كان قد استحقه في المثال",
+            "    const days = s.workingDays?.length || 4, att = Math.ceil(days * ((s.titleRules?.weeklyAttendancePct ?? 75) / 100));",
+            "    return { face, salem, alt, altLoses, prep, minName: s.grades.find(g => g.id === minId).name, days, att };",
+            "}",
+            "",
+            "test('ف10: the guide has the five approved sections and every number comes from settings (default: min grade «جيد»)', () => {",
+            "    const s0 = settingsWith(s => { delete s.homePrepMinGrade; });",
+            "    const base = guide(s0), e0 = expected(s0);",
+            "    for (const head of ['فارس الحلقة', 'كيف تُحسب نقاطك', 'فارس الأسبوع', 'متى يُعلن', 'النجم الصاعد']) assert.ok(base.includes(head), 'قسم ' + head);",
+            "    for (const [kind, grade] of [['new', 'excellent'], ['new', 'very-good'], ['new', 'good'], ['review', 'excellent'], ['review', 'very-good'], ['review', 'good']])",
+            "        assert.ok(base.includes(num(e0.face(kind, grade))), 'رقم ' + kind + '/' + grade + ' = ' + num(e0.face(kind, grade)));",
+            "    assert.ok(new RegExp('التحضير المنزلي[^.]*\\\\+?' + e0.prep).test(base), 'نقاط التحضير ' + e0.prep);",
+            "    assert.ok(base.includes('«' + e0.minName + '» فأعلى'), 'أقل تقدير: ' + e0.minName);",
+            "    assert.ok(!base.includes('«جيد جداً» فأعلى'), 'ليس جيد جداً بالافتراضي');",
+            "    assert.ok(base.includes(num(e0.salem)), 'مجموع سالم ' + num(e0.salem));",
+            "    assert.ok(base.includes(num(e0.alt)), 'المجموع البديل ' + num(e0.alt));",
+            "    assert.ok(/«جيد»: يأخذ 22.5 بدل 45/.test(base), 'الفقرة البديلة بتقدير «جيد» كما في النص المعتمد');",
+            "    assert.equal(/ويخسر التحضير/.test(base), e0.altLoses, 'خسارة التحضير في البديل حسب الإعداد (الحد جيد ← يُبقيه)');",
+            "    assert.ok(new RegExp('(3 أيام|' + e0.att + ' أيام) من ' + e0.days).test(base), 'الحضور ' + e0.att + ' من ' + e0.days);",
+            "    assert.ok(!/يتقدّم على نفسه/.test(base), 'لا عبارة النجم القديمة');",
+            "    assert.ok(!/[٠-٩]/.test(base), 'أرقام 0–9 فقط');",
+            "    // تغيير الإعدادات يغيّر الدليل وحده",
+            "    const s1 = settingsWith(s => { s.criteria.find(c => c.id === 'homeprep').points = 15; s.homePrepMinGrade = 'very-good'; s.titleRules = { ...(s.titleRules || {}), weeklyAttendancePct: 50 }; s.kindMult = { newMemorization: 2, review: 1 }; });",
+            "    const changed = guide(s1), e1 = expected(s1);",
+            "    assert.ok(new RegExp('التحضير المنزلي[^.]*\\\\+?15').test(changed), 'التحضير 15');",
+            "    assert.ok(changed.includes('«جيد جداً» فأعلى'), 'أقل تقدير جيد جداً');",
+            "    assert.ok(/(يومين|2 أيام) من 4/.test(changed), 'الحضور يومين من 4 عند 50%');",
+            "    assert.ok(changed.includes(num(e1.face('new', 'excellent'))), 'الوجه الجديد ' + num(e1.face('new', 'excellent')) + ' عند معامل 2');",
+            "    // خلايا جدول سالم أرقام بلا إشارة + (كما في النص المعتمد)؛ سطر الانضباط وحده يكتب «+5» لكل معيار",
+            "    for (const [text, e] of [[base, e0], [changed, e1]]) {",
+            "        assert.ok(!text.includes('+' + num(e.face('new', 'excellent'))), 'خلية الجديد بلا +');",
+            "        assert.ok(!text.includes('+' + num(4 * e.face('review', 'very-good'))), 'خلية المراجعة بلا +');",
+            "        assert.ok(!text.includes('+' + num(e.salem)), 'المجموع بلا +');",
+            "    }",
+            "    assert.ok(changed.includes(num(e1.salem)) && changed.includes(num(e1.alt)), 'مجموعا المثال ' + num(e1.salem) + '/' + num(e1.alt));",
+            "    assert.equal(/ويخسر التحضير/.test(changed), e1.altLoses, 'الحد جيد جداً ← البديل «جيد» يخسر التحضير');",
+            "    // النص المعتمد حرفياً عند الحد «جيد جداً» بالإعدادات الافتراضية: 113 و80.5",
+            "    // إعدادات المثال المعتمد: الانضباط = الحضور المبكر 5 + الأدب 5 + الزي 3 (كإعدادات general الافتراضية)",
+            "    const approvedCriteria = s => { for (const [id, name, points] of [['manners', 'حسن الخلق والأدب', 5], ['uniform', 'الالتزام بالزي الرسمي', 3]]) if (!s.criteria.some(c => c.id === id)) s.criteria.push({ id, name, points, enabled: true }); };",
+            "    const s2 = settingsWith(s => { approvedCriteria(s); s.homePrepMinGrade = 'very-good'; }), e2 = expected(s2), approved = guide(s2);",
+            "    assert.ok(approved.includes('113') && approved.includes('80.5') && /ويخسر التحضير/.test(approved), 'النص المعتمد: 113 ثم 80.5 عند جيد جداً');",
+            "    assert.equal(num(e2.salem), '113'); assert.equal(num(e2.alt), '80.5');",
+            "    // حد «ممتاز»: مراجعة سالم «جيد جداً» لا تبلغه فيسقط التحضير من المثال نفسه",
+            "    const s3 = settingsWith(s => { approvedCriteria(s); s.homePrepMinGrade = 'excellent'; }), e3 = expected(s3), strict = guide(s3);",
+            "    assert.ok(strict.includes(num(e3.salem)) && !strict.includes('113'), 'حد ممتاز: المثال بلا تحضير (' + num(e3.salem) + ')');",
+            "    assert.ok(!/ويخسر التحضير/.test(strict), 'حد ممتاز: لا «يخسر» لأنه لم يستحقه أصلاً');",
+            "});",
+            "",
+            "test('ف10ب: the «!» button opens the guide modal inside the knights panel; it closes; no inline explanation in the panel; no page errors', async () => {",
+            "    const h = await newPage(browser, { width: 1280, today: key.days[1] });",
+            "    try {",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });",
+            "        assert.equal(await h.page.locator('#gkHelpModal:visible').count(), 0, 'مغلقة في البداية');",
+            "        const panelText = await h.page.locator('#setPanelGeneralKnights').innerText();",
+            "        assert.ok(!panelText.includes('كيف تُحسب نقاطك'), 'لا شرح داخل اللوحة');",
+            "        await h.page.click('#gkHelpBtn');",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), true, 'النافذة تفتح');",
+            "        const text = await h.page.locator('#gkHelpModal').innerText();",
+            "        for (const head of ['فارس الحلقة', 'كيف تُحسب نقاطك', 'فارس الأسبوع', 'متى يُعلن', 'النجم الصاعد']) assert.ok(text.includes(head), head);",
+            "        await h.page.click('#gkHelpClose');",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), false, 'النافذة تغلق');",
+            "        await h.page.click('#gkHelpBtn'); await h.page.keyboard.press('Escape');",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), false, 'Esc يغلق');",
+            "        await h.page.click('#gkHelpBtn'); await h.page.locator('#gkHelpModal').click({ position: { x: 5, y: 5 } });",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), false, 'النقر على الخلفية يغلق');",
+            "        await h.page.click('#gkHelpBtn'); await h.page.locator('#gkHelpModal button:has-text(\"إغلاق\")').last().click();",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), false, 'الزر السفلي يغلق');",
+            "        assert.equal(await h.page.locator('#gkHelpModal.no-print').count(), 1, 'لا يُطبع');",
+            "        await h.page.click('#gkHelpBtn');",
+            "        await h.page.evaluate(() => openProgram('summer'));",
+            "        assert.equal(await h.page.locator('#gkHelpModal').isVisible(), false, 'تُخفى عند مغادرة general');",
+            "        assert.equal(await h.page.locator('#gkHelpBtn').isVisible(), false, 'زر ! لا يظهر في الصيفي');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
             "});",
             ""
           ]

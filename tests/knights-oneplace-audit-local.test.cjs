@@ -19,8 +19,8 @@ const current = file => beforeKnightsOnePlaceP2(fs.readFileSync(path.join(root, 
 test('category 12 audit: every changed line since d51bb42 is registered and reverses exactly to d51bb42', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsOnePlaceBaseline, BASE);
-    // ملفات الفئة 12 المضافة صارت متتبَّعة بعد a002e0c، وملفات الفئة 13 المضافة لها تدقيقها.
-    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || [])].map(r => r.file));
+    // ملفات الفئة 12 المضافة صارت متتبَّعة بعد a002e0c، وملفات الفئات 13 و14 و15 المضافة لها تدقيقها.
+    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsOnePlaceChanges.map(r => r.file).sort(), changed);

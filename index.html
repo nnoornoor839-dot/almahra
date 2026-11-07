@@ -942,6 +942,17 @@ body.program-general .general-knights-action {
 body.program-general .general-knights-action:hover { background:var(--general-soft); }
 body.program-general .general-knights-action:focus-visible { outline:2px solid var(--general-brand); outline-offset:2px; }
 body.program-general .general-knights-action:disabled { opacity:.5; cursor:wait; }
+#gkHelpModal { background:rgba(15,23,42,.7); }
+#gkHelpModal .gk-help-card { width:100%; max-width:720px; max-height:90vh; overflow-y:auto; background:var(--general-surface, #fff);
+  padding:var(--general-space-6, 24px); border-radius:var(--general-radius-lg, 16px); box-shadow:0 20px 48px rgba(15,23,42,.25); color:var(--general-ink, #21372b); }
+#gkHelpModal .gk-guide { line-height:1.9; }
+#gkHelpModal .gk-guide section + section { margin-top:var(--general-space-6, 24px); padding-top:var(--general-space-4, 16px); border-top:1px solid var(--general-line, #dce4de); }
+#gkHelpModal .gk-guide h3 { font-size:var(--general-text-lg, 20px); font-weight:800; color:var(--general-brand, #125c2f); margin-bottom:var(--general-space-2, 8px); }
+#gkHelpModal .gk-guide ol { list-style:decimal; padding-right:var(--general-space-6, 24px); margin-block:var(--general-space-1, 4px); }
+#gkHelpModal .gk-guide ul { list-style:disc; padding-right:var(--general-space-6, 24px); margin-block:var(--general-space-1, 4px); }
+#gkHelpModal .gk-guide table { width:100%; border-collapse:collapse; margin-block:var(--general-space-2, 8px); }
+#gkHelpModal .gk-guide th, #gkHelpModal .gk-guide td { border:1px solid var(--general-line, #dce4de); padding:6px 12px; text-align:right; }
+#gkHelpModal .gk-guide th { background:var(--general-soft, #edf4ee); font-weight:800; }
 body.program-general #farsHalaqaReasonRow[hidden] { display:none; }
 body.program-general #page-home.general-home {
   --gh-brand:var(--general-brand); --gh-brand-600:var(--general-brand); --gh-gold:var(--general-muted);
@@ -1564,7 +1575,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 <div class="panel-back-bar no-print">
                     <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
                     <span class="panel-back-title">الفرسان</span>
-                    <button id="gkHelpBtn" type="button" onclick="showToast('قريباً')" aria-label="شرح الفرسان" title="شرح الفرسان" class="w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center">!</button>
+                    <button id="gkHelpBtn" type="button" onclick="openGeneralKnightsGuide()" aria-label="شرح الفرسان" title="شرح الفرسان" class="w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center">!</button>
                 </div>
                 <div class="flex flex-col gap-5">
                     <section id="gkWeek" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
@@ -2826,6 +2837,18 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         </div>
     </div>
 
+    <!-- نافذة «!» في «الفرسان» (البرنامج العام): نص الدليل وأرقامه من الإعدادات؛ لا تُطبع. -->
+    <div id="gkHelpModal" role="dialog" aria-modal="true" aria-labelledby="gkHelpTitle" onclick="if (event.target === this) closeGeneralKnightsGuide()" class="no-print hidden fixed inset-0 z-[2000] bg-slate-900/70 items-center justify-center p-4" dir="rtl">
+        <div class="gk-help-card bg-white rounded-2xl shadow-xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto p-6 space-y-4">
+            <div class="flex items-center justify-between gap-3">
+                <h2 id="gkHelpTitle" class="text-xl font-black text-slate-800">🏆 الفرسان: كيف يُختارون؟</h2>
+                <button id="gkHelpClose" type="button" onclick="closeGeneralKnightsGuide()" aria-label="إغلاق" class="text-slate-500 text-3xl px-2">&times;</button>
+            </div>
+            <div id="gkHelpBody"></div>
+            <div class="flex justify-end"><button type="button" onclick="closeGeneralKnightsGuide()" class="general-knights-action">إغلاق</button></div>
+        </div>
+    </div>
+
     <!-- خريطة مصحف المدينة (طبعة 1441هـ): السور والصفحات والأجزاء والأرباع — ملف محلي، المصدر الوحيد للبرنامج ومحرك الاختبار -->
     <script src="quran/quran-meta.js?v=6201413ae7"></script>
     <!-- الميزان الواحد للأوجه والأرباع والأحزاب والأجزاء (وزن السطر، طبعة 1441هـ): أسطر الطبعة + كلمات الآيات + دالة القياس -->
@@ -2887,7 +2910,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     grades: Array.isArray(s?.grades) ? s.grades : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.grades,
                     kindMult: s?.kindMult || window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.kindMult,
                     absence: Array.isArray(s?.absence) ? s.absence : window.almahraPrograms.PROGRAM_DEFS.general.defaultSettings.absence,
-                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {})
+                    ...(s?.homePrepMinGrade ? { homePrepMinGrade: s.homePrepMinGrade } : {}),
+                    ...(s?.titleRules ? { titleRules: s.titleRules } : {})
                 } : {})
             };
         }
@@ -11232,6 +11256,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (gkBody) gkBody.innerHTML = '';
                 const gkReview = document.getElementById('weekKnightsReview');
                 if (gkReview) { gkReview.innerHTML = ''; gkReview.classList.toggle('hidden', true); }
+                const gkHelp = document.getElementById('gkHelpModal');
+                if (gkHelp) { gkHelp.classList.remove('flex'); gkHelp.classList.add('hidden'); }
+                const gkHelpBody = document.getElementById('gkHelpBody');
+                if (gkHelpBody) gkHelpBody.innerHTML = '';
             }
             if (general && document.getElementById('recPanelExam')?.classList.contains('active')) backToRecordsHome();
             ['settingsExamCard', 'recordsExamCard', 'setPanelExam', 'recPanelExam'].forEach(id => {
@@ -12510,6 +12538,101 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             };
             box.innerHTML = '<h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>' + line('حلقات العصر', 'asr') + line('حلقات المغرب', 'maghrib');
         }
+        // نص نافذة «!» (knights-guide-text.md باعتماد المالك)؛ كل رقم من الإعدادات الممرَّرة، بلا DOM ولا متغيرات عامة.
+        function renderGeneralKnightsGuide(settings) {
+            const grades = Array.isArray(settings?.grades) ? settings.grades : [];
+            const criteria = (Array.isArray(settings?.criteria) ? settings.criteria : []).filter(c => c && c.enabled !== false);
+            const mult = { new: Number(settings?.kindMult?.newMemorization ?? 3), review: Number(settings?.kindMult?.review ?? 1) };
+            const fmt = n => String(Math.round(n * 100) / 100);
+            const esc = value => escapeHTML(String(value ?? ''));
+            const grade = id => grades.find(g => g.id === id);
+            const face = (kind, g) => 15 * mult[kind] * (Number(g?.percent) || 0) / 100;
+            const share = p => p === 100 ? 'كاملة' : p === 75 ? 'ثلاثة أرباعها' : p === 50 ? 'نصفها' : p === 0 ? 'لا شيء' : fmt(p) + '٪';
+            const days = n => n === 1 ? 'يوماً واحداً' : n === 2 ? 'يومين' : n <= 10 ? n + ' أيام' : n + ' يوماً';
+            const prep = criteria.find(c => c.id === 'homeprep');
+            const prepPoints = prep ? Number(prep.points ?? 10) : 0;
+            const minGrade = grade(settings?.homePrepMinGrade || 'good');
+            const positives = criteria.filter(c => c.id !== 'homeprep' && Number(c.points) > 0);
+            const negatives = criteria.filter(c => Number(c.points) < 0);
+            const repeatName = grades.find(g => Number(g.percent) === 0)?.name || 'يُعاد';
+            // مثال سالم: جديد وجه بأعلى تقدير + مراجعة 4 أوجه بالتقدير الذي يليه + الانضباط + التحضير إن بلغ كل تسميعه الحد؛ المجموع يُحسب.
+            const top = grade('excellent') || grades[0], second = grade('very-good') || grades[1];
+            const acts = { early: 'حضر مبكراً', manners: 'التزم الأدب', uniform: 'لبس الزي' };
+            let picked = positives.filter(c => ['early', 'manners', 'uniform'].includes(c.id));
+            const named = picked.length > 0;
+            if (!named) picked = positives.slice(0, 3);
+            const discipline = picked.reduce((sum, c) => sum + Number(c.points), 0);
+            const newTop = face('new', top), reviewFour = 4 * face('review', second);
+            const minPct = Number((minGrade || grade('good'))?.percent ?? 0);
+            const keeps = (...gs) => gs.every(g => Number(g?.percent) >= minPct);
+            const salemPrep = prep && keeps(top, second) ? prepPoints : 0;
+            const total = newTop + reviewFour + discipline + salemPrep;
+            // الفقرة البديلة بتقدير «جيد» دائماً (النص المعتمد)؛ يخسر التحضير إن كان «جيد» دون الحد وكان المثال قد استحقه.
+            const altGrade = grade('good');
+            const altPrep = prep && keeps(altGrade, second) ? prepPoints : 0;
+            const altLoses = salemPrep > 0 && altPrep === 0;
+            const alt = altGrade ? face('new', altGrade) + reviewFour + discipline + altPrep : null;
+            const workingDays = Array.isArray(settings?.workingDays) && settings.workingDays.length ? settings.workingDays.length : 4;
+            const attendDays = Math.ceil(workingDays * Number(settings?.titleRules?.weeklyAttendancePct ?? 75) / 100);
+            const cell = 'border border-slate-200 p-2', head = cell + ' bg-slate-50 font-black';
+            const h3 = text => '<h3 class="font-black text-lg text-slate-800">' + text + '</h3>';
+            const row = (label, value, strong = false) => '<tr><td class="' + cell + (strong ? ' font-black' : '') + '">' + label + '</td><td class="' + cell + (strong ? ' font-black' : '') + '">' + value + '</td></tr>';
+            const disciplineLine = [positives.map(c => esc(c.name) + ' +' + fmt(Number(c.points))).join('، '),
+                negatives.map(c => 'و' + esc(c.name) + ' −' + fmt(-Number(c.points)) + (c.blocksTitles === true ? ' وتمنعك من الفروسية' : '')).join('، ')]
+                .filter(Boolean).map(part => part + '.').join(' ');
+            return '<div class="gk-guide space-y-5 text-slate-700 leading-8">'
+                + '<section>' + h3('1. فارس الحلقة (كل يوم)')
+                + '<p class="font-bold">تدخل المنافسة إذا:</p><ol class="list-decimal pr-6">'
+                + '<li>حضرتَ اليوم.</li><li>سمّعتَ تسميعاً مقبولاً، لا «' + esc(repeatName) + '» كله.</li><li>لم تُسجَّل عليك مخالفة أدب.</li></ol>'
+                + '<p><b>من يفوز؟</b> الأعلى نقاطاً في حلقته اليوم.</p><ul class="list-disc pr-6">'
+                + '<li>إن تساويتم في النقاط: الأكثر حفظاً.</li><li>إن تساويتم في الحفظ أيضاً: كلاكما فارس.</li></ul></section>'
+                + '<section>' + h3('2. كيف تُحسب نقاطك؟')
+                + '<p class="font-bold">نقاطك = حفظك الجديد + مراجعتك (بتقديرهما) + الانضباط' + (prep ? ' + التحضير المنزلي' : '') + '.</p>'
+                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '">التقدير</th><th class="' + head + '">تأخذ من النقاط</th><th class="' + head + '">الوجه الجديد</th><th class="' + head + '">وجه المراجعة</th></tr></thead><tbody>'
+                + grades.map(g => '<tr><td class="' + cell + '">' + esc(g.name) + '</td><td class="' + cell + '">' + share(Number(g.percent)) + '</td><td class="' + cell + '">' + fmt(face('new', g)) + '</td><td class="' + cell + '">' + fmt(face('review', g)) + '</td></tr>').join('')
+                + '</tbody></table><ul class="list-disc pr-6">'
+                + (disciplineLine ? '<li><b>الانضباط:</b> ' + disciplineLine + '</li>' : '')
+                + (prep ? '<li><b>التحضير المنزلي:</b> +' + fmt(prepPoints) + '، بشرط أن يكون كل تسميعك اليوم «' + esc(minGrade?.name || 'جيد') + '» فأعلى.</li>' : '')
+                + '</ul><p class="font-black mt-3">مثال: سالم اليوم</p>'
+                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '">ما فعله</th><th class="' + head + '">النقاط</th></tr></thead><tbody>'
+                + row('حفظ وجهاً جديداً بتقدير ' + esc(top?.name), fmt(newTop))
+                + row('راجع 4 أوجه بتقدير ' + esc(second?.name), fmt(reviewFour))
+                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), fmt(discipline)) : '')
+                + (salemPrep ? row('التحضير المنزلي', fmt(salemPrep)) : '')
+                + row('المجموع', fmt(total), true) + '</tbody></table>'
+                + (altGrade ? '<p><b>ولو كان تقدير حفظه الجديد «' + esc(altGrade.name) + '»:</b> يأخذ ' + fmt(face('new', altGrade)) + ' بدل ' + fmt(newTop)
+                    + (altLoses ? '، ويخسر التحضير المنزلي' : '') + '. فيصير مجموعه <b>' + fmt(alt) + '</b>.</p>' : '')
+                + '<p class="font-black">الخلاصة: الإتقان يرفع نقاطك أكثر من الكثرة.</p></section>'
+                + '<section>' + h3('3. فارس الأسبوع (لكل حلقة)')
+                + '<p class="font-bold">تدخل المنافسة إذا:</p><ol class="list-decimal pr-6">'
+                + '<li>كنتَ فارس الحلقة يوماً واحداً على الأقل هذا الأسبوع.</li><li>حضرتَ ' + days(attendDays) + ' من ' + workingDays + ' على الأقل.</li>'
+                + '<li>لم تُسجَّل عليك مخالفة أدب في الأسبوع.</li></ol>'
+                + '<p class="font-bold">من يفوز؟</p><ol class="list-decimal pr-6">'
+                + '<li>الأكثر أياماً فارساً للحلقة.</li><li>إن تساويتم: الأكثر حفظاً في الأسبوع.</li><li>إن تساويتم: الأكثر نقاطاً في الأسبوع.</li>'
+                + '<li>إن تساويتم في كل شيء: تشتركون في الفروسية.</li></ol></section>'
+                + '<section>' + h3('4. متى يُعلن؟') + '<ul class="list-disc pr-6">'
+                + '<li><b>فارس الحلقة:</b> يظهر على التلفاز في يومه.</li>'
+                + '<li><b>فارس الأسبوع:</b> يُحسم بعد الأربعاء ولا يتغير، ويُعلن يوم الأحد، ويبقى على التلفاز طوال الأسبوع.</li></ul></section>'
+                + '<section>' + h3('5. النجم الصاعد ⭐') + '<p>لمن تحسّن هذا الأسبوع أكثر من غيره.</p><ul class="list-disc pr-6">'
+                + '<li><b>كيف؟</b> نقارن متوسط نقاطك اليومية هذا الأسبوع بمتوسطك فيما سبق من الفصل. الأكبر تحسّناً يفوز.</li>'
+                + '<li><b>لمن؟</b> لغير العشرة الأوائل في فترتك (العصر أو المغرب)، لتكون فرصة لمن يجتهد ليلحق.</li>'
+                + '<li><b>كم؟</b> حتى 3 طلاب لكل فترة.</li></ul></section></div>';
+        }
+        function openGeneralKnightsGuide() {
+            if (!isGeneralProgram()) return;
+            const modal = document.getElementById('gkHelpModal'), body = document.getElementById('gkHelpBody');
+            if (!modal || !body) return;
+            body.innerHTML = renderGeneralKnightsGuide(getProgramSettings());
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            document.getElementById('gkHelpClose')?.focus();
+        }
+        function closeGeneralKnightsGuide() {
+            const modal = document.getElementById('gkHelpModal');
+            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
+        }
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && document.getElementById('gkHelpModal')?.classList.contains('flex')) closeGeneralKnightsGuide();
+        });
         async function saveGeneralKnightsSettings() {
             if (!isGeneralProgram() || !canWriteView()) return;
             const prog = window.almahraPrograms.getCurrentProgram();
