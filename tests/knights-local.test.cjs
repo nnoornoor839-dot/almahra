@@ -267,7 +267,7 @@ test('knightsPerHalaqa defaults in UI, validates integers 1–5 and preserves om
     for(const circle of h.state.settings.halaqas)h.element('psKnights_'+circle.id).value=String(key.settings.titleRules.knightsPerHalaqa[circle.id]??1);
     assert.deepEqual(h.call('readKnightsPerHalaqa'),{a:1,b:2,c:1,d:5,e:1,f:1,g:1,preserved:4});
     for(const invalid of ['',0,6,1.5,'NaN']){h.element('psKnights_a').value=invalid;assert.throws(()=>h.call('readKnightsPerHalaqa'),/1 إلى 5/)}
-    assert.ok(source('renderProgramSettings').includes('knightsPerHalaqa?.[h.id] ?? 1'));
+    assert.ok(source('renderGeneralKnightsOnePlace').includes('knightsPerHalaqa?.[h.id] ?? 1'));
     assert.doesNotMatch(source('migrateSettings',store),/knightsPerHalaqa|halaqas/);
 });
 

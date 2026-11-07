@@ -59,13 +59,13 @@ test('general legacy inventory: hidden with forced inline displays, no old ranki
                 fullWeek:getComputedStyle(document.getElementById('psTrDisciplineFullWeek').closest('label')).display,
                 feature:getComputedStyle(document.querySelector('[data-feat="knights"]').closest('label')).display,
                 discipline:[...document.querySelectorAll('.crit-disc')].map(e=>getComputedStyle(e.closest('label')).display),
-                weekly:document.getElementById('psTrWeeklyAtt').closest('div').textContent,
+                weekly:document.querySelectorAll('#setPanelPoints #psTrWeeklyAtt').length,
                 text:document.body.innerText};
         });
         assert.deepEqual(result.called,[]);assert.deepEqual(result.counts,{});
         assert.deepEqual(result.hidden,Array(6).fill('none'));
         assert.equal(result.requireSard,'none');assert.equal(result.fullWeek,'none');
-        assert.equal(result.feature,'none');
+        assert.equal(result.feature,'none');assert.equal(result.weekly,0);
         assert.ok(result.discipline.length);assert.ok(result.discipline.every(s=>s==='none'));
         assert.match(result.noLevel,/حلقة فعّالة/);assert.doesNotMatch(result.noLevel,/شريحة|فرسان/);
         assert.doesNotMatch(result.text,/قديم لا يظهر|إنجاز قديم/);
@@ -127,8 +127,10 @@ test('release general: review/copy/refreeze buttons share general tokens, icons 
     try {
         const server=cloud(),r=runtime(server);await r.frozen();await r.call('renderWeekKnightsReview');
         const review=r.element('weekKnightsReview').innerHTML;
+        // The knights panel renders its own review on open; inject the frozen rows after that render.
+        await h.page.evaluate(()=>{goHome('page-settings');openSettingsSection('setPanelGeneralKnights');});
+        await h.page.locator('#setPanelGeneralKnights #weekKnightsReview h3').waitFor();
         await h.page.evaluate(review=>{
-            goHome('page-records');openRecordsSection('recPanelAbsence');
             const host=document.getElementById('weekKnightsReview');host.innerHTML=review;host.classList.remove('hidden');
         },review);
         const buttons=h.page.locator('.general-knights-action:visible');assert.ok(await buttons.count()>=3);

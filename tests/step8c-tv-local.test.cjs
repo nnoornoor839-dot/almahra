@@ -188,13 +188,13 @@ test('supervisor never builds an unsolicited snapshot; opening is synchronous, p
     assert.match(source('logoutWithGeneralTv'), /await almahraLogout\(\)/);
 });
 
-test('general archived season retains a reachable honor board and its read-only TV button', () => {
+test('archived banner honor board button is hidden in every program; renderHonorBoard in archived general leaves generalTvButton unhidden', () => {
     const h = board(); h.ctx.updateProgramBrand = () => {}; h.ctx.escapeHTML = String;
     h.ctx.window.almahraPrograms.isCurrentSeasonArchived = () => h.state.archived;
     h.install('updateCurrentEventBadge');
     for (const program of ['general', 'summer', 'review-day']) for (const archived of [true, false]) {
         h.state.program = program; h.state.archived = archived; h.run('updateCurrentEventBadge()');
-        assert.equal(h.element('generalArchivedHonorButton').classList.hidden, program !== 'general' || !archived);
+        assert.equal(h.element('generalArchivedHonorButton').classList.hidden, true); // الفرسان في مكان واحد ٤: لا لوحة شرف في العام.
     }
     h.state.program = 'general'; h.state.archived = true; h.run('renderHonorBoard()');
     assert.equal(h.element('generalTvButton').classList.hidden, false);

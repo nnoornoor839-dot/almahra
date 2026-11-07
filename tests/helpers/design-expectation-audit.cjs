@@ -6,8 +6,11 @@ const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
-    if (baseline === '186a18e') {
-        const diff = cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' });
+    if (baseline === '186a18e' || baseline === 'd51bb42') {
+        // الفئة 12 تُعكس أولاً، فيرى تدقيق الفئة 11 نسخة d51bb42 بالضبط.
+        const text = baseline === 'd51bb42' ? currentText : require('./knights-oneplace-audit.cjs').beforeKnightsOnePlace(currentText, file);
+        const diff = text === currentText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })
+            : diffAgainstText(baseline, file, text);
         const hunks = []; let hunk;
         for (const line of diff.split(/\r?\n/)) {
             const match = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
@@ -31,6 +34,15 @@ function changesFrom(file, baseline) {
         currentText = lines.join('\n');
     }
     return diffLines(file, before, currentText.split(/\r?\n/));
+}
+function diffAgainstText(baseline, file, text) {
+    const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'almahra-audit-'));
+    try {
+        fs.writeFileSync(path.join(dir, 'a'), cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, maxBuffer: 4 * 1024 * 1024 }));
+        fs.writeFileSync(path.join(dir, 'b'), text);
+        try { return cp.execFileSync('git', ['diff', '--no-index', '--no-ext-diff', '--unified=0', 'a', 'b'], { cwd: dir, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }); }
+        catch (error) { if (error.status === 1) return error.stdout; throw error; }
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 function diffLines(file, before, after) {
     const width = after.length + 1, scores = new Uint16Array((before.length + 1) * width);

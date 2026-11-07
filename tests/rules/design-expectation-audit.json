@@ -11,7 +11,8 @@
     "8": "الفرسان الجولة ١ باعتماد المالك ٢٠٢٦-١١-٠٦",
     "9": "الفرسان الجولة ٢أ باعتماد المالك ٢٠٢٦-١١-٠٦",
     "10": "الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦",
-    "11": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧"
+    "11": "الفرسان: تجهيز الرفع باعتماد المالك ٢٠٢٦-١١-٠٧",
+    "12": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)"
   },
   "files": [
     {
@@ -13117,5 +13118,764 @@
       "reveal start/output/replay path absent; Q18/Q19 reveal portion remains TODO"
     ],
     "existingExpectedResultsChanged": true
-  }
+  },
+  "knightsOnePlaceBaseline": "d51bb42",
+  "knightsOnePlaceChanges": [
+    {
+      "file": "index.html",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "06b7186a6f7326a1ef09be324a10fd5cc5ab04f44395b3638bbb266b6347f4fa",
+      "hunks": [
+        {
+          "oldLine": 925,
+          "newLine": 925,
+          "before": [],
+          "after": [
+            "body.program-general [onclick=\"openSettingsSection('setPanelRace')\"],",
+            "body.program-general #setPanelRace,"
+          ]
+        },
+        {
+          "oldLine": 1456,
+          "newLine": 1458,
+          "before": [],
+          "after": [
+            "                    <button id=\"settingsGeneralKnightsCard\" type=\"button\" class=\"panel-card\" style=\"display:none; --pc-accent:#125c2f; --pc-bg:#eef7f1\" onclick=\"openSettingsSection('setPanelGeneralKnights')\">",
+            "                        <span class=\"pc-icon\" aria-hidden=\"true\">🏆</span>",
+            "                        <span class=\"pc-title\">الفرسان</span>",
+            "                        <span class=\"pc-desc\">فرسان الأسبوع، النجم الصاعد، الإعدادات</span>",
+            "                    </button>"
+          ]
+        },
+        {
+          "oldLine": 1555,
+          "newLine": 1562,
+          "before": [],
+          "after": [
+            "            <!-- ═══ قسم: الفرسان في مكان واحد (البرنامج العام فقط) ═══ -->",
+            "            <div id=\"setPanelGeneralKnights\" class=\"set-panel w-full\">",
+            "                <div class=\"panel-back-bar no-print\">",
+            "                    <button class=\"panel-back-btn\" onclick=\"backToSettingsHome()\"><i class=\"fas fa-arrow-right\"></i></button>",
+            "                    <span class=\"panel-back-title\">الفرسان</span>",
+            "                    <button id=\"gkHelpBtn\" type=\"button\" onclick=\"showToast('قريباً')\" aria-label=\"شرح الفرسان\" title=\"شرح الفرسان\" class=\"w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center\">!</button>",
+            "                </div>",
+            "                <div class=\"flex flex-col gap-5\">",
+            "                    <section id=\"gkWeek\" class=\"bg-white rounded-2xl border-2 border-slate-200 p-5\">",
+            "                        <h3 class=\"font-black text-lg mb-3\">فرسان الأسبوع الماضي</h3>",
+            "                        <div id=\"weekKnightsReview\" class=\"hidden\"></div>",
+            "                    </section>",
+            "                    <section id=\"gkCopy\" class=\"bg-white rounded-2xl border-2 border-slate-200 p-5\">",
+            "                        <h3 class=\"font-black text-lg mb-3\">نسخ أسماء الفرسان للواتساب</h3>",
+            "                        <div class=\"general-knights-actions flex gap-2 my-3\">",
+            "                            <button type=\"button\" onclick=\"copyWeeklyKnightsAnnouncement()\" class=\"general-knights-action\"><i class=\"fas fa-copy\" aria-hidden=\"true\"></i> نسخ أسماء الفرسان</button>",
+            "                        </div>",
+            "                    </section>",
+            "                    <section id=\"gkRising\" class=\"bg-white rounded-2xl border-2 border-slate-200 p-5\">",
+            "                        <h3 class=\"font-black text-lg mb-3\">النجم الصاعد هذا الأسبوع</h3>",
+            "                        <p class=\"text-slate-500 font-bold\">يُبنى في الجزء ٢</p>",
+            "                    </section>",
+            "                    <details id=\"gkSettings\" class=\"bg-white rounded-2xl border-2 border-slate-200 p-5\">",
+            "                        <summary class=\"font-black text-lg cursor-pointer\">الإعدادات</summary>",
+            "                        <div id=\"gkSettingsBody\" class=\"mt-4\"></div>",
+            "                    </details>",
+            "                </div>",
+            "            </div>",
+            ""
+          ]
+        },
+        {
+          "oldLine": 1912,
+          "newLine": 1948,
+          "before": [
+            "                                <div class=\"general-knights-actions flex gap-2 my-3\">",
+            "                                    <button type=\"button\" onclick=\"renderWeekKnightsReview()\" class=\"general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300\"><i class=\"fas fa-list-check\" aria-hidden=\"true\"></i> مراجعة فرسان الأسبوع</button>",
+            "                                    <button type=\"button\" onclick=\"copyWeeklyKnightsAnnouncement()\" class=\"general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300\"><i class=\"fas fa-copy\" aria-hidden=\"true\"></i> نسخ إعلان الفرسان</button>",
+            "                                </div>",
+            "                                <div id=\"weekKnightsReview\" class=\"hidden\"></div>"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 6959,
+          "newLine": 6990,
+          "before": [
+            "                + `<button type=\"button\" class=\"hs-all\" onclick=\"goRace()\">افتح لوحة السباق ←</button>`;"
+          ],
+          "after": [
+            "                + (isGeneralProgram() ? '' : `<button type=\"button\" class=\"hs-all\" onclick=\"goRace()\">افتح لوحة السباق ←</button>`);"
+          ]
+        },
+        {
+          "oldLine": 11090,
+          "newLine": 11121,
+          "before": [
+            "            document.getElementById('generalArchivedHonorButton')?.classList.toggle('hidden', !isGeneralProgram() || !isArchived);"
+          ],
+          "after": [
+            "            document.getElementById('generalArchivedHonorButton')?.classList.toggle('hidden', true);"
+          ]
+        },
+        {
+          "oldLine": 11152,
+          "newLine": 11183,
+          "before": [
+            "            for (const id of ['generalSettingsTv', 'generalSettingsWeeklySheet']) {"
+          ],
+          "after": [
+            "            for (const id of ['generalSettingsTv', 'generalSettingsWeeklySheet', 'settingsGeneralKnightsCard']) {"
+          ]
+        },
+        {
+          "oldLine": 11166,
+          "newLine": 11197,
+          "before": [],
+          "after": [
+            "            if (general && document.getElementById('setPanelRace')?.classList.contains('active')) backToSettingsHome();",
+            "            if (!general && document.getElementById('setPanelGeneralKnights')?.classList.contains('active')) backToSettingsHome();",
+            "            if (!general) {",
+            "                // خارج العام لا يبقى من لوحة الفرسان المرسومة شيء: معرّفاتها تشارك نموذج البرامج الأخرى (psTrWeeklyAtt).",
+            "                const gkBody = document.getElementById('gkSettingsBody');",
+            "                if (gkBody) gkBody.innerHTML = '';",
+            "                const gkReview = document.getElementById('weekKnightsReview');",
+            "                if (gkReview) { gkReview.innerHTML = ''; gkReview.classList.toggle('hidden', true); }",
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 11367,
+          "newLine": 11407,
+          "before": [],
+          "after": [
+            "            if (panelId === 'setPanelRace' && isGeneralProgram()) return;",
+            "            if (panelId === 'setPanelGeneralKnights') {",
+            "                if (!isGeneralProgram()) return;",
+            "                renderGeneralKnightsOnePlace();",
+            "            }"
+          ]
+        },
+        {
+          "oldLine": 11889,
+          "newLine": 11934,
+          "before": [
+            "                    ${isGeneralProgram() ? `<div class=\"bg-white p-5 rounded-2xl border-2 lg:col-span-2\">",
+            "                        <h3 class=\"font-black mb-3\">عدد فرسان الأسبوع لكل حلقة (1–5)</h3>",
+            "                        <div class=\"grid grid-cols-2 gap-3\">${(s.halaqas || []).map(h => `<label>${escapeHTML(h.name)}<input id=\"psKnights_${escapeHTML(h.id)}\" type=\"number\" min=\"1\" max=\"5\" step=\"1\" value=\"${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}\" class=\"w-full p-2 border-2 rounded-xl\"></label>`).join('')}</div>",
+            "                        <p class=\"my-3\">بلا تاريخ استحقاق: ${students.filter(s => !s.joinedOn).length} طالب</p>",
+            "                        <button type=\"button\" onclick=\"fixGeneralJoinedOn()\" ${isArchivedView ? 'disabled' : ''} class=\"p-3 border-2 rounded-xl\">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>",
+            "                    </div>` : ''}"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 11896,
+          "newLine": 11935,
+          "before": [
+            "                    <div class=\"bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2\">"
+          ],
+          "after": [
+            "                    <div class=\"${isGeneralProgram() ? 'legacy-title-setting ' : ''}bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2\">"
+          ]
+        },
+        {
+          "oldLine": 11918,
+          "newLine": 11957,
+          "before": [
+            "                            <div class=\"p-4 bg-slate-50 rounded-xl border-2 border-slate-200 md:col-span-2\">"
+          ],
+          "after": [
+            "                            ${isGeneralProgram() ? '' : `<div class=\"p-4 bg-slate-50 rounded-xl border-2 border-slate-200 md:col-span-2\">"
+          ]
+        },
+        {
+          "oldLine": 11926,
+          "newLine": 11965,
+          "before": [
+            "                            </div>"
+          ],
+          "after": [
+            "                            </div>`}"
+          ]
+        },
+        {
+          "oldLine": 12086,
+          "newLine": 12125,
+          "before": [],
+          "after": [
+            "            const gkJoinedOnMissing = isGeneralProgram() ? document.getElementById('gkJoinedOnMissing') : null;",
+            "            if (gkJoinedOnMissing) gkJoinedOnMissing.textContent = students.filter(st => !st.joinedOn).length;"
+          ]
+        },
+        {
+          "oldLine": 12390,
+          "newLine": 12431,
+          "before": [],
+          "after": [
+            "        // «الفرسان» في مكان واحد (العام فقط): الحقول من الإعدادات الحالية، ثم جدول الأسبوع الماضي.",
+            "        function renderGeneralKnightsOnePlace() {",
+            "            if (!isGeneralProgram()) return;",
+            "            const box = document.getElementById('gkSettingsBody');",
+            "            if (!box) return;",
+            "            const s = window.almahraPrograms.getSettings() || {};",
+            "            const locked = isWriteLockedView();",
+            "            box.innerHTML = `",
+            "                <h4 class=\"font-black mb-3\">عدد فرسان الأسبوع لكل حلقة (1–5)</h4>",
+            "                <div class=\"grid grid-cols-2 gap-3\">${getProgramSettings().halaqas.map(h => `<label>${escapeHTML(h.name)}<input id=\"psKnights_${escapeHTML(h.id)}\" type=\"number\" min=\"1\" max=\"5\" step=\"1\" value=\"${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}\" class=\"w-full p-2 border-2 rounded-xl\"></label>`).join('')}</div>",
+            "                <label class=\"block font-bold mt-4\">أدنى نسبة حضور لفارس الأسبوع (0–100)",
+            "                    <input type=\"number\" id=\"psTrWeeklyAtt\" value=\"${getTitleRules().weeklyAttendancePct}\" min=\"0\" max=\"100\" step=\"1\" class=\"w-24 p-2 border-2 rounded-xl text-center\"> %</label>",
+            "                <p class=\"my-3\">بلا تاريخ استحقاق: <span id=\"gkJoinedOnMissing\">${students.filter(st => !st.joinedOn).length}</span> طالب</p>",
+            "                <button type=\"button\" onclick=\"fixGeneralJoinedOn()\" ${locked ? 'disabled' : ''} class=\"p-3 border-2 rounded-xl\">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>",
+            "                <div class=\"mt-4\"><button id=\"gkSaveBtn\" type=\"button\" onclick=\"saveGeneralKnightsSettings()\" ${locked ? 'disabled' : ''} class=\"general-knights-action\"><i class=\"fas fa-save\" aria-hidden=\"true\"></i> حفظ</button></div>`;",
+            "            Promise.resolve().then(renderWeekKnightsReview).catch(err => showToast('تعذّر عرض فرسان الأسبوع: ' + err.message, 'error'));",
+            "        }",
+            "        async function saveGeneralKnightsSettings() {",
+            "            if (!isGeneralProgram() || !canWriteView()) return;",
+            "            const prog = window.almahraPrograms.getCurrentProgram();",
+            "            if (!prog) return;",
+            "            let knightsPerHalaqa, weeklyAttendancePct;",
+            "            try {",
+            "                knightsPerHalaqa = readKnightsPerHalaqa();",
+            "                const raw = document.getElementById('psTrWeeklyAtt')?.value.trim(), value = Number(raw);",
+            "                if (!raw || !Number.isInteger(value) || value < 0 || value > 100) throw new Error('أدنى نسبة حضور: عدد صحيح من 0 إلى 100');",
+            "                weeklyAttendancePct = value;",
+            "            } catch (e) { showToast(e.message, 'error'); return; }",
+            "            const settings = { ...prog.settings, titleRules: { ...prog.settings.titleRules, knightsPerHalaqa, weeklyAttendancePct } };",
+            "            const button = document.getElementById('gkSaveBtn');",
+            "            if (button) button.disabled = true;",
+            "            try { await commitProgramSettings({ settings, prog, season: window.almahraPrograms.getCurrentSeason() }); }",
+            "            finally { if (button) button.disabled = isWriteLockedView(); }",
+            "        }",
+            ""
+          ]
+        },
+        {
+          "oldLine": 12465,
+          "newLine": 12541,
+          "before": [
+            "            let kindMult, grades, attendancePoints, tvPrayer, knightsPerHalaqa;"
+          ],
+          "after": [
+            "            let kindMult, grades, attendancePoints, tvPrayer;"
+          ]
+        },
+        {
+          "oldLine": 12469,
+          "newLine": 12545,
+          "before": [
+            "                    knightsPerHalaqa = readKnightsPerHalaqa();"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 12493,
+          "newLine": 12568,
+          "before": [
+            "                    ...(general ? { ...prog.settings.titleRules, knightsPerHalaqa } : {}),"
+          ],
+          "after": [
+            "                    // في العام: عدد الفرسان ونسبة الحضور يُحفظان من لوحة «الفرسان» وحدها، فيبقيان هنا كما هما.",
+            "                    ...(general ? { ...prog.settings.titleRules } : {}),"
+          ]
+        },
+        {
+          "oldLine": 12495,
+          "newLine": 12571,
+          "before": [
+            "                    weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),"
+          ],
+          "after": [
+            "                    ...(general ? {} : { weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)) }),"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "44bd9af02db87a0a64e1f49fa81b5e39d0391cbdab3e622113fbdaa7e1c41bf6",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e') {",
+            "        const diff = cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' });"
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42') {",
+            "        // الفئة 12 تُعكس أولاً، فيرى تدقيق الفئة 11 نسخة d51bb42 بالضبط.",
+            "        const text = baseline === 'd51bb42' ? currentText : require('./knights-oneplace-audit.cjs').beforeKnightsOnePlace(currentText, file);",
+            "        const diff = text === currentText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })",
+            "            : diffAgainstText(baseline, file, text);"
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 38,
+          "before": [],
+          "after": [
+            "function diffAgainstText(baseline, file, text) {",
+            "    const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'almahra-audit-'));",
+            "    try {",
+            "        fs.writeFileSync(path.join(dir, 'a'), cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, maxBuffer: 4 * 1024 * 1024 }));",
+            "        fs.writeFileSync(path.join(dir, 'b'), text);",
+            "        try { return cp.execFileSync('git', ['diff', '--no-index', '--no-ext-diff', '--unified=0', 'a', 'b'], { cwd: dir, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }); }",
+            "        catch (error) { if (error.status === 1) return error.stdout; throw error; }",
+            "    } finally { fs.rmSync(dir, { recursive: true, force: true }); }",
+            "}"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-owner-auto-audit.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "058321633a2db357bfcdf382575bfd7cde09c703d13eef450f1609a6c505266b",
+      "hunks": [
+        {
+          "oldLine": 4,
+          "newLine": 4,
+          "before": [],
+          "after": [
+            "    text = require('./knights-oneplace-audit.cjs').beforeKnightsOnePlace(text, file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/home-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "260c5d183ecedf538c2ec5fd8fa1359b2b3ed702b6deebf2a991469724cae39d",
+      "hunks": [
+        {
+          "oldLine": 271,
+          "newLine": 271,
+          "before": [
+            "        for (const name of ['renderHomeCare', 'renderHomeLeaders', 'initHadithTilt']) assert.equal(source(name), source(name, baseline));"
+          ],
+          "after": [
+            "        for (const name of ['renderHomeCare', 'initHadithTilt']) assert.equal(source(name), source(name, baseline));",
+            "        // الفرسان في مكان واحد ٣: رابط لوحة السباق يُحذف في العام وحده؛ ما سواه مطابق.",
+            "        assert.equal(source('renderHomeLeaders').replace(\"(isGeneralProgram() ? '' : `<button type=\\\"button\\\" class=\\\"hs-all\\\" onclick=\\\"goRace()\\\">افتح لوحة السباق ←</button>`);\", \"`<button type=\\\"button\\\" class=\\\"hs-all\\\" onclick=\\\"goRace()\\\">افتح لوحة السباق ←</button>`;\"), source('renderHomeLeaders', baseline));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "33350c6a297ac67576a558e27732df6a6a585c1c9c7843d5e81a54c37e77e2a5",
+      "hunks": [
+        {
+          "oldLine": 270,
+          "newLine": 270,
+          "before": [
+            "    assert.ok(source('renderProgramSettings').includes('knightsPerHalaqa?.[h.id] ?? 1'));"
+          ],
+          "after": [
+            "    assert.ok(source('renderGeneralKnightsOnePlace').includes('knightsPerHalaqa?.[h.id] ?? 1'));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "13aea0d18eb4dc406d7ec9b4b3b7645fa25221abe7f6e3ab4c81779c1ece29f2",
+      "hunks": [
+        {
+          "oldLine": 86,
+          "newLine": 86,
+          "before": [
+            "test('ق3: weekly count and joinedOn remain in program settings with review/refreeze/announcement', async () => {"
+          ],
+          "after": [
+            "test('ق3: weekly count and joinedOn live in the general knights panel with review/refreeze/announcement', async () => {"
+          ]
+        },
+        {
+          "oldLine": 89,
+          "newLine": 89,
+          "before": [
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelPoints'); });"
+          ],
+          "after": [
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });",
+            "        await h.page.click('#setPanelGeneralKnights #gkSettings summary');"
+          ]
+        },
+        {
+          "oldLine": 91,
+          "newLine": 92,
+          "before": [
+            "        assert.equal(await h.page.locator('#psKnights_a').isVisible(), true);",
+            "        assert.match(await h.page.locator('#setPanelPoints').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);"
+          ],
+          "after": [
+            "        assert.equal(await h.page.locator('#setPanelGeneralKnights #gkSettings #psKnights_a').isVisible(), true);",
+            "        assert.match(await h.page.locator('#setPanelGeneralKnights #gkSettings').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);"
+          ]
+        },
+        {
+          "oldLine": 320,
+          "newLine": 321,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f)).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 329,
+          "newLine": 330,
+          "before": [
+            "        const text = fs.readFileSync(path.join(root,row.file),'utf8');"
+          ],
+          "after": [
+            "        const text = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlace(fs.readFileSync(path.join(root,row.file),'utf8'),row.file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "ad2f14c9dd22eabc9a6bc1bb882ba79394611f43a14ec4e3d620e143611591f9",
+      "hunks": [
+        {
+          "oldLine": 62,
+          "newLine": 62,
+          "before": [
+            "                weekly:document.getElementById('psTrWeeklyAtt').closest('div').textContent,"
+          ],
+          "after": [
+            "                weekly:document.querySelectorAll('#setPanelPoints #psTrWeeklyAtt').length,"
+          ]
+        },
+        {
+          "oldLine": 68,
+          "newLine": 68,
+          "before": [
+            "        assert.equal(result.feature,'none');"
+          ],
+          "after": [
+            "        assert.equal(result.feature,'none');assert.equal(result.weekly,0);"
+          ]
+        },
+        {
+          "oldLine": 130,
+          "newLine": 130,
+          "before": [],
+          "after": [
+            "        // The knights panel renders its own review on open; inject the frozen rows after that render.",
+            "        await h.page.evaluate(()=>{goHome('page-settings');openSettingsSection('setPanelGeneralKnights');});",
+            "        await h.page.locator('#setPanelGeneralKnights #weekKnightsReview h3').waitFor();"
+          ]
+        },
+        {
+          "oldLine": 131,
+          "newLine": 134,
+          "before": [
+            "            goHome('page-records');openRecordsSection('recPanelAbsence');"
+          ],
+          "after": []
+        }
+      ]
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "beforeSha256": "c1a799182fd3f9655751a3310673c217b6be5039085533d560590b41fc6431e7",
+      "hunks": [
+        {
+          "oldLine": 191,
+          "newLine": 191,
+          "before": [
+            "test('general archived season retains a reachable honor board and its read-only TV button', () => {"
+          ],
+          "after": [
+            "test('archived banner honor board button is hidden in every program; renderHonorBoard in archived general leaves generalTvButton unhidden', () => {"
+          ]
+        },
+        {
+          "oldLine": 197,
+          "newLine": 197,
+          "before": [
+            "        assert.equal(h.element('generalArchivedHonorButton').classList.hidden, program !== 'general' || !archived);"
+          ],
+          "after": [
+            "        assert.equal(h.element('generalArchivedHonorButton').classList.hidden, true); // الفرسان في مكان واحد ٤: لا لوحة شرف في العام."
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsOnePlaceAddedFiles": [
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "sha256": "e6072e1b38d39283196d2bcccb99a951b73765d886c2f21e32bc720dac48fdc2",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { createHash } = require('node:crypto');",
+            "// Category 12: reverse only the exact «الفرسان في مكان واحد — الجزء ١» lines, so older audit layers see d51bb42.",
+            "function beforeKnightsOnePlace(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    const row = require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file);",
+            "    if (!row || createHash('sha256').update(text).digest('hex') === row.beforeSha256) return text;",
+            "    const lines = text.split('\\n');",
+            "    if (!row.hunks.every(h => JSON.stringify(lines.slice(h.newLine - 1, h.newLine - 1 + h.after.length)) === JSON.stringify(h.after))) return text;",
+            "    for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);",
+            "    return lines.join('\\n');",
+            "}",
+            "module.exports = { beforeKnightsOnePlace };",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "sha256": "0991963d77265c23d093d4a43b089e1e5155ba234affdf4e8fbb60b871a3bd9c",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// تدقيق الفئة 12: «الفرسان في مكان واحد — الجزء ١» مقابل d51bb42 — كل سطر تغيّر مسجَّل، ولا شيء محميّ تغيّر.",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');",
+            "const { beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source } = require('./helpers/quick-entry-harness.cjs');",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = 'd51bb42';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "",
+            "test('category 12 audit: every changed line since d51bb42 is registered and reverses exactly to d51bb42', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.knightsOnePlaceBaseline, BASE);",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json').sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceChanges.map(r => r.file).sort(), changed);",
+            "    for (const row of audit.knightsOnePlaceChanges) {",
+            "        assert.equal(row.category, 12); assert.equal(row.reason, audit.categories['12']);",
+            "        assert.deepEqual({ file: row.file, hunks: row.hunks }, changesFrom(row.file, BASE), row.file);",
+            "        assert.equal(sha(original(row.file)), row.beforeSha256, row.file);",
+            "        assert.equal(beforeKnightsOnePlace(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    assert.deepEqual(audit.knightsOnePlaceAddedFiles.map(r => r.file).sort(), untracked);",
+            "    for (const row of audit.knightsOnePlaceAddedFiles) {",
+            "        const text = fs.readFileSync(path.join(root, row.file), 'utf8');",
+            "        assert.equal(row.category, 12); assert.equal(row.reason, audit.categories['12']);",
+            "        assert.equal(sha(text), row.sha256, row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }]);",
+            "    }",
+            "    const mutated = current('index.html').replace(\"if (panelId === 'setPanelRace' && isGeneralProgram()) return;\", \"if (panelId === 'setPanelRace' && isGeneralProgram()) return false;\");",
+            "    assert.notEqual(mutated, current('index.html')); assert.notEqual(beforeKnightsOnePlace(mutated), original('index.html'));",
+            "});",
+            "",
+            "test('category 12 audit: protected knights functions, store, TV, rules and answer keys are unchanged since d51bb42', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    for (const name of ['dayStats', 'getCumulativeStats', 'getDayHalaqaKnights', 'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow', 'ensureWeekKnightsFrozen',",
+            "        'lockWeekRows', 'lockKnightsForMessage', 'unfreezeHalaqaWeek', 'renderWeekKnightsReview', 'copyWeeklyKnightsAnnouncement',",
+            "        'buildWeeklyKnightsAnnouncement', 'getMostImproved', 'readKnightsPerHalaqa', 'fixGeneralJoinedOn', 'commitProgramSettings', 'goRace'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    assert.equal(html.match(/const dayPoints = .*;/)[0], old.match(/const dayPoints = .*;/)[0]);",
+            "    for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js', 'tv.js', 'tv.html',",
+            "        ...['knights-answer-key', 'knights-r2-answer-key', 'board-answer-key', 'homeprep-answer-key', 'home-answer-key'].map(n => 'tests/rules/' + n + '.json')])",
+            "        assert.equal(current(file), original(file), file);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-local.test.cjs",
+      "category": 12,
+      "reason": "الفرسان في مكان واحد — الجزء ١ (٢٠٢٦-١١-٠٧)",
+      "sha256": "dfb80902e2d8679971a8cf53d9c181fce339d3e789e430ae28ee61884602abd7",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبارات قبول «الفرسان في مكان واحد» (البطاقة: D:/المهره/notes/features/knights/one-place-card.md) — الجزء ١: ف1، ف2، ف3، ف8، ف12.",
+            "// كُتبت قبل تعديل كود المنتج، وتُرى حمراء أولاً.",
+            "const { before, after, test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const path = require('node:path');",
+            "const { newPage } = require('./helpers/t25-browser.cjs');",
+            "const { key } = require('./helpers/knights-r2b-harness.cjs');",
+            "let browser;",
+            "before(async () => {",
+            "    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,",
+            "        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));",
+            "    browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });",
+            "});",
+            "after(async () => { await browser?.close(); });",
+            "const open = (options = {}) => newPage(browser, { width: 1280, today: key.days[1], ...options });",
+            "const RACE_CARD = '[onclick=\"openSettingsSection(\\'setPanelRace\\')\"]';",
+            "const KNIGHTS_CARD = '#settingsGeneralKnightsCard';",
+            "const PANEL = '#setPanelGeneralKnights';",
+            "const SECTIONS = ['#gkWeek', '#gkCopy', '#gkRising', '#gkSettings', '#gkHelpBtn'];",
+            "",
+            "test('ف1: general settings show the «الفرسان» card and hide «لوحة السباق»; direct open of the race panel is blocked; the knights panel opens with its sections', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => goHome('page-settings'));",
+            "        assert.equal(await h.page.locator(KNIGHTS_CARD).isVisible(), true, 'بطاقة الفرسان ظاهرة');",
+            "        assert.equal(await h.page.locator(RACE_CARD).isVisible(), false, 'بطاقة لوحة السباق مخفية');",
+            "        await h.page.evaluate(() => openSettingsSection('setPanelRace'));",
+            "        assert.equal(await h.page.locator('#setPanelRace.active').count(), 0, 'لا تُفتح لوحة السباق بالاستدعاء المباشر');",
+            "        assert.equal(await h.page.locator('#setPanelRace').isVisible(), false);",
+            "        await h.page.evaluate(() => openSettingsSection('setPanelGeneralKnights'));",
+            "        assert.equal(await h.page.locator(PANEL).isVisible(), true, 'لوحة الفرسان تُفتح');",
+            "        for (const id of SECTIONS) assert.equal(await h.page.locator(PANEL + ' ' + id).count(), 1, id + ' موجود داخل اللوحة');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ف12: summer keeps «لوحة السباق» visible and openable, and has no general knights card', async () => {",
+            "    const h = await open({ program: 'summer' });",
+            "    try {",
+            "        await h.page.evaluate(() => goHome('page-settings'));",
+            "        assert.equal(await h.page.locator(RACE_CARD).isVisible(), true);",
+            "        await h.page.evaluate(() => openSettingsSection('setPanelRace'));",
+            "        assert.equal(await h.page.locator('#setPanelRace.active').count(), 1);",
+            "        assert.equal(await h.page.locator(KNIGHTS_CARD + ':visible').count(), 0);",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ف2: general home leaders box renders without the «افتح لوحة السباق» link; summer keeps it', async () => {",
+            "    const g = await open();",
+            "    try {",
+            "        const r = await g.page.evaluate(() => { renderHomeLeaders(); return { rows: document.querySelectorAll('#homeLead .hs-row').length, all: document.querySelectorAll('#homeLead .hs-all').length }; });",
+            "        assert.ok(r.rows > 0, 'صندوق المتصدرين يعرض صفوفاً');",
+            "        assert.equal(r.all, 0, 'لا رابط لوحة السباق في general');",
+            "        assert.deepEqual(g.errors, []);",
+            "    } finally { await g.close(); }",
+            "    const s = await open({ program: 'summer' });",
+            "    try {",
+            "        const r = await s.page.evaluate(() => { renderHomeLeaders(); return { rows: document.querySelectorAll('#homeLead .hs-row').length, all: document.querySelectorAll('#homeLead .hs-all').length }; });",
+            "        if (r.rows > 0) assert.equal(r.all, 1, 'الرابط باقٍ في الصيفي');",
+            "        assert.deepEqual(s.errors, []);",
+            "    } finally { await s.close(); }",
+            "});",
+            "",
+            "test('ف3: general «رسائل الأسبوع» has no knights buttons or review host; both live inside the knights panel; the week picker stays', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => { goHome('page-records'); openRecordsSection('recPanelAbsence'); });",
+            "        assert.equal(await h.page.locator('#recPanelAbsence .general-knights-actions').count(), 0);",
+            "        assert.equal(await h.page.locator('#recPanelAbsence #weekKnightsReview').count(), 0);",
+            "        assert.equal(await h.page.locator('#recPanelAbsence [onclick*=\"renderWeekKnightsReview\"]').count(), 0);",
+            "        assert.equal(await h.page.locator('#recPanelAbsence [onclick*=\"copyWeeklyKnightsAnnouncement\"]').count(), 0);",
+            "        assert.equal(await h.page.locator('#generalMessageWeek').count(), 1, 'منتقي الأسبوع باقٍ للرسائل');",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });",
+            "        assert.equal(await h.page.locator(PANEL + ' #gkWeek #weekKnightsReview').count(), 1, 'جدول المراجعة داخل قسم الأسبوع');",
+            "        assert.equal(await h.page.locator(PANEL + ' #gkCopy button').count(), 1, 'زر النسخ داخل قسم النسخ');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ف8: knights settings live in the knights panel only; saving them persists; saving the program form keeps them untouched', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => {",
+            "            window.almahraPrograms.updateSettings = async (id, settings) => {",
+            "                window.__fixture.programs[id].settings = settings;",
+            "                window.__fixture.writes.push({ settings: structuredClone(settings) });",
+            "                return { success: true };",
+            "            };",
+            "            window.almahraPrograms.getAllStudents = async () => window.__fixture.list;",
+            "            window.almahraData.getStudents = () => window.__fixture.list;",
+            "            goHome('page-settings'); openSettingsSection('setPanelProgram');",
+            "        });",
+            "        assert.equal(await h.page.locator('#setPanelProgram #psKnights_a, #setPanelPoints #psKnights_a').count(), 0, 'عدد الفرسان ليس في نموذج البرنامج ولا في النقاط والمعايير');",
+            "        assert.equal(await h.page.locator('#setPanelProgram #psTrWeeklyAtt, #setPanelPoints #psTrWeeklyAtt').count(), 0, 'نسبة الحضور ليست في نموذج البرنامج ولا في النقاط والمعايير');",
+            "        // حفظ نموذج البرنامج قبل أن تُرسم لوحة الفرسان: لا حقول في الصفحة، فيجب أن تبقى القيم المحفوظة كما هي (يكشف تصفير النسبة ورمي readKnightsPerHalaqa).",
+            "        const initial = await h.page.evaluate(() => structuredClone(window.almahraPrograms.getSettings().titleRules));",
+            "        await h.page.evaluate(async () => { await saveProgramSettings(); });",
+            "        await h.page.waitForFunction(() => window.__fixture.writes.some(w => w.settings));",
+            "        let first = await h.page.evaluate(() => window.__fixture.writes.filter(w => w.settings).at(-1).settings.titleRules);",
+            "        assert.deepEqual(first.knightsPerHalaqa || null, initial.knightsPerHalaqa || null, 'عدد الفرسان كما كان قبل أي رسم للوحة');",
+            "        assert.equal(first.weeklyAttendancePct, initial.weeklyAttendancePct ?? 75, 'نسبة الحضور لم تُصفَّر');",
+            "        await h.page.evaluate(() => openSettingsSection('setPanelGeneralKnights'));",
+            "        await h.page.click(PANEL + ' #gkSettings summary');",
+            "        assert.equal(await h.page.locator(PANEL + ' #gkSettings #psKnights_a').count(), 1);",
+            "        assert.equal(await h.page.locator(PANEL + ' #gkSettings #psTrWeeklyAtt').count(), 1);",
+            "        await h.page.fill(PANEL + ' #psKnights_a', '2');",
+            "        await h.page.fill(PANEL + ' #psTrWeeklyAtt', '50');",
+            "        const beforeKnights = await h.page.evaluate(() => window.__fixture.writes.length);",
+            "        await h.page.click(PANEL + ' #gkSaveBtn');",
+            "        await h.page.waitForFunction(n => window.__fixture.writes.length > n, beforeKnights);",
+            "        let saved = await h.page.evaluate(() => window.__fixture.writes.filter(w => w.settings).at(-1).settings.titleRules);",
+            "        assert.equal(saved.knightsPerHalaqa.a, 2);",
+            "        assert.equal(saved.weeklyAttendancePct, 50);",
+            "        const before = await h.page.evaluate(() => window.__fixture.writes.length);",
+            "        await h.page.evaluate(async () => { openSettingsSection('setPanelProgram'); await saveProgramSettings(); });",
+            "        await h.page.waitForFunction(n => window.__fixture.writes.length > n, before);",
+            "        saved = await h.page.evaluate(() => window.__fixture.writes.filter(w => w.settings).at(-1).settings.titleRules);",
+            "        assert.equal(saved.knightsPerHalaqa.a, 2, 'حفظ نموذج البرنامج لا يمس عدد الفرسان');",
+            "        assert.equal(saved.weeklyAttendancePct, 50, 'حفظ نموذج البرنامج لا يصفّر نسبة الحضور');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "test('ف12ب: after visiting the general knights panel and switching to summer (read-only in production), only the summer attendance field remains, with the summer value; nothing from the knights panel leaks', async () => {",
+            "    const h = await open();",
+            "    try {",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });",
+            "        await h.page.click(PANEL + ' #gkSettings summary');",
+            "        assert.equal(await h.page.locator(PANEL + ' #psTrWeeklyAtt').count(), 1);",
+            "        await h.page.fill(PANEL + ' #psTrWeeklyAtt', '33'); // قيمة مميزة غير محفوظة: لو بقي الحقل بعد المغادرة لظهرت",
+            "        await h.page.evaluate(() => { window.almahraPrograms.openProgram('summer'); });",
+            "        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelPoints'); });",
+            "        const state = await h.page.evaluate(() => ({",
+            "            all: document.querySelectorAll('#psTrWeeklyAtt').length,",
+            "            inPoints: document.querySelectorAll('#setPanelPoints #psTrWeeklyAtt').length,",
+            "            value: document.getElementById('psTrWeeklyAtt')?.value,",
+            "            expected: String(window.almahraPrograms.getSettings().titleRules?.weeklyAttendancePct ?? 75),",
+            "            leaked: document.querySelectorAll('[id^=\"psKnights_\"], #gkSaveBtn, #gkSettingsBody *').length",
+            "        }));",
+            "        assert.equal(state.all, 1, 'معرّف واحد فقط في الصفحة بعد مغادرة general');",
+            "        assert.equal(state.inPoints, 1, 'الحقل الباقي هو حقل الصيفي في النقاط والمعايير');",
+            "        assert.equal(state.value, state.expected, 'قيمته قيمة الصيفي لا 33 التي كُتبت في لوحة الفرسان');",
+            "        assert.equal(state.leaked, 0, 'لا بقايا من لوحة الفرسان في الصفحة');",
+            "        assert.deepEqual(h.errors, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ]
 }

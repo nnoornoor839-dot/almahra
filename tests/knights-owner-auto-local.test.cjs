@@ -83,13 +83,14 @@ test('ق2: approve and launch reject general without writes or local changes', a
     } finally { await h.close(); }
 });
 
-test('ق3: weekly count and joinedOn remain in program settings with review/refreeze/announcement', async () => {
+test('ق3: weekly count and joinedOn live in the general knights panel with review/refreeze/announcement', async () => {
     const h = await open();
     try {
-        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelPoints'); });
+        await h.page.evaluate(() => { goHome('page-settings'); openSettingsSection('setPanelGeneralKnights'); });
+        await h.page.click('#setPanelGeneralKnights #gkSettings summary');
         assert.equal(await h.page.locator('#psKnights_a').count(), 1);
-        assert.equal(await h.page.locator('#psKnights_a').isVisible(), true);
-        assert.match(await h.page.locator('#setPanelPoints').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);
+        assert.equal(await h.page.locator('#setPanelGeneralKnights #gkSettings #psKnights_a').isVisible(), true);
+        assert.match(await h.page.locator('#setPanelGeneralKnights #gkSettings').innerText(), /عدد فرسان الأسبوع لكل حلقة.*1–5/);
         const server = cloud(), r = runtime(server); await r.frozen(); await r.call('renderWeekKnightsReview');
         assert.match(r.element('weekKnightsReview').innerHTML, /إعادة الحسم/);
         assert.ok(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('onclick="copyWeeklyKnightsAnnouncement()"'));
@@ -317,7 +318,7 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
     const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
     const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');
     const original = file => cp.execFileSync('git', ['show', '186a18e:' + file], {cwd:root, encoding:'utf8', maxBuffer:4*1024*1024}).replaceAll('\r\n','\n');
-    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f)).sort();
+    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();
     assert.deepEqual(audit.knightsOwnerAutoChanges.map(r => r.file).sort(), changed);
     for (const row of audit.knightsOwnerAutoChanges) {
         assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);
@@ -326,7 +327,7 @@ test('owner audit: exact changed lines only, all protected functions/keys/histor
         assert.equal(beforeKnightsOwnerAuto(fs.readFileSync(path.join(root,row.file),'utf8'),row.file),original(row.file));
     }
     for (const row of audit.knightsOwnerAutoAddedFiles) {
-        const text = fs.readFileSync(path.join(root,row.file),'utf8');
+        const text = require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlace(fs.readFileSync(path.join(root,row.file),'utf8'),row.file);
         assert.equal(row.category,11); assert.equal(row.reason,audit.categories['11']);
         assert.equal(createHash('sha256').update(text).digest('hex'),row.sha256);
         assert.deepEqual(row.hunks,[{oldLine:1,newLine:1,before:[],after:text.split('\n')}]);

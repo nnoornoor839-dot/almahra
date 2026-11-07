@@ -922,6 +922,8 @@ body.program-general {
 body.program-general { background:var(--general-canvas); color:var(--general-ink); }
 body.program-general [onclick="openSettingsSection('setPanelKnights')"],
 body.program-general #setPanelKnights,
+body.program-general [onclick="openSettingsSection('setPanelRace')"],
+body.program-general #setPanelRace,
 body.program-general #threeKnightsModal,
 body.program-general #supervisorPanel,
 body.program-general #knightCelebrationModal,
@@ -1453,6 +1455,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <span class="pc-icon"><i class="fas fa-print"></i></span>
                         <span class="pc-title">طباعة الأوراق الأسبوعية</span>
                     </button>
+                    <button id="settingsGeneralKnightsCard" type="button" class="panel-card" style="display:none; --pc-accent:#125c2f; --pc-bg:#eef7f1" onclick="openSettingsSection('setPanelGeneralKnights')">
+                        <span class="pc-icon" aria-hidden="true">🏆</span>
+                        <span class="pc-title">الفرسان</span>
+                        <span class="pc-desc">فرسان الأسبوع، النجم الصاعد، الإعدادات</span>
+                    </button>
                     <button class="panel-card" style="--pc-accent:#eab308; --pc-bg:#fefce8" onclick="openSettingsSection('setPanelRace')">
                         <span class="pc-icon"><i class="fas fa-bus-alt"></i></span>
                         <span class="pc-title">لوحة السباق</span>
@@ -1549,6 +1556,35 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <div id="compactTripGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pt-2 pb-6"></div>
                         <div id="emptyTripMessage" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-2xl font-bold"><i class="fas fa-users-slash text-6xl mb-4"></i>لم يتم إضافة طلاب بعد.</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ═══ قسم: الفرسان في مكان واحد (البرنامج العام فقط) ═══ -->
+            <div id="setPanelGeneralKnights" class="set-panel w-full">
+                <div class="panel-back-bar no-print">
+                    <button class="panel-back-btn" onclick="backToSettingsHome()"><i class="fas fa-arrow-right"></i></button>
+                    <span class="panel-back-title">الفرسان</span>
+                    <button id="gkHelpBtn" type="button" onclick="showToast('قريباً')" aria-label="شرح الفرسان" title="شرح الفرسان" class="w-7 h-7 rounded-full border-2 border-slate-300 text-slate-600 font-black text-sm leading-none flex items-center justify-center">!</button>
+                </div>
+                <div class="flex flex-col gap-5">
+                    <section id="gkWeek" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
+                        <h3 class="font-black text-lg mb-3">فرسان الأسبوع الماضي</h3>
+                        <div id="weekKnightsReview" class="hidden"></div>
+                    </section>
+                    <section id="gkCopy" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
+                        <h3 class="font-black text-lg mb-3">نسخ أسماء الفرسان للواتساب</h3>
+                        <div class="general-knights-actions flex gap-2 my-3">
+                            <button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="general-knights-action"><i class="fas fa-copy" aria-hidden="true"></i> نسخ أسماء الفرسان</button>
+                        </div>
+                    </section>
+                    <section id="gkRising" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
+                        <h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>
+                        <p class="text-slate-500 font-bold">يُبنى في الجزء ٢</p>
+                    </section>
+                    <details id="gkSettings" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
+                        <summary class="font-black text-lg cursor-pointer">الإعدادات</summary>
+                        <div id="gkSettingsBody" class="mt-4"></div>
+                    </details>
                 </div>
             </div>
 
@@ -1909,11 +1945,6 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                     </select>
                                     <span id="generalMessageWeekDates" class="text-slate-600 font-bold"></span>
                                 </div>
-                                <div class="general-knights-actions flex gap-2 my-3">
-                                    <button type="button" onclick="renderWeekKnightsReview()" class="general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300"><i class="fas fa-list-check" aria-hidden="true"></i> مراجعة فرسان الأسبوع</button>
-                                    <button type="button" onclick="copyWeeklyKnightsAnnouncement()" class="general-knights-action bg-green-50 hover:bg-green-100 text-green-800 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-3 border-2 border-green-300"><i class="fas fa-copy" aria-hidden="true"></i> نسخ إعلان الفرسان</button>
-                                </div>
-                                <div id="weekKnightsReview" class="hidden"></div>
                                 <div id="generalWeeklyMessageList" class="space-y-2"></div>
                             </div>
                             <div id="absenceDetailList" class="space-y-2"></div>
@@ -6956,7 +6987,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 return;
             }
             box.innerHTML = head + `<div class="hs-rows">${rows}</div>`
-                + `<button type="button" class="hs-all" onclick="goRace()">افتح لوحة السباق ←</button>`;
+                + (isGeneralProgram() ? '' : `<button type="button" class="hs-all" onclick="goRace()">افتح لوحة السباق ←</button>`);
         }
 
         // الرأس يلبس الأبيض عند النزول، ويبقى شفافاً في أعلى الصفحة
@@ -11087,7 +11118,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const prog = window.almahraPrograms.getCurrentProgram();
             const season = window.almahraPrograms.getCurrentSeason();
             const isArchived = window.almahraPrograms.isCurrentSeasonArchived();
-            document.getElementById('generalArchivedHonorButton')?.classList.toggle('hidden', !isGeneralProgram() || !isArchived);
+            document.getElementById('generalArchivedHonorButton')?.classList.toggle('hidden', true);
             // الرأس صار واحداً لكل المقاسات، فلم يعد هناك وسم منفصل للجوال
             const badges = [document.getElementById('currentEventBadge')];
 
@@ -11149,7 +11180,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // إظهار/إخفاء الميزات حسب إعدادات البرنامج الحالي
         function applyProgramFeatures() {
             document.getElementById('generalTvButton')?.classList.toggle('hidden', !isGeneralProgram());
-            for (const id of ['generalSettingsTv', 'generalSettingsWeeklySheet']) {
+            for (const id of ['generalSettingsTv', 'generalSettingsWeeklySheet', 'settingsGeneralKnightsCard']) {
                 const el = document.getElementById(id);
                 if (el) el.style.display = isGeneralProgram() ? '' : 'none';
             }
@@ -11163,6 +11194,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (weeklyCard) weeklyCard.style.display = general ? '' : 'none';
             document.getElementById('generalWeeklyMessages')?.classList.toggle('hidden', !general);
             if (general && document.getElementById('setPanelExam')?.classList.contains('active')) backToSettingsHome();
+            if (general && document.getElementById('setPanelRace')?.classList.contains('active')) backToSettingsHome();
+            if (!general && document.getElementById('setPanelGeneralKnights')?.classList.contains('active')) backToSettingsHome();
+            if (!general) {
+                // خارج العام لا يبقى من لوحة الفرسان المرسومة شيء: معرّفاتها تشارك نموذج البرامج الأخرى (psTrWeeklyAtt).
+                const gkBody = document.getElementById('gkSettingsBody');
+                if (gkBody) gkBody.innerHTML = '';
+                const gkReview = document.getElementById('weekKnightsReview');
+                if (gkReview) { gkReview.innerHTML = ''; gkReview.classList.toggle('hidden', true); }
+            }
             if (general && document.getElementById('recPanelExam')?.classList.contains('active')) backToRecordsHome();
             ['settingsExamCard', 'recordsExamCard', 'setPanelExam', 'recPanelExam'].forEach(id => {
                 const el = document.getElementById(id);
@@ -11364,6 +11404,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function openSettingsSection(panelId) {
             if (panelId === 'setPanelKnights' && isGeneralProgram()) return;
+            if (panelId === 'setPanelRace' && isGeneralProgram()) return;
+            if (panelId === 'setPanelGeneralKnights') {
+                if (!isGeneralProgram()) return;
+                renderGeneralKnightsOnePlace();
+            }
             if (panelId === 'setPanelFrontierFix') {
                 if (!canOpenGeneralFrontierFix()) return;
                 renderGeneralFrontierFix();
@@ -11886,14 +11931,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                 <input id="psFollowupNew" type="number" min="1" max="100" step="any" value="${performance.limits.newPct}" class="w-full p-2 border-2 rounded-xl"></label>
                         </div>
                     </div>` : ''}
-                    ${isGeneralProgram() ? `<div class="bg-white p-5 rounded-2xl border-2 lg:col-span-2">
-                        <h3 class="font-black mb-3">عدد فرسان الأسبوع لكل حلقة (1–5)</h3>
-                        <div class="grid grid-cols-2 gap-3">${(s.halaqas || []).map(h => `<label>${escapeHTML(h.name)}<input id="psKnights_${escapeHTML(h.id)}" type="number" min="1" max="5" step="1" value="${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}" class="w-full p-2 border-2 rounded-xl"></label>`).join('')}</div>
-                        <p class="my-3">بلا تاريخ استحقاق: ${students.filter(s => !s.joinedOn).length} طالب</p>
-                        <button type="button" onclick="fixGeneralJoinedOn()" ${isArchivedView ? 'disabled' : ''} class="p-3 border-2 rounded-xl">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>
-                    </div>` : ''}
                     <!-- شروط استحقاق الألقاب -->
-                    <div class="bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2">
+                    <div class="${isGeneralProgram() ? 'legacy-title-setting ' : ''}bg-white p-5 rounded-2xl border-2 border-blue-300 lg:col-span-2">
                         <h3 class="font-black text-lg text-slate-700 mb-2 flex items-center gap-2">
                             <i class="fas fa-trophy text-blue-500"></i> شروط استحقاق الألقاب
                         </h3>
@@ -11915,7 +11954,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                     <span class="text-xs text-slate-500 font-bold">أي غياب ولو بعذر يحجب الاستحقاق</span>
                                 </span>
                             </label>
-                            <div class="p-4 bg-slate-50 rounded-xl border-2 border-slate-200 md:col-span-2">
+                            ${isGeneralProgram() ? '' : `<div class="p-4 bg-slate-50 rounded-xl border-2 border-slate-200 md:col-span-2">
                                 <label class="block font-bold text-slate-700 mb-1">أدنى نسبة حضور لفارس الأسبوع</label>
                                 <div class="flex items-center gap-3">
                                     <input type="number" id="psTrWeeklyAtt" value="${tr.weeklyAttendancePct}" min="0" max="100"
@@ -11923,7 +11962,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                                     <span class="font-black text-slate-500">٪</span>
                                     <span class="text-xs text-slate-500 font-bold">يمنع فوز صاحب "الطفرة" الذي يغيب ثم يسرد كثيراً في يوم</span>
                                 </div>
-                            </div>
+                            </div>`}
                         </div>
                     </div>
                 </div>
@@ -12083,6 +12122,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
             renderCriteriaRows(s.criteria || []);
             if (isGeneralProgram()) refreshGeneralHalaqaOptions();
+            const gkJoinedOnMissing = isGeneralProgram() ? document.getElementById('gkJoinedOnMissing') : null;
+            if (gkJoinedOnMissing) gkJoinedOnMissing.textContent = students.filter(st => !st.joinedOn).length;
             renderTierRows(s.tiers || []);
             if (!isGeneralProgram()) fillFarsModeSelect();
             updateSettingsBadges();
@@ -12387,6 +12428,41 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             return result;
         }
 
+        // «الفرسان» في مكان واحد (العام فقط): الحقول من الإعدادات الحالية، ثم جدول الأسبوع الماضي.
+        function renderGeneralKnightsOnePlace() {
+            if (!isGeneralProgram()) return;
+            const box = document.getElementById('gkSettingsBody');
+            if (!box) return;
+            const s = window.almahraPrograms.getSettings() || {};
+            const locked = isWriteLockedView();
+            box.innerHTML = `
+                <h4 class="font-black mb-3">عدد فرسان الأسبوع لكل حلقة (1–5)</h4>
+                <div class="grid grid-cols-2 gap-3">${getProgramSettings().halaqas.map(h => `<label>${escapeHTML(h.name)}<input id="psKnights_${escapeHTML(h.id)}" type="number" min="1" max="5" step="1" value="${s.titleRules?.knightsPerHalaqa?.[h.id] ?? 1}" class="w-full p-2 border-2 rounded-xl"></label>`).join('')}</div>
+                <label class="block font-bold mt-4">أدنى نسبة حضور لفارس الأسبوع (0–100)
+                    <input type="number" id="psTrWeeklyAtt" value="${getTitleRules().weeklyAttendancePct}" min="0" max="100" step="1" class="w-24 p-2 border-2 rounded-xl text-center"> %</label>
+                <p class="my-3">بلا تاريخ استحقاق: <span id="gkJoinedOnMissing">${students.filter(st => !st.joinedOn).length}</span> طالب</p>
+                <button type="button" onclick="fixGeneralJoinedOn()" ${locked ? 'disabled' : ''} class="p-3 border-2 rounded-xl">تثبيت تاريخ الاستحقاق لكل الطلاب = يوم الانطلاق</button>
+                <div class="mt-4"><button id="gkSaveBtn" type="button" onclick="saveGeneralKnightsSettings()" ${locked ? 'disabled' : ''} class="general-knights-action"><i class="fas fa-save" aria-hidden="true"></i> حفظ</button></div>`;
+            Promise.resolve().then(renderWeekKnightsReview).catch(err => showToast('تعذّر عرض فرسان الأسبوع: ' + err.message, 'error'));
+        }
+        async function saveGeneralKnightsSettings() {
+            if (!isGeneralProgram() || !canWriteView()) return;
+            const prog = window.almahraPrograms.getCurrentProgram();
+            if (!prog) return;
+            let knightsPerHalaqa, weeklyAttendancePct;
+            try {
+                knightsPerHalaqa = readKnightsPerHalaqa();
+                const raw = document.getElementById('psTrWeeklyAtt')?.value.trim(), value = Number(raw);
+                if (!raw || !Number.isInteger(value) || value < 0 || value > 100) throw new Error('أدنى نسبة حضور: عدد صحيح من 0 إلى 100');
+                weeklyAttendancePct = value;
+            } catch (e) { showToast(e.message, 'error'); return; }
+            const settings = { ...prog.settings, titleRules: { ...prog.settings.titleRules, knightsPerHalaqa, weeklyAttendancePct } };
+            const button = document.getElementById('gkSaveBtn');
+            if (button) button.disabled = true;
+            try { await commitProgramSettings({ settings, prog, season: window.almahraPrograms.getCurrentSeason() }); }
+            finally { if (button) button.disabled = isWriteLockedView(); }
+        }
+
         async function fixGeneralJoinedOn() {
             const programs = window.almahraPrograms, data = window.almahraData;
             const programId = programs.getCurrentProgramId(), seasonId = programs.getCurrentSeasonId();
@@ -12462,11 +12538,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     throw new Error(label + ' غير صالح');
                 return value;
             };
-            let kindMult, grades, attendancePoints, tvPrayer, knightsPerHalaqa;
+            let kindMult, grades, attendancePoints, tvPrayer;
             if (general) {
                 try {
                     tvPrayer = readGeneralTvPrayer();
-                    knightsPerHalaqa = readKnightsPerHalaqa();
                     attendancePoints = readGeneralNumber('psPtAtt', 'نقاط الحضور', true);
                     kindMult = {
                         newMemorization: readGeneralNumber('psMultNew', 'معامل الجديد', false),
@@ -12490,9 +12565,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 criteria: collectCriteriaFromRows(),
                 ...(isGeneralProgram() ? {} : { tiers: newTiers }),
                 titleRules: {
-                    ...(general ? { ...prog.settings.titleRules, knightsPerHalaqa } : {}),
+                    // في العام: عدد الفرسان ونسبة الحضور يُحفظان من لوحة «الفرسان» وحدها، فيبقيان هنا كما هما.
+                    ...(general ? { ...prog.settings.titleRules } : {}),
                     requireSard: !!document.getElementById('psTrRequireSard')?.checked,
-                    weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)),
+                    ...(general ? {} : { weeklyAttendancePct: Math.min(100, Math.max(0, parseInt(document.getElementById('psTrWeeklyAtt')?.value) || 0)) }),
                     disciplineRequiresFullWeek: !!document.getElementById('psTrDisciplineFullWeek')?.checked
                 },
                 features: isGeneralProgram() ? { ...prog.settings.features, ...features, tiers: false, finalExam: false, examPrep: false } : features

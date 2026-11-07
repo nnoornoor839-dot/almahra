@@ -268,7 +268,9 @@ test('العزل: summer وreview-day مطابقان قبل التغيير في 
         const current = harness(), old = harness(answerStudents(), key.today, baseline);
         for (const h of [current, old]) { h.state.program = program; h.run('renderHomeDashboard()'); }
         for (const id of ['homeDashboard', 'homeCare', 'homeLead']) assert.equal(current.element(id).innerHTML, old.element(id).innerHTML, `${program} ${id}`);
-        for (const name of ['renderHomeCare', 'renderHomeLeaders', 'initHadithTilt']) assert.equal(source(name), source(name, baseline));
+        for (const name of ['renderHomeCare', 'initHadithTilt']) assert.equal(source(name), source(name, baseline));
+        // الفرسان في مكان واحد ٣: رابط لوحة السباق يُحذف في العام وحده؛ ما سواه مطابق.
+        assert.equal(source('renderHomeLeaders').replace("(isGeneralProgram() ? '' : `<button type=\"button\" class=\"hs-all\" onclick=\"goRace()\">افتح لوحة السباق ←</button>`);", "`<button type=\"button\" class=\"hs-all\" onclick=\"goRace()\">افتح لوحة السباق ←</button>`;"), source('renderHomeLeaders', baseline));
         const verse = text => text.match(/<div id="homeVerse"[\s\S]*?<!-- لوحة معلومات المجمع -->/)[0];
         assert.equal(verse(html), verse(baseline));
     }
