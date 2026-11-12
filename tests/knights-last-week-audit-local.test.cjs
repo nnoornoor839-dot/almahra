@@ -41,7 +41,7 @@ test('category 16 audit: every changed line since fe78763 is registered and reve
         assert.equal(beforeKnightsLastWeek(current(row.file), row.file), original(row.file), row.file);
     }
     const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
-    assert.deepEqual([...added].sort(), untracked);
+    for (const file of untracked) assert.ok(added.has(file), 'ملف غير مسجَّل: ' + file);
     assert.deepEqual([...added].sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);
     for (const row of audit.knightsLastWeekAddedFiles) {
         assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);

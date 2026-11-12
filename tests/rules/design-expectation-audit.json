@@ -16591,6 +16591,63 @@
       ]
     },
     {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 16,
+      "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "b6aabf80880eb3470bd8c10aae3c0ed399705bc1609f84b4aad51bd5ff7e388f",
+      "sha256": "fc5680e7af568e2052445b93111f96c2ae18535e26c55c3c0650b49fa934b52e",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 16,
+      "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "00645801f437aec7b321f4e728df8c7c0da425845f87a44895db920fa63e9722",
+      "sha256": "62544ee752263faf79d4d3468cc51edfa79a15bfa2058a35442dda7ce5b55a3e",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 16,
+      "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "b5413ef575f491db53c8e5e7dec71d5d65c13515ce9469cf762fc9989fbe493c",
+      "sha256": "a64c7cb31c53a579b43f6b90a14d3f12f7e231000f5c6a09c743194a2064d543",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
       "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
       "category": 16,
       "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
@@ -16650,6 +16707,25 @@
       ]
     },
     {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 16,
+      "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "9468afb4f20becebade5133ff648ea5e2d882ec5f616ecd5c61a2d012145907c",
+      "sha256": "79914cf21e8098454e7b9b550325f2a01e4c7c2b9fdd8ac71aa8d4bd99af8ae0",
+      "hunks": [
+        {
+          "oldLine": 326,
+          "newLine": 326,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        }
+      ]
+    },
+    {
       "file": "tests/knights-release-local.test.cjs",
       "category": 16,
       "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
@@ -16683,7 +16759,7 @@
       "file": "tests/knights-last-week-audit-local.test.cjs",
       "category": 16,
       "reason": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
-      "sha256": "da0e33cf062ae3cee9a50bf21cf6db760520e12f4725ecc9b34101fb2f1eeab3",
+      "sha256": "6b6ff894da3f9167bfecc4731af2d7282e2c3c41dbfe753d7b8f93f0a76c868f",
       "hunks": [
         {
           "oldLine": 1,
@@ -16733,7 +16809,7 @@
             "        assert.equal(beforeKnightsLastWeek(current(row.file), row.file), original(row.file), row.file);",
             "    }",
             "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
-            "    assert.deepEqual([...added].sort(), untracked);",
+            "    for (const file of untracked) assert.ok(added.has(file), 'ملف غير مسجَّل: ' + file);",
             "    assert.deepEqual([...added].sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);",
             "    for (const row of audit.knightsLastWeekAddedFiles) {",
             "        assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);",
