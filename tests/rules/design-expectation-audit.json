@@ -16,7 +16,8 @@
     "13": "الفرسان في مكان واحد — الجزء ٢ (٢٠٢٦-١١-٠٨)",
     "14": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
     "15": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
-    "16": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)"
+    "16": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
+    "17": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)"
   },
   "files": [
     {
@@ -17018,6 +17019,674 @@
             "test('lw ف7: اليوم 2026-12-06 و11-29 انتهى ولم يُحسم — أسبوع العرض = آخر محسوم 11-15', async () => {",
             "    const { h } = setup('2026-12-06', { frozen: ['2026-11-15', '2026-11-22'], rows: [row('2026-11-15', { knight: 'فهد', locked: true })] });",
             "    assert.equal(await display(h), '2026-11-15');",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsLinesX3Baseline": "be3b92f",
+  "knightsLinesX3Changes": [
+    {
+      "file": "index.html",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "f849f5184e1c002b9ce1d24304314357ee10cb4989687ac2bcad26d1d7923483",
+      "sha256": "151f58579dd17722af2854be5e8e473c9e89e352dd554fa6a1f9729423bf08b7",
+      "hunks": [
+        {
+          "oldLine": 12561,
+          "newLine": 12561,
+          "before": [
+            "            const face = (kind, g) => 15 * mult[kind] * (Number(g?.percent) || 0) / 100;"
+          ],
+          "after": [
+            "            const line = (kind, g) => mult[kind] * (Number(g?.percent) || 0) / 100;",
+            "            const tenth = n => Math.round(n * 10) / 10;"
+          ]
+        },
+        {
+          "oldLine": 12570,
+          "newLine": 12571,
+          "before": [
+            "            // مثال سالم: جديد وجه بأعلى تقدير + مراجعة 4 أوجه بالتقدير الذي يليه + الانضباط + التحضير إن بلغ كل تسميعه الحد؛ المجموع يُحسب.",
+            "            const top = grade('excellent') || grades[0], second = grade('very-good') || grades[1];"
+          ],
+          "after": [
+            "            // مثال خالد: 5 أسطر جديد و20 سطراً مراجعة؛ كل خانة تُقرَّب من قيمتها الخام، ثم تُجمع الخانات."
+          ]
+        },
+        {
+          "oldLine": 12577,
+          "newLine": 12577,
+          "before": [
+            "            const newTop = face('new', top), reviewFour = 4 * face('review', second);"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 12579,
+          "newLine": 12578,
+          "before": [
+            "            const keeps = (...gs) => gs.every(g => Number(g?.percent) >= minPct);",
+            "            const salemPrep = prep && keeps(top, second) ? prepPoints : 0;",
+            "            const total = newTop + reviewFour + discipline + salemPrep;",
+            "            // الفقرة البديلة بتقدير «جيد» دائماً (النص المعتمد)؛ يخسر التحضير إن كان «جيد» دون الحد وكان المثال قد استحقه.",
+            "            const altGrade = grade('good');",
+            "            const altPrep = prep && keeps(altGrade, second) ? prepPoints : 0;",
+            "            const altLoses = salemPrep > 0 && altPrep === 0;",
+            "            const alt = altGrade ? face('new', altGrade) + reviewFour + discipline + altPrep : null;"
+          ],
+          "after": [
+            "            const example = grades.slice(0, 3).map(g => {",
+            "                const percent = (Number(g.percent) || 0) / 100;",
+            "                const newPoints = tenth(5 * mult.new * percent), reviewPoints = tenth(20 * mult.review * percent);",
+            "                const disciplinePoints = tenth(discipline);",
+            "                const homePrepPoints = prep && Number(g.percent) >= minPct ? tenth(prepPoints) : 0;",
+            "                return { grade: g, newPoints, reviewPoints, disciplinePoints, homePrepPoints,",
+            "                    total: tenth(newPoints + reviewPoints + disciplinePoints + homePrepPoints) };",
+            "            });"
+          ]
+        },
+        {
+          "oldLine": 12591,
+          "newLine": 12590,
+          "before": [
+            "            const row = (label, value, strong = false) => '<tr><td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + label + '</td><td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + value + '</td></tr>';"
+          ],
+          "after": [
+            "            const row = (label, values, strong = false) => '<tr><td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + label + '</td>'",
+            "                + values.map(value => '<td class=\"' + cell + (strong ? ' font-black' : '') + '\">' + fmt(value) + '</td>').join('') + '</tr>';"
+          ]
+        },
+        {
+          "oldLine": 12603,
+          "newLine": 12603,
+          "before": [
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\">التقدير</th><th class=\"' + head + '\">تأخذ من النقاط</th><th class=\"' + head + '\">الوجه الجديد</th><th class=\"' + head + '\">وجه المراجعة</th></tr></thead><tbody>'",
+            "                + grades.map(g => '<tr><td class=\"' + cell + '\">' + esc(g.name) + '</td><td class=\"' + cell + '\">' + share(Number(g.percent)) + '</td><td class=\"' + cell + '\">' + fmt(face('new', g)) + '</td><td class=\"' + cell + '\">' + fmt(face('review', g)) + '</td></tr>').join('')"
+          ],
+          "after": [
+            "                + '<p>النقاط على الأسطر، لا على الأوجه: ' + (mult.new === mult.review",
+            "                    ? 'الجديد والمراجعة بقيمة واحدة، السطر بـ' + fmt(mult.new) + ' نقاط.'",
+            "                    : 'سطر الحفظ الجديد بـ' + fmt(mult.new) + ' نقاط، وسطر المراجعة بـ' + fmt(mult.review) + ' نقاط.') + '</p>'",
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\">التقدير</th><th class=\"' + head + '\">تأخذ من النقاط</th><th class=\"' + head + '\">سطر الجديد</th><th class=\"' + head + '\">سطر المراجعة</th></tr></thead><tbody>'",
+            "                + grades.map(g => '<tr><td class=\"' + cell + '\">' + esc(g.name) + '</td><td class=\"' + cell + '\">' + share(Number(g.percent)) + '</td><td class=\"' + cell + '\">' + fmt(line('new', g)) + '</td><td class=\"' + cell + '\">' + fmt(line('review', g)) + '</td></tr>').join('')"
+          ]
+        },
+        {
+          "oldLine": 12608,
+          "newLine": 12611,
+          "before": [
+            "                + '</ul><p class=\"font-black mt-3\">مثال: سالم اليوم</p>'",
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\">ما فعله</th><th class=\"' + head + '\">النقاط</th></tr></thead><tbody>'",
+            "                + row('حفظ وجهاً جديداً بتقدير ' + esc(top?.name), fmt(newTop))",
+            "                + row('راجع 4 أوجه بتقدير ' + esc(second?.name), fmt(reviewFour))",
+            "                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), fmt(discipline)) : '')",
+            "                + (salemPrep ? row('التحضير المنزلي', fmt(salemPrep)) : '')",
+            "                + row('المجموع', fmt(total), true) + '</tbody></table>'",
+            "                + (altGrade ? '<p><b>ولو كان تقدير حفظه الجديد «' + esc(altGrade.name) + '»:</b> يأخذ ' + fmt(face('new', altGrade)) + ' بدل ' + fmt(newTop)",
+            "                    + (altLoses ? '، ويخسر التحضير المنزلي' : '') + '. فيصير مجموعه <b>' + fmt(alt) + '</b>.</p>' : '')",
+            "                + '<p class=\"font-black\">الخلاصة: الإتقان يرفع نقاطك أكثر من الكثرة.</p></section>'"
+          ],
+          "after": [
+            "                + '</ul><p class=\"font-black mt-3\">مثال: خالد حفظ 5 أسطر وراجع 20 سطراً</p>'",
+            "                + '<table class=\"w-full text-right border-collapse my-2\"><thead><tr><th class=\"' + head + '\"></th>'",
+            "                + example.map(c => '<th class=\"' + head + '\">' + esc(c.grade.name) + '</th>').join('') + '</tr></thead><tbody>'",
+            "                + row('الجديد: 5 أسطر × ' + fmt(mult.new), example.map(c => c.newPoints))",
+            "                + row('المراجعة: 20 سطراً × ' + fmt(mult.review), example.map(c => c.reviewPoints))",
+            "                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), example.map(c => c.disciplinePoints)) : '')",
+            "                + (prep ? row('التحضير المنزلي («' + esc(minGrade?.name || 'جيد') + '» فأعلى)', example.map(c => c.homePrepPoints)) : '')",
+            "                + row('المجموع', example.map(c => c.total), true) + '</tbody></table>'",
+            "                + '<p>النقاط تُقرَّب إلى رقم عشري واحد.</p>'",
+            "                + '<p class=\"font-black\">الخلاصة: كل سطر تحفظه أو تراجعه له قيمته، ولو سطراً واحداً. والإتقان يرفعها.</p></section>'"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "716c8ac7f1de54fe0f8cb45e60e614b1bf847bab8c6f88249070d2f413f2909d",
+      "sha256": "55094ea30a31e20abe92e560c51ce423df1a87ead450c097bfc892db0d5cb345",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942') {"
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763') {"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [
+            "        const text = baseline === '263c942' ? onePlace.beforeKnightsLastWeek(currentText, file) : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)"
+          ],
+          "after": [
+            "        const text = baseline === 'fe78763' ? onePlace.beforeKnightsLinesX3(currentText, file)",
+            "            : baseline === '263c942' ? onePlace.beforeKnightsLastWeek(currentText, file) : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "b501f11290f9182359257d52dab5f68d00c49f833cdfada89e4c5c861db4eb77",
+      "sha256": "7475558781515a59cdafb884000ec49fb81014a084716fc32d51c7a084f74d59",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "// Category 17: reverse registered lines-x3 changes, so category 16 sees be3b92f.",
+            "function beforeKnightsLinesX3(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsLinesX3Changes?.find(r => r.file === file));",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 17,
+          "before": [
+            "    text = text.replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "    text = beforeKnightsLinesX3(text, file);"
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 40,
+          "before": [
+            "module.exports = { beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ],
+          "after": [
+            "module.exports = { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-last-week-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "6b6ff894da3f9167bfecc4731af2d7282e2c3c41dbfe753d7b8f93f0a76c868f",
+      "sha256": "a99b8e7a138c0153256d90402f1f450a5af2e895937f56c7a8e20492e6353c72",
+      "hunks": [
+        {
+          "oldLine": 7,
+          "newLine": 7,
+          "before": [
+            "const { beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ],
+          "after": [
+            "const { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ]
+        },
+        {
+          "oldLine": 16,
+          "newLine": 16,
+          "before": [
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "const current = file => beforeKnightsLinesX3(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
+        },
+        {
+          "oldLine": 18,
+          "newLine": 18,
+          "before": [
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}"
+          ],
+          "after": [
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 32,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set(audit.knightsLastWeekAddedFiles.map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || [])].map(row => row.file));"
+          ]
+        },
+        {
+          "oldLine": 34,
+          "newLine": 25,
+          "before": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();"
+          ],
+          "after": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 38,
+          "newLine": 29,
+          "before": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);"
+          ],
+          "after": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);"
+          ]
+        },
+        {
+          "oldLine": 45,
+          "newLine": 36,
+          "before": [
+            "    assert.deepEqual([...added].sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);"
+          ],
+          "after": [
+            "    assert.deepEqual(audit.knightsLastWeekAddedFiles.map(row => row.file).sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "fc5680e7af568e2052445b93111f96c2ae18535e26c55c3c0650b49fa934b52e",
+      "sha256": "36fab96ad699b574c37a5b10934dad2f2f6a0522886763d81b03b236de63ccf2",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "62544ee752263faf79d4d3468cc51edfa79a15bfa2058a35442dda7ce5b55a3e",
+      "sha256": "d54850f77236a95395484ca5d244b97ac7c7206628efb287888feb174c3c8d4a",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "a64c7cb31c53a579b43f6b90a14d3f12f7e231000f5c6a09c743194a2064d543",
+      "sha256": "18bfeaebf53a9073272f6204a1408ad635e7e04c1481710fda0d97df4cffce49",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "9068893a171678132ac65d01fedae964f2805d9054adac48c0ba6eaca8fb9111",
+      "sha256": "11a3833e2dd8522e9a083ee6dc8d1e356a795b067804a3769bbfd7acd0a0672f",
+      "hunks": [
+        {
+          "oldLine": 27,
+          "newLine": 27,
+          "before": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p4-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "2d729e1b387f789e90b844683fd29abc19bbd3a0271a7306d10e069516a5567a",
+      "sha256": "d9b9d8b58e8e792b59482813528435e5e6ce066720242536fb3602d3e621b7e8",
+      "hunks": [
+        {
+          "oldLine": 27,
+          "newLine": 27,
+          "before": [
+            "    const face = (kind, grade) => 15 * mult[kind] * pct(grade);"
+          ],
+          "after": [
+            "    const tenth = n => Math.round(n * 10) / 10; // تقريب كل خانة إلى عُشر كما يفعل generalEntryPoints",
+            "    const line = (kind, grade) => mult[kind] * pct(grade); // قيمة السطر الواحد في جدول القسم 2"
+          ]
+        },
+        {
+          "oldLine": 33,
+          "newLine": 34,
+          "before": [
+            "    const keeps = (...grades) => grades.every(g => pct(g) >= minPct); // يستحق التحضير إن بلغ كل تسميعه الحد",
+            "    const salem = face('new', 'excellent') + 4 * face('review', 'very-good') + discipline + (keeps('excellent', 'very-good') ? prep : 0);",
+            "    const alt = face('new', 'good') + 4 * face('review', 'very-good') + discipline + (keeps('good', 'very-good') ? prep : 0);",
+            "    const altLoses = keeps('excellent', 'very-good') && !keeps('good', 'very-good'); // «يخسر» فقط إن كان قد استحقه في المثال"
+          ],
+          "after": [
+            "    // مثال خالد: 5 أسطر جديد و20 سطراً مراجعة، بالتقديرات الثلاثة الأولى من الإعداد؛ التحضير إن بلغ التقدير الحد؛ المجموع من الخانات المقرَّبة.",
+            "    const khalid = s.grades.slice(0, 3).map(g => {",
+            "        const nw = tenth(5 * line('new', g.id)), rv = tenth(20 * line('review', g.id));",
+            "        const pp = pct(g.id) >= minPct ? prep : 0;",
+            "        return { grade: g, nw, rv, discipline, prep: pp, total: tenth(nw + rv + discipline + pp) };",
+            "    });"
+          ]
+        },
+        {
+          "oldLine": 38,
+          "newLine": 41,
+          "before": [
+            "    return { face, salem, alt, altLoses, prep, minName: s.grades.find(g => g.id === minId).name, days, att };"
+          ],
+          "after": [
+            "    return { mult, line, khalid, prep, minName: s.grades.find(g => g.id === minId).name, days, att };",
+            "}",
+            "const share = p => p === 100 ? 'كاملة' : p === 75 ? 'ثلاثة أرباعها' : p === 50 ? 'نصفها' : p === 0 ? 'لا شيء' : null;",
+            "// القسم 2 وحده: من عنوانه إلى عنوان القسم 3",
+            "function section2(text) {",
+            "    const a = text.indexOf('2. كيف تُحسب نقاطك'), b = text.indexOf('3. فارس الأسبوع');",
+            "    assert.ok(a >= 0 && b > a, 'القسم 2 موجود قبل القسم 3');",
+            "    return text.slice(a, b);",
+            "}",
+            "// يثبت جدول الأسطر ومثال خالد في القسم 2 لإعدادات معيّنة",
+            "function assertSection2(text, s, e, label) {",
+            "    const sec = section2(text);",
+            "    assert.ok(sec.includes('سطر الجديد') && sec.includes('سطر المراجعة'), label + ': عنوانا الجدول «سطر الجديد» و«سطر المراجعة»');",
+            "    // «لا على الأوجه» من نص البطاقة §2 نفسه؛ ما عداه لا «وجه» بأي صيغة",
+            "    assert.ok(!sec.includes('الوجه الجديد') && !sec.includes('وجه المراجعة') && !sec.replace('لا على الأوجه', '').includes('وجه'), label + ': لا «وجه» في القسم 2');",
+            "    assert.ok(!sec.includes('سالم'), label + ': لا «سالم» في القسم 2');",
+            "    // جملة الأسطر تتبع تساوي المعاملين أو اختلافهما",
+            "    const linesSentence = 'النقاط على الأسطر، لا على الأوجه: ' + (e.mult.new === e.mult.review",
+            "        ? 'الجديد والمراجعة بقيمة واحدة، السطر بـ' + num(e.mult.new) + ' نقاط.'",
+            "        : 'سطر الحفظ الجديد بـ' + num(e.mult.new) + ' نقاط، وسطر المراجعة بـ' + num(e.mult.review) + ' نقاط.');",
+            "    assert.ok(sec.includes(linesSentence), label + ': جملة الأسطر «' + linesSentence + '»');",
+            "    // سطرا التقريب والخلاصة في آخر القسم 2",
+            "    for (const line of ['النقاط تُقرَّب إلى رقم عشري واحد.', 'الخلاصة: كل سطر تحفظه أو تراجعه له قيمته، ولو سطراً واحداً. والإتقان يرفعها.'])",
+            "        assert.ok(sec.includes(line), label + ': السطر «' + line + '» في القسم 2');",
+            "    for (const g of s.grades) {",
+            "        const row = g.name + ' ' + share(Number(g.percent)) + ' ' + num(e.line('new', g.id)) + ' ' + num(e.line('review', g.id));",
+            "        assert.ok(sec.includes(row), label + ': صف الجدول «' + row + '»');",
+            "    }",
+            "    const a = sec.indexOf('تأخذ من النقاط'), b = sec.indexOf('الانضباط:');",
+            "    assert.ok(a >= 0 && b > a, label + ': الجدول قبل سطر الانضباط');",
+            "    assert.ok(!sec.slice(a, b).includes('+'), label + ': لا «+» في خلايا جدول التقديرات');",
+            "    const k = sec.indexOf('خالد');",
+            "    assert.ok(k >= 0, label + ': مثال خالد');",
+            "    const ex = sec.slice(k);",
+            "    assert.ok(/5 أسطر/.test(ex) && /20 سطراً/.test(ex), label + ': خالد 5 أسطر جديد و20 سطراً مراجعة');",
+            "    assert.ok(!ex.includes('+'), label + ': لا «+» في خلايا جدول خالد');",
+            "    for (const name of e.khalid.map(c => c.grade.name)) assert.ok(ex.includes(name), label + ': عمود ' + name);",
+            "    const seq = f => e.khalid.map(c => num(f(c))).join(' ');",
+            "    assert.ok(ex.includes(seq(c => c.nw)), label + ': خانات الجديد ' + seq(c => c.nw));",
+            "    assert.ok(ex.includes(seq(c => c.rv)), label + ': خانات المراجعة ' + seq(c => c.rv));",
+            "    assert.ok(ex.includes(seq(c => c.discipline)), label + ': خانات الانضباط ' + seq(c => c.discipline));",
+            "    assert.ok(ex.includes('المجموع ' + seq(c => c.total)), label + ': المجاميع ' + seq(c => c.total));",
+            "    return sec;"
+          ]
+        },
+        {
+          "oldLine": 45,
+          "newLine": 90,
+          "before": [
+            "    for (const [kind, grade] of [['new', 'excellent'], ['new', 'very-good'], ['new', 'good'], ['review', 'excellent'], ['review', 'very-good'], ['review', 'good']])",
+            "        assert.ok(base.includes(num(e0.face(kind, grade))), 'رقم ' + kind + '/' + grade + ' = ' + num(e0.face(kind, grade)));"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 50,
+          "newLine": 93,
+          "before": [
+            "    assert.ok(base.includes(num(e0.salem)), 'مجموع سالم ' + num(e0.salem));",
+            "    assert.ok(base.includes(num(e0.alt)), 'المجموع البديل ' + num(e0.alt));",
+            "    assert.ok(/«جيد»: يأخذ 22.5 بدل 45/.test(base), 'الفقرة البديلة بتقدير «جيد» كما في النص المعتمد');",
+            "    assert.equal(/ويخسر التحضير/.test(base), e0.altLoses, 'خسارة التحضير في البديل حسب الإعداد (الحد جيد ← يُبقيه)');"
+          ],
+          "after": []
+        },
+        {
+          "oldLine": 57,
+          "newLine": 96,
+          "before": [],
+          "after": [
+            "    assertSection2(base, s0, e0, 'الافتراضي');"
+          ]
+        },
+        {
+          "oldLine": 63,
+          "newLine": 103,
+          "before": [
+            "    assert.ok(changed.includes(num(e1.face('new', 'excellent'))), 'الوجه الجديد ' + num(e1.face('new', 'excellent')) + ' عند معامل 2');",
+            "    // خلايا جدول سالم أرقام بلا إشارة + (كما في النص المعتمد)؛ سطر الانضباط وحده يكتب «+5» لكل معيار",
+            "    for (const [text, e] of [[base, e0], [changed, e1]]) {",
+            "        assert.ok(!text.includes('+' + num(e.face('new', 'excellent'))), 'خلية الجديد بلا +');",
+            "        assert.ok(!text.includes('+' + num(4 * e.face('review', 'very-good'))), 'خلية المراجعة بلا +');",
+            "        assert.ok(!text.includes('+' + num(e.salem)), 'المجموع بلا +');",
+            "    }",
+            "    assert.ok(changed.includes(num(e1.salem)) && changed.includes(num(e1.alt)), 'مجموعا المثال ' + num(e1.salem) + '/' + num(e1.alt));",
+            "    assert.equal(/ويخسر التحضير/.test(changed), e1.altLoses, 'الحد جيد جداً ← البديل «جيد» يخسر التحضير');",
+            "    // النص المعتمد حرفياً عند الحد «جيد جداً» بالإعدادات الافتراضية: 113 و80.5",
+            "    // إعدادات المثال المعتمد: الانضباط = الحضور المبكر 5 + الأدب 5 + الزي 3 (كإعدادات general الافتراضية)",
+            "    const approvedCriteria = s => { for (const [id, name, points] of [['manners', 'حسن الخلق والأدب', 5], ['uniform', 'الالتزام بالزي الرسمي', 3]]) if (!s.criteria.some(c => c.id === id)) s.criteria.push({ id, name, points, enabled: true }); };",
+            "    const s2 = settingsWith(s => { approvedCriteria(s); s.homePrepMinGrade = 'very-good'; }), e2 = expected(s2), approved = guide(s2);",
+            "    assert.ok(approved.includes('113') && approved.includes('80.5') && /ويخسر التحضير/.test(approved), 'النص المعتمد: 113 ثم 80.5 عند جيد جداً');",
+            "    assert.equal(num(e2.salem), '113'); assert.equal(num(e2.alt), '80.5');",
+            "    // حد «ممتاز»: مراجعة سالم «جيد جداً» لا تبلغه فيسقط التحضير من المثال نفسه",
+            "    const s3 = settingsWith(s => { approvedCriteria(s); s.homePrepMinGrade = 'excellent'; }), e3 = expected(s3), strict = guide(s3);",
+            "    assert.ok(strict.includes(num(e3.salem)) && !strict.includes('113'), 'حد ممتاز: المثال بلا تحضير (' + num(e3.salem) + ')');",
+            "    assert.ok(!/ويخسر التحضير/.test(strict), 'حد ممتاز: لا «يخسر» لأنه لم يستحقه أصلاً');"
+          ],
+          "after": [
+            "    assert.ok(!/[٠-٩]/.test(changed), 'أرقام 0–9 فقط بعد التغيير');",
+            "    assertSection2(changed, s1, e1, 'معامل 2');",
+            "    // المثال المعتمد: المعاملان 3 و3، الانضباط = الحضور المبكر 5 + الأدب 5 + الزي 3، التحضير 10",
+            "    const approvedCriteria = s => { for (const [id, name, points] of [['manners', 'حسن الخلق والأدب', 5], ['uniform', 'الالتزام بالزي الرسمي', 3]]) if (!s.criteria.some(c => c.id === id)) s.criteria.push({ id, name, points, enabled: true }); s.kindMult = { newMemorization: 3, review: 3 }; };",
+            "    const s2 = settingsWith(s => { approvedCriteria(s); delete s.homePrepMinGrade; }), e2 = expected(s2), approved = guide(s2);",
+            "    assert.deepEqual(e2.khalid.map(c => num(c.total)), ['98', '79.3', '60.5'], 'الحساب المستقل: 98 / 79.3 / 60.5 عند الحد «جيد»');",
+            "    assert.deepEqual(e2.khalid.map(c => num(c.nw)), ['15', '11.3', '7.5'], '11.25 ← 11.3');",
+            "    const sec2 = assertSection2(approved, s2, e2, 'المعتمد (الحد جيد)');",
+            "    assert.ok(sec2.includes('المجموع 98 79.3 60.5'), 'النص المعتمد: 98 / 79.3 / 60.5');",
+            "    assert.ok(sec2.includes('15 11.3 7.5') && sec2.includes('60 45 30') && sec2.includes('13 13 13'), 'خانات خالد المعتمدة');",
+            "    // الحد «جيد جداً»: عمود «جيد» يخسر التحضير",
+            "    const s3 = settingsWith(s => { approvedCriteria(s); s.homePrepMinGrade = 'very-good'; }), e3 = expected(s3), strict = guide(s3);",
+            "    assert.deepEqual(e3.khalid.map(c => num(c.total)), ['98', '79.3', '50.5'], 'الحساب المستقل: 98 / 79.3 / 50.5 عند الحد «جيد جداً»');",
+            "    const sec3 = assertSection2(strict, s3, e3, 'المعتمد (الحد جيد جداً)');",
+            "    assert.ok(sec3.includes('المجموع 98 79.3 50.5'), 'عند الحد «جيد جداً»: 98 / 79.3 / 50.5');"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "beforeSha256": "79914cf21e8098454e7b9b550325f2a01e4c7c2b9fdd8ac71aa8d4bd99af8ae0",
+      "sha256": "d2b42779a6c9a6d3b383e345d9c144f8fcd5df2d8ce962e7be65b4929ad65597",
+      "hunks": [
+        {
+          "oldLine": 326,
+          "newLine": 326,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsLinesX3AddedFiles": [
+    {
+      "file": "tests/knights-lines-x3-audit-local.test.cjs",
+      "category": 17,
+      "reason": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+      "sha256": "2bcd977e8988e7d39659a0af4985a47ddc0dc6b2ac3f207f3d643984c6794c2d",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,",
+            "    beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source, harness: quick, copy } = require('./helpers/quick-entry-harness.cjs');",
+            "",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = 'be3b92f';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "",
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}",
+            "",
+            "test('category 17 audit: every changed line since be3b92f is registered and reverses exactly', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.categories['17'], '\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)');",
+            "    assert.equal(audit.knightsLinesX3Baseline, BASE);",
+            "    const added = new Set(audit.knightsLinesX3AddedFiles.map(row => row.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();",
+            "    assert.deepEqual(audit.knightsLinesX3Changes.map(row => row.file).sort(), changed);",
+            "    for (const row of audit.knightsLinesX3Changes) {",
+            "        assert.equal(row.category, 17); assert.equal(row.reason, audit.categories['17']);",
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);",
+            "        assert.equal(row.beforeSha256, sha(original(row.file)), row.file);",
+            "        assert.equal(row.sha256, sha(current(row.file)), row.file);",
+            "        assert.equal(beforeKnightsLinesX3(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);",
+            "    assert.deepEqual([...added].sort(), ['tests/knights-lines-x3-audit-local.test.cjs']);",
+            "    for (const row of audit.knightsLinesX3AddedFiles) {",
+            "        assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);",
+            "        const text = current(row.file);",
+            "        assert.equal(row.category, 17); assert.equal(row.reason, audit.categories['17']);",
+            "        assert.equal(row.sha256, sha(text), row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }], row.file);",
+            "    }",
+            "    const mutated = current('index.html').replace('const tenth = n => Math.round(n * 10) / 10;', 'const tenth = n => n;');",
+            "    assert.notEqual(mutated, current('index.html'));",
+            "    assert.notEqual(beforeKnightsLinesX3(mutated), original('index.html'));",
+            "    const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');",
+            "    assert.notEqual(outside, current('index.html'));",
+            "    assert.notEqual(beforeKnightsLinesX3(outside), original('index.html'));",
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && key !== 'categories'))",
+            "        assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);",
+            "    const categories = { ...audit.categories }; delete categories['17'];",
+            "    assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);",
+            "});",
+            "",
+            "test('category 17 audit: calculations, freezing, stores, TV and locked keys are unchanged', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    const guide = 'renderGeneralKnightsGuide';",
+            "    assert.equal(html.replace(source(guide, html), ''), old.replace(source(guide, old), ''), 'Every line outside the guide');",
+            "    for (const name of ['ensureWeekKnightsFrozen', 'knightsEndedWeeks', 'knightsFreezeRow', 'knightsPreviousWeekStart',",
+            "        'knightsDisplayWeekStart', 'lockWeekRows', 'lockKnightsForMessage', 'buildWeeklyKnightsAnnouncement',",
+            "        'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow', 'getDayHalaqaKnights',",
+            "        'dayStats', 'getCumulativeStats', 'getMostImproved', 'dayAcceptedWeightTenths', 'knightsDayPointsTenths',",
+            "        'getLockedWeekKnights', 'copyWeeklyKnightsAnnouncement', 'renderWeekKnightsReview', 'sendGeneralTvSnapshot'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'tv.js', 'tv.html', 'general-points.js',",
+            "        'tests/knights-oneplace-local.test.cjs', 'tests/knights-oneplace-p2-local.test.cjs', 'tests/knights-oneplace-p3-local.test.cjs',",
+            "        ...['knights-answer-key', 'knights-r2-answer-key', 'board-answer-key', 'homeprep-answer-key', 'home-answer-key'].map(name => 'tests/rules/' + name + '.json')])",
+            "        assert.equal(current(file), original(file), file);",
+            "});",
+            "",
+            "test('category 17 audit: guide sections 1, 3, 4 and 5 remain literal at be3b92f', () => {",
+            "    const name = 'renderGeneralKnightsGuide', now = source(name, current('index.html')), old = source(name, original('index.html'));",
+            "    const sections = text => {",
+            "        const starts = [...text.matchAll(/\\+ '<section>' \\+ h3\\('[1-5]\\./g)].map(match => match.index);",
+            "        assert.equal(starts.length, 5);",
+            "        return starts.map((start, i) => text.slice(start, starts[i + 1] ?? text.length));",
+            "    };",
+            "    const before = sections(old), after = sections(now);",
+            "    for (const i of [0, 2, 3, 4]) assert.equal(after[i], before[i], 'Section ' + (i + 1));",
+            "    assert.notEqual(after[1], before[1]);",
+            "    const baseSettings = require('./rules/homeprep-answer-key.json').settings;",
+            "    for (const mutate of [() => {}, s => { s.titleRules = { weeklyAttendancePct: 50 }; s.homePrepMinGrade = 'very-good'; },",
+            "        s => { s.grades = [...s.grades].reverse(); s.criteria = []; s.workingDays = [0, 1]; }]) {",
+            "        const settings = copy(baseSettings); mutate(settings);",
+            "        const render = fn => { const h = quick(); h.state.settings = settings; h.run(fn); return h.run('renderGeneralKnightsGuide(getProgramSettings())'); };",
+            "        const renderedBefore = render(old).match(/<section>[\\s\\S]*?<\\/section>/g);",
+            "        const renderedAfter = render(now).match(/<section>[\\s\\S]*?<\\/section>/g);",
+            "        assert.equal(renderedBefore.length, 5); assert.equal(renderedAfter.length, 5);",
+            "        for (const i of [0, 2, 3, 4]) assert.equal(renderedAfter[i], renderedBefore[i], 'Rendered section ' + (i + 1));",
+            "    }",
+            "});",
+            "",
+            "test('category 17 audit: the reverse chain restores every older index baseline exactly', () => {",
+            "    const html = current('index.html');",
+            "    const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');",
+            "    const { beforeGeneralKnightsCleanup } = require('./helpers/general-knights-cleanup-audit.cjs');",
+            "    const { beforeKnightsRelease } = require('./helpers/knights-release-audit.cjs');",
+            "    const { beforeKnightsRound2b, beforeKnightsRound2 } = require('./helpers/board-invariants.cjs');",
+            "    for (const [reverse, baseline] of [[beforeKnightsLinesX3, BASE], [beforeKnightsLastWeek, 'fe78763'],",
+            "        [beforeKnightsOnePlaceP4, '263c942'], [beforeKnightsOnePlaceP3, '5fbff4e'],",
+            "        [beforeKnightsOnePlaceP2, 'a002e0c'], [beforeKnightsOnePlace, 'd51bb42'],",
+            "        [beforeKnightsOwnerAuto, '186a18e'], [beforeGeneralKnightsCleanup, '55fd33e'],",
+            "        [beforeKnightsRelease, '2d78da2'], [beforeKnightsRound2b, '0c5ec91'], [beforeKnightsRound2, '8880f84']])",
+            "        assert.equal(reverse(html, 'index.html'), git('show', baseline + ':index.html').replaceAll('\\r\\n', '\\n'), baseline);",
             "});",
             ""
           ]

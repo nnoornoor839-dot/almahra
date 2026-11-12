@@ -6,10 +6,11 @@ const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\r?\n/);
     let currentText = fs.readFileSync(path.join(root, file), 'utf8');
-    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942') {
+    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763') {
         // تدقيق الفئة 15 يرى الفرق عن 263c942 كما هو؛ ثم الفئة 15 فـ14 فـ13 فـ12 تُعكس أولاً، فيرى تدقيق الفئة 14 نسخة 263c942 وتدقيق الفئة 13 نسخة 5fbff4e وتدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط.
         const onePlace = require('./knights-oneplace-audit.cjs');
-        const text = baseline === '263c942' ? onePlace.beforeKnightsLastWeek(currentText, file) : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)
+        const text = baseline === 'fe78763' ? onePlace.beforeKnightsLinesX3(currentText, file)
+            : baseline === '263c942' ? onePlace.beforeKnightsLastWeek(currentText, file) : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)
             : baseline === 'a002e0c' ? onePlace.beforeKnightsOnePlaceP3(currentText, file)
             : baseline === 'd51bb42' ? onePlace.beforeKnightsOnePlaceP2(currentText, file) : onePlace.beforeKnightsOnePlace(currentText, file);
         const diff = text === currentText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })

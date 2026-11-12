@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 const { createHash } = require('node:crypto');
-const { beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,
+const { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,
     beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');
 const { source } = require('./helpers/quick-entry-harness.cjs');
 
@@ -13,36 +13,27 @@ const BASE = 'fe78763';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+const current = file => beforeKnightsLinesX3(fs.readFileSync(path.join(root, file), 'utf8'), file);
 
-function changesFrom(file) {
-    const hunks = []; let hunk;
-    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\r?\n/)) {
-        const m = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
-        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }
-        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));
-        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));
-    }
-    return hunks;
-}
+const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
 
 test('category 16 audit: every changed line since fe78763 is registered and reverses exactly', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsLastWeekBaseline, BASE);
-    const added = new Set(audit.knightsLastWeekAddedFiles.map(row => row.file));
+    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();
+        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsLastWeekChanges.map(row => row.file).sort(), changed);
     for (const row of audit.knightsLastWeekChanges) {
         assert.equal(row.category, 16); assert.equal(row.reason, audit.categories['16']);
-        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);
+        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);
         assert.equal(row.beforeSha256, sha(original(row.file)), row.file);
         assert.equal(row.sha256, sha(current(row.file)), row.file);
         assert.equal(beforeKnightsLastWeek(current(row.file), row.file), original(row.file), row.file);
     }
     const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
     for (const file of untracked) assert.ok(added.has(file), 'ملف غير مسجَّل: ' + file);
-    assert.deepEqual([...added].sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);
+    assert.deepEqual(audit.knightsLastWeekAddedFiles.map(row => row.file).sort(), ['tests/knights-last-week-audit-local.test.cjs', 'tests/knights-last-week-local.test.cjs']);
     for (const row of audit.knightsLastWeekAddedFiles) {
         assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);
         const text = current(row.file);

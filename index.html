@@ -12558,7 +12558,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const fmt = n => String(Math.round(n * 100) / 100);
             const esc = value => escapeHTML(String(value ?? ''));
             const grade = id => grades.find(g => g.id === id);
-            const face = (kind, g) => 15 * mult[kind] * (Number(g?.percent) || 0) / 100;
+            const line = (kind, g) => mult[kind] * (Number(g?.percent) || 0) / 100;
+            const tenth = n => Math.round(n * 10) / 10;
             const share = p => p === 100 ? 'كاملة' : p === 75 ? 'ثلاثة أرباعها' : p === 50 ? 'نصفها' : p === 0 ? 'لا شيء' : fmt(p) + '٪';
             const days = n => n === 1 ? 'يوماً واحداً' : n === 2 ? 'يومين' : n <= 10 ? n + ' أيام' : n + ' يوماً';
             const prep = criteria.find(c => c.id === 'homeprep');
@@ -12567,28 +12568,27 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const positives = criteria.filter(c => c.id !== 'homeprep' && Number(c.points) > 0);
             const negatives = criteria.filter(c => Number(c.points) < 0);
             const repeatName = grades.find(g => Number(g.percent) === 0)?.name || 'يُعاد';
-            // مثال سالم: جديد وجه بأعلى تقدير + مراجعة 4 أوجه بالتقدير الذي يليه + الانضباط + التحضير إن بلغ كل تسميعه الحد؛ المجموع يُحسب.
-            const top = grade('excellent') || grades[0], second = grade('very-good') || grades[1];
+            // مثال خالد: 5 أسطر جديد و20 سطراً مراجعة؛ كل خانة تُقرَّب من قيمتها الخام، ثم تُجمع الخانات.
             const acts = { early: 'حضر مبكراً', manners: 'التزم الأدب', uniform: 'لبس الزي' };
             let picked = positives.filter(c => ['early', 'manners', 'uniform'].includes(c.id));
             const named = picked.length > 0;
             if (!named) picked = positives.slice(0, 3);
             const discipline = picked.reduce((sum, c) => sum + Number(c.points), 0);
-            const newTop = face('new', top), reviewFour = 4 * face('review', second);
             const minPct = Number((minGrade || grade('good'))?.percent ?? 0);
-            const keeps = (...gs) => gs.every(g => Number(g?.percent) >= minPct);
-            const salemPrep = prep && keeps(top, second) ? prepPoints : 0;
-            const total = newTop + reviewFour + discipline + salemPrep;
-            // الفقرة البديلة بتقدير «جيد» دائماً (النص المعتمد)؛ يخسر التحضير إن كان «جيد» دون الحد وكان المثال قد استحقه.
-            const altGrade = grade('good');
-            const altPrep = prep && keeps(altGrade, second) ? prepPoints : 0;
-            const altLoses = salemPrep > 0 && altPrep === 0;
-            const alt = altGrade ? face('new', altGrade) + reviewFour + discipline + altPrep : null;
+            const example = grades.slice(0, 3).map(g => {
+                const percent = (Number(g.percent) || 0) / 100;
+                const newPoints = tenth(5 * mult.new * percent), reviewPoints = tenth(20 * mult.review * percent);
+                const disciplinePoints = tenth(discipline);
+                const homePrepPoints = prep && Number(g.percent) >= minPct ? tenth(prepPoints) : 0;
+                return { grade: g, newPoints, reviewPoints, disciplinePoints, homePrepPoints,
+                    total: tenth(newPoints + reviewPoints + disciplinePoints + homePrepPoints) };
+            });
             const workingDays = Array.isArray(settings?.workingDays) && settings.workingDays.length ? settings.workingDays.length : 4;
             const attendDays = Math.ceil(workingDays * Number(settings?.titleRules?.weeklyAttendancePct ?? 75) / 100);
             const cell = 'border border-slate-200 p-2', head = cell + ' bg-slate-50 font-black';
             const h3 = text => '<h3 class="font-black text-lg text-slate-800">' + text + '</h3>';
-            const row = (label, value, strong = false) => '<tr><td class="' + cell + (strong ? ' font-black' : '') + '">' + label + '</td><td class="' + cell + (strong ? ' font-black' : '') + '">' + value + '</td></tr>';
+            const row = (label, values, strong = false) => '<tr><td class="' + cell + (strong ? ' font-black' : '') + '">' + label + '</td>'
+                + values.map(value => '<td class="' + cell + (strong ? ' font-black' : '') + '">' + fmt(value) + '</td>').join('') + '</tr>';
             const disciplineLine = [positives.map(c => esc(c.name) + ' +' + fmt(Number(c.points))).join('، '),
                 negatives.map(c => 'و' + esc(c.name) + ' −' + fmt(-Number(c.points)) + (c.blocksTitles === true ? ' وتمنعك من الفروسية' : '')).join('، ')]
                 .filter(Boolean).map(part => part + '.').join(' ');
@@ -12600,21 +12600,24 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 + '<li>إن تساويتم في النقاط: الأكثر حفظاً.</li><li>إن تساويتم في الحفظ أيضاً: كلاكما فارس.</li></ul></section>'
                 + '<section>' + h3('2. كيف تُحسب نقاطك؟')
                 + '<p class="font-bold">نقاطك = حفظك الجديد + مراجعتك (بتقديرهما) + الانضباط' + (prep ? ' + التحضير المنزلي' : '') + '.</p>'
-                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '">التقدير</th><th class="' + head + '">تأخذ من النقاط</th><th class="' + head + '">الوجه الجديد</th><th class="' + head + '">وجه المراجعة</th></tr></thead><tbody>'
-                + grades.map(g => '<tr><td class="' + cell + '">' + esc(g.name) + '</td><td class="' + cell + '">' + share(Number(g.percent)) + '</td><td class="' + cell + '">' + fmt(face('new', g)) + '</td><td class="' + cell + '">' + fmt(face('review', g)) + '</td></tr>').join('')
+                + '<p>النقاط على الأسطر، لا على الأوجه: ' + (mult.new === mult.review
+                    ? 'الجديد والمراجعة بقيمة واحدة، السطر بـ' + fmt(mult.new) + ' نقاط.'
+                    : 'سطر الحفظ الجديد بـ' + fmt(mult.new) + ' نقاط، وسطر المراجعة بـ' + fmt(mult.review) + ' نقاط.') + '</p>'
+                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '">التقدير</th><th class="' + head + '">تأخذ من النقاط</th><th class="' + head + '">سطر الجديد</th><th class="' + head + '">سطر المراجعة</th></tr></thead><tbody>'
+                + grades.map(g => '<tr><td class="' + cell + '">' + esc(g.name) + '</td><td class="' + cell + '">' + share(Number(g.percent)) + '</td><td class="' + cell + '">' + fmt(line('new', g)) + '</td><td class="' + cell + '">' + fmt(line('review', g)) + '</td></tr>').join('')
                 + '</tbody></table><ul class="list-disc pr-6">'
                 + (disciplineLine ? '<li><b>الانضباط:</b> ' + disciplineLine + '</li>' : '')
                 + (prep ? '<li><b>التحضير المنزلي:</b> +' + fmt(prepPoints) + '، بشرط أن يكون كل تسميعك اليوم «' + esc(minGrade?.name || 'جيد') + '» فأعلى.</li>' : '')
-                + '</ul><p class="font-black mt-3">مثال: سالم اليوم</p>'
-                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '">ما فعله</th><th class="' + head + '">النقاط</th></tr></thead><tbody>'
-                + row('حفظ وجهاً جديداً بتقدير ' + esc(top?.name), fmt(newTop))
-                + row('راجع 4 أوجه بتقدير ' + esc(second?.name), fmt(reviewFour))
-                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), fmt(discipline)) : '')
-                + (salemPrep ? row('التحضير المنزلي', fmt(salemPrep)) : '')
-                + row('المجموع', fmt(total), true) + '</tbody></table>'
-                + (altGrade ? '<p><b>ولو كان تقدير حفظه الجديد «' + esc(altGrade.name) + '»:</b> يأخذ ' + fmt(face('new', altGrade)) + ' بدل ' + fmt(newTop)
-                    + (altLoses ? '، ويخسر التحضير المنزلي' : '') + '. فيصير مجموعه <b>' + fmt(alt) + '</b>.</p>' : '')
-                + '<p class="font-black">الخلاصة: الإتقان يرفع نقاطك أكثر من الكثرة.</p></section>'
+                + '</ul><p class="font-black mt-3">مثال: خالد حفظ 5 أسطر وراجع 20 سطراً</p>'
+                + '<table class="w-full text-right border-collapse my-2"><thead><tr><th class="' + head + '"></th>'
+                + example.map(c => '<th class="' + head + '">' + esc(c.grade.name) + '</th>').join('') + '</tr></thead><tbody>'
+                + row('الجديد: 5 أسطر × ' + fmt(mult.new), example.map(c => c.newPoints))
+                + row('المراجعة: 20 سطراً × ' + fmt(mult.review), example.map(c => c.reviewPoints))
+                + (picked.length ? row(named ? picked.map(c => acts[c.id]).join('، و') : picked.map(c => esc(c.name)).join('، '), example.map(c => c.disciplinePoints)) : '')
+                + (prep ? row('التحضير المنزلي («' + esc(minGrade?.name || 'جيد') + '» فأعلى)', example.map(c => c.homePrepPoints)) : '')
+                + row('المجموع', example.map(c => c.total), true) + '</tbody></table>'
+                + '<p>النقاط تُقرَّب إلى رقم عشري واحد.</p>'
+                + '<p class="font-black">الخلاصة: كل سطر تحفظه أو تراجعه له قيمته، ولو سطراً واحداً. والإتقان يرفعها.</p></section>'
                 + '<section>' + h3('3. فارس الأسبوع (لكل حلقة)')
                 + '<p class="font-bold">تدخل المنافسة إذا:</p><ol class="list-decimal pr-6">'
                 + '<li>كنتَ فارس الحلقة يوماً واحداً على الأقل هذا الأسبوع.</li><li>حضرتَ ' + days(attendDays) + ' من ' + workingDays + ' على الأقل.</li>'
