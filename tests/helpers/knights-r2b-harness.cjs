@@ -113,7 +113,7 @@ function cloud() {
     return { docs,state,stores,sdk,season:()=>docs.get('programs/general/seasons/s1'), students:()=>[...docs.entries()].filter(([p])=>p.includes('/students/')).map(([,s])=>copy(s)) };
 }
 const runtimeNames=['knightsFreezeCheckKey','knightsToday','knightsStoredSeason','knightsEndedWeeks','knightsFreezeRow','knightsClockWarning','ensureWeekKnightsFrozen',
-    'checkWeekKnightsOnLoad','lockWeekRows','unfreezeHalaqaWeek','knightsPreviousWeekStart','getLockedWeekKnights','lockKnightsForMessage',
+    'checkWeekKnightsOnLoad','lockWeekRows','unfreezeHalaqaWeek','knightsPreviousWeekStart','knightsDisplayWeekStart','getLockedWeekKnights','lockKnightsForMessage',
     'copyWeeklyKnightsAnnouncement','renderWeekKnightsReview','generalPerformanceSettings'];
 function runtime(server, now='2026-11-29T12:40:00Z', installGuard=true) {
     const h=quick(), stores=server.stores();

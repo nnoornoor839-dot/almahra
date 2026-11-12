@@ -7,14 +7,14 @@ const path = require('node:path');
 const cp = require('node:child_process');
 const { createHash } = require('node:crypto');
 const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
-const { beforeKnightsOnePlaceP4 } = require('./helpers/knights-oneplace-audit.cjs');
+const { beforeKnightsLastWeek, beforeKnightsOnePlaceP4 } = require('./helpers/knights-oneplace-audit.cjs');
 const { source } = require('./helpers/quick-entry-harness.cjs');
 const root = path.resolve(__dirname, '..');
 const BASE = '263c942';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+const current = file => beforeKnightsLastWeek(fs.readFileSync(path.join(root, file), 'utf8'), file);
 const SETTINGS_LINE = '                    ...(s?.titleRules ? { titleRules: s.titleRules } : {})';
 const HIDE_LINES = ["                const gkHelp = document.getElementById('gkHelpModal');",
     "                if (gkHelp) { gkHelp.classList.remove('flex'); gkHelp.classList.add('hidden'); }",
@@ -24,9 +24,9 @@ const HIDE_LINES = ["                const gkHelp = document.getElementById('gkH
 test('category 15 audit: every changed line since 263c942 is registered and reverses exactly to 263c942', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsOnePlaceP4Baseline, BASE);
-    const added = new Set((audit.knightsOnePlaceP4AddedFiles || []).map(r => r.file));
+    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || [])].map(r => r.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
-        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f)).sort();
+        .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsOnePlaceP4Changes.map(r => r.file).sort(), changed);
     for (const row of audit.knightsOnePlaceP4Changes) {
         assert.equal(row.category, 15); assert.equal(row.reason, audit.categories['15']);
@@ -39,7 +39,7 @@ test('category 15 audit: every changed line since 263c942 is registered and reve
     for (const file of untracked) assert.ok(added.has(file), 'ملف غير مسجَّل: ' + file);
     for (const row of audit.knightsOnePlaceP4AddedFiles) {
         assert.throws(() => git('cat-file', '-e', BASE + ':' + row.file), undefined, row.file + ' ليس في ' + BASE);
-        const text = fs.readFileSync(path.join(root, row.file), 'utf8');
+        const text = current(row.file);
         assert.equal(row.category, 15); assert.equal(row.reason, audit.categories['15']);
         assert.equal(sha(text), row.sha256, row.file);
         assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\n') }]);

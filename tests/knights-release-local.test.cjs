@@ -10,6 +10,7 @@ const { cloud, runtime, key } = require('./helpers/knights-r2b-harness.cjs');
 const { source, html } = require('./helpers/quick-entry-harness.cjs');
 const { beforeKnightsRelease } = require('./helpers/knights-release-audit.cjs');
 const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');
+const { beforeKnightsLastWeek } = require('./helpers/knights-oneplace-audit.cjs');
 let browser;
 before(async () => {
     const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,
@@ -162,7 +163,8 @@ test('release TV: production transport delivers new provisional halaqa knights a
     assert.ok(posted[0].stages.every(s=>!Object.hasOwn(s,'weekKnights')));
     release?.({success:false});
     const old=cp.execFileSync('git',['show','2d78da2:index.html'],{cwd:root,encoding:'utf8'});
-    for(const name of ['getGeneralTvSnapshot','getLockedWeekKnights','getDayHalaqaKnights']) assert.equal(source(name),source(name,old));
+    // الفئة 16 (آخر أسبوع دراسي محسوم) تُعكس قبل المقارنة
+    for(const name of ['getGeneralTvSnapshot','getLockedWeekKnights','getDayHalaqaKnights']) assert.equal(source(name,beforeKnightsLastWeek(html)),source(name,old));
 });
 
 test('release audit: exact hunks, protected calculations/stores/rules, four locked keys and registered owner expectations',()=>{

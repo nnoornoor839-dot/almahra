@@ -4555,9 +4555,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function sendGeneralTvSnapshot() {
             if (!generalTv.enabled || !generalTvReady()) return;
             postGeneralTv(getGeneralTvSnapshot());
-            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart(), context = generalTvContext();
-            const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);
-            if (!season.frozenWeeks?.[weekStart]) {
+            const season = knightsStoredSeason(), previousWeekStart = knightsPreviousWeekStart(), context = generalTvContext();
+            if (!season.frozenWeeks?.[previousWeekStart]) {
                 const key = context + '|freeze';
                 if (!weekKnightsTvLocks.has(key)) {
                     weekKnightsTvLocks.add(key);
@@ -4568,6 +4567,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 }
                 return;
             }
+            const weekStart = knightsDisplayWeekStart();
+            if (!weekStart) return;
+            const rows = season.weekKnightsLog.filter(r => r.weekStart === weekStart);
             for (const stageId of [...new Set(rows.filter(r => !r.lockedAt).map(r => r.stageId))]) {
                 const key = context + '|' + weekStart + '|' + stageId;
                 if (weekKnightsTvLocks.has(key)) continue;
@@ -8525,8 +8527,18 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function knightsPreviousWeekStart() {
             return addDaysToDateStr(getWeekStartDate(todayStr), -7);
         }
+        function knightsDisplayWeekStart() {
+            const season = knightsStoredSeason();
+            if (!season.termStart) return null;
+            const currentWeekStart = getWeekStartDate(todayStr);
+            const termWeekStart = getWeekStartDate(season.termStart);
+            return Object.keys(season.frozenWeeks || {})
+                .filter(weekStart => weekStart < currentWeekStart && weekStart >= termWeekStart
+                    && season.weekKnightsLog.some(row => row.weekStart === weekStart))
+                .sort().at(-1) || null;
+        }
         function getLockedWeekKnights(period) {
-            const season = knightsStoredSeason(), weekStart = knightsPreviousWeekStart();
+            const season = knightsStoredSeason(), weekStart = knightsDisplayWeekStart();
             if (!season.frozenWeeks?.[weekStart]) return [];
             return season.weekKnightsLog.filter(row => row.weekStart === weekStart && row.period === period && row.lockedAt)
                 .sort((a, b) => a.halaqaOrder - b.halaqaOrder || String(a.halaqaId).localeCompare(String(b.halaqaId)))
@@ -8562,7 +8574,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const seasonId = window.almahraPrograms.getCurrentSeasonId();
             const ready = await ensureWeekKnightsFrozen();
             if (!ready.ok) { showToast(ready.error, 'error'); return; }
-            const weekStart = knightsPreviousWeekStart();
+            const weekStart = knightsDisplayWeekStart();
             if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
             const frozen = await lockKnightsForMessage(weekStart);
             if (!frozen) return;
@@ -8583,7 +8595,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!host) return;
             host.classList.remove('hidden');
             // الأسبوع الماضي المجمَّد وحده، من السطر المحفوظ بلا إعادة حساب.
-            const weekStart = knightsPreviousWeekStart();
+            const weekStart = knightsDisplayWeekStart();
             const rows = knightsStoredSeason().weekKnightsLog.filter(row => row.weekStart === weekStart)
                 .sort((a, b) => a.halaqaOrder - b.halaqaOrder || knightsIdentityOrder({ id: a.halaqaId }, { id: b.halaqaId }));
             if (!rows.length) { host.innerHTML = '<p>لم يُحسم أسبوع بعد.</p>'; return; }
@@ -12522,7 +12534,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (!isGeneralProgram()) return;
             const preview = document.getElementById('gkCopyPreview'), button = document.getElementById('gkCopyBtn');
             if (!preview) return;
-            const weekStart = knightsPreviousWeekStart();
+            const weekStart = knightsDisplayWeekStart();
             const text = buildWeeklyKnightsAnnouncement(knightsStoredSeason().weekKnightsLog.filter(row => row.weekStart === weekStart));
             preview.textContent = text || 'لا سجل فرسان لهذا الأسبوع';
             if (button) button.disabled = !text;

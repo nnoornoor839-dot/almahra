@@ -7,9 +7,14 @@ function reverseRow(text, row) {
     for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);
     return lines.join('\n');
 }
+// Category 16: reverse registered last-school-week lines, so category 15 sees fe78763.
+function beforeKnightsLastWeek(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsLastWeekChanges?.find(r => r.file === file));
+}
 // Category 15: reverse only the exact «الفرسان في مكان واحد — الجزء ٤» lines, so category 14 sees 263c942.
 function beforeKnightsOnePlaceP4(text, file = 'index.html') {
-    text = text.replaceAll('\r\n', '\n');
+    text = beforeKnightsLastWeek(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceP4Changes?.find(r => r.file === file));
 }
 // Category 14: reverse only the exact «الفرسان في مكان واحد — الجزء ٣» lines, so category 13 sees 5fbff4e.
@@ -27,4 +32,4 @@ function beforeKnightsOnePlace(text, file = 'index.html') {
     text = beforeKnightsOnePlaceP2(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file));
 }
-module.exports = { beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };
+module.exports = { beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };

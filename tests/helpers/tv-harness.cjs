@@ -7,7 +7,7 @@ function installTv(run, install) {
     run("const weekKnightsState = new Map(), weekKnightsTvLocks = new Set();");
     run("const weekKnightsChecks = new Map(), weekKnightsPending = new Map();");
     run(html.match(/const KNIGHTS_GUARD_ERROR = .*;/)[0]);
-    install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'getLockedWeekKnights', 'lockWeekRows');
+    install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'knightsDisplayWeekStart', 'getLockedWeekKnights', 'lockWeekRows');
     install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageRow', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',
         'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',
         'generalTvContext', 'generalTvReady', 'postGeneralTv', 'sendGeneralTvSnapshot', 'clearGeneralTv', 'enableGeneralTv',
