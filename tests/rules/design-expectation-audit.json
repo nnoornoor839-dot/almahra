@@ -17,7 +17,8 @@
     "14": "الفرسان في مكان واحد — الجزء ٣ (٢٠٢٦-١١-٠٨)",
     "15": "الفرسان في مكان واحد — الجزء ٤ (٢٠٢٦-١١-٠٨)",
     "16": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
-    "17": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)"
+    "17": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
+    "18": "نقاط الفارس على التلفاز (2026-11-13)"
   },
   "files": [
     {
@@ -17687,6 +17688,829 @@
             "        [beforeKnightsOwnerAuto, '186a18e'], [beforeGeneralKnightsCleanup, '55fd33e'],",
             "        [beforeKnightsRelease, '2d78da2'], [beforeKnightsRound2b, '0c5ec91'], [beforeKnightsRound2, '8880f84']])",
             "        assert.equal(reverse(html, 'index.html'), git('show', baseline + ':index.html').replaceAll('\\r\\n', '\\n'), baseline);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsTvPointsBaseline": "6e50320",
+  "knightsTvPointsChanges": [
+    {
+      "file": "index.html",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "151f58579dd17722af2854be5e8e473c9e89e352dd554fa6a1f9729423bf08b7",
+      "sha256": "207e25604029e42246fa729694c1ef796fdf6b2b3c30462f01e32ecfe7a7fe58",
+      "hunks": [
+        {
+          "oldLine": 4532,
+          "newLine": 4532,
+          "before": [
+            "                                    names: knights.names.map(nameOf), times: knights.times, provisional: true };"
+          ],
+          "after": [
+            "                                    names: knights.names.map(nameOf),",
+            "                                    points: knights.students.map(s => (knightsDayPointsTenths(s.history?.[date]) + Math.round((attendance ?? 10) * 10)) / 10),",
+            "                                    times: knights.times, provisional: true };"
+          ]
+        },
+        {
+          "oldLine": 8547,
+          "newLine": 8549,
+          "before": [],
+          "after": [
+            "                    points: row.knights.map(s => s.weekPointsTenths / 10),"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "55094ea30a31e20abe92e560c51ce423df1a87ead450c097bfc892db0d5cb345",
+      "sha256": "f80f8e044137d7096c04a96b21ec8e3d30b2b961e60f2378d6075cb1489283bf",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763') {"
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763' || baseline === 'be3b92f') {"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [
+            "        const text = baseline === 'fe78763' ? onePlace.beforeKnightsLinesX3(currentText, file)"
+          ],
+          "after": [
+            "        const text = baseline === 'be3b92f' ? onePlace.beforeKnightsTvPoints(currentText, file)",
+            "            : baseline === 'fe78763' ? onePlace.beforeKnightsLinesX3(currentText, file)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "7475558781515a59cdafb884000ec49fb81014a084716fc32d51c7a084f74d59",
+      "sha256": "cd73f3749153f3893fd2db95557c38b50a1051abdb80c1532c2d5030326f5b3e",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "// Category 18: reverse registered TV-points changes, so category 17 sees 6e50320.",
+            "function beforeKnightsTvPoints(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsTvPointsChanges?.find(r => r.file === file));",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 17,
+          "before": [
+            "    text = text.replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "    text = beforeKnightsTvPoints(text, file);"
+          ]
+        },
+        {
+          "oldLine": 40,
+          "newLine": 45,
+          "before": [
+            "module.exports = { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ],
+          "after": [
+            "module.exports = { beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-last-week-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "a99b8e7a138c0153256d90402f1f450a5af2e895937f56c7a8e20492e6353c72",
+      "sha256": "a89ae803b181ee24c2da0abc8d658ee1502cabecccfca46f1a28cbf2a64369c7",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || [])].map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(row => row.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-lines-x3-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "2bcd977e8988e7d39659a0af4985a47ddc0dc6b2ac3f207f3d643984c6794c2d",
+      "sha256": "b74a8c1185259a2d0bf4d132833a7b9dc1bf1b7ff959a0e9bdf1a5fb48e108bd",
+      "hunks": [
+        {
+          "oldLine": 7,
+          "newLine": 7,
+          "before": [
+            "const { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ],
+          "after": [
+            "const { beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ]
+        },
+        {
+          "oldLine": 16,
+          "newLine": 16,
+          "before": [
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "const current = file => beforeKnightsTvPoints(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
+        },
+        {
+          "oldLine": 18,
+          "newLine": 18,
+          "before": [
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}"
+          ],
+          "after": [
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 33,
+          "newLine": 24,
+          "before": [
+            "    const added = new Set(audit.knightsLinesX3AddedFiles.map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || [])].map(row => row.file));"
+          ]
+        },
+        {
+          "oldLine": 35,
+          "newLine": 26,
+          "before": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();"
+          ],
+          "after": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 39,
+          "newLine": 30,
+          "before": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);"
+          ],
+          "after": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);"
+          ]
+        },
+        {
+          "oldLine": 46,
+          "newLine": 37,
+          "before": [
+            "    assert.deepEqual([...added].sort(), ['tests/knights-lines-x3-audit-local.test.cjs']);"
+          ],
+          "after": [
+            "    assert.deepEqual(audit.knightsLinesX3AddedFiles.map(row => row.file).sort(), ['tests/knights-lines-x3-audit-local.test.cjs']);"
+          ]
+        },
+        {
+          "oldLine": 60,
+          "newLine": 51,
+          "before": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && key !== 'categories'))"
+          ],
+          "after": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && key !== 'categories'))"
+          ]
+        },
+        {
+          "oldLine": 62,
+          "newLine": 53,
+          "before": [
+            "    const categories = { ...audit.categories }; delete categories['17'];"
+          ],
+          "after": [
+            "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18'];"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "023d0f5defa338b2fe4bc71b3537d066eeec26b49c0060a2d07fc644e2f482a0",
+      "sha256": "2b30023aae33f1ca60998e6d8d08318e8572f4836860393461ae0ba39679a2df",
+      "hunks": [
+        {
+          "oldLine": 158,
+          "newLine": 158,
+          "before": [
+            "    assert.deepEqual(cards,[{stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],times:1,provisional:true},{stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],times:1,provisional:true}]);"
+          ],
+          "after": [
+            "    assert.deepEqual(cards,[{stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],points:[68.1],times:1,provisional:true},{stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],points:[55],times:1,provisional:true}]);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "36fab96ad699b574c37a5b10934dad2f2f6a0522886763d81b03b236de63ccf2",
+      "sha256": "cf53b1570485dc7e6de3068099334e2afb2a7ee8f90b243295fe04c62a4f46c4",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "d54850f77236a95395484ca5d244b97ac7c7206628efb287888feb174c3c8d4a",
+      "sha256": "48dff0f3f51513c4619f9a68e2d5f750aa414749a2781631c3b60a4a0e3f23cc",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "18bfeaebf53a9073272f6204a1408ad635e7e04c1481710fda0d97df4cffce49",
+      "sha256": "c25d22969e115f71fcecf7db043bb66e853c7cb01a9c7d1fc98392f4d31002dd",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "11a3833e2dd8522e9a083ee6dc8d1e356a795b067804a3769bbfd7acd0a0672f",
+      "sha256": "eac6b32f5cb982a74cd9dbf4cab30361d53e0afcefa20c0cace85e4f2531b4aa",
+      "hunks": [
+        {
+          "oldLine": 27,
+          "newLine": 27,
+          "before": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "d2b42779a6c9a6d3b383e345d9c144f8fcd5df2d8ce962e7be65b4929ad65597",
+      "sha256": "605a7d7a70741b202ec6d6a596cdb342edab6993c60a51faa760cc4c8d49a442",
+      "hunks": [
+        {
+          "oldLine": 326,
+          "newLine": 326,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-release-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "641646e045ac128ba36c4eea31ab0a8ef901d5acfeb653bea7919f41d133e436",
+      "sha256": "c6636379df69a2de0201f34f1195a1bf6669782f19ae5ccde931067256390488",
+      "hunks": [
+        {
+          "oldLine": 161,
+          "newLine": 161,
+          "before": [
+            "        {stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],times:1,provisional:true},",
+            "        {stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],times:1,provisional:true}]);"
+          ],
+          "after": [
+            "        {stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],points:[68.1],times:1,provisional:true},",
+            "        {stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],points:[55],times:1,provisional:true}]);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/step8c-tv-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "d6e47378d597307a90f6d627c3c65ce19a4140c4f2cb6b35c5c0ca71676ceb95",
+      "sha256": "425caf81beca8e7b6a2c09aa2cfd8b5c2aa5e6e0d0a05c76888274a87c39cc4b",
+      "hunks": [
+        {
+          "oldLine": 148,
+          "newLine": 148,
+          "before": [
+            "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);"
+          ],
+          "after": [
+            "        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'points', 'provisional', 'stage', 'teacher', 'times']);"
+          ]
+        },
+        {
+          "oldLine": 153,
+          "newLine": 153,
+          "before": [
+            "    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], times: 1, provisional: true },",
+            "        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], times: 2, provisional: true }];"
+          ],
+          "after": [
+            "    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], points: [0], times: 1, provisional: true },",
+            "        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], points: [0, 0], times: 2, provisional: true }];"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.html",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "09393b85ade747ea8f2eca1e099d7c7348948bcad1079509dc56d74156b003d2",
+      "sha256": "b0fa4d46d449b6c16550a15b52b15293cb16176df1742d6694e08be040b256cf",
+      "hunks": [
+        {
+          "oldLine": 89,
+          "newLine": 89,
+          "before": [],
+          "after": [
+            ".card .kpoints { font-size:48px; font-weight:700; line-height:1.3; color:var(--tv-gold); font-variant-numeric:tabular-nums; }",
+            ".card .kpoints + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }",
+            ".card.tie .kname { font-size:64px; }",
+            ".card.tie .kpoints { font-size:40px; }"
+          ]
+        },
+        {
+          "oldLine": 95,
+          "newLine": 99,
+          "before": [],
+          "after": [
+            ".card.day-knight .kpoints { font-size:34px; }"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tv.js",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "beforeSha256": "7808002331cc9ceffcbaaa57deda8399be2f6e70d6c6badc0707c0e77e9e6124",
+      "sha256": "e1ad1cc054ec0b53b9071cb5871a5f6e83dacb63b9b4c56e2582e2d8c12f4b37",
+      "hunks": [
+        {
+          "oldLine": 251,
+          "newLine": 251,
+          "before": [
+            "                        item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));"
+          ],
+          "after": [
+            "                        if (item.names.length > 1 && item.names.some((_, i) => Number.isFinite(item.points?.[i]))) card.classList.add('tie');",
+            "                        item.names.forEach((name, i) => {",
+            "                            cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name));",
+            "                            if (Number.isFinite(item.points?.[i])) cardBody.append(node('p', 'kpoints', ar(item.points[i]) + ' نقطة'));",
+            "                        });"
+          ]
+        }
+      ]
+    }
+  ],
+  "knightsTvPointsAddedFiles": [
+    {
+      "file": "tests/knights-tv-points-audit-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "sha256": "a9a236a7f851b36400643b52324f7dc298e6b40500b6f1b674e0e6d32b9cb71d",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,",
+            "    beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source } = require('./helpers/quick-entry-harness.cjs');",
+            "",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = '6e50320';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "",
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}",
+            "",
+            "test('category 18 audit: every changed line since 6e50320 is registered and reverses exactly', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.categories['18'], 'نقاط الفارس على التلفاز (2026-11-13)');",
+            "    assert.equal(audit.knightsTvPointsBaseline, BASE);",
+            "    const added = new Set(audit.knightsTvPointsAddedFiles.map(row => row.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();",
+            "    assert.deepEqual(audit.knightsTvPointsChanges.map(row => row.file).sort(), changed);",
+            "    for (const file of ['index.html', 'tv.js', 'tv.html']) assert.ok(changed.includes(file), file);",
+            "    for (const row of audit.knightsTvPointsChanges) {",
+            "        assert.equal(row.category, 18); assert.equal(row.reason, audit.categories['18']);",
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);",
+            "        assert.equal(row.beforeSha256, sha(original(row.file)), row.file);",
+            "        assert.equal(row.sha256, sha(current(row.file)), row.file);",
+            "        assert.equal(beforeKnightsTvPoints(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);",
+            "    assert.deepEqual([...added].sort(), ['tests/knights-tv-points-audit-local.test.cjs', 'tests/knights-tv-points-local.test.cjs']);",
+            "    for (const row of audit.knightsTvPointsAddedFiles) {",
+            "        assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);",
+            "        const text = current(row.file);",
+            "        assert.equal(row.category, 18); assert.equal(row.reason, audit.categories['18']);",
+            "        assert.equal(row.sha256, sha(text), row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }], row.file);",
+            "    }",
+            "    const mutated = current('index.html').replace('points: row.knights.map(s => s.weekPointsTenths / 10),', 'points: row.knights.map(s => s.weekPointsTenths),');",
+            "    assert.notEqual(mutated, current('index.html'));",
+            "    assert.notEqual(beforeKnightsTvPoints(mutated), original('index.html'));",
+            "    const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');",
+            "    assert.notEqual(outside, current('index.html'));",
+            "    assert.notEqual(beforeKnightsTvPoints(outside), original('index.html'));",
+            "    const tvMutated = current('tv.js').replace(\"ar(item.points[i]) + ' نقطة'\", 'ar(item.points[i])');",
+            "    assert.notEqual(tvMutated, current('tv.js'));",
+            "    assert.notEqual(beforeKnightsTvPoints(tvMutated, 'tv.js'), original('tv.js'));",
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && key !== 'categories'))",
+            "        assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);",
+            "    const categories = { ...audit.categories }; delete categories['18'];",
+            "    assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);",
+            "});",
+            "",
+            "test('category 18 audit: calculations, selection, freezing, stores and locked keys are unchanged', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    const strip = text => ['getGeneralTvSnapshot', 'getLockedWeekKnights'].reduce((t, name) => t.replace(source(name, t), ''), text);",
+            "    assert.equal(strip(html), strip(old), 'Every line outside getGeneralTvSnapshot and getLockedWeekKnights');",
+            "    for (const name of ['knightsDayPointsTenths', 'getDayHalaqaKnights', 'getWeekNominations', 'rankHalaqaWeekKnights',",
+            "        'buildWeekKnightsRow', 'dayAcceptedWeightTenths', 'topTiedBy', 'buildRevealSteps', 'dayStats', 'getCumulativeStats',",
+            "        'getMostImproved', 'ensureWeekKnightsFrozen', 'knightsEndedWeeks', 'knightsFreezeRow', 'lockWeekRows',",
+            "        'lockKnightsForMessage', 'knightsPreviousWeekStart', 'knightsDisplayWeekStart', 'sendGeneralTvSnapshot'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    assert.equal(html.match(/const dayPoints = .*;/)[0], old.match(/const dayPoints = .*;/)[0]);",
+            "    for (const file of ['firestore.rules', 'programs-store.js', 'data-store.js', 'general-points.js',",
+            "        ...['knights-answer-key', 'knights-r2-answer-key', 'board-answer-key', 'homeprep-answer-key', 'home-answer-key'].map(name => 'tests/rules/' + name + '.json')])",
+            "        assert.equal(current(file), original(file), file);",
+            "    const marker = \"if (typeof document !== 'undefined') {\";",
+            "    const tvNow = current('tv.js'), tvOld = original('tv.js');",
+            "    assert.ok(tvNow.includes(marker));",
+            "    assert.equal(tvNow.slice(0, tvNow.indexOf(marker)), tvOld.slice(0, tvOld.indexOf(marker)), 'tv.js before the DOM section');",
+            "    const css = changesFrom('tv.html');",
+            "    assert.ok(css.length);",
+            "    for (const hunk of css) {",
+            "        assert.deepEqual(hunk.before, [], 'tv.html: additions only (.kpoints, and the tie sizes by manager decision 2026-11-13)');",
+            "        for (const line of hunk.after) assert.match(line, /^\\.card(\\.day-knight|\\.tie)? \\.kpoints[ {]|^\\.card\\.tie \\.kname \\{/, line);",
+            "    }",
+            "});",
+            "",
+            "test('category 18 audit: the reverse chain restores every older index baseline exactly', () => {",
+            "    const html = current('index.html');",
+            "    const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');",
+            "    const { beforeGeneralKnightsCleanup } = require('./helpers/general-knights-cleanup-audit.cjs');",
+            "    const { beforeKnightsRelease } = require('./helpers/knights-release-audit.cjs');",
+            "    const { beforeKnightsRound2b, beforeKnightsRound2 } = require('./helpers/board-invariants.cjs');",
+            "    for (const [reverse, baseline] of [[beforeKnightsTvPoints, BASE], [beforeKnightsLinesX3, 'be3b92f'], [beforeKnightsLastWeek, 'fe78763'],",
+            "        [beforeKnightsOnePlaceP4, '263c942'], [beforeKnightsOnePlaceP3, '5fbff4e'],",
+            "        [beforeKnightsOnePlaceP2, 'a002e0c'], [beforeKnightsOnePlace, 'd51bb42'],",
+            "        [beforeKnightsOwnerAuto, '186a18e'], [beforeGeneralKnightsCleanup, '55fd33e'],",
+            "        [beforeKnightsRelease, '2d78da2'], [beforeKnightsRound2b, '0c5ec91'], [beforeKnightsRound2, '8880f84']])",
+            "        assert.equal(reverse(html, 'index.html'), git('show', baseline + ':index.html').replaceAll('\\r\\n', '\\n'), baseline);",
+            "    for (const file of ['tv.js', 'tv.html']) assert.equal(beforeKnightsTvPoints(current(file), file), original(file), file);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-tv-points-local.test.cjs",
+      "category": 18,
+      "reason": "نقاط الفارس على التلفاز (2026-11-13)",
+      "sha256": "11b52cca314f60a572f6c5084153f3bf021a586f3dd05b1320650b3d823635b3",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبار قبول البند 2-3 «نقاط الفارس على التلفاز» (general فقط) — 2026-11-13. يُرى أحمر قبل البناء.",
+            "// المصدر: notes/features/knights/tv-points-card.md §2د (الأمثلة ق1–ق7) و§4 (ت1–ت4).",
+            "// المدخلات تسجيلات حقيقية قابلة للقياس (QuranMeasure + generalEntryPoints) كما في design-v1/verify/tv-points-calc-3-2026-11-13.cjs.",
+            "const { test, before, after } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const vm = require('node:vm');",
+            "const cp = require('node:child_process');",
+            "const path = require('node:path');",
+            "const { source, html, root, QuranMeasure, generalEntryPoints, copy } = require('./helpers/quick-entry-harness.cjs');",
+            "const { installTv } = require('./helpers/tv-harness.cjs');",
+            "const { functions: weekFunctions } = require('./helpers/knights-r2-harness.cjs');",
+            "const BASE = '6e50320';",
+            "const atBase = file => cp.execFileSync('git', ['show', BASE + ':' + file], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });",
+            "",
+            "// ===== التسجيلات: الافتراضي العام مع معامل 3 للجديد والمراجعة، والحضور 10 صراحة =====",
+            "const grades = [{ id: 'excellent', name: 'ممتاز', percent: 100 }, { id: 'very-good', name: 'جيد جداً', percent: 75 },",
+            "    { id: 'good', name: 'جيد', percent: 50 }, { id: 'repeat', name: 'يُعاد', percent: 0, fullPointsOnSuccessfulRepeat: true }];",
+            "const kindMult = { newMemorization: 3, review: 3 };",
+            "const ATT = 10;",
+            "// البقرة 15-18 = 5 أسطر (جديد)، البقرة 38-51 = 20 سطراً (مراجعة).",
+            "const NEW = { from: [2, 15], to: [2, 18] }, REV = { from: [2, 38], to: [2, 51] };",
+            "const lines = spec => QuranMeasure.measure({ spec }).lines;",
+            "function rec(kind, spec, gradeId) {",
+            "    const s = generalEntryPoints({ lines: lines(spec), kind, gradeId, settings: { kindMult, grades } });",
+            "    return { kind, spec, grade: gradeId, rep: 1, mult: s.mult, points: s.points };",
+            "}",
+            "// الأيام النموذجية: أ = 15 و60 (980 عُشراً)، ب = 11.3 و45 (793)، ج = 7.5 و30 (605)، ص = حاضر بلا تسجيل (0).",
+            "const GRADE = { 'أ': 'excellent', 'ب': 'very-good', 'ج': 'good' };",
+            "function day(letter) {",
+            "    if (letter === 'ص') return { attended: true, criteriaPoints: 0 };",
+            "    const g = GRADE[letter];",
+            "    return { attended: true, entries: { e0: rec('new', NEW, g), e1: rec('review', REV, g) },",
+            "        criteria: { early: 5, manners: 5, uniform: 3, homeprep: 10 }, criteriaPoints: 23, groupDisciplinePoints: 0 };",
+            "}",
+            "const student = (id, name, halaqaId, joinedOn, days) => ({ id, name, halaqaId, joinedOn,",
+            "    history: Object.fromEntries(Object.entries(days).map(([d, l]) => [d, day(l)])) });",
+            "",
+            "test('ت0: التسجيلات قابلة للقياس وتعطي النقاط المذكورة في البطاقة', () => {",
+            "    assert.equal(lines(NEW), 5); assert.equal(lines(REV), 20);",
+            "    assert.deepEqual([day('أ'), day('ب'), day('ج')].map(d => [d.entries.e0.points, d.entries.e1.points]), [[15, 60], [11.3, 45], [7.5, 30]]);",
+            "});",
+            "",
+            "// ===== حاضنة اللقطة: الدوال الحقيقية بـ installTv (كما في tests/step8c-tv-local.test.cjs) =====",
+            "const tvSettings = () => ({ points: { attendance: ATT, newMemorization: 3, review: 3 }, workingDays: [0, 1, 2, 3], grades, kindMult, absence: [], criteria: [],",
+            "    stages: [{ id: 'a', name: 'مرحلة', period: 'asr' }], teachers: [], titleRules: { weeklyAttendancePct: 75 },",
+            "    halaqas: ['h1', 'h2', 'h3', 'h4', 'w1', 'w3', 'w4'].map((id, i) => ({ id, name: 'حلقة ' + id, stageId: 'a', active: true, order: i })), features: { tiers: false } });",
+            "function tvContext(list, today, season = {}) {",
+            "    const settings = tvSettings();",
+            "    const fullSeason = { termStart: '2026-11-15', termEnd: '2026-12-31', calendar: [], ...season };",
+            "    const programs = { getCurrentProgramId: () => 'general', getCurrentSeasonId: () => 's1', getCurrentSeason: () => fullSeason,",
+            "        getSettings: () => settings, getCurrentProgram: () => ({ name: 'وهمي' }), isCurrentSeasonArchived: () => false,",
+            "        isFeatureEnabled: name => settings.features?.[name] !== false, PROGRAM_DEFS: { general: { defaultSettings: settings } } };",
+            "    const ctx = vm.createContext({ console, Date, Intl, structuredClone, QuranMeasure,",
+            "        document: { getElementById: () => ({ style: {}, classList: { toggle() {} } }) },",
+            "        window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'fake-admin' } },",
+            "            almahraData: { isReady: () => true, getActiveProgramId: () => 'general', getActiveSeasonId: () => 's1' } },",
+            "        getCumulativeStats: () => ({ tripPoints: 0 }), summarizeRange: () => ({ points: 0, attended: 0 }), getMostImproved: () => [],",
+            "        getActiveCriteria: () => [], showToast() {}, setInterval() {}, clearInterval() {} });",
+            "    const run = code => vm.runInContext(code, ctx);",
+            "    const install = (...names) => names.forEach(name => run(source(name)));",
+            "    ctx.fixtures = list;",
+            "    run(`let students = fixtures, todayStr = '${today}', honorKnightsLog = []; const ALL_DAY_NAMES = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];`);",
+            "    for (const name of ['ivPairs', 'measureEntry']) run(html.match(new RegExp('const ' + name + ' = .*;'))[0]);",
+            "    install('isGeneralProgram', 'getProgramSettings', 'getTiers', 'tiersFeatureOn', 'isWorkingDay', 'schoolCivilDate', 'isSeasonCalendarComplete',",
+            "        'getSchoolDayInfo', 'getGeneralSchoolDates', 'formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr',",
+            "        'getBoardDate', 'getBoardWeekRange', 'getWorkingDatesInRange', 'roundPointTotal');",
+            "    installTv(run, install);",
+            "    assert.equal(run('getProgramSettings().points.attendance'), ATT);",
+            "    return { run, ctx, snapshot: () => copy(run('getGeneralTvSnapshot()')) };",
+            "}",
+            "const dayCards = snap => Object.fromEntries(snap.stages.flatMap(s => s.dayKnights).map(c => [c.stage, c]));",
+            "",
+            "test('ت1 (اللقطة، اليوم): ق1 وق2 وق4 وق6-يوم وق7 — points تحت كل اسم، و names كما هي', () => {",
+            "    // يوم 2026-11-16: ق1 خالد «أ» وحده في h1، ق2 سالم «ب» وحده في h2، ق4 يزيد ووليد «أ» متطابقان في h3.",
+            "    const day16 = [student(1, 'خالد', 'h1', '2026-11-01', { '2026-11-16': 'أ' }), student(2, 'سالم', 'h2', '2026-11-01', { '2026-11-16': 'ب' }),",
+            "        student(3, 'يزيد', 'h3', '2026-11-01', { '2026-11-16': 'أ' }), student(4, 'وليد', 'h3', '2026-11-01', { '2026-11-16': 'أ' })];",
+            "    const s16 = tvContext(day16, '2026-11-16').snapshot();",
+            "    assert.equal(s16.boardDate, '2026-11-16');",
+            "    const c16 = dayCards(s16);",
+            "    assert.deepEqual(c16['حلقة h1'].names, ['خالد']); assert.deepEqual(c16['حلقة h2'].names, ['سالم']); assert.deepEqual(c16['حلقة h3'].names, ['يزيد', 'وليد']);",
+            "    // ق6-يوم: هاني joinedOn 2026-11-17 حاضر 17 «أ» و18 «ج»؛ اللوحة يوم 17.",
+            "    const s17 = tvContext([student(5, 'هاني', 'h4', '2026-11-17', { '2026-11-17': 'أ', '2026-11-18': 'ج' })], '2026-11-17').snapshot();",
+            "    assert.equal(s17.boardDate, '2026-11-17');",
+            "    assert.deepEqual(dayCards(s17)['حلقة h4'].names, ['هاني']);",
+            "    // ق7: صباح 2026-11-17 قبل أي حضور؛ آخر يوم حضور 2026-11-16 وفيه خالد «أ» ← يوم اللوحة أمس.",
+            "    const s7 = tvContext([student(1, 'خالد', 'h1', '2026-11-01', { '2026-11-16': 'أ' })], '2026-11-17').snapshot();",
+            "    assert.equal(s7.boardDate, '2026-11-16');",
+            "    assert.deepEqual(dayCards(s7)['حلقة h1'].names, ['خالد']);",
+            "    // التوقعات (§2د): 980 + 100 = 1080 ← 108؛ 793 + 100 = 893 ← 89.3.",
+            "    assert.deepEqual(c16['حلقة h1'].points, [108], 'ق1');",
+            "    assert.deepEqual(c16['حلقة h2'].points, [89.3], 'ق2');",
+            "    assert.deepEqual(c16['حلقة h3'].points, [108, 108], 'ق4');",
+            "    assert.deepEqual(dayCards(s17)['حلقة h4'].points, [108], 'ق6-يوم');",
+            "    assert.deepEqual(dayCards(s7)['حلقة h1'].points, [108], 'ق7');",
+            "});",
+            "",
+            "// ===== الأسبوع: السطر المجمَّد من buildWeekKnightsRow الحقيقية، ثم getLockedWeekKnights الحقيقية =====",
+            "function weekRows() {",
+            "    const settings = { ...tvSettings(), teachers: [{ id: 't', name: 'معلم' }], season: { termStart: '2026-11-15', termEnd: '2026-12-31', calendar: [] } };",
+            "    settings.halaqas.forEach(h => { h.teacherId = 't'; });",
+            "    class ExplicitDate extends Date { constructor(...args) { if (!args.length) throw Error('clock read'); super(...args); } static now() { throw Error('clock read'); } }",
+            "    const wctx = vm.createContext({ QuranMeasure, Date: ExplicitDate });",
+            "    for (const name of ['ivPairs', 'measureEntry']) vm.runInContext(html.match(new RegExp('const ' + name + ' = .*;'))[0], wctx);",
+            "    for (const name of weekFunctions) vm.runInContext(name === 'dayPoints' ? html.match(/const dayPoints = .*;/)[0] : source(name), wctx);",
+            "    const range = { startStr: '2026-11-15', endStr: '2026-11-18' };",
+            "    const week = { '2026-11-15': 'أ', '2026-11-16': 'ب', '2026-11-17': 'ج', '2026-11-18': 'ص' };",
+            "    // ق3: فهد وحده في w1. ق4ب: توأمان بالأيام نفسها في w3. ق5ب: w4 بلا طلاب.",
+            "    const list = [student(11, 'فهد', 'w1', '2026-11-01', week), student(13, 'ماجد', 'w3', '2026-11-01', week), student(14, 'نايف', 'w3', '2026-11-01', week)];",
+            "    const build = id => { wctx.args = [range, settings.halaqas.find(h => h.id === id), list, [], settings]; return copy(vm.runInContext('buildWeekKnightsRow(...args)', wctx)); };",
+            "    const lock = row => ({ ...row, key: 's1|' + row.key, frozenAt: { seconds: 1, nanoseconds: 0 }, frozenAtDevice: 1000, frozenBy: 'fake-admin',",
+            "        lockedAt: { seconds: 2, nanoseconds: 0 }, lockedBy: 'fake-admin', lockedSteps: [] });",
+            "    return { w1: lock(build('w1')), w3: lock(build('w3')), w4: lock(build('w4')) };",
+            "}",
+            "",
+            "test('ت2 (اللقطة، الأسبوع): ق3 وق4ب وق5ب — points من السطر المجمَّد، و names = [{ name, rank }] كما هي', () => {",
+            "    const rows = weekRows();",
+            "    // السطر المجمَّد نفسه (قبل البناء وبعده): 2778 عُشراً لكل فارس.",
+            "    assert.deepEqual(rows.w1.knights.map(s => [s.name, s.rank, s.weekPointsTenths]), [['فهد', 1, 2778]]);",
+            "    assert.deepEqual(rows.w3.knights.map(s => [s.name, s.rank, s.weekPointsTenths]), [['ماجد', 1, 2778], ['نايف', 1, 2778]]);",
+            "    assert.deepEqual([rows.w4.knights, rows.w4.nominees], [[], []]);",
+            "    const season = { frozenWeeks: { '2026-11-15': { seconds: 1, nanoseconds: 0 } }, weekKnightsLog: Object.fromEntries(Object.values(rows).map(r => [r.key, r])) };",
+            "    // اليوم 2026-11-29 ← أسبوع العرض 2026-11-15 (آخر أسبوع محسوم قبل الأسبوع الجاري).",
+            "    const h = tvContext([], '2026-11-29', season);",
+            "    assert.equal(h.run('knightsDisplayWeekStart()'), '2026-11-15');",
+            "    const cards = copy(h.run(\"getLockedWeekKnights('asr')\"));",
+            "    const by = Object.fromEntries(cards.map(c => [c.stage, c]));",
+            "    assert.deepEqual(Object.keys(by), ['حلقة w1', 'حلقة w3', 'حلقة w4']);",
+            "    assert.deepEqual(by['حلقة w1'].names, [{ name: 'فهد', rank: 1 }]);",
+            "    assert.deepEqual(by['حلقة w3'].names, [{ name: 'ماجد', rank: 1 }, { name: 'نايف', rank: 1 }]);",
+            "    assert.deepEqual(by['حلقة w4'].names, []); assert.equal(by['حلقة w4'].status, 'لا ترشيحات هذا الأسبوع');",
+            "    // التوقعات (§2د): 2778 ÷ 10 = 277.8؛ التعادل الرقم لكل اسم؛ بلا ترشيح = [].",
+            "    assert.deepEqual(by['حلقة w1'].points, [277.8], 'ق3');",
+            "    assert.deepEqual(by['حلقة w3'].points, [277.8, 277.8], 'ق4ب');",
+            "    assert.deepEqual(by['حلقة w4'].points, [], 'ق5ب');",
+            "});",
+            "",
+            "// ===== ت3: الرسم في متصفح حقيقي (بنمط tests/tv-design-local.test.cjs:52-63) =====",
+            "let browser;",
+            "before(async () => {",
+            "    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,",
+            "        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));",
+            "    browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });",
+            "});",
+            "after(async () => { await browser?.close(); });",
+            "async function openTv() {",
+            "    const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });",
+            "    const page = await context.newPage(), external = [], errors = [];",
+            "    page.on('pageerror', e => { errors[errors.length] = e.message; });",
+            "    await page.route('**/*', async route => {",
+            "        const url = new URL(route.request().url());",
+            "        if (url.origin !== 'http://tv.test') { external[external.length] = url.href; return route.abort('internetdisconnected'); }",
+            "        const file = path.resolve(root, decodeURIComponent(url.pathname.slice(1)));",
+            "        if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) return route.fulfill({ status: 404, body: '' });",
+            "        await route.fulfill({ path: file });",
+            "    });",
+            "    await page.clock.install({ time: new Date('2026-11-01T12:00:00Z') });",
+            "    await page.goto('http://tv.test/tv.html');",
+            "    await page.evaluate(() => document.fonts.ready);",
+            "    await page.clock.pauseAt(new Date('2026-11-01T12:00:01Z'));",
+            "    const post = message => page.evaluate(message => {",
+            "        window.tvTestSender ||= new BroadcastChannel('almahra-tv'); window.tvTestSender.postMessage(message);",
+            "    }, message);",
+            "    return { page, external, errors,",
+            "        async snapshot(message) { await post(message); await page.waitForFunction(() => document.querySelector('.slide')); await page.clock.runFor(850); },",
+            "        close: () => context.close() };",
+            "}",
+            "async function safe(page, selectors) {",
+            "    const bounds = await page.locator(selectors).evaluateAll(nodes => nodes.filter(n => n.getClientRects().length && getComputedStyle(n).visibility !== 'hidden').map(n => {",
+            "        const r = n.getBoundingClientRect(); return { text: n.textContent, x: r.x, y: r.y, right: r.right, bottom: r.bottom };",
+            "    }));",
+            "    assert.ok(bounds.length);",
+            "    for (const r of bounds) assert.ok(r.x >= 95.5 && r.y >= 53.5 && r.right <= 1824.5 && r.bottom <= 1026.5, JSON.stringify(r));",
+            "}",
+            "const DAY_TITLE = 'فارس اليوم', WEEK_TITLE = 'فرسان الحلقات للأسبوع الماضي';",
+            "const board = () => [{ name: 'سعد فهد ناصر', points: 196, week: 42, rank: 1 }];",
+            "const tvMessage = (dayKnights, weekKnights) => ({ type: 'snapshot', boardDate: '2026-11-01', stages: [{ period: 'asr', name: 'ابتدائي', board: board(), dayKnights, weekKnights }] });",
+            "const withPoints = () => tvMessage(",
+            "    [{ stage: 'حلقة 1', names: ['خالد'], points: [108] }, { stage: 'حلقة 2', names: ['سالم'], points: [89.3] }, { stage: 'حلقة 3', names: ['يزيد', 'وليد'], points: [108, 108] }],",
+            "    [{ stage: 'حلقة 4', names: [{ name: 'فهد', rank: 1 }], points: [277.8], status: '' }, { stage: 'حلقة 5', names: [], points: [], status: 'لا ترشيحات هذا الأسبوع' }]);",
+            "const slideOf = (page, title) => page.locator('.slide').filter({ has: page.locator('h2', { hasText: title }) });",
+            "async function showSlide(page, title) {",
+            "    for (let i = 0; i < 6; i++) {",
+            "        if ((await page.locator('.slide.active h2').innerText()).includes(title)) return page.locator('.slide.active');",
+            "        await page.clock.runFor(15000);",
+            "    }",
+            "    throw Error('slide not shown: ' + title);",
+            "}",
+            "",
+            "test('ت3 (الرسم): .kname الأسماء وحدها، .kpoints «N نقطة» تحت كل اسم، الحال بلا رقم، لقطة بلا points بلا رقم، داخل المنطقة الآمنة', async () => {",
+            "    const h = await openTv();",
+            "    try {",
+            "        await h.snapshot(withPoints());",
+            "        const day = slideOf(h.page, DAY_TITLE), week = slideOf(h.page, WEEK_TITLE);",
+            "        assert.deepEqual(await day.locator('.kname').allTextContents(), ['خالد', 'سالم', 'يزيد', 'وليد'], 'الاسم وحده بلا رقم');",
+            "        assert.deepEqual(await week.locator('.kname').allTextContents(), ['فهد']);",
+            "        const cardTexts = (slide, i) => slide.locator('.card').nth(i).locator('.kpoints').allTextContents();",
+            "        assert.deepEqual(await cardTexts(day, 0), ['108 نقطة'], 'ق1');",
+            "        assert.deepEqual(await cardTexts(day, 1), ['89.3 نقطة'], 'ق2');",
+            "        assert.deepEqual(await cardTexts(week, 0), ['277.8 نقطة'], 'ق3');",
+            "        assert.deepEqual(await cardTexts(week, 1), [], 'ق5ب: بطاقة الحال بلا رقم');",
+            "        // ق4: الترتيب في DOM اسم، رقم، اسم، رقم.",
+            "        const order = await day.locator('.card').nth(2).locator('.card-body > *').evaluateAll(ns => ns.map(n => n.className + ':' + n.textContent));",
+            "        assert.deepEqual(order, ['kname:يزيد', 'kpoints:108 نقطة', 'kname:وليد', 'kpoints:108 نقطة'], 'ق4');",
+            "        for (const title of [DAY_TITLE, WEEK_TITLE]) {",
+            "            const slide = await showSlide(h.page, title);",
+            "            await safe(h.page, '.slide.active .slide-title, .slide.active .card, .slide.active h3, .slide.active p');",
+            "            assert.ok(await slide.locator('.card').evaluateAll(cards => cards.every(card => card.scrollHeight <= card.clientHeight + 1)), 'لا قصّ: ' + title);",
+            "        }",
+            "        // لقطة قديمة بلا points: لا .kpoints ولا خطأ صفحة.",
+            "        const old = withPoints(); old.boardDate = '2026-11-02';",
+            "        old.stages[0].dayKnights.forEach(c => delete c.points); old.stages[0].weekKnights.forEach(c => delete c.points);",
+            "        await h.snapshot(old);",
+            "        await h.page.waitForFunction(() => document.querySelectorAll('.kpoints').length === 0);",
+            "        assert.equal(await h.page.locator('.kpoints').count(), 0);",
+            "        assert.deepEqual(await slideOf(h.page, DAY_TITLE).locator('.kname').allTextContents(), ['خالد', 'سالم', 'يزيد', 'وليد']);",
+            "        assert.deepEqual(h.errors, []); assert.deepEqual(h.external, []);",
+            "    } finally { await h.close(); }",
+            "});",
+            "",
+            "// ===== ت4: الثبات — دوال §1ب بنصها في 6e50320 (أخضر قبل البناء وبعده) =====",
+            "test('ت4 (ثبات): المحرك والتجميد والمخزن كما هي في 6e50320', () => {",
+            "    const lf = text => text.replaceAll('\\r\\n', '\\n');",
+            "    const baseHtml = lf(atBase('index.html')), nowHtml = lf(html);",
+            "    for (const name of ['knightsDayPointsTenths', 'getDayHalaqaKnights', 'getWeekNominations', 'rankHalaqaWeekKnights', 'buildWeekKnightsRow',",
+            "        'dayAcceptedWeightTenths', 'topTiedBy', 'buildRevealSteps', 'dayStats', 'getCumulativeStats', 'getMostImproved',",
+            "        'ensureWeekKnightsFrozen', 'knightsEndedWeeks', 'knightsFreezeRow', 'lockWeekRows', 'lockKnightsForMessage',",
+            "        'knightsPreviousWeekStart', 'knightsDisplayWeekStart', 'sendGeneralTvSnapshot'])",
+            "        assert.equal(source(name, nowHtml), source(name, baseHtml), name);",
+            "    const dayPoints = text => text.match(/const dayPoints = .*;/)[0];",
+            "    assert.equal(dayPoints(nowHtml), dayPoints(baseHtml), 'dayPoints');",
+            "    for (const file of ['general-points.js', 'programs-store.js', 'data-store.js', 'firestore.rules'])",
+            "        assert.equal(lf(fs.readFileSync(path.join(root, file), 'utf8')), lf(atBase(file)), file);",
             "});",
             ""
           ]

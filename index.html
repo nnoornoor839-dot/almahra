@@ -4529,7 +4529,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             .sort((a, b) => (a.order || 0) - (b.order || 0)).map(h => {
                                 const knights = getDayHalaqaKnights(date, h.id, students);
                                 return { stage: h.name, teacher: getProgramSettings().teachers.find(t => t.id === h.teacherId)?.name || '',
-                                    names: knights.names.map(nameOf), times: knights.times, provisional: true };
+                                    names: knights.names.map(nameOf),
+                                    points: knights.students.map(s => (knightsDayPointsTenths(s.history?.[date]) + Math.round((attendance ?? 10) * 10)) / 10),
+                                    times: knights.times, provisional: true };
                             }).filter(e => e.names.length),
                         ...(getLockedWeekKnights(period).length ? { weekKnights: getLockedWeekKnights(period) } : {}),
                         prepWeek: getHomePrepWeek(period),
@@ -8544,6 +8546,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 .sort((a, b) => a.halaqaOrder - b.halaqaOrder || String(a.halaqaId).localeCompare(String(b.halaqaId)))
                 .map(row => ({ stage: row.halaqaName, teacher: row.teacherName,
                     names: row.knights.map(s => ({ name: s.name, rank: s.rank })),
+                    points: row.knights.map(s => s.weekPointsTenths / 10),
                     status: row.knights.length ? '' : row.nominees.length ? 'لم يُحسم فارسها هذا الأسبوع' : 'لا ترشيحات هذا الأسبوع' }));
         }
         async function lockKnightsForMessage(weekStart, student = null) {

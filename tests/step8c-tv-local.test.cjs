@@ -145,13 +145,13 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
     for (const stage of s.stages) {
         assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());
         for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
-        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'provisional', 'stage', 'teacher', 'times']);
+        for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'points', 'provisional', 'stage', 'teacher', 'times']);
         assert.equal(stage.weekKnights, undefined);
         for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
         for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
     }
-    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], times: 1, provisional: true },
-        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], times: 2, provisional: true }];
+    const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], points: [0], times: 1, provisional: true },
+        { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], points: [0, 0], times: 2, provisional: true }];
     assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);
     assert.doesNotMatch(JSON.stringify(s), /sid-|0500000000|secret|private-stage|"id"|"sid"|عائلة/);
     assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });

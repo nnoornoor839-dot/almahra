@@ -158,8 +158,8 @@ test('release TV: production transport delivers new provisional halaqa knights a
     await h.call('sendGeneralTvSnapshot');
     assert.ok(posted.length);const maghrib=posted[0].stages.find(s=>s.period==='maghrib');
     assert.deepEqual(JSON.parse(JSON.stringify(maghrib.dayKnights)),[
-        {stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],times:1,provisional:true},
-        {stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],times:1,provisional:true}]);
+        {stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],points:[68.1],times:1,provisional:true},
+        {stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],points:[55],times:1,provisional:true}]);
     assert.ok(posted[0].stages.every(s=>!Object.hasOwn(s,'weekKnights')));
     release?.({success:false});
     const old=cp.execFileSync('git',['show','2d78da2:index.html'],{cwd:root,encoding:'utf8'});

@@ -86,12 +86,17 @@
 .card .kname { font-size:80px; font-weight:700; line-height:1.3; text-wrap:balance; }
 .card .kname + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }
 .card .muted { font-size:56px; font-weight:600; color:var(--tv-muted); line-height:1.4; text-wrap:balance; }
+.card .kpoints { font-size:48px; font-weight:700; line-height:1.3; color:var(--tv-gold); font-variant-numeric:tabular-nums; }
+.card .kpoints + .kname { padding-top:24px; border-top:2px solid var(--tv-line); width:100%; }
+.card.tie .kname { font-size:64px; }
+.card.tie .kpoints { font-size:40px; }
 
 /* بطاقة الحلقة اليومية تتسع للمعلم والمتعادلين دون قص الأسماء. */
 .card.day-knight .stage { font-size:44px; }
 .card.day-knight .card-body { gap:16px; padding:24px; }
 .card.day-knight .kname { font-size:56px; }
 .card.day-knight .muted { font-size:28px; }
+.card.day-knight .kpoints { font-size:34px; }
 
 /* التذييل: تاريخ النتائج داخل المنطقة الآمنة، والنقاط وزر ملء الشاشة في الهامش */
 .results-date { position:absolute; bottom:var(--tv-safe-y); left:50%; transform:translateX(-50%); white-space:nowrap; font-size:56px; font-weight:600; color:var(--general-pending-bg); background:#3a3214; border:2px solid #6b5a22; border-radius:999px; padding:0 40px; line-height:76px; }

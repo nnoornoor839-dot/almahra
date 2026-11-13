@@ -7,9 +7,14 @@ function reverseRow(text, row) {
     for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);
     return lines.join('\n');
 }
+// Category 18: reverse registered TV-points changes, so category 17 sees 6e50320.
+function beforeKnightsTvPoints(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsTvPointsChanges?.find(r => r.file === file));
+}
 // Category 17: reverse registered lines-x3 changes, so category 16 sees be3b92f.
 function beforeKnightsLinesX3(text, file = 'index.html') {
-    text = text.replaceAll('\r\n', '\n');
+    text = beforeKnightsTvPoints(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsLinesX3Changes?.find(r => r.file === file));
 }
 // Category 16: reverse registered last-school-week lines, so category 15 sees fe78763.
@@ -37,4 +42,4 @@ function beforeKnightsOnePlace(text, file = 'index.html') {
     text = beforeKnightsOnePlaceP2(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file));
 }
-module.exports = { beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };
+module.exports = { beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };

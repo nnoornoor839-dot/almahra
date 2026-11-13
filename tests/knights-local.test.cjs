@@ -155,7 +155,7 @@ test('Monday maghrib has two halaqa cards, provisional title and no broadcast id
     const h=harness(); h.ctx.getBoardDate=()=>key.days[1]; h.ctx.getBoardWeekRange=()=>({startStr:key.days[0],endStr:key.days[1]});
     h.ctx.getWorkingDatesInRange=()=>key.days.slice(0,2); h.ctx.getGeneralTvBoard=()=>[]; h.ctx.getMostImproved=()=>[]; h.ctx.getWeekTitleCandidates=()=>[];
     const snapshot=h.call('getGeneralTvSnapshot'), cards=snapshot.stages.find(s=>s.period==='maghrib').dayKnights;
-    assert.deepEqual(cards,[{stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],times:1,provisional:true},{stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],times:1,provisional:true}]);
+    assert.deepEqual(cards,[{stage:'سلمان الفارسي',teacher:'الأستاذ محمد',names:['وليد'],points:[68.1],times:1,provisional:true},{stage:'أبو ذر',teacher:'الأستاذ فهد',names:['يزيد'],points:[55],times:1,provisional:true}]);
     assert.doesNotMatch(JSON.stringify(snapshot),/"id"|"sid"|synthetic-/);
     assert.equal(require('../tv.js').makeSlides(snapshot,'maghrib').find(s=>s.kind==='dayKnights').title,'⭐ فارس اليوم (مؤقت حتى الحسم)');
 });

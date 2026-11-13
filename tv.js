@@ -248,7 +248,11 @@ if (typeof document !== 'undefined') {
                     if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name));
                     else {
                         card.append(node('p', 'stage', item.stage));
-                        item.names.forEach(name => cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name)));
+                        if (item.names.length > 1 && item.names.some((_, i) => Number.isFinite(item.points?.[i]))) card.classList.add('tie');
+                        item.names.forEach((name, i) => {
+                            cardBody.append(node('h3', 'kname', typeof name === 'string' ? name : name.name));
+                            if (Number.isFinite(item.points?.[i])) cardBody.append(node('p', 'kpoints', ar(item.points[i]) + ' نقطة'));
+                        });
                         if (item.status) cardBody.append(node('p', 'muted', item.status));
                     }
                     Array.from(cardBody.children).filter(child => child.className === 'kname').forEach(protectName);
