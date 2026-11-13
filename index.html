@@ -6196,7 +6196,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 review: { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 } };
             for (const day of Object.values(student.history || {})) {
                 for (const entry of Object.values(day?.entries || {})) {
-                    if (!entry || !Object.hasOwn(totals, entry.kind)) continue;
+                    if (!entry || !Object.hasOwn(totals, entry.kind) || entry.grade === 'repeat') continue;
                     try {
                         const m = measureEntry(entry), target = totals[entry.kind];
                         for (const key of Object.keys(target)) target[key] += m[key];
@@ -11861,7 +11861,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             set('rcBadgeMain', `${students.length} طالب`);
 
             let totalAyahs = 0;
-            students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });
+            students.forEach(s => { if (isGeneralProgram()) { const t = generalRecitationTotals(s); totalAyahs += t.new.ayahs + t.review.ayahs; } else totalAyahs += getCumulativeStats(s).totalAyahs; });
             set('rcBadgeStats', `${totalAyahs.toLocaleString(isGeneralProgram() ? 'ar-EG-u-nu-latn' : 'ar-EG')} آية`);
 
             const days = new Set();

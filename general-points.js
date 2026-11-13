@@ -13,7 +13,8 @@
         if (!Number.isInteger(gradePercent) || gradePercent < 0 || gradePercent > 100) throw new Error('نسبة التقدير غير صالحة');
         const raw = lines * mult * (gradePercent / 100);
         if (!Number.isFinite(raw)) throw new Error('النقاط المحسوبة غير صالحة');
-        return { points: Math.max(0, Math.round(raw * 10) / 10), mult, gradePercent };
+        // بقايا جمع كسور الأسطر (14.999999999999996 للصفحة 3) تُزال قبل التقريب إلى عُشر، فتصير 33.75 ← 33.8 كالصفحة 4
+        return { points: Math.max(0, Math.round(Math.round(raw * 1e6) / 1e6 * 10) / 10), mult, gradePercent };
     }
     if (typeof module !== 'undefined' && module.exports) module.exports = { generalEntryPoints };
     root.generalEntryPoints = generalEntryPoints;

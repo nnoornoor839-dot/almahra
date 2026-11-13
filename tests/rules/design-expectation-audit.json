@@ -19,7 +19,8 @@
     "16": "الأسبوع الماضي = آخر أسبوع دراسي محسوم (٢٠٢٦-١١-١٢)",
     "17": "\"!\" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)",
     "18": "نقاط الفارس على التلفاز (2026-11-13)",
-    "19": "النجم الصاعد كل أسبوعين بالحلقة (2026-11-13)"
+    "19": "النجم الصاعد كل أسبوعين بالحلقة (2026-11-13)",
+    "20": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)"
   },
   "files": [
     {
@@ -20533,6 +20534,1048 @@
             "        [beforeKnightsRelease, '2d78da2'], [beforeKnightsRound2b, '0c5ec91'], [beforeKnightsRound2, '8880f84']])",
             "        assert.equal(reverse(html, 'index.html'), git('show', baseline + ':index.html').replaceAll('\\r\\n', '\\n'), baseline);",
             "    for (const file of ['tv.js', 'programs-store.js']) assert.equal(beforeKnightsRisingStar(current(file), file), original(file), file);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "journeyFixesBaseline": "274bd05",
+  "journeyFixesChanges": [
+    {
+      "file": "general-points.js",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "7e82768d16659d412116fea83712051fffa48ba442a16a2265a5cbde9f72a360",
+      "sha256": "4afbe846c44bcc5adee44bfea47ab45ea69787a749425c8f2edc4e34ea86ad81",
+      "hunks": [
+        {
+          "oldLine": 16,
+          "newLine": 16,
+          "before": [
+            "        return { points: Math.max(0, Math.round(raw * 10) / 10), mult, gradePercent };"
+          ],
+          "after": [
+            "        // بقايا جمع كسور الأسطر (14.999999999999996 للصفحة 3) تُزال قبل التقريب إلى عُشر، فتصير 33.75 ← 33.8 كالصفحة 4",
+            "        return { points: Math.max(0, Math.round(Math.round(raw * 1e6) / 1e6 * 10) / 10), mult, gradePercent };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "index.html",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "ac5d997465a5101383ef72d746ce10c90dc1a03321065aebd71bf35420109bee",
+      "sha256": "baea6b933e7f8faa9ddf70b236cd13b70a30059aa92af2501c7190d5a27f3b87",
+      "hunks": [
+        {
+          "oldLine": 6199,
+          "newLine": 6199,
+          "before": [
+            "                    if (!entry || !Object.hasOwn(totals, entry.kind)) continue;"
+          ],
+          "after": [
+            "                    if (!entry || !Object.hasOwn(totals, entry.kind) || entry.grade === 'repeat') continue;"
+          ]
+        },
+        {
+          "oldLine": 11864,
+          "newLine": 11864,
+          "before": [
+            "            students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });"
+          ],
+          "after": [
+            "            students.forEach(s => { if (isGeneralProgram()) { const t = generalRecitationTotals(s); totalAyahs += t.new.ayahs + t.review.ayahs; } else totalAyahs += getCumulativeStats(s).totalAyahs; });"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/design-expectation-audit.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "f8d897cea7972c9a6f229fabf4930a5e1b0da538b7eb5087186d653524167de0",
+      "sha256": "3764d9d99e79ee73b3a6136c0d6f86adbf2a9479e1378e8bf7437ab508295bdd",
+      "hunks": [
+        {
+          "oldLine": 9,
+          "newLine": 9,
+          "before": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763' || baseline === 'be3b92f' || baseline === '6e50320') {"
+          ],
+          "after": [
+            "    if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763' || baseline === 'be3b92f' || baseline === '6e50320' || baseline === 'bf6a5e7') {"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 12,
+          "before": [
+            "        const text = baseline === '6e50320' ? onePlace.beforeKnightsRisingStar(currentText, file)"
+          ],
+          "after": [
+            "        const text = baseline === 'bf6a5e7' ? onePlace.beforeJourneyFixes(currentText, file)",
+            "            : baseline === '6e50320' ? onePlace.beforeKnightsRisingStar(currentText, file)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/helpers/knights-oneplace-audit.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "9b349aaab12183882e422eca3cb2ec53b386456a44c06de9f30ce0479b0e1246",
+      "sha256": "08d89f6c6ca98387166f2d14a07d555eba8f670f8bd5156d38a1b9417ba515f6",
+      "hunks": [
+        {
+          "oldLine": 10,
+          "newLine": 10,
+          "before": [],
+          "after": [
+            "// Category 20: reverse registered journey-fix changes, so category 19 sees 274bd05.",
+            "function beforeJourneyFixes(text, file = 'index.html') {",
+            "    text = text.replaceAll('\\r\\n', '\\n');",
+            "    return reverseRow(text, require('../rules/design-expectation-audit.json').journeyFixesChanges?.find(r => r.file === file));",
+            "}"
+          ]
+        },
+        {
+          "oldLine": 12,
+          "newLine": 17,
+          "before": [
+            "    text = text.replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "    text = beforeJourneyFixes(text, file);"
+          ]
+        },
+        {
+          "oldLine": 50,
+          "newLine": 55,
+          "before": [
+            "module.exports = { beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ],
+          "after": [
+            "module.exports = { beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-last-week-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "af07b84610c48cb2fa1f05e992ae12daf1f19545f3ef14c07a333c2e88faabbd",
+      "sha256": "c6d70fde86a7bb672b8b132736c1b45d7a48c09676e4f2327e48b8d17872cebc",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-lines-x3-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "5b75b97addc9d93128f90ec08a2cf1a1982be2934a7c560559af4c6679674c12",
+      "sha256": "3c7f5a46a8480dec41306247422f26c726d3693aaca97d8ec566e6073518f253",
+      "hunks": [
+        {
+          "oldLine": 24,
+          "newLine": 24,
+          "before": [
+            "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));"
+          ]
+        },
+        {
+          "oldLine": 51,
+          "newLine": 51,
+          "before": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && key !== 'categories'))"
+          ],
+          "after": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && key !== 'categories'))"
+          ]
+        },
+        {
+          "oldLine": 53,
+          "newLine": 53,
+          "before": [
+            "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19'];"
+          ],
+          "after": [
+            "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20'];"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "16af77c0cb5f473e50636264334fa3e0a95e27c53426c864cb9992d02468ef7b",
+      "sha256": "b0ef9ab51dfb927851da4ba1c7f7e3445717b7afe973ae2dc19954cb0f6b8381",
+      "hunks": [
+        {
+          "oldLine": 23,
+          "newLine": 23,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "4027b5883eb238267d5be3953705ae3affc1cb990dfab7b32c3325ddf178108c",
+      "sha256": "d6f997732f9ffc87ffc65cf25edfdb8ab614ca24a49ed6e254e6fa98081842c9",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "32d5186c0cb3c9bf38aa8bd70563620137695548f332dd22f115036c7cf2c772",
+      "sha256": "9237ddb86287450ebf4fb05156667e69ea57810d96d7331536c0cc57b5af4042",
+      "hunks": [
+        {
+          "oldLine": 26,
+          "newLine": 26,
+          "before": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "ebeb93610b1c545411524a2c8aa79340e0af430e73c78cca5004ec9efc0a33f8",
+      "sha256": "082ffe8b069bb50a472c3228ea16ca54330f6e4079417a7e2ae1d570335b0361",
+      "hunks": [
+        {
+          "oldLine": 27,
+          "newLine": 27,
+          "before": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(r => r.file));"
+          ],
+          "after": [
+            "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(r => r.file));"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-owner-auto-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "646e7196d51e778ab0a18389f1c4f9d6807d52a15385b26d5fadb1dfe8466d44",
+      "sha256": "9289f83481f06e793c7824e474e42b118301ca2677e04540b135487977f445ea",
+      "hunks": [
+        {
+          "oldLine": 326,
+          "newLine": 326,
+          "before": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ],
+          "after": [
+            "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-rising-star-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "0aabfa18d7fe7fbcec6d7d89c62a8f110e92d7232ce004f07e72353ba70e7ebd",
+      "sha256": "e26904f93a5acc108b27f252d1fae8548ae73d59320baa16e0650e9ccea4a247",
+      "hunks": [
+        {
+          "oldLine": 7,
+          "newLine": 7,
+          "before": [
+            "const { beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ],
+          "after": [
+            "const { beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,"
+          ]
+        },
+        {
+          "oldLine": 16,
+          "newLine": 16,
+          "before": [
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');"
+          ],
+          "after": [
+            "const current = file => beforeJourneyFixes(fs.readFileSync(path.join(root, file), 'utf8'), file);"
+          ]
+        },
+        {
+          "oldLine": 18,
+          "newLine": 18,
+          "before": [
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}"
+          ],
+          "after": [
+            "const { changesFrom } = require('./helpers/design-expectation-audit.cjs');"
+          ]
+        },
+        {
+          "oldLine": 46,
+          "newLine": 37,
+          "before": [
+            "    const added = new Set(audit.knightsRisingStarAddedFiles.map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));"
+          ]
+        },
+        {
+          "oldLine": 48,
+          "newLine": 39,
+          "before": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();"
+          ],
+          "after": [
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();"
+          ]
+        },
+        {
+          "oldLine": 53,
+          "newLine": 44,
+          "before": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);"
+          ],
+          "after": [
+            "        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);"
+          ]
+        },
+        {
+          "oldLine": 60,
+          "newLine": 51,
+          "before": [
+            "    assert.deepEqual([...added].sort(), ['tests/knights-rising-star-audit-local.test.cjs', 'tests/knights-rising-star-local.test.cjs']);"
+          ],
+          "after": [
+            "    assert.deepEqual(audit.knightsRisingStarAddedFiles.map(row => row.file).sort(), ['tests/knights-rising-star-audit-local.test.cjs', 'tests/knights-rising-star-local.test.cjs']);"
+          ]
+        },
+        {
+          "oldLine": 81,
+          "newLine": 72,
+          "before": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && key !== 'categories'))"
+          ],
+          "after": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && key !== 'categories'))"
+          ]
+        },
+        {
+          "oldLine": 83,
+          "newLine": 74,
+          "before": [
+            "    const categories = { ...audit.categories }; delete categories['19'];"
+          ],
+          "after": [
+            "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20'];"
+          ]
+        },
+        {
+          "oldLine": 106,
+          "newLine": 97,
+          "before": [
+            "    const hunks = changesFrom('index.html');"
+          ],
+          "after": [
+            "    const hunks = changesFrom('index.html', BASE).hunks;"
+          ]
+        },
+        {
+          "oldLine": 124,
+          "newLine": 115,
+          "before": [
+            "    const tv = changesFrom('tv.js');"
+          ],
+          "after": [
+            "    const tv = changesFrom('tv.js', BASE).hunks;"
+          ]
+        },
+        {
+          "oldLine": 133,
+          "newLine": 124,
+          "before": [
+            "    const store = changesFrom('programs-store.js');"
+          ],
+          "after": [
+            "    const store = changesFrom('programs-store.js', BASE).hunks;"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-rising-star-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "93324157bea81025eb32f6d010bdcc29d9f5cc73bb36425506d194bfc87767dd",
+      "sha256": "744241e3b3123ecb51366131a65a7f26a61fb4bf3ab7017e9d68d4f3aeba502f",
+      "hunks": [
+        {
+          "oldLine": 761,
+          "newLine": 761,
+          "before": [
+            "        assert.equal(lf(fs.readFileSync(path.join(root, file), 'utf8')), atBase(file), file);"
+          ],
+          "after": [
+            "        assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeJourneyFixes(fs.readFileSync(path.join(root, file), 'utf8'), file), atBase(file), file);"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/knights-tv-points-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "beforeSha256": "305377e2af409317ba2897ea6fe9f5ccddfe8287f38be40159d01be76d5926bc",
+      "sha256": "7bc616ebb7a8f215fabdc8649742e76c0de7fa127face388495c2f19bd4405a7",
+      "hunks": [
+        {
+          "oldLine": 24,
+          "newLine": 24,
+          "before": [
+            "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));"
+          ],
+          "after": [
+            "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));"
+          ]
+        },
+        {
+          "oldLine": 55,
+          "newLine": 55,
+          "before": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && key !== 'categories'))"
+          ],
+          "after": [
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && key !== 'categories'))"
+          ]
+        },
+        {
+          "oldLine": 57,
+          "newLine": 57,
+          "before": [
+            "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19'];"
+          ],
+          "after": [
+            "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20'];"
+          ]
+        }
+      ]
+    }
+  ],
+  "journeyFixesAddedFiles": [
+    {
+      "file": "tests/engine-rounding-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "sha256": "640c173f8b557570faea00a980eb4033f4803a4096f3d61c989506bfabc22eb1",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبار قبول ح1 «تقريب جيد جداً» (general فقط) — 2026-11-13. يُرى أحمر قبل البناء.",
+            "// المصدر: notes/features/engine/journey-fixes-card.md §1 (الجرد)، §4 ح1 (ق1–ق6د)، §5أ (ر1–ر3).",
+            "// الأساس: 274bd05. الميزان الحقيقي quran/*.js وgeneral-points.js الحالي عبر quick-entry-harness.cjs؛ الدوال من index.html بـsource().",
+            "// قراءات الكاتب لما لم تنصّ عليه البطاقة حرفاً (مذكورة هنا ليعرفها كاتب الكود):",
+            "// - الصفحات الـ64 والـ506 مأخوذة بـ QuranMeasure.measure({ page: [p] }) كما في سكربت البطاقة، و«الصفحة ذات 15 سطراً» = |lines − 15| < 1e-9.",
+            "// - ق3 «جديداً ومراجعةً» بمعامل 3 للاثنين (kindMult { newMemorization: 3, review: 3 })، وإلا لم يكن 33.8 للمراجعة؛ بقية الأمثلة بالافتراضي العام (الجديد 3).",
+            "// - ق6د: المجتمع = سكربت البطاقة حرفياً (كل وجه، كل ربع، كل سورة، كل آية، ونوافذ 2/3/5/8/11/20 آية داخل السورة) × التقديرات الثلاثة، الجديد بمعامل 3.",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const vm = require('node:vm');",
+            "const cp = require('node:child_process');",
+            "const path = require('node:path');",
+            "const { harness: quick, student: quickStudent, source, html, root, QuranMeasure, generalEntryPoints, copy } = require('./helpers/quick-entry-harness.cjs');",
+            "const BASE = '274bd05';",
+            "const lf = text => text.replaceAll('\\r\\n', '\\n');",
+            "const atBase = file => lf(cp.execFileSync('git', ['show', BASE + ':' + file], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }));",
+            "",
+            "// ===== الإعداد: تقديرات العام الافتراضية من programs-store.js =====",
+            "const storeText = lf(fs.readFileSync(path.join(root, 'programs-store.js'), 'utf8'));",
+            "const defs = vm.runInNewContext(`(${storeText.match(/export const PROGRAM_DEFS = ([\\s\\S]*?);\\n/)[1]})`);",
+            "const GRADES = copy(defs.general.defaultSettings.grades);",
+            "const DEFAULT_MULT = copy(defs.general.defaultSettings.kindMult);           // { newMemorization: 3, review: 1 }",
+            "const settings = (kindMult = DEFAULT_MULT) => ({ grades: copy(GRADES), kindMult: copy(kindMult) });",
+            "const points = (lines, kind, gradeId, kindMult) => generalEntryPoints({ lines, kind, gradeId, settings: settings(kindMult) }).points;",
+            "",
+            "// ===== المقاطع =====",
+            "const PAGE3 = { from: [2, 6], to: [2, 16] };    // الصفحة 3 = البقرة 6←16 (11 آية)",
+            "const PAGE4 = { from: [2, 17], to: [2, 24] };   // الصفحة 4 = البقرة 17←24 (8 آيات)",
+            "const linesOf = spec => QuranMeasure.measure({ spec }).lines;",
+            "const pageLines = p => QuranMeasure.measure({ page: [p] }).lines;",
+            "// القائمة حرفياً من design-v1/verify/full-journey-emu-2026-11-13/engine-rounding-check.txt",
+            "const PAGES_64 = [3, 12, 14, 26, 33, 61, 76, 105, 112, 126, 130, 134, 142, 149, 162, 176, 185, 203, 209, 216, 226, 242, 260, 265, 272, 280,",
+            "    288, 289, 296, 298, 314, 326, 343, 346, 347, 354, 355, 356, 370, 372, 373, 374, 375, 376, 379, 401, 448, 450, 451, 456, 457, 468, 469, 479,",
+            "    480, 482, 493, 495, 508, 513, 533, 557, 573, 588];",
+            "const PAGES_15 = Array.from({ length: 604 }, (_, i) => i + 1).filter(p => Math.abs(pageLines(p) - 15) < 1e-9);",
+            "",
+            "// ===== ح1 — ر1 (ق1–ق3): يفشل اليوم =====",
+            "test('ق1 (ر1): الصفحة 3 (البقرة 6←16) جيد جداً جديداً بمعامل 3 = 15 × 3 × 0.75 = 33.75 ← 33.8', () => {",
+            "    assert.equal(points(linesOf(PAGE3), 'new', 'very-good'), 33.8);",
+            "});",
+            "test('ق2 (ر1): الصفحة 4 (البقرة 17←24) جيد جداً جديداً = 33.8 (بلا تغيير)', () => {",
+            "    assert.equal(points(linesOf(PAGE4), 'new', 'very-good'), 33.8);",
+            "});",
+            "test('ق3 (ر1): الصفحات ذات الـ15 سطراً في الميزان = 506، والصفحات الـ64 منها', () => {",
+            "    assert.equal(PAGES_15.length, 506);",
+            "    assert.equal(PAGES_64.length, 64);",
+            "    assert.deepEqual(PAGES_64.filter(p => !PAGES_15.includes(p)), []);",
+            "});",
+            "test('ق3 (ر1): كل صفحة من الـ64 جيد جداً = 33.8 جديداً ومراجعةً (معامل 3 للاثنين)', () => {",
+            "    const mult = { newMemorization: 3, review: 3 };",
+            "    const wrong = [];",
+            "    for (const p of PAGES_64) for (const kind of ['new', 'review']) {",
+            "        const got = points(pageLines(p), kind, 'very-good', mult);",
+            "        if (got !== 33.8) wrong.push(`${kind} ص${p}=${got}`);",
+            "    }",
+            "    assert.deepEqual(wrong, [], `${wrong.length} حالة ليست 33.8`);",
+            "});",
+            "test('ق3 (ر1): كل الصفحات الـ506 ذات الـ15 سطراً جيد جداً = 33.8 جديداً ومراجعةً', () => {",
+            "    const mult = { newMemorization: 3, review: 3 };",
+            "    const wrong = [];",
+            "    for (const p of PAGES_15) for (const kind of ['new', 'review']) {",
+            "        const got = points(pageLines(p), kind, 'very-good', mult);",
+            "        if (got !== 33.8) wrong.push(`${kind} ص${p}=${got}`);",
+            "    }",
+            "    assert.deepEqual(wrong, [], `${wrong.length} حالة ليست 33.8`);",
+            "});",
+            "",
+            "// ===== ح1 — ر2 (ق4–ق6، ق6د): أخضر قبل البناء وبعده إلا ق6د =====",
+            "test('ق4 (ر2): الصفحة 3 ممتاز = 45 وجيد = 22.5 (بلا تغيير)', () => {",
+            "    assert.equal(points(linesOf(PAGE3), 'new', 'excellent'), 45);",
+            "    assert.equal(points(linesOf(PAGE3), 'new', 'good'), 22.5);",
+            "});",
+            "test('ق4 (ر2): الصفحات الـ506 ممتاز = 45 وجيد = 22.5 (بلا تغيير)', () => {",
+            "    const wrong = [];",
+            "    for (const p of PAGES_15) {",
+            "        const L = pageLines(p);",
+            "        if (points(L, 'new', 'excellent') !== 45) wrong.push(`ممتاز ص${p}`);",
+            "        if (points(L, 'new', 'good') !== 22.5) wrong.push(`جيد ص${p}`);",
+            "    }",
+            "    assert.deepEqual(wrong, []);",
+            "});",
+            "test('ق5 (ر2): وزن الفرسان dayAcceptedWeightTenths ليوم فيه البقرة 6←16 جيد جداً = { new: 450, review: 0, total: 450 } (بلا تغيير)', () => {",
+            "    const ctx = vm.createContext({ QuranMeasure });",
+            "    for (const name of ['ivPairs', 'measureEntry']) vm.runInContext(html.match(new RegExp(`const ${name} = .*;`))[0], ctx);",
+            "    vm.runInContext(source('dayAcceptedWeightTenths'), ctx);",
+            "    const pts = generalEntryPoints({ lines: linesOf(PAGE3), kind: 'new', gradeId: 'very-good', settings: settings() });",
+            "    ctx.day = { attended: true, entries: { e: { kind: 'new', spec: PAGE3, grade: 'very-good', mult: pts.mult, points: pts.points, rep: 1 } } };",
+            "    ctx.kindMult = DEFAULT_MULT;",
+            "    assert.deepEqual(copy(vm.runInContext('dayAcceptedWeightTenths(day, kindMult)', ctx)), { new: 450, review: 0, total: 450 });",
+            "    // ولكل صفحة من الـ64: 15 سطراً × 3 = 450 عُشراً",
+            "    const wrong = [];",
+            "    for (const p of PAGES_64) {",
+            "        ctx.day = { attended: true, entries: { e: { kind: 'new', iv: QuranMeasure.measure({ page: [p] }).intervals, grade: 'very-good', mult: 3, rep: 1 } } };",
+            "        const w = copy(vm.runInContext('dayAcceptedWeightTenths(day, kindMult)', ctx));",
+            "        if (w.total !== 450 || w.new !== 450) wrong.push(`ص${p}=${w.total}`);",
+            "    }",
+            "    assert.deepEqual(wrong, []);",
+            "});",
+            "test('ق6 (ر2): مقادير البقرة 6←16 = 11 آية · 1 وجه · 0.32 ربع · 0.08 حزب · 0.04 جزء، والأسطر 14.999999999999996 كما هي (الميزان لا يُمس)', () => {",
+            "    const m = QuranMeasure.measure({ spec: PAGE3 });",
+            "    assert.equal(m.ayahs, 11);",
+            "    assert.equal(m.pages, 1);",
+            "    assert.equal(Number(m.quarters.toFixed(2)), 0.32);",
+            "    assert.equal(Number(m.hizb.toFixed(2)), 0.08);",
+            "    assert.equal(Number(m.juz.toFixed(2)), 0.04);",
+            "    assert.equal(m.lines, 14.999999999999996);",
+            "    assert.equal(QuranMeasure.measure({ spec: PAGE4 }).lines, 15);",
+            "});",
+            "test('ق6 (ر2): الميزان quran/*.js مطابق لـ274bd05 حرفياً', () => {",
+            "    for (const file of ['quran-meta', 'quran-lines', 'quran-words', 'quran-measure'])",
+            "        assert.equal(lf(fs.readFileSync(path.join(root, 'quran', file + '.js'), 'utf8')), atBase(`quran/${file}.js`), file);",
+            "});",
+            "",
+            "// ق6د: الفرق بين generalEntryPoints الحالي ونسخة 274bd05 على المجتمع كله",
+            "const qmeta = vm.createContext({ window: {} });",
+            "vm.runInContext(fs.readFileSync(path.join(root, 'quran', 'quran-meta.js'), 'utf8'), qmeta);",
+            "const AYAH_COUNTS = qmeta.window.QURAN_META.surahs.map(s => s[1]);",
+            "function population() {",
+            "    const pop = [];",
+            "    for (let p = 1; p <= 604; p++) pop.push(['وجه ' + p, QuranMeasure.measure({ page: [p] }).lines]);",
+            "    for (let q = 1; q <= 240; q++) pop.push(['ربع ' + q, QuranMeasure.measure({ quarter: [q] }).lines]);",
+            "    for (let su = 1; su <= 114; su++) pop.push(['سورة ' + su, QuranMeasure.measure({ surah: [su] }).lines]);",
+            "    for (let su = 1; su <= 114; su++) {",
+            "        const n = AYAH_COUNTS[su - 1];",
+            "        for (let a = 1; a <= n; a++) {",
+            "            pop.push([`${su}:${a}`, QuranMeasure.measure({ from: [su, a], to: [su, a] }).lines]);",
+            "            for (const w of [2, 3, 5, 8, 11, 20]) if (a + w - 1 <= n)",
+            "                pop.push([`${su}:${a}-${a + w - 1}`, QuranMeasure.measure({ from: [su, a], to: [su, a + w - 1] }).lines]);",
+            "        }",
+            "    }",
+            "    return pop;",
+            "}",
+            "test('ق6د (ر2): لا تغيير خارج حدّ النصف — الفرق عن 274bd05 على 120417 حالة = 2002 بالضبط، كلها على الحد والجديد = القديم + 0.1', () => {",
+            "    const oldCtx = vm.createContext({});",
+            "    vm.runInContext(atBase('general-points.js'), oldCtx);",
+            "    const oldPoints = oldCtx.generalEntryPoints;",
+            "    const pop = population();",
+            "    assert.equal(pop.length, 40139);",
+            "    const s = settings({ newMemorization: 3, review: 3 });",
+            "    let cases = 0, diffs = 0; const offHalf = [], notPlusTenth = [];",
+            "    for (const [name, lines] of pop) for (const gradeId of ['excellent', 'very-good', 'good']) {",
+            "        cases++;",
+            "        const cur = generalEntryPoints({ lines, kind: 'new', gradeId, settings: s }).points;",
+            "        const old = oldPoints({ lines, kind: 'new', gradeId, settings: s }).points;",
+            "        if (cur === old) continue;",
+            "        diffs++;",
+            "        const raw = lines * 3 * (GRADES.find(g => g.id === gradeId).percent / 100);",
+            "        if (!(Math.abs(raw * 10 - Math.floor(raw * 10) - 0.5) < 1e-6)) offHalf.push(`${name} ${gradeId}`);",
+            "        if (Math.round(cur * 10) !== Math.round(old * 10) + 1) notPlusTenth.push(`${name} ${gradeId} ${old}→${cur}`);",
+            "    }",
+            "    assert.equal(cases, 120417);",
+            "    assert.deepEqual(offHalf, [], 'فرق خارج حدّ النصف');",
+            "    assert.deepEqual(notPlusTenth, [], 'فرق ليس +0.1');",
+            "    assert.equal(diffs, 2002);",
+            "});",
+            "",
+            "// ===== ح1 — ر3 (ق6ب، ق6ج): الحارس والمعاينة والإدخال السريع؛ يفشل اليوم =====",
+            "function generalHarness() {",
+            "    const h = quick(quickStudent({}, { direction: 'down', frontierBase: { surah: 2, ayah: 5 },",
+            "        frontierFix: { surah: 2, ayah: 5, at: 0, by: 'fake-admin', prev: null } }));",
+            "    h.state.settings.grades = copy(GRADES);",
+            "    h.state.settings.kindMult = copy(DEFAULT_MULT);",
+            "    h.reopen();",
+            "    return h;",
+            "}",
+            "const guardPatch = pts => `canWriteHistory({ 'history.2026-11-01.entries.x': { kind: 'new', spec: { from: [2, 6], to: [2, 16] }, grade: 'very-good', mult: 3, points: ${pts}, rep: 1, heardBy: 't1', at: 1, by: 'fake-admin' } })`;",
+            "test('ق6ب (ر3): الحارس canWriteHistory يقبل البقرة 6←16 جيد جداً بـpoints 33.8', () => {",
+            "    const h = generalHarness();",
+            "    assert.equal(h.run(guardPatch(33.8)), true, JSON.stringify(h.state.messages));",
+            "});",
+            "test('ق6ب (ر3): الحارس canWriteHistory يرفض البقرة 6←16 جيد جداً بـpoints 33.7 برسالة «نقاط التسميع أو معامله لا يطابقان…»', () => {",
+            "    const h = generalHarness();",
+            "    assert.equal(h.run(guardPatch(33.7)), false);",
+            "    assert.match(h.state.messages.at(-1)?.message || '', /نقاط التسميع أو معامله لا يطابقان/);",
+            "});",
+            "test('ق6ج (ر3): الإدخال السريع للبقرة 6←16 جيد جداً: نقاط المقطع 33.8 وtotal = 33.8 + المعايير', () => {",
+            "    const h = generalHarness();",
+            "    assert.deepEqual(copy(h.run('generalQuickEntry.newStart')), { surah: 2, ayah: 6 });",
+            "    h.range('new', null, [2, 16]); h.grade('new', 'very-good');",
+            "    const result = h.preview();",
+            "    assert.deepEqual(result.errors, []);",
+            "    assert.equal(result.sections.length, 1);",
+            "    assert.equal(result.sections[0].points, 33.8);",
+            "    assert.equal(result.sections[0].mult, 3);",
+            "    assert.equal(result.total, h.run('roundPointTotal')(33.8 + result.criteria.delta));",
+            "});",
+            "test('ق6ج (ر3): معاينة نافذة السرد calculateQuran للبقرة 6←16 جيد جداً تعرض 33.8 (مطابقة للإدخال السريع)', () => {",
+            "    const h = generalHarness();",
+            "    h.run(source('calculateRangeStats')); h.run(source('calculateQuran'));",
+            "    h.ctx.showRangePreview = () => {}; h.ctx.updateGrandTotal = () => {};",
+            "    h.run(\"currentSardType = 'new'\");",
+            "    h.element('startSurah').value = '2'; h.element('startAyah').value = '6';",
+            "    h.element('endSurah').value = '2'; h.element('endAyah').value = '16';",
+            "    h.element('smartGrade').value = 'very-good'; h.element('disciplineOnlyCheck').checked = false;",
+            "    h.run('calculateQuran()');",
+            "    assert.equal(h.element('resAyahs').innerText, 11);",
+            "    assert.equal(h.element('resWeightedPoints').innerText, 33.8);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/records-repeat-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "sha256": "778ee406263e9b424d30b151ff64551348e74d718be528a4928ee95779ae3333",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// اختبار قبول ح2 «يُعاد في المجاميع» (general فقط) — 2026-11-13. يُرى أحمر قبل البناء.",
+            "// المصدر: notes/features/engine/journey-fixes-card.md §2 (الجرد)، §4 ح2 (ق7–ق11ج)، §5أ (ر4–ر5).",
+            "// الأساس: 274bd05. الميزان الحقيقي، وgeneralRecitationTotals/generalRecitationHtml/computeComplexStats/exportToExcel/renderReportsTable",
+            "// من index.html بـsource() داخل vm، بحاضنة الحضور نمط tests/step6b-attendance-math-local.test.cjs (DOM وهمي، XLSX وهمي، ساعة ثابتة).",
+            "// قراءات الكاتب لما لم تنصّ عليه البطاقة حرفاً:",
+            "// - الطلاب ط101/ط103/ط105/ط405 مبنيون هنا بتسجيلاتهم من البطاقة (لا بيانات الرحلة)، وشرط ق10: الرقم قبل الإصلاح = بعده.",
+            "// - ق9 «مرة واحدة» = مساوٍ لقياس المقطع وحده بالضبط؛ والأرقام بمنزلتين كما في البطاقة (0.28 · 0.07 · 0.03).",
+            "// - ق11ج يُقرأ من جدول الإنتاج اليومي dailyTimelineTableBody بعد renderReportsTable، نص «حفظ: 11 آية · 1 وجه».",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const vm = require('node:vm');",
+            "const cp = require('node:child_process');",
+            "const { root, html, source, QuranMeasure, copy } = require('./helpers/quick-entry-harness.cjs');",
+            "const BASE = '274bd05';",
+            "const lf = text => text.replaceAll('\\r\\n', '\\n');",
+            "const baseHtml = lf(cp.execFileSync('git', ['show', BASE + ':index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }));",
+            "",
+            "// ===== المقاطع والتسجيلات =====",
+            "const PAGE3 = { from: [2, 6], to: [2, 16] };       // البقرة 6←16: 11 آية · 1 وجه · 0.32 ربع",
+            "const P34 = { from: [2, 6], to: [2, 24] };         // البقرة 6←24: 19 آية · 2 وجه",
+            "const MASAD = { from: [111, 1], to: [111, 5] };    // المسد 1←5: 5 آيات",
+            "const REV = { from: [1, 1], to: [2, 5] };          // الفاتحة 1 ← البقرة 5: 12 آية · 2 وجه",
+            "const DAY = '2026-11-29';",
+            "const POINTS = { excellent: 1, 'very-good': 0.75, good: 0.5, repeat: 0 };",
+            "const rec = (kind, spec, grade, at = 1) => { const lines = QuranMeasure.measure({ spec }).lines, mult = kind === 'new' ? 3 : 1;",
+            "    return { kind, spec, grade, mult, rep: 1, at, by: 'synthetic-admin', heardBy: 't1', points: Math.round(lines * mult * POINTS[grade] * 10) / 10 }; };",
+            "const day = entries => ({ attended: true, entries: Object.fromEntries(entries.map((e, i) => ['e' + i, e])) });",
+            "const student = (id, name, history) => ({ id, sid: `synthetic-${id}`, name, stage: 'g1', halaqaId: 'home-active', history });",
+            "const T101 = () => student(101, 'ط101', { [DAY]: day([rec('new', PAGE3, 'excellent')]) });",
+            "const T103 = () => student(103, 'ط103', { [DAY]: day([rec('new', PAGE3, 'repeat', 1), rec('new', PAGE3, 'excellent', 2)]) });",
+            "const T105 = () => student(105, 'ط105', { [DAY]: day([rec('new', P34, 'excellent')]) });",
+            "const T405 = () => student(405, 'ط405', { [DAY]: day([rec('new', MASAD, 'excellent')]) });",
+            "const ONLY_REPEAT = () => student(201, 'كله يعاد', { [DAY]: day([rec('new', PAGE3, 'repeat')]) });",
+            "const REVIEW_REPEAT = () => student(202, 'مراجعة يعاد', { [DAY]: day([rec('review', REV, 'repeat', 1), rec('review', REV, 'excellent', 2)]) });",
+            "",
+            "// ===== الحاضنة (نمط step6b-attendance-math-local) بالدوال الحقيقية للمجاميع =====",
+            "function harness(list = [], text = html) {",
+            "    const state = { program: 'general', season: { termStart: '2026-11-01', termEnd: '2026-12-31', calendar: [] },",
+            "        settings: { workingDays: [0, 1, 2, 3, 4], criteria: [], points: { attendance: 0 }, halaqas: [{ id: 'home-active', name: 'حلقة وهمية', active: true }] },",
+            "        titleRules: { requireSard: false, weeklyAttendancePct: 75 }, messages: [] };",
+            "    const elements = new Map();",
+            "    const element = id => {",
+            "        if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', innerText: '', textContent: '', dataset: {}, style: {}, querySelectorAll: () => [],",
+            "            classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } } });",
+            "        return elements.get(id);",
+            "    };",
+            "    class Clock extends Date { constructor(...args) { super(...(args.length ? args : ['2026-11-30T09:00:00Z'])); } }",
+            "    const ctx = vm.createContext({ console, Date: Clock, Intl, QuranMeasure, document: { getElementById: element },",
+            "        window: { almahraPrograms: { getCurrentProgramId: () => state.program, getCurrentSeason: () => state.season,",
+            "            getCurrentSeasonId: () => 'synthetic-season', isCurrentSeasonArchived: () => false,",
+            "            getSettings: () => ({ titleRules: state.titleRules }), getCurrentProgram: () => ({ name: 'برنامج وهمي' }) } },",
+            "        getProgramSettings: () => state.settings, getActiveCriteria: () => state.settings.criteria,",
+            "        getTiers: () => [], tiersFeatureOn: () => false, studentTierId: s => s.stage,",
+            "        roundPointTotal: n => n, snapQuarters: n => n, densityFor: () => ({}),",
+            "        dayStats: d => ({ ayahs: 0, pages: 0, quarters: 0, points: 0, golden: { ayahs: 0, pages: 0, quarters: 0 } }),",
+            "        dayPoints: () => 0,",
+            "        getCumulativeStats: () => ({ tripPoints: 0, sardAyahs: 0, exactPages: 0, quarters: 0, totalAyahs: 0, totalPages: 0, totalRawQuarters: 0 }),",
+            "        renderGeneralPerformance() {}, initHadithTilt() {}, renderHomeCare() {}, renderHomeLeaders() {}, programBrandName: () => 'برنامج وهمي',",
+            "        hbN: n => String(n), hbDigits: s => s, hbCount: n => String(n), hbSetCard() {},",
+            "        showToast: msg => state.messages.push(msg),",
+            "        XLSX: { utils: { json_to_sheet: data => { state.exportRows = copy(data); return {}; }, book_new: () => ({}), book_append_sheet() {} }, writeFile() {} }",
+            "    });",
+            "    const run = code => vm.runInContext(code, ctx);",
+            "    ctx.fixtures = list;",
+            "    run(`let students = fixtures, todayStr = '2026-11-30', honorKnightsLog = [];",
+            "        const CHRONIC_MIN_STREAK = 3, FOLLOWUP_MIN_STREAK = 2;",
+            "        const ALL_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];`);",
+            "    for (const name of ['ivPairs', 'measureEntry']) run(text.match(new RegExp(`const ${name} = .*;`))[0]);",
+            "    const install = (...names) => names.forEach(name => run(source(name, text)));",
+            "    require('./helpers/tv-harness.cjs').installTv(run, install);",
+            "    install('isGeneralProgram', 'isWorkingDay', 'schoolCivilDate', 'isSeasonCalendarComplete', 'getSchoolDayInfo',",
+            "        'getAttendanceState', 'generalAttendanceStart', 'formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr',",
+            "        'getWorkingDaysList', 'calculateStudentAttendance', 'getConsecutiveAbsenceStreak', 'getPreviousWorkingDayInfo',",
+            "        'lastSchoolDateBeforeToday', 'getBoardDate', 'getBoardWeekRange', 'getWorkingDatesInRange', 'summarizeRange',",
+            "        'getTitleRules', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'dayHasAnyViolation',",
+            "        'getDisciplineCriteriaIds', 'dayMeetsDisciplineCriteria', 'getWeekTitleCandidates', 'getDisciplineStars',",
+            "        'getDayRanking', 'getDisciplineRanking', 'getDayTitleCandidates', 'getDayDisciplineStars', 'getDayHarvest',",
+            "        'sumCriteriaPoints', 'getMostImproved', 'getLastActiveHijri', 'getTodayAbsentees', 'getFollowupAbsentees',",
+            "        'getChronicAbsentees', 'escapeHTML', 'getKnightWinCounts', 'getApprovedKnightsForMode', 'topTied',",
+            "        'farsSelectionCount', 'updateFarsApprovalView', 'generalGoldenHidden', 'getGeneralSchoolDates', 'getGeneralDayAttendance', 'generalDayAttendanceLabel',",
+            "        'generalStudentAttendanceLabel', 'generalAttendanceLabel', 'getGeneralAttendanceEligibility', 'generalIncompleteAttendanceHtml',",
+            "        // الدوال الحقيقية موضوع الاختبار",
+            "        'generalRecitationTotals', 'formatGeneralUnit', 'generalFiveUnits', 'generalRecitationHtml',",
+            "        'computeComplexStats', 'exportToExcel', 'renderReportsTable');",
+            "    return { state, ctx, run, element, list,",
+            "        totals: (i = 0) => copy(run(`generalRecitationTotals(students[${i}])`)) };",
+            "}",
+            "const two = x => Number(x.toFixed(2));",
+            "const five = t => ({ ayahs: t.ayahs, pages: two(t.pages), quarters: two(t.quarters), hizb: two(t.hizb), juz: two(t.juz) });",
+            "const ZERO = { ayahs: 0, pages: 0, quarters: 0, hizb: 0, juz: 0 };",
+            "const once = spec => { const m = QuranMeasure.measure({ spec }); return { ayahs: m.ayahs, pages: m.pages, quarters: m.quarters, hizb: m.hizb, juz: m.juz }; };",
+            "",
+            "// ===== ح2 — ر4 (ق7–ق9): يفشل اليوم =====",
+            "test('ق7 (ر4): ط103 («يُعاد» البقرة 6←16 ثم ممتاز للمقطع نفسه): الحفظ = 11 آية · 1 وجه · 0.32 ربع · 0.08 حزب · 0.04 جزء', () => {",
+            "    const h = harness([T103()]);",
+            "    assert.deepEqual(five(h.totals().new), { ayahs: 11, pages: 1, quarters: 0.32, hizb: 0.08, juz: 0.04 });",
+            "    assert.deepEqual(h.totals().new, once(PAGE3));",
+            "    assert.deepEqual(h.totals().review, ZERO);",
+            "});",
+            "test('ق7 (ر4): ط103 نقاطه 45 بلا تغيير («يُعاد» = 0 + ممتاز = 45)', () => {",
+            "    const t = T103();",
+            "    assert.deepEqual(Object.values(t.history[DAY].entries).map(e => e.points), [0, 45]);",
+            "});",
+            "test('ق7 (ر4): ط103 في generalRecitationHtml = «حفظ: 11 آية · 1 وجه · 0.32 ربع · 0.08 حزب · 0.04 جزء»', () => {",
+            "    const h = harness([T103()]);",
+            "    assert.match(h.run('generalRecitationHtml(students[0])'), /حفظ: 11 آية · 1 وجه · 0\\.32 ربع · 0\\.08 حزب · 0\\.04 جزء/);",
+            "});",
+            "test('ق8 (ر4): طالب كل تسجيلاته «يُعاد» = 0 آية · 0 وجه · 0 ربع · 0 حزب · 0 جزء', () => {",
+            "    const h = harness([ONLY_REPEAT()]);",
+            "    assert.deepEqual(h.totals().new, ZERO);",
+            "    assert.deepEqual(h.totals().review, ZERO);",
+            "});",
+            "test('ق9 (ر4): مراجعة «يُعاد» الفاتحة 1 ← البقرة 5 ثم ممتاز للمقطع نفسه = 12 آية · 2 وجه · 0.28 ربع · 0.07 حزب · 0.03 جزء (مرة واحدة)', () => {",
+            "    const h = harness([REVIEW_REPEAT()]);",
+            "    assert.deepEqual(five(h.totals().review), { ayahs: 12, pages: 2, quarters: 0.28, hizb: 0.07, juz: 0.03 });",
+            "    assert.deepEqual(h.totals().review, once(REV));",
+            "    assert.deepEqual(h.totals().new, ZERO);",
+            "});",
+            "",
+            "// ===== ح2 — ر5 (ق10–ق11ج) =====",
+            "test('ق10 (ر5): بلا تغيير لغير «يُعاد» — ط101 = 11 · 1 · 0.32 · 0.08 · 0.04؛ ط105 = 19 · 2 · 0.64 · 0.16 · 0.08؛ ط405 = 5 آيات · 0.33 وجه · 0.07 ربع', () => {",
+            "    const h = harness([T101(), T105(), T405()]);",
+            "    assert.deepEqual(five(h.totals(0).new), { ayahs: 11, pages: 1, quarters: 0.32, hizb: 0.08, juz: 0.04 });",
+            "    assert.deepEqual(five(h.totals(1).new), { ayahs: 19, pages: 2, quarters: 0.64, hizb: 0.16, juz: 0.08 });",
+            "    const masad = five(h.totals(2).new);",
+            "    assert.equal(masad.ayahs, 5); assert.equal(masad.pages, 0.33); assert.equal(masad.quarters, 0.07);",
+            "});",
+            "test('ق10 (ر5): لكل طالب بلا «يُعاد» (ط101، ط105، ط405، وق7–ق9 بلا تسجيلات «يُعاد») الرقم الحالي = رقم 274bd05 حرفياً', () => {",
+            "    const noRepeat = s => { for (const d of Object.values(s.history)) for (const k of Object.keys(d.entries)) if (d.entries[k].grade === 'repeat') delete d.entries[k]; return s; };",
+            "    const list = () => [T101(), T105(), T405(), noRepeat(T103()), noRepeat(ONLY_REPEAT()), noRepeat(REVIEW_REPEAT())];",
+            "    const cur = harness(list()), old = harness(list(), baseHtml);",
+            "    for (let i = 0; i < 6; i++) assert.deepEqual(cur.totals(i), old.totals(i), `طالب ${i}`);",
+            "});",
+            "test('ق11 (ر5): تصدير إكسل لط103: «الحفظ - الآيات» = 11، «الحفظ - الأوجه» = 1، «الحفظ - الأرباع» = 0.32 (خام)', () => {",
+            "    const h = harness([T103()]);",
+            "    h.run('exportToExcel()');",
+            "    const row = h.state.exportRows[0];",
+            "    assert.equal(row['الحفظ - الآيات'], 11);",
+            "    assert.equal(row['الحفظ - الأوجه'], 1);",
+            "    assert.equal(two(row['الحفظ - الأرباع']), 0.32);",
+            "    assert.equal(row['الحفظ - الأرباع'], once(PAGE3).quarters);",
+            "});",
+            "test('ق11 (ر5): تصدير إكسل لط103 = ما في generalRecitationHtml (الوحدات الخمس للحفظ والمراجعة)', () => {",
+            "    const h = harness([T103()]);",
+            "    h.run('exportToExcel()');",
+            "    const row = h.state.exportRows[0], t = h.totals();",
+            "    for (const [kind, label] of [['new', 'الحفظ'], ['review', 'المراجعة']]) {",
+            "        const fromExcel = { ayahs: row[`${label} - الآيات`], pages: row[`${label} - الأوجه`], quarters: row[`${label} - الأرباع`], hizb: row[`${label} - الأحزاب`], juz: row[`${label} - الأجزاء`] };",
+            "        assert.deepEqual(fromExcel, t[kind], label);",
+            "    }",
+            "    assert.match(h.run('generalRecitationHtml(students[0])'), new RegExp(`حفظ: ${row['الحفظ - الآيات']} آية · ${h.run('formatGeneralUnit')(row['الحفظ - الأوجه'])} وجه`));",
+            "    assert.equal(row['الحفظ - الآيات'], 11);",
+            "});",
+            "test('ق11ب (ر5): المجمع computeComplexStats لـ{ط101، ط103}: الآيات = 11 + 11 = 22 (لا 33)، والأوجه = 2', () => {",
+            "    const h = harness([T101(), T103()]);",
+            "    const stats = copy(h.run('computeComplexStats()'));",
+            "    assert.equal(stats.ayahs, 22);",
+            "    assert.equal(stats.pages, 2);",
+            "});",
+            "test('ق11ج (ر5): السجل — الإنتاج اليومي يوم 11-29 لط103 وحده: «حفظ: 11 آية · 1 وجه»', () => {",
+            "    const h = harness([T103()]);",
+            "    h.run('renderReportsTable()');",
+            "    const rows = h.element('dailyTimelineTableBody').innerHTML.split('<tr').filter(r => r.includes(DAY));",
+            "    assert.equal(rows.length, 1, 'صف يوم 2026-11-29');",
+            "    assert.match(rows[0], /حفظ: 11 آية · 1 وجه · /);",
+            "    assert.match(rows[0], />11 آية<\\/td>/);",
+            "});",
+            "test('ق7 (ر4، البند 42): السجل التراكمي — صف ط103 (generalRecitationHtml داخل renderReportsTable) = «حفظ: 11 آية · 1 وجه»', () => {",
+            "    const h = harness([T103()]);",
+            "    h.run('renderReportsTable()');",
+            "    assert.match(h.element('reportsTableBody').innerHTML, /حفظ: 11 آية · 1 وجه · /);",
+            "});",
+            "// ق12 (قرار المدير على §8-1): شارة «الآيات» في بطاقة السجل تأخذ رقمها من مصدر صفوف السجل (generalRecitationTotals) فلا تعدّ «يُعاد».",
+            "// getCumulativeStats هنا بديل يعدّ كل تسجيل بلا نظر في التقدير (كـdayStats)؛ لو قرأت الشارة منه لقالت 33.",
+            "test('ق12 (§8-1): شارة rcBadgeStats لـ{ط101، ط103} = «22 آية» (لا 33) = مجموع صفوف السجل', () => {",
+            "    const h = harness([T101(), T103()]);",
+            "    h.ctx.getCumulativeStats = s => { let totalAyahs = 0;",
+            "        for (const d of Object.values(s.history)) for (const e of Object.values(d.entries)) totalAyahs += QuranMeasure.measure({ spec: e.spec }).ayahs;",
+            "        return { tripPoints: 0, sardAyahs: 0, exactPages: 0, quarters: 0, totalAyahs, totalPages: 0, totalRawQuarters: 0 }; };",
+            "    assert.equal(h.ctx.getCumulativeStats(T103()).totalAyahs, 22, 'البديل يعدّ «يُعاد»');",
+            "    h.run(source('updateRecordsBadges'));",
+            "    h.run('updateRecordsBadges()');",
+            "    assert.equal(h.element('rcBadgeStats').textContent, '22 آية');",
+            "    const rows = [0, 1].map(i => h.totals(i)).reduce((n, t) => n + t.new.ayahs + t.review.ayahs, 0);",
+            "    assert.equal(rows, 22);",
+            "});",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "file": "tests/journey-fixes-audit-local.test.cjs",
+      "category": 20,
+      "reason": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
+      "sha256": "df2eb5d7cfb26c6484f689da0415c69d199f404cee3ec7429b48e03b09c84c17",
+      "hunks": [
+        {
+          "oldLine": 1,
+          "newLine": 1,
+          "before": [],
+          "after": [
+            "// تدقيق الفئة 20: إصلاحا الرحلة (ح1 تقريب «جيد جداً»، ح2 «يُعاد» في المجاميع، وشارة الآيات §8-1) — 2026-11-13.",
+            "// المصدر: notes/features/engine/journey-fixes-card.md §5ج، على سابقة تدقيق الفئة 19 (tests/knights-rising-star-audit-local.test.cjs).",
+            "const { test } = require('node:test');",
+            "const assert = require('node:assert/strict');",
+            "const fs = require('node:fs');",
+            "const path = require('node:path');",
+            "const cp = require('node:child_process');",
+            "const { createHash } = require('node:crypto');",
+            "const { beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4,",
+            "    beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');",
+            "const { source } = require('./helpers/quick-entry-harness.cjs');",
+            "",
+            "const root = path.resolve(__dirname, '..');",
+            "const BASE = '274bd05';",
+            "const sha = text => createHash('sha256').update(text).digest('hex');",
+            "const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });",
+            "const original = file => git('show', BASE + ':' + file).replaceAll('\\r\\n', '\\n');",
+            "const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
+            "",
+            "function changesFrom(file) {",
+            "    const hunks = []; let hunk;",
+            "    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\\r?\\n/)) {",
+            "        const m = /^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@/.exec(line);",
+            "        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }",
+            "        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));",
+            "        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));",
+            "    }",
+            "    return hunks;",
+            "}",
+            "// Line range [first, last] (1-based) of a named function in a text.",
+            "function range(name, text) {",
+            "    const body = source(name, text), start = text.indexOf(body);",
+            "    const first = text.slice(0, start).split('\\n').length;",
+            "    return [first, first + body.split('\\n').length - 1];",
+            "}",
+            "const inside = (ranges, first, count) => count === 0 || ranges.some(([a, b]) => first >= a && first + count - 1 <= b);",
+            "",
+            "const CATEGORY = 'إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)';",
+            "const ADDED = ['tests/engine-rounding-local.test.cjs', 'tests/journey-fixes-audit-local.test.cjs', 'tests/records-repeat-local.test.cjs'];",
+            "const EDITED_FUNCTIONS = ['generalRecitationTotals', 'updateRecordsBadges'];",
+            "",
+            "test('category 20 audit: every changed line since 274bd05 is registered and reverses exactly', () => {",
+            "    const audit = require('./rules/design-expectation-audit.json');",
+            "    assert.equal(audit.categories['20'], CATEGORY);",
+            "    assert.equal(audit.journeyFixesBaseline, BASE);",
+            "    const added = new Set(audit.journeyFixesAddedFiles.map(row => row.file));",
+            "    const changed = git('diff', '--name-only', BASE).trim().split(/\\r?\\n/)",
+            "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();",
+            "    assert.deepEqual(audit.journeyFixesChanges.map(row => row.file).sort(), changed);",
+            "    for (const file of ['index.html', 'general-points.js']) assert.ok(changed.includes(file), file);",
+            "    for (const row of audit.journeyFixesChanges) {",
+            "        assert.equal(row.category, 20); assert.equal(row.reason, audit.categories['20']);",
+            "        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);",
+            "        assert.equal(row.beforeSha256, sha(original(row.file)), row.file);",
+            "        assert.equal(row.sha256, sha(current(row.file)), row.file);",
+            "        assert.equal(beforeJourneyFixes(current(row.file), row.file), original(row.file), row.file);",
+            "    }",
+            "    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\\r?\\n/).filter(Boolean).sort();",
+            "    for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);",
+            "    assert.deepEqual([...added].sort(), ADDED);",
+            "    for (const row of audit.journeyFixesAddedFiles) {",
+            "        assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);",
+            "        const text = current(row.file);",
+            "        assert.equal(row.category, 20); assert.equal(row.reason, audit.categories['20']);",
+            "        assert.equal(row.sha256, sha(text), row.file);",
+            "        assert.deepEqual(row.hunks, [{ oldLine: 1, newLine: 1, before: [], after: text.split('\\n') }], row.file);",
+            "    }",
+            "    // طفرة داخل المسجَّل وخارجه تبقى مكشوفة.",
+            "    const mutated = current('index.html').replace(\"|| entry.grade === 'repeat') continue;\", \"|| entry.grade === 'repeatX') continue;\");",
+            "    assert.notEqual(mutated, current('index.html'));",
+            "    assert.notEqual(beforeJourneyFixes(mutated), original('index.html'));",
+            "    const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');",
+            "    assert.notEqual(outside, current('index.html'));",
+            "    assert.notEqual(beforeJourneyFixes(outside), original('index.html'));",
+            "    const pointsMutated = current('general-points.js').replace('Math.round(raw * 1e6) / 1e6', 'Math.round(raw * 1e7) / 1e7');",
+            "    assert.notEqual(pointsMutated, current('general-points.js'));",
+            "    assert.notEqual(beforeJourneyFixes(pointsMutated, 'general-points.js'), original('general-points.js'));",
+            "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && key !== 'categories'))",
+            "        assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);",
+            "    const categories = { ...audit.categories }; delete categories['20'];",
+            "    assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);",
+            "});",
+            "",
+            "test('category 20 audit: index.html changes only inside generalRecitationTotals and updateRecordsBadges; general-points.js line 16 only; the rest as 274bd05', () => {",
+            "    const html = current('index.html'), old = original('index.html');",
+            "    const hunks = changesFrom('index.html');",
+            "    assert.equal(hunks.length, 2);",
+            "    const newRanges = EDITED_FUNCTIONS.map(name => range(name, html)), oldRanges = EDITED_FUNCTIONS.map(name => range(name, old));",
+            "    for (const h of hunks) {",
+            "        assert.equal(h.before.length, 1); assert.equal(h.after.length, 1);",
+            "        assert.ok(inside(oldRanges, h.oldLine, h.before.length), 'old lines outside the named functions at ' + h.oldLine);",
+            "        assert.ok(inside(newRanges, h.newLine, h.after.length), 'new lines outside the named functions at ' + h.newLine);",
+            "    }",
+            "    assert.equal(hunks[0].before[0], '                    if (!entry || !Object.hasOwn(totals, entry.kind)) continue;');",
+            "    assert.equal(hunks[0].after[0], \"                    if (!entry || !Object.hasOwn(totals, entry.kind) || entry.grade === 'repeat') continue;\");",
+            "    assert.equal(hunks[1].before[0], '            students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });');",
+            "    assert.equal(hunks[1].after[0], '            students.forEach(s => { if (isGeneralProgram()) { const t = generalRecitationTotals(s); totalAyahs += t.new.ayahs + t.review.ayahs; } else totalAyahs += getCumulativeStats(s).totalAyahs; });');",
+            "    // general-points.js: السطر 16 وحده، مع سطر تعليق فوقه.",
+            "    const points = changesFrom('general-points.js');",
+            "    assert.deepEqual(points.map(h => [h.oldLine, h.before.length, h.after.length]), [[16, 1, 2]]);",
+            "    assert.equal(points[0].before[0], '        return { points: Math.max(0, Math.round(raw * 10) / 10), mult, gradePercent };');",
+            "    assert.match(points[0].after[0], /^        \\/\\/ /);",
+            "    assert.equal(points[0].after[1], '        return { points: Math.max(0, Math.round(Math.round(raw * 1e6) / 1e6 * 10) / 10), mult, gradePercent };');",
+            "    // دوال §3 بنصها في 274bd05 (ومنها رسالة الأسبوع: §8-2 خارج هذه البطاقة).",
+            "    for (const name of ['dayStats', 'getCumulativeStats', 'roundPointTotal', 'computeFrontier', 'computeLastReview', 'dayAcceptedWeightTenths',",
+            "        'rankHalaqaRisingStars', 'getGeneralTvSnapshot', 'calculateRangeStats', 'calculateQuran', 'canWriteHistory', 'buildGeneralWeeklyMessage',",
+            "        'generalPerformanceStudentWork', 'computeComplexStats', 'exportToExcel', 'renderReportsTable', 'generalRecitationHtml'])",
+            "        assert.equal(source(name, html), source(name, old), name);",
+            "    for (const name of ['dayPoints', 'measureEntry'])",
+            "        assert.equal(html.match(new RegExp(`const ${name} = .*;`))[0], old.match(new RegExp(`const ${name} = .*;`))[0], name);",
+            "    const tracked = git('ls-tree', '-r', '--name-only', BASE).trim().split(/\\r?\\n/);",
+            "    const quran = tracked.filter(file => /^quran\\/[^/]+\\.js$/.test(file));",
+            "    const keys = tracked.filter(file => /^tests\\/rules\\/[^/]+-answer-key\\.json$/.test(file));",
+            "    assert.ok(quran.length >= 5); assert.ok(keys.length >= 7);",
+            "    for (const file of ['tv.js', 'tv.html', 'firestore.rules', 'data-store.js', 'programs-store.js', ...quran, ...keys])",
+            "        assert.equal(current(file), original(file), file);",
+            "});",
+            "",
+            "test('category 20 audit: the reverse chain restores every older index baseline exactly', () => {",
+            "    const html = current('index.html');",
+            "    const { beforeKnightsOwnerAuto } = require('./helpers/knights-owner-auto-audit.cjs');",
+            "    const { beforeGeneralKnightsCleanup } = require('./helpers/general-knights-cleanup-audit.cjs');",
+            "    const { beforeKnightsRelease } = require('./helpers/knights-release-audit.cjs');",
+            "    const { beforeKnightsRound2b, beforeKnightsRound2 } = require('./helpers/board-invariants.cjs');",
+            "    for (const [reverse, baseline] of [[beforeJourneyFixes, BASE], [beforeKnightsRisingStar, 'bf6a5e7'], [beforeKnightsTvPoints, '6e50320'],",
+            "        [beforeKnightsLinesX3, 'be3b92f'], [beforeKnightsLastWeek, 'fe78763'], [beforeKnightsOnePlaceP4, '263c942'], [beforeKnightsOnePlaceP3, '5fbff4e'],",
+            "        [beforeKnightsOnePlaceP2, 'a002e0c'], [beforeKnightsOnePlace, 'd51bb42'],",
+            "        [beforeKnightsOwnerAuto, '186a18e'], [beforeGeneralKnightsCleanup, '55fd33e'],",
+            "        [beforeKnightsRelease, '2d78da2'], [beforeKnightsRound2b, '0c5ec91'], [beforeKnightsRound2, '8880f84']])",
+            "        assert.equal(reverse(html, 'index.html'), git('show', baseline + ':index.html').replaceAll('\\r\\n', '\\n'), baseline);",
+            "    assert.equal(beforeJourneyFixes(current('general-points.js'), 'general-points.js'), original('general-points.js'));",
+            "    assert.equal(beforeKnightsRisingStar(current('general-points.js'), 'general-points.js'), git('show', 'bf6a5e7:general-points.js').replaceAll('\\r\\n', '\\n'));",
             "});",
             ""
           ]

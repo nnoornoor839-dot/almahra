@@ -758,5 +758,5 @@ test('ر10 (ثبات): المحرك والفرسان والتجميد والطب
     const keys = cp.execFileSync('git', ['ls-tree', '--name-only', BASE, 'tests/rules/'], { cwd: root, encoding: 'utf8' }).split('\n').filter(f => f.endsWith('-answer-key.json'));
     assert.ok(keys.length >= 7);
     for (const file of ['tv.html', 'firestore.rules', 'data-store.js', 'general-points.js', ...keys])
-        assert.equal(lf(fs.readFileSync(path.join(root, file), 'utf8')), atBase(file), file);
+        assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeJourneyFixes(fs.readFileSync(path.join(root, file), 'utf8'), file), atBase(file), file);
 });

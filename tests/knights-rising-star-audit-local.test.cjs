@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 const { createHash } = require('node:crypto');
-const { beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,
+const { beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4, beforeKnightsOnePlaceP3,
     beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');
 const { source } = require('./helpers/quick-entry-harness.cjs');
 
@@ -13,18 +13,9 @@ const BASE = 'bf6a5e7';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+const current = file => beforeJourneyFixes(fs.readFileSync(path.join(root, file), 'utf8'), file);
 
-function changesFrom(file) {
-    const hunks = []; let hunk;
-    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\r?\n/)) {
-        const m = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
-        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }
-        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));
-        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));
-    }
-    return hunks;
-}
+const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
 // Line range [first, last] (1-based) of a named function in a text.
 function range(name, text) {
     const body = source(name, text), start = text.indexOf(body);
@@ -43,21 +34,21 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['19'], CATEGORY);
     assert.equal(audit.knightsRisingStarBaseline, BASE);
-    const added = new Set(audit.knightsRisingStarAddedFiles.map(row => row.file));
+    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();
+        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsRisingStarChanges.map(row => row.file).sort(), changed);
     for (const file of ['index.html', 'tv.js', 'programs-store.js']) assert.ok(changed.includes(file), file);
     for (const row of audit.knightsRisingStarChanges) {
         assert.equal(row.category, 19); assert.equal(row.reason, audit.categories['19']);
-        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);
+        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);
         assert.equal(row.beforeSha256, sha(original(row.file)), row.file);
         assert.equal(row.sha256, sha(current(row.file)), row.file);
         assert.equal(beforeKnightsRisingStar(current(row.file), row.file), original(row.file), row.file);
     }
     const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
     for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);
-    assert.deepEqual([...added].sort(), ['tests/knights-rising-star-audit-local.test.cjs', 'tests/knights-rising-star-local.test.cjs']);
+    assert.deepEqual(audit.knightsRisingStarAddedFiles.map(row => row.file).sort(), ['tests/knights-rising-star-audit-local.test.cjs', 'tests/knights-rising-star-local.test.cjs']);
     for (const row of audit.knightsRisingStarAddedFiles) {
         assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);
         const text = current(row.file);
@@ -78,9 +69,9 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     const storeMutated = current('programs-store.js').replace("['candidate', 'other', 'none']", "['candidate', 'other']");
     assert.notEqual(storeMutated, current('programs-store.js'));
     assert.notEqual(beforeKnightsRisingStar(storeMutated, 'programs-store.js'), original('programs-store.js'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['19'];
+    const categories = { ...audit.categories }; delete categories['19']; delete categories['20'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
@@ -103,7 +94,7 @@ test('category 19 audit: index.html changes only inside the named functions and 
     const oldRanges = [...EDITED_FUNCTIONS.map(name => range(name, old)), [comment[0], range('renderGeneralKnightsRising', old)[1]],
         lineOf(old, '                        <h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>')];
     assert.equal(html.split('\n')[lineOf(html, '    <div id="risingStarPrintArea" dir="rtl"></div>')[0] - 2], '    <div id="generalWeeklySheetPrintArea" dir="rtl"></div>');
-    const hunks = changesFrom('index.html');
+    const hunks = changesFrom('index.html', BASE).hunks;
     assert.ok(hunks.length);
     for (const h of hunks) {
         assert.ok(inside(oldRanges, h.oldLine, h.before.length), 'old lines outside the named places at ' + h.oldLine);
@@ -121,7 +112,7 @@ test('category 19 audit: index.html changes only inside the named functions and 
         assert.equal(source(name, html), source(name, old), name);
     assert.equal(html.match(/const dayPoints = .*;/)[0], old.match(/const dayPoints = .*;/)[0]);
     // tv.js: سطر risingStars في الرسم وحده، وما قبل قسم الصفحة مطابق.
-    const tv = changesFrom('tv.js');
+    const tv = changesFrom('tv.js', BASE).hunks;
     assert.deepEqual(tv.map(h => [h.oldLine, h.before.length, h.after.length]), [[248, 1, 1]]);
     assert.equal(tv[0].before[0], "                    if (slide.kind === 'risingStars') cardBody.append(node('h3', 'kname', item.name));");
     assert.equal(tv[0].after[0], "                    if (slide.kind === 'risingStars') { if (item.stage) card.append(node('p', 'stage', item.stage)); cardBody.append(node('h3', 'kname', item.name)); }");
@@ -130,7 +121,7 @@ test('category 19 audit: index.html changes only inside the named functions and 
     assert.ok(tvNow.includes(marker));
     assert.equal(tvNow.slice(0, tvNow.indexOf(marker)), tvOld.slice(0, tvOld.indexOf(marker)), 'tv.js before the DOM section');
     // programs-store.js: إضافة saveRisingStar وحدها.
-    const store = changesFrom('programs-store.js');
+    const store = changesFrom('programs-store.js', BASE).hunks;
     assert.equal(store.length, 1);
     assert.deepEqual(store[0].before, [], 'programs-store.js: additions only');
     assert.match(store[0].after[0], /^    saveRisingStar: async \(programId, seasonId, record\) => mutateWeekKnights\(programId, seasonId, season => \{$/);

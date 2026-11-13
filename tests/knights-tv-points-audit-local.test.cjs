@@ -21,7 +21,7 @@ test('category 18 audit: every changed line since 6e50320 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['18'], 'نقاط الفارس على التلفاز (2026-11-13)');
     assert.equal(audit.knightsTvPointsBaseline, BASE);
-    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsTvPointsChanges.map(row => row.file).sort(), changed);
@@ -52,9 +52,9 @@ test('category 18 audit: every changed line since 6e50320 is registered and reve
     const tvMutated = current('tv.js').replace("ar(item.points[i]) + ' نقطة'", 'ar(item.points[i])');
     assert.notEqual(tvMutated, current('tv.js'));
     assert.notEqual(beforeKnightsTvPoints(tvMutated, 'tv.js'), original('tv.js'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['18']; delete categories['19'];
+    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
