@@ -178,7 +178,7 @@ test('r2b TV first sends no closing slide, retries failure on heartbeat, then im
     const sent=[];h.run('generalTv.enabled=true');h.ctx.generalTvReady=()=>true;h.ctx.generalTvContext=()=> 'general:s1';
     h.ctx.postGeneralTv=snapshot=>sent.push(copy(snapshot));
     h.run('let honorKnightsLog=[]');h.ctx.getBoardDate=()=> '2026-11-29';h.ctx.getBoardWeekRange=()=>({startStr:'2026-11-29',endStr:'2026-12-02'});
-    h.ctx.getWorkingDatesInRange=()=>[];h.ctx.getGeneralTvBoard=()=>[];h.ctx.getHomePrepWeek=()=>[];h.ctx.getMostImproved=()=>[];
+    h.ctx.getWorkingDatesInRange=()=>[];h.ctx.getGeneralTvBoard=()=>[];h.ctx.getHomePrepWeek=()=>[];h.ctx.getMostImproved=()=>[];h.ctx.getApprovedRisingStars=()=>[];
     server.state.failTx=true;await h.call('sendGeneralTvSnapshot');await new Promise(r=>setImmediate(r));
     assert.equal(sent.length,1);assert.equal(sent[0].stages[0].weekKnights,undefined);
     server.state.failTx=false;await h.call('sendGeneralTvSnapshot');await new Promise(r=>setImmediate(r));

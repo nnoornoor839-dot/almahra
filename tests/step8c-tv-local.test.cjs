@@ -50,6 +50,7 @@ function board(list = [], text = html) {
         'getBoardDate', 'getBoardWeekRange', 'getWorkingDatesInRange', 'topTied', 'getStudentRank', 'getMostImproved',
         'getSeasonLeaders', 'getApprovedKnightsForMode', 'getKnightWinCounts', 'getTitleRules', 'hbEmpty', 'renderHonorBoard', 'roundPointTotal');
     if (text === html) installTv(run, install);
+    run("getApprovedRisingStars = () => [];"); // بطاقة §5أ: بديل النجم الصاعد بجانب getMostImproved؛ النجم يُختبر في ملفه.
     return { state, ctx, run, install, element, list,
         snapshot: () => copy(run('getGeneralTvSnapshot()')),
         connect() { ctx.sink = message => state.sent.push(copy(message)); run('generalTv.channel = { postMessage: sink }; generalTv.dataContext = generalTvContext(); enableGeneralTv()'); } };
@@ -148,7 +149,7 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
         for (const e of stage.dayKnights) assert.deepEqual(Object.keys(e).sort(), ['names', 'points', 'provisional', 'stage', 'teacher', 'times']);
         assert.equal(stage.weekKnights, undefined);
         for (const e of stage.prepWeek) assert.deepEqual(Object.keys(e).sort(), ['name', 'points']);
-        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['name']);
+        for (const e of stage.risingStars) assert.deepEqual(Object.keys(e), ['stage', 'name']);
     }
     const cards = [{ stage: 'حلقة أولى', teacher: '', names: ['طالب وهمي ثالث1'], points: [0], times: 1, provisional: true },
         { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], points: [0, 0], times: 2, provisional: true }];

@@ -7,9 +7,14 @@ function reverseRow(text, row) {
     for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);
     return lines.join('\n');
 }
+// Category 19: reverse registered rising-star changes, so category 18 sees bf6a5e7.
+function beforeKnightsRisingStar(text, file = 'index.html') {
+    text = text.replaceAll('\r\n', '\n');
+    return reverseRow(text, require('../rules/design-expectation-audit.json').knightsRisingStarChanges?.find(r => r.file === file));
+}
 // Category 18: reverse registered TV-points changes, so category 17 sees 6e50320.
 function beforeKnightsTvPoints(text, file = 'index.html') {
-    text = text.replaceAll('\r\n', '\n');
+    text = beforeKnightsRisingStar(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsTvPointsChanges?.find(r => r.file === file));
 }
 // Category 17: reverse registered lines-x3 changes, so category 16 sees be3b92f.
@@ -42,4 +47,4 @@ function beforeKnightsOnePlace(text, file = 'index.html') {
     text = beforeKnightsOnePlaceP2(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file));
 }
-module.exports = { beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };
+module.exports = { beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };

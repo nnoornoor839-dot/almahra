@@ -21,7 +21,7 @@ test('category 17 audit: every changed line since be3b92f is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['17'], '"!" بالأسطر: السطر بـ3 للجديد والمراجعة (٢٠٢٦-١١-١٢)');
     assert.equal(audit.knightsLinesX3Baseline, BASE);
-    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsLinesX3Changes.map(row => row.file).sort(), changed);
@@ -48,9 +48,9 @@ test('category 17 audit: every changed line since be3b92f is registered and reve
     const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');
     assert.notEqual(outside, current('index.html'));
     assert.notEqual(beforeKnightsLinesX3(outside), original('index.html'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['17']; delete categories['18'];
+    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 

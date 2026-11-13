@@ -23,7 +23,7 @@ test('category 13 audit: every changed line since a002e0c is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsOnePlaceP2Baseline, BASE);
     // ملفات الفئة 13 المضافة صارت متتبَّعة بعد 5fbff4e، وملفات الفئة 14 المضافة لها تدقيقها.
-    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(r => r.file));
+    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(r => r.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !added.has(f) && changesFrom(f, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsOnePlaceP2Changes.map(r => r.file).sort(), changed);

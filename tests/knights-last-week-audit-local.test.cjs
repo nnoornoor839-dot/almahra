@@ -20,7 +20,7 @@ const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
 test('category 16 audit: every changed line since fe78763 is registered and reverses exactly', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.knightsLastWeekBaseline, BASE);
-    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsLastWeekChanges.map(row => row.file).sort(), changed);

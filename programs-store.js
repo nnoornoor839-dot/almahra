@@ -589,6 +589,24 @@ window.almahraPrograms = {
             return { weekKnightsLog: log };
         });
     },
+    saveRisingStar: async (programId, seasonId, record) => mutateWeekKnights(programId, seasonId, season => {
+        if (!season.frozenWeeks?.[record.weeks[0]] || !season.frozenWeeks?.[record.weeks[1]])
+            throw new Error('الدورة لم تُحسم بعد');
+        if (season.risingStars?.[record.cycleEnd]?.[record.halaqaId])
+            throw new Error('اعتُمد نجم هذه الحلقة لهذه الدورة؛ لا يُغيَّر');
+        if (!['candidate', 'other', 'none'].includes(record.choice) ||
+            (record.choice !== 'none' && !record.studentId))
+            throw new Error('اختيار النجم غير صالح');
+        if (record.choice !== 'candidate' && !String(record.reason || '').trim())
+            throw new Error('سبب المعلم إلزامي');
+        return { risingStars: {
+            ...season.risingStars,
+            [record.cycleEnd]: {
+                ...season.risingStars?.[record.cycleEnd],
+                [record.halaqaId]: { ...record, v: 1, approvedAt: serverTimestamp(), lockedAt: serverTimestamp() }
+            }
+        } };
+    }),
 
     PROGRAM_DEFS,
 

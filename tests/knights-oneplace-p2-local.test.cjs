@@ -59,16 +59,15 @@ test('ف6: copy preview equals the copied announcement text and does not lock; c
     assert.ok(h.rows().filter(r => r.lockedAt).length > 0, 'النسخ يقفل كما كان');
 });
 
-test('ف7: rising star section lists names only, per period, from the TV variant of getMostImproved; TV card has no subtitle', async () => {
+test('ف7: rising star section shows no cycle without a completed cycle; TV card has no subtitle', async () => {
     const server = cloud(); const h = runtime(server);
     const calls = [];
     h.ctx.getMostImproved = (limit, period) => { calls.push([limit, period]); return period === 'asr' ? [{ student: { name: 'سالم' }, growth: 40 }, { student: { name: 'ماجد' }, growth: 20 }] : [{ student: { name: 'زياد' }, growth: 15 }]; };
     h.install('renderGeneralKnightsRising');
     await h.call('renderGeneralKnightsRising');
     const text = strip(h.element('gkRising').innerHTML);
-    assert.deepEqual(calls.sort(), [[3, 'asr'], [3, 'maghrib']]);
-    assert.ok(/حلقات العصر:.*سالم.*ماجد/.test(text) && /حلقات المغرب:.*زياد/.test(text), text);
-    assert.ok(!/40|20|15|%|٪|يتقدّم/.test(text), 'أسماء فقط');
+    assert.deepEqual(calls, [], 'الصندوق لا يستدعي getMostImproved');
+    assert.ok(text.includes('لا دورة للنجم الصاعد الآن.'), text);
     const tv = fs.readFileSync(path.join(root, 'tv.js'), 'utf8');
     assert.ok(!tv.includes('يتقدّم على نفسه'), 'بطاقة التلفاز بلا العبارة');
 });

@@ -150,7 +150,7 @@ test('release general: review/copy buttons share general tokens, icons and 44px 
 test('release TV: production transport delivers new provisional halaqa knights and omits weekly knights before lock',async()=>{
     const server=cloud(),h=runtime(server);await h.frozen();h.run('let honorKnightsLog = []');
     h.install('sendGeneralTvSnapshot');h.ctx.getBoardDate=()=>key.days[1];h.ctx.getBoardWeekRange=()=>({startStr:key.days[0],endStr:key.days[1]});
-    h.ctx.getWorkingDatesInRange=()=>key.days.slice(0,2);h.ctx.getGeneralTvBoard=()=>[];h.ctx.getMostImproved=()=>[];
+    h.ctx.getWorkingDatesInRange=()=>key.days.slice(0,2);h.ctx.getGeneralTvBoard=()=>[];h.ctx.getMostImproved=()=>[];h.ctx.getApprovedRisingStars=()=>[];
     for(const name of ['getApprovedKnightsForMode','getWeekTitleCandidates','getDayRanking']) h.ctx[name]=()=>assert.fail('old TV path: '+name);
     const posted=[];h.ctx.generalTvReady=()=>true;h.ctx.generalTvContext=()=> 'general:s1';h.ctx.postGeneralTv=value=>posted.push(value);
     h.ctx.fixtureChannel={enabled:true};h.run('Object.assign(generalTv, fixtureChannel)');

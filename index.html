@@ -1590,7 +1590,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         </div>
                     </section>
                     <section id="gkRising" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
-                        <h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>
+                        <h3 class="font-black text-lg mb-3">النجم الصاعد</h3>
                     </section>
                     <details id="gkSettings" class="bg-white rounded-2xl border-2 border-slate-200 p-5">
                         <summary class="font-black text-lg cursor-pointer">الإعدادات</summary>
@@ -2823,6 +2823,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
     <div id="examCardsPrintArea"></div>
     <div id="generalWeeklySheetPrintArea" dir="rtl"></div>
+    <div id="risingStarPrintArea" dir="rtl"></div>
 
     <div id="generalWeeklySheetModal" role="dialog" aria-modal="true" aria-labelledby="generalWeeklySheetTitle" class="hidden fixed inset-0 z-[2000] bg-slate-900/70 items-center justify-center p-4" dir="rtl">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 space-y-4">
@@ -4535,7 +4536,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                             }).filter(e => e.names.length),
                         ...(getLockedWeekKnights(period).length ? { weekKnights: getLockedWeekKnights(period) } : {}),
                         prepWeek: getHomePrepWeek(period),
-                        risingStars: getMostImproved(3, period).map(e => ({ name: nameOf(e.student.name) }))
+                        risingStars: getApprovedRisingStars(period, nameOf)
                     };
                 })
             };
@@ -4823,7 +4824,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (isReviewDay) return; // اليوم المكثف: البطاقة مخفية
 
             const prContainer = document.getElementById('hbProgress');
-            const improved = getMostImproved(isGeneralProgram() ? 3 : 5);
+            const improved = isGeneralProgram() ? [] : getMostImproved(5);
 
             if (improved.length > 0) {
                 prContainer.innerHTML = improved.map((m, i) => hbWinnerRow(
@@ -8417,6 +8418,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             return { ...remote, ...saved, frozenWeeks: { ...remote.frozenWeeks, ...saved.frozenWeeks }, weekKnightsLog: [...map.values()] };
         }
+        function risingStarsStored() {
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const remote = window.almahraPrograms.getCurrentSeason()?.risingStars || {};
+            const saved = weekKnightsState.get(seasonId)?.risingStars || {};
+            const merged = {};
+            for (const key of new Set([...Object.keys(remote), ...Object.keys(saved)]))
+                merged[key] = { ...remote[key], ...saved[key] };
+            return merged;
+        }
         function knightsEndedWeeks(season, date) {
             if (!season.termStart) return [];
             const weeks = [];
@@ -9005,6 +9015,198 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (growth <= 0) return null;
                 return { student: s, growth: Math.round(growth), nowAvg: Math.round(nowAvg), pastAvg: Math.round(pastAvg) };
             }).filter(e => e && (!excluded || !excluded.has(e.student.id))).sort((a, b) => b.growth - a.growth).slice(0, isGeneralProgram() ? Math.min(limit, 3) : limit);
+        }
+
+        function risingStarCycles(settings) {
+            const season = settings?.season;
+            if (!season?.termStart || !season?.termEnd) return [];
+            const schoolWeeks = [];
+            try {
+                for (let start = getWeekStartDate(season.termStart); start <= season.termEnd; start = addDaysToDateStr(start, 7)) {
+                    const dates = knightsSchoolDates({ startStr: start, endStr: addDaysToDateStr(start, 3) }, settings);
+                    if (dates.length) schoolWeeks.push({ start, dates });
+                }
+                const cycles = [];
+                for (let i = 0; i + 1 < schoolWeeks.length; i += 2) {
+                    const first = schoolWeeks[i], second = schoolWeeks[i + 1];
+                    cycles.push({
+                        key: addDaysToDateStr(second.start, 3),
+                        weeks: [first.start, second.start],
+                        nowDates: [...first.dates, ...second.dates],
+                        pastDates: first.start > season.termStart
+                            ? knightsSchoolDates({ startStr: season.termStart, endStr: addDaysToDateStr(first.start, -1) }, settings) : [],
+                        announce: addDaysToDateStr(second.start, 9),
+                        approveUntil: addDaysToDateStr(second.start, 8),
+                        displayUntil: schoolWeeks[i + 3] ? addDaysToDateStr(schoolWeeks[i + 3].start, 6) : season.termEnd
+                    });
+                }
+                return cycles;
+            } catch (error) {
+                if (error.message === 'تقويم الفرسان غير مكتمل') return [];
+                throw error;
+            }
+        }
+
+        function risingStarCycleAt(cycles, frozenWeeks, today, mode) {
+            for (let i = cycles.length - 1; i >= 0; i--) {
+                const cycle = cycles[i], [first, second] = cycle.weeks;
+                if (!cycle.pastDates.length || !frozenWeeks?.[first] || !frozenWeeks?.[second] || today > cycle.displayUntil) continue;
+                if (mode === 'admin' && today > cycle.key)
+                    return { ...cycle, state: today <= cycle.approveUntil ? 'approve' : 'announced' };
+                if (mode === 'tv' && today >= cycle.announce)
+                    return { ...cycle, state: 'announced' };
+            }
+            return null;
+        }
+
+        function getApprovedRisingStars(period, nameOf) {
+            const season = knightsStoredSeason();
+            const settings = { ...getProgramSettings(), season };
+            const cycle = risingStarCycleAt(risingStarCycles(settings), season.frozenWeeks, knightsToday(), 'tv');
+            if (!cycle) return [];
+            return Object.values(risingStarsStored()[cycle.key] || {})
+                .filter(record => record.lockedAt && record.choice !== 'none' && record.period === period)
+                .sort((a, b) => a.halaqaOrder - b.halaqaOrder ||
+                    knightsIdentityOrder({ id: a.halaqaId }, { id: b.halaqaId }))
+                .map(record => ({ stage: record.halaqaName, name: nameOf(record.studentName) }));
+        }
+
+        function rankHalaqaRisingStars(cycle, halaqaId, students, settings) {
+            const blocking = (settings.criteria || []).filter(c => c.points < 0 && c.blocksTitles === true).map(c => c.id);
+            const nonblocking = (settings.criteria || []).filter(c => c.points < 0 && c.blocksTitles !== true);
+            const rows = students.filter(s => s.halaqaId === halaqaId).sort(knightsIdentityOrder).map(student => {
+                const history = student.history || {};
+                const points = dates => dates.reduce((sum, date) => sum + knightsDayPointsTenths(history[date]), 0);
+                const days = dates => dates.reduce((sum, date) => sum + (knightsAttendanceState(student, date) === 'present' ? 1 : 0), 0);
+                const pastPointsTenths = points(cycle.pastDates), pastDays = days(cycle.pastDates);
+                const nowPointsTenths = points(cycle.nowDates), nowDays = days(cycle.nowDates);
+                const totalTenths = nowPointsTenths + nowDays * 10 * (settings.points?.attendance ?? 10);
+                const blocked = cycle.nowDates.some(date => dayHasBlockingViolation(history[date], blocking));
+                const homePrepDays = cycle.nowDates.filter(date => Number(history[date]?.criteria?.homeprep) > 0).length;
+                const violations = nonblocking.map(c => ({
+                    name: c.name,
+                    days: cycle.nowDates.filter(date => Number(history[date]?.criteria?.[c.id]) < 0).length
+                })).filter(v => v.days > 0);
+                return {
+                    id: student.id, name: student.name, pastPointsTenths, pastDays, nowPointsTenths, nowDays,
+                    totalTenths, rank: 0, reason: '',
+                    pastAvg: pastDays ? Math.round(pastPointsTenths / pastDays) / 10 : 0,
+                    nowAvg: nowDays ? Math.round(nowPointsTenths / nowDays) / 10 : 0,
+                    growth: pastPointsTenths > 0 && nowDays > 0
+                        ? Math.round(1000 * (nowPointsTenths * pastDays - pastPointsTenths * nowDays) / (pastPointsTenths * nowDays)) / 10 : 0,
+                    homePrepDays, violations, blocked
+                };
+            });
+            for (const row of rows) {
+                row.rank = 1 + rows.filter(other => other.totalTenths > row.totalTenths).length;
+                row.reason = row.pastDays === 0 ? 'لا سابقة'
+                    : row.pastPointsTenths <= 0 ? 'متوسطه السابق صفر'
+                    : row.nowDays < 2 ? 'حضر أقل من يومين'
+                    : row.blocked ? 'مخالفة أدب'
+                    : row.nowPointsTenths * row.pastDays <= row.pastPointsTenths * row.nowDays ? 'لم يتحسّن'
+                    : row.rank <= 3 ? 'من الثلاثة الأوائل' : '';
+                delete row.blocked;
+            }
+            const candidates = rows.filter(row => !row.reason).sort((a, b) => {
+                const left = BigInt(a.nowPointsTenths) * BigInt(a.pastDays) * BigInt(b.nowDays) * BigInt(b.pastPointsTenths);
+                const right = BigInt(b.nowPointsTenths) * BigInt(b.pastDays) * BigInt(a.nowDays) * BigInt(a.pastPointsTenths);
+                return left > right ? -1 : left < right ? 1 : knightsIdentityOrder(a, b);
+            }).slice(0, 3);
+            return { rows, candidates };
+        }
+
+        function buildRisingStarSheetHtml(row, cycle, ranked, settings, meta) {
+            const e = value => escapeHTML(String(value ?? ''));
+            const dateLabel = date => `${Number(date.slice(8))} / ${Number(date.slice(5, 7))}`;
+            const dayName = date => ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][new Date(date + 'T12:00:00Z').getUTCDay()];
+            const first = cycle.nowDates[0], last = cycle.nowDates[cycle.nowDates.length - 1];
+            const teacher = String(row.teacherName || '').trim();
+            const teacherLabel = teacher ? (/^الأستاذ(?:\s|$)/.test(teacher) ? teacher : 'الأستاذ ' + teacher) : '';
+            const knightDays = id => (meta.weekRows || []).reduce((sum, weekRow) => sum +
+                (weekRow.nominees || []).filter(nominee => String(nominee.id) === String(id))
+                    .reduce((days, nominee) => days + (nominee.nominations || []).length, 0), 0);
+            const candidates = ranked.candidates || [];
+            const columns = candidates.length ? `<div class="rss-candidates">${candidates.map(candidate => {
+                const violations = candidate.violations?.length
+                    ? candidate.violations.map(v => `${e(v.name)} ${e(v.days)}`).join('، ') : 'لا شيء';
+                return `<div class="rss-candidate"><h2>${e(candidate.name)}</h2><div>رقم ${e(candidate.id)}</div>
+                    <p>كان: ${e(candidate.pastAvg)} نقطة في اليوم</p><p>صار: ${e(candidate.nowAvg)} نقطة في اليوم</p>
+                    <p>التحسّن: +${e(candidate.growth)}٪</p><p>الحضور: ${e(candidate.nowDays)} من ${e(cycle.nowDates.length)}</p>
+                    <p>أيام التحضير المنزلي: ${e(candidate.homePrepDays)}</p><p>أيام فارس اليوم: ${e(knightDays(candidate.id))}</p>
+                    <p>المخالفات: ${violations}</p></div>`;
+            }).join('')}</div>` : '<div class="rss-empty">لا مرشحين من البرنامج لهذه الدورة</div>';
+            return `<section class="rising-star-sheet" dir="rtl">
+                <div class="rss-header"><h1>ورقة مرشحي النجم الصاعد · البرنامج العام</h1>
+                    <div>جمعية أفضلكم · ${e(meta.seasonName)} · لا تخرج الورقة من المسجد</div></div>
+                <div class="rss-info"><span>الحلقة: ${e(row.halaqaName)}</span><span>المعلم: ${e(teacherLabel)}</span></div>
+                <div class="rss-dates"><span>الأسبوعان: ${e(dayName(first))} ${e(dateLabel(first))} ← ${e(dayName(last))} ${e(dateLabel(last))}</span>
+                    <span>تُعاد الورقة: ${e(dayName(cycle.approveUntil))} ${e(dateLabel(cycle.approveUntil))}</span></div>
+                ${columns}
+                <div class="rss-choices">${candidates.map(candidate => `<span>☐ ${e(candidate.name)}</span>`).join('')}
+                    <span>☐ طالب آخر من عندي: الاسم ______ السبب ______</span>
+                    <span>☐ لا نجم هذه الدورة، السبب ______</span></div>
+                <footer>توقيع المعلم: ................  التاريخ: ................</footer>
+            </section>`;
+        }
+
+        let isPrintingRisingStarSheets = false;
+        function printRisingStarSheets() {
+            if (!isGeneralProgram() || isPrintingRisingStarSheets || isPrintingGeneralWeeklySheets || isPrintingExamCards) return;
+            const season = knightsStoredSeason();
+            const settings = { ...getProgramSettings(), season };
+            const cycle = risingStarCycleAt(risingStarCycles(settings), season.frozenWeeks, knightsToday(), 'admin');
+            if (!cycle || cycle.state !== 'approve') return;
+            const rows = season.weekKnightsLog.filter(row => row.weekStart === cycle.weeks[1])
+                .sort((a, b) => a.halaqaOrder - b.halaqaOrder || knightsIdentityOrder({ id: a.halaqaId }, { id: b.halaqaId }));
+            if (!rows.length) return;
+            const container = document.getElementById('risingStarPrintArea');
+            if (!container) return;
+            const meta = { seasonName: window.almahraPrograms?.getCurrentSeason()?.name || '' };
+            const styleTag = document.createElement('style');
+            let timeout;
+            const cleanup = () => {
+                clearTimeout(timeout);
+                document.body.classList.remove('printing-rising-star-sheets');
+                container.innerHTML = '';
+                styleTag.remove();
+                window.removeEventListener('afterprint', cleanup);
+                isPrintingRisingStarSheets = false;
+            };
+            isPrintingRisingStarSheets = true;
+            try {
+                container.innerHTML = rows.map(row => buildRisingStarSheetHtml(row, cycle,
+                    rankHalaqaRisingStars(cycle, row.halaqaId, students, settings), settings,
+                    { ...meta, weekRows: season.weekKnightsLog.filter(weekRow => cycle.weeks.includes(weekRow.weekStart) && weekRow.halaqaId === row.halaqaId) })).join('');
+                styleTag.id = 'risingStarDynamicPrintStyle';
+                styleTag.textContent = `
+                    #risingStarPrintArea { display: none; }
+                    @media print {
+                        @page { size: A4 landscape; margin: 8mm; }
+                        body.printing-rising-star-sheets > *:not(#risingStarPrintArea) { display: none !important; }
+                        body.printing-rising-star-sheets #risingStarPrintArea { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+                        #risingStarPrintArea * { box-sizing: border-box; color: #000 !important; background: #fff !important; }
+                        #risingStarPrintArea .rising-star-sheet { width: 100%; height: 186mm; display: flex; flex-direction: column; gap: 5mm; break-after: page !important; page-break-after: always !important; break-inside: avoid; font-size: 15px; line-height: 1.5; }
+                        #risingStarPrintArea .rising-star-sheet:last-child { break-after: auto !important; page-break-after: auto !important; }
+                        #risingStarPrintArea .rss-header { border-bottom: 2px solid #666; padding-bottom: 3mm; }
+                        #risingStarPrintArea h1 { font-size: 24px; margin: 0; }
+                        #risingStarPrintArea .rss-info, #risingStarPrintArea .rss-dates { display: flex; justify-content: space-between; gap: 6mm; }
+                        #risingStarPrintArea .rss-candidates { display: flex; gap: 4mm; flex: 1; }
+                        #risingStarPrintArea .rss-candidate { flex: 1; border: 1px solid #888; padding: 4mm; }
+                        #risingStarPrintArea .rss-candidate h2 { font-size: 22px; margin: 0; }
+                        #risingStarPrintArea .rss-candidate p { margin: 2mm 0; }
+                        #risingStarPrintArea .rss-empty { flex: 1; text-align: center; padding-top: 24mm; font-size: 20px; }
+                        #risingStarPrintArea .rss-choices { display: flex; flex-wrap: wrap; gap: 3mm 8mm; border-top: 1px solid #888; padding-top: 4mm; }
+                        #risingStarPrintArea footer { padding-top: 4mm; }
+                    }`;
+                document.head.appendChild(styleTag);
+                document.body.classList.add('printing-rising-star-sheets');
+                window.addEventListener('afterprint', cleanup);
+                timeout = setTimeout(cleanup, 60000);
+                window.print();
+            } catch (error) {
+                cleanup();
+                showToast('تعذّرت طباعة أوراق المرشحين؛ أعد المحاولة', 'error');
+            }
         }
 
         // صدارة الموسم (بديل "الأكثر تقدّماً" حين لا توجد بيانات سابقة)
@@ -12542,16 +12744,117 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             preview.textContent = text || 'لا سجل فرسان لهذا الأسبوع';
             if (button) button.disabled = !text;
         }
-        // النجم الصاعد لكل فترة بنسخة التلفاز نفسها، بالأسماء فقط.
-        function renderGeneralKnightsRising() {
-            if (!isGeneralProgram()) return;
+        async function renderGeneralKnightsRising() {
+            if (!isGeneralProgram() || !window.almahraAuth?.isAdmin?.()) return;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
             const box = document.getElementById('gkRising');
             if (!box) return;
-            const line = (label, period) => {
-                const names = getMostImproved(3, period).map(e => e.student.name);
-                return '<p class="font-bold my-1">' + escapeHTML(label + ': ' + (names.length ? names.join('، ') : 'لا نجم صاعد هذا الأسبوع')) + '</p>';
-            };
-            box.innerHTML = '<h3 class="font-black text-lg mb-3">النجم الصاعد هذا الأسبوع</h3>' + line('حلقات العصر', 'asr') + line('حلقات المغرب', 'maghrib');
+            try {
+                const ready = await ensureWeekKnightsFrozen();
+                if (!ready.ok) { showToast(ready.error, 'error'); return; }
+                if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+                const season = knightsStoredSeason();
+                const settings = { ...getProgramSettings(), season };
+                // لا يمكن أن تكتمل دورة من أسبوعين إذا لم يُجمَّد أسبوعان بعد.
+                const cycle = Object.keys(season.frozenWeeks || {}).length < 2 ? null
+                    : risingStarCycleAt(risingStarCycles(settings), season.frozenWeeks, knightsToday(), 'admin');
+                const heading = '<h3 class="font-black text-lg mb-3">النجم الصاعد</h3>';
+                if (!cycle) {
+                    box.innerHTML = heading + '<p>لا دورة للنجم الصاعد الآن.</p>';
+                    return;
+                }
+                const e = value => escapeHTML(String(value ?? ''));
+                const dateLabel = date => `${Number(date.slice(8))} / ${Number(date.slice(5, 7))}`;
+                const rows = season.weekKnightsLog.filter(row => row.weekStart === cycle.weeks[1])
+                    .sort((a, b) => a.halaqaOrder - b.halaqaOrder || knightsIdentityOrder({ id: a.halaqaId }, { id: b.halaqaId }));
+                const stored = risingStarsStored()[cycle.key] || {};
+                const cycleLine = `الدورة: الأحد ${dateLabel(cycle.weeks[0])} ← الأربعاء ${dateLabel(cycle.key)} · الاعتماد حتى الاثنين ${dateLabel(cycle.approveUntil)} · الإعلان الثلاثاء ${dateLabel(cycle.announce)}`;
+                box.innerHTML = heading + `<p class="font-bold mb-3">${e(cycleLine)}</p>`
+                    + `<button id="gkRisingPrint" type="button" class="bg-indigo-600 text-white rounded-xl px-3 py-2 mb-3 disabled:opacity-50" ${cycle.state === 'approve' ? '' : 'disabled'}>طباعة أوراق المرشحين</button>`
+                    + rows.map(row => {
+                        const approved = stored[row.halaqaId];
+                        const title = `<h4 class="font-black mb-2">${e(row.halaqaName)} — ${e(row.teacherName)}</h4>`;
+                        let body;
+                        if (approved) {
+                            body = approved.choice === 'none'
+                                ? `✅ لا نجم هذه الدورة — السبب: ${e(approved.reason)}`
+                                : `✅ المعتمَد: ${e(approved.studentName)} (${approved.choice === 'candidate' ? 'من المرشحين' : 'اختيار المعلم'})${approved.choice === 'other' ? ' — السبب: ' + e(approved.reason) : ''}`;
+                        } else if (cycle.state === 'announced') {
+                            body = 'لم يُعتمد نجم لهذه الحلقة.';
+                        } else {
+                            const ranked = rankHalaqaRisingStars(cycle, row.halaqaId, students, settings);
+                            const candidates = ranked.candidates;
+                            const others = students.filter(student => student.halaqaId === row.halaqaId &&
+                                !candidates.some(candidate => String(candidate.id) === String(student.id))).sort(knightsIdentityOrder);
+                            const name = `gkRs_${row.halaqaId}`;
+                            body = `<div class="space-y-2">${candidates.length ? candidates.map(candidate =>
+                                `<label class="block"><input type="radio" name="${e(name)}" value="candidate:${e(candidate.id)}"> ${e(candidate.name)} (رقم ${e(candidate.id)}): كان ${e(candidate.pastAvg)} ← صار ${e(candidate.nowAvg)}، +${e(candidate.growth)}٪</label>`).join('')
+                                : '<p>لا مرشحين من البرنامج</p>'}
+                                <label class="block"><input type="radio" name="${e(name)}" value="other"> طالب آخر من الحلقة</label>
+                                <select class="block border rounded-lg p-2 w-full" aria-label="طالب آخر من الحلقة"><option value="">اختر الطالب</option>${others.map(student =>
+                                    `<option value="${e(student.id)}">${e(student.id)} — ${e(student.name)}</option>`).join('')}</select>
+                                <label class="block"><input type="radio" name="${e(name)}" value="none"> لا نجم هذه الدورة</label>
+                                <input type="text" class="block border rounded-lg p-2 w-full" placeholder="السبب (من ورقة المعلم)">
+                                <button type="button" class="bg-emerald-600 text-white rounded-xl px-4 py-2 disabled:opacity-50" disabled>اعتماد</button></div>`;
+                        }
+                        return `<section data-halaqa="${e(row.halaqaId)}" class="border-t border-slate-200 py-3">${title}${body}</section>`;
+                    }).join('');
+                document.getElementById('gkRisingPrint')?.addEventListener('click', printRisingStarSheets);
+                if (cycle.state !== 'approve') return;
+                for (const row of rows) {
+                    if (stored[row.halaqaId]) continue;
+                    const section = [...box.querySelectorAll('section[data-halaqa]')].find(el => el.dataset.halaqa === String(row.halaqaId));
+                    if (!section) continue;
+                    const button = section.querySelector('button');
+                    const select = section.querySelector('select');
+                    const reasonInput = section.querySelector('input[type=text]');
+                    const selected = () => section.querySelector('input[type=radio]:checked')?.value || '';
+                    const valid = () => {
+                        const choice = selected();
+                        return !isWriteLockedView() && (choice.startsWith('candidate:') ||
+                            (choice === 'other' && select.value && reasonInput.value.trim()) ||
+                            (choice === 'none' && reasonInput.value.trim()));
+                    };
+                    const refresh = () => { button.disabled = !valid(); };
+                    section.addEventListener('change', refresh);
+                    reasonInput.addEventListener('input', refresh);
+                    button.addEventListener('click', async () => {
+                        if (!valid() || knightsToday() > cycle.approveUntil || risingStarsStored()[cycle.key]?.[row.halaqaId]) return;
+                        const choiceValue = selected();
+                        const choice = choiceValue.startsWith('candidate:') ? 'candidate' : choiceValue;
+                        const currentSeason = knightsStoredSeason();
+                        const currentSettings = { ...getProgramSettings(), season: currentSeason };
+                        const currentCycle = risingStarCycleAt(risingStarCycles(currentSettings), currentSeason.frozenWeeks, knightsToday(), 'admin');
+                        if (!currentCycle || currentCycle.key !== cycle.key || currentCycle.state !== 'approve') return;
+                        const candidates = rankHalaqaRisingStars(currentCycle, row.halaqaId, students, currentSettings).candidates;
+                        const student = choice === 'candidate' ? candidates.find(item => String(item.id) === choiceValue.slice(10))
+                            : choice === 'other' ? students.find(item => item.halaqaId === row.halaqaId && String(item.id) === select.value) : null;
+                        if (choice !== 'none' && !student) { refresh(); return; }
+                        const label = choice === 'none' ? 'لا نجم هذه الدورة' : student.name;
+                        if (!confirm(choice === 'none'
+                            ? `اعتماد «لا نجم هذه الدورة» لحلقة ${row.halaqaName}؟ لا يُغيَّر بعد الاعتماد.`
+                            : `اعتماد «${label}» نجماً صاعداً لحلقة ${row.halaqaName}؟ لا يُغيَّر بعد الاعتماد.`)) return;
+                        button.disabled = true;
+                        const record = {
+                            cycleEnd: cycle.key, weeks: [...cycle.weeks], halaqaId: row.halaqaId,
+                            halaqaName: row.halaqaName, teacherName: row.teacherName, halaqaOrder: row.halaqaOrder,
+                            stageId: row.stageId, period: row.period, choice,
+                            studentId: student?.id ?? null, studentName: student?.name ?? '',
+                            source: choice === 'candidate' ? 'auto' : 'teacher',
+                            reason: choice === 'candidate' ? '' : reasonInput.value.trim(),
+                            candidates: candidates.map(item => ({ id: item.id, name: item.name })),
+                            approvedBy: window.almahraAuth?.currentUser?.uid ?? ''
+                        };
+                        try {
+                            const result = await window.almahraPrograms.saveRisingStar('general', seasonId, record);
+                            if (!result.success) { showToast(result.error, 'error'); refresh(); return; }
+                            weekKnightsState.set(seasonId, result.season);
+                            showToast('اعتُمد');
+                            await renderGeneralKnightsRising();
+                        } catch (error) { showToast(error.message, 'error'); refresh(); }
+                    });
+                }
+            } catch (error) { showToast(error.message, 'error'); }
         }
         // نص نافذة «!» (knights-guide-text.md باعتماد المالك)؛ كل رقم من الإعدادات الممرَّرة، بلا DOM ولا متغيرات عامة.
         function renderGeneralKnightsGuide(settings) {
@@ -12631,10 +12934,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 + '<section>' + h3('4. متى يُعلن؟') + '<ul class="list-disc pr-6">'
                 + '<li><b>فارس الحلقة:</b> يظهر على التلفاز في يومه.</li>'
                 + '<li><b>فارس الأسبوع:</b> يُحسم بعد الأربعاء ولا يتغير، ويُعلن يوم الأحد، ويبقى على التلفاز طوال الأسبوع.</li></ul></section>'
-                + '<section>' + h3('5. النجم الصاعد ⭐') + '<p>لمن تحسّن هذا الأسبوع أكثر من غيره.</p><ul class="list-disc pr-6">'
-                + '<li><b>كيف؟</b> نقارن متوسط نقاطك اليومية هذا الأسبوع بمتوسطك فيما سبق من الفصل. الأكبر تحسّناً يفوز.</li>'
-                + '<li><b>لمن؟</b> لغير العشرة الأوائل في فترتك (العصر أو المغرب)، لتكون فرصة لمن يجتهد ليلحق.</li>'
-                + '<li><b>كم؟</b> حتى 3 طلاب لكل فترة.</li></ul></section></div>';
+                + '<section>' + h3('5. النجم الصاعد ⭐') + '<p>لمن تحسّن في حلقته أكثر من غيره، مرة كل أسبوعين.</p><ul class="list-disc pr-6">'
+                + '<li><b>كيف؟</b> نقارن متوسط نقاطك اليومية في آخر أسبوعين دراسيين بمتوسطك فيما سبق من الفصل. النقاط هنا للتسميع والانضباط، بلا نقاط الحضور.</li>'
+                + '<li><b>لمن؟</b> لغير الثلاثة الأوائل في حلقتك بمجموع نقاط الأسبوعين، بشرط أن تحضر يومين على الأقل، وألا تُسجَّل عليك مخالفة أدب فيهما.</li>'
+                + '<li><b>من يختار؟</b> البرنامج يرشّح حتى 3 من كل حلقة، ومعلمك يختار واحداً منهم أو من يراه، والمشرف يعتمد.</li>'
+                + '<li><b>متى؟</b> يُعلن يوم الثلاثاء، ويبقى على التلفاز أسبوعين.</li></ul></section></div>';
         }
         function openGeneralKnightsGuide() {
             if (!isGeneralProgram()) return;

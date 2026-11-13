@@ -37,7 +37,7 @@ function tvStubs(h) {
     const sent = []; h.run('generalTv.enabled=true'); h.ctx.generalTvReady = () => true; h.ctx.generalTvContext = () => 'general:s1';
     h.ctx.postGeneralTv = snapshot => sent.push(copy(snapshot));
     h.run('let honorKnightsLog=[]'); h.ctx.getBoardDate = () => '2026-11-18'; h.ctx.getBoardWeekRange = () => ({ startStr: '2026-11-15', endStr: '2026-11-18' });
-    h.ctx.getWorkingDatesInRange = () => []; h.ctx.getGeneralTvBoard = () => []; h.ctx.getHomePrepWeek = () => []; h.ctx.getMostImproved = () => [];
+    h.ctx.getWorkingDatesInRange = () => []; h.ctx.getGeneralTvBoard = () => []; h.ctx.getHomePrepWeek = () => []; h.ctx.getMostImproved = () => []; h.ctx.getApprovedRisingStars = () => [];
     return sent;
 }
 const lastWeekKnights = sent => (sent.at(-1)?.stages || []).flatMap(s => s.weekKnights || []);

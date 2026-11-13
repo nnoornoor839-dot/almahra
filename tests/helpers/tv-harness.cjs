@@ -9,7 +9,7 @@ function installTv(run, install) {
     run(html.match(/const KNIGHTS_GUARD_ERROR = .*;/)[0]);
     install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'knightsDisplayWeekStart', 'getLockedWeekKnights', 'lockWeekRows');
     install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageRow', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',
-        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'getGeneralTvSnapshot',
+        'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'risingStarCycles', 'risingStarCycleAt', 'risingStarsStored', 'getApprovedRisingStars', 'getGeneralTvSnapshot',
         'generalTvContext', 'generalTvReady', 'postGeneralTv', 'sendGeneralTvSnapshot', 'clearGeneralTv', 'enableGeneralTv',
         'initGeneralTv', 'openGeneralTv', 'sendGeneralTvCelebration', 'cancelGeneralTvCelebration', 'readGeneralTvPrayer');
     for (const name of ['formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr', 'getTiers', 'studentTierId', 'getTierById', 'noLevelReason', 'getStudentHalaqa', 'generalAttendanceStart', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getAttendanceState'])

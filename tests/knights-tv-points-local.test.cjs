@@ -55,7 +55,7 @@ function tvContext(list, today, season = {}) {
         document: { getElementById: () => ({ style: {}, classList: { toggle() {} } }) },
         window: { almahraPrograms: programs, almahraAuth: { currentUser: { uid: 'fake-admin' } },
             almahraData: { isReady: () => true, getActiveProgramId: () => 'general', getActiveSeasonId: () => 's1' } },
-        getCumulativeStats: () => ({ tripPoints: 0 }), summarizeRange: () => ({ points: 0, attended: 0 }), getMostImproved: () => [],
+        getCumulativeStats: () => ({ tripPoints: 0 }), summarizeRange: () => ({ points: 0, attended: 0 }), getMostImproved: () => [], getApprovedRisingStars: () => [],
         getActiveCriteria: () => [], showToast() {}, setInterval() {}, clearInterval() {} });
     const run = code => vm.runInContext(code, ctx);
     const install = (...names) => names.forEach(name => run(source(name)));
@@ -66,6 +66,7 @@ function tvContext(list, today, season = {}) {
         'getSchoolDayInfo', 'getGeneralSchoolDates', 'formatDateLocal', 'getWeekStartDate', 'addDaysToDateStr',
         'getBoardDate', 'getBoardWeekRange', 'getWorkingDatesInRange', 'roundPointTotal');
     installTv(run, install);
+    run("getApprovedRisingStars = () => [];"); // بطاقة §5أ: installTv يثبّت الحقيقية فوق بديل ctx.
     assert.equal(run('getProgramSettings().points.attendance'), ATT);
     return { run, ctx, snapshot: () => copy(run('getGeneralTvSnapshot()')) };
 }
@@ -230,5 +231,5 @@ test('ت4 (ثبات): المحرك والتجميد والمخزن كما هي �
     const dayPoints = text => text.match(/const dayPoints = .*;/)[0];
     assert.equal(dayPoints(nowHtml), dayPoints(baseHtml), 'dayPoints');
     for (const file of ['general-points.js', 'programs-store.js', 'data-store.js', 'firestore.rules'])
-        assert.equal(lf(fs.readFileSync(path.join(root, file), 'utf8')), lf(atBase(file)), file);
+        assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeKnightsRisingStar(fs.readFileSync(path.join(root, file), 'utf8'), file), lf(atBase(file)), file);
 });

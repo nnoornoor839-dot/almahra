@@ -30,6 +30,7 @@ function harness(moment = 'monday') {
         'getWorkingDatesInRange', 'addDaysToDateStr', 'summarizeRange', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getBlockingCriteriaIds',
         'dayHasBlockingViolation', 'dayHasAnyViolation', 'getDisciplineCriteriaIds', 'dayMeetsDisciplineCriteria', 'getTitleRules',
         'getDayRanking', 'getDayTitleCandidates', 'getWeekTitleCandidates', 'getApprovedKnightsForMode', 'topTied', 'getMostImproved');
+    h.run("getApprovedRisingStars = () => [];"); // بطاقة §5أ: بديل النجم الصاعد بجانب getMostImproved؛ النجم يُختبر في ملفه.
     h.ctx.sink = message => h.sent.push(copy(message)); h.sent = [];
     h.ctx.window.almahraData.isReady = () => true;
     h.ctx.window.almahraData.getActiveProgramId = () => 'general';
@@ -84,7 +85,7 @@ test('فرسان اليوم والأسبوع والنجم طلال؛ شرف ال
     for (const stage of snapshot.stages) {
         assert.deepEqual(stage.dayKnights[0].names, [key.students.find(s => s.id === key.knights[stage.period].day).name]);
         assert.equal(stage.weekKnights, undefined); // السجل غير مقفل؛ القيم اليومية القديمة ما زالت تُختبر مستقلة.
-        assert.deepEqual(stage.risingStars, stage.period === 'asr' ? [{ name: 'طلال' }] : []);
+        assert.deepEqual(stage.risingStars, []);
     }
     const leaders = copy(h.run('getGeneralTvLeaders().map(e => e.student.id)'));
     assert.deepEqual(leaders, key.complexLeaders);
@@ -93,7 +94,7 @@ test('فرسان اليوم والأسبوع والنجم طلال؛ شرف ال
     // يكشف تغيير الاستبعاد من عشرة المجمع إلى عشرة الفترة في مسار المشرف.
     h.run("getGeneralTvBoard = () => { throw Error('شرف المشرف لا يستعمل عشرة الفترة'); }");
     assert.deepEqual(copy(h.run('getMostImproved(3).map(e => e.student.id)')), ['talal']);
-    assert.match(source('renderHonorBoard'), /getMostImproved\(isGeneralProgram\(\) \? 3 : 5\)/);
+    assert.match(source('renderHonorBoard'), /isGeneralProgram\(\) \? \[\] : getMostImproved\(5\)/);
 });
 
 test('الاحتفال +22.5 لماجد، زياد الثالث ولو كان الأخير، والإلغاء والتراجع يبقيان 10', async () => {

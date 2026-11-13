@@ -56,6 +56,7 @@ function harness(scope = 'all') {
         'getWorkingDatesInRange', 'addDaysToDateStr', 'summarizeRange', 'calculateStudentAttendance', 'getGeneralAttendanceEligibility', 'getBlockingCriteriaIds',
         'dayHasBlockingViolation', 'dayHasAnyViolation', 'getDisciplineCriteriaIds', 'dayMeetsDisciplineCriteria', 'getTitleRules',
         'getDayRanking', 'getDayTitleCandidates', 'getWeekTitleCandidates', 'getApprovedKnightsForMode', 'topTied', 'getMostImproved');
+    h.run("getApprovedRisingStars = () => [];"); // بطاقة §5أ: بديل النجم الصاعد بجانب getMostImproved؛ النجم يُختبر في ملفه.
     if (scope === 'new') h.run(source('homePrepQualifies').replaceAll('HOMEPREP_SCOPE', "'new'"));
     h.sent = []; h.ctx.sink = message => h.sent.push(copy(message));
     Object.assign(h.ctx.window.almahraData, { isReady: () => true, getActiveProgramId: () => 'general', getActiveSeasonId: () => 's1' });
