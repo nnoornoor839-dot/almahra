@@ -18,24 +18,168 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // ===== حسابات المعلمين (البطاقة 4-4، §3-2 و§3-2ب) =====
+    function keyPath(teacherId) {
+      return /databases/$(database)/documents/programs/general/teacherKeys/$(teacherId);
+    }
+
+    // الرمز ساري: مستند teacherKeys موجود، ورمزه يساوي code، وactive == true.
+    function isLiveKey(teacherId, code) {
+      return teacherId is string &&
+             exists(keyPath(teacherId)) &&
+             get(keyPath(teacherId)).data.code == code &&
+             get(keyPath(teacherId)).data.active == true;
+    }
+
+    function teacherDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function teacherKey() {
+      return get(keyPath(teacherDoc().data.teacherId));
+    }
+
+    function isTeacher() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             teacherDoc().data.role == 'teacher' &&
+             teacherDoc().data.programId == 'general' &&
+             isLiveKey(teacherDoc().data.teacherId, teacherDoc().data.code);
+    }
+
+    // الحلقات من teacherKeys لا من users (§3-2، ق8).
+    function myHalaqas() {
+      return teacherKey().data.halaqaIds;
+    }
+
+    // ق13، ق15ب: مسار الطالب الحقيقي ومستنده قبل الطلب (لنسخة deletedStudents).
+    function studentPath(seasonId, studentId) {
+      return /databases/$(database)/documents/programs/general/seasons/$(seasonId)/students/$(studentId);
+    }
+
+    function realStudent(seasonId, studentId) {
+      return get(studentPath(seasonId, studentId)).data;
+    }
+
+    // ق17: كتابات المعلم في الموسم النشط وحده.
+    function isActiveSeason(seasonId) {
+      return seasonId == get(/databases/$(database)/documents/programs/general).data.activeSeasonId;
+    }
+
+    function isAnonymousSelf(userId) {
+      return request.auth != null &&
+             request.auth.uid == userId &&
+             request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // ق6: مفتاح تاريخ واحد في history في الطلب الواحد.
+    function historyOneDate() {
+      return 'history' in resource.data
+        ? request.resource.data.history.diff(resource.data.history).affectedKeys().size() == 1
+        : request.resource.data.history.keys().size() == 1;
+    }
+
+    // المفاتيح المسموحة للمعلم في تحديث طالب: ALLOWED_UPDATE_KEYS + frontierFix (ق1) + tierId/tierManual حذفاً (ق2).
+    function teacherStudentUpdateOk() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(['history', 'lastDailySurah', 'lastDailyAyah', 'lastDailySardRange',
+                              'frontierBase', 'lastDailyBase', 'name', 'memorizedJuz', 'parentPhone',
+                              'frontierFix', 'tierId', 'tierManual']) &&
+             (!changed.hasAny(['frontierFix']) || !('frontierFix' in resource.data)) &&
+             (!changed.hasAny(['tierId']) || !('tierId' in request.resource.data)) &&
+             (!changed.hasAny(['tierManual']) || !('tierManual' in request.resource.data)) &&
+             (!changed.hasAny(['history']) || historyOneDate());
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow read: if isAdmin();
       allow write: if isAdmin();
+      // §3-1 و§3-2، ق5: هوية مجهولة تنشئ مستندها هي برمز ساري.
+      allow create: if isAnonymousSelf(userId) &&
+                       request.resource.data.keys().hasOnly(['role', 'programId', 'teacherId', 'code']) &&
+                       request.resource.data.role == 'teacher' &&
+                       request.resource.data.programId == 'general' &&
+                       isLiveKey(request.resource.data.teacherId, request.resource.data.code);
+      // ق4، ق5: صاحب مستند المعلم يحدّث code وحده إلى الرمز الساري لـteacherId نفسه.
+      allow update: if isAuthenticated() && request.auth.uid == userId &&
+                       resource.data.role == 'teacher' &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['code']) &&
+                       isLiveKey(resource.data.teacherId, request.resource.data.code);
     }
 
     // البرامج والمواسم والطلاب
     match /programs/{programId} {
       allow read: if isAdmin();
       allow write: if canWrite(programId);
+      allow read: if programId == 'general' && isTeacher();
+
+      // ق9: المستند السري للمعلم؛ المشرف وحده، والمعلم لا يقرؤه.
+      match /teacherKeys/{teacherId} {
+        allow read: if isAdmin() && programId == 'general';
+        allow write: if canWrite(programId);
+      }
 
       match /seasons/{seasonId} {
         allow read: if isAdmin();
         allow write: if canWrite(programId);
+        // ق7: كل مواسم general قراءةً للمعلم.
+        allow read: if programId == 'general' && isTeacher();
 
         match /students/{studentId} {
           allow read: if isAdmin();
           allow write: if canWrite(programId);
+          // ق3: get لمستند غير موجود مسموح؛ القائمة مقيّدة بالحلقة.
+          allow get: if programId == 'general' && isTeacher() &&
+                        (resource == null || resource.data.halaqaId in myHalaqas());
+          allow list: if programId == 'general' && isTeacher() &&
+                         resource.data.halaqaId in myHalaqas();
+          // ق16: المفاتيح الـ11 بالضبط، وسجل فارغ، وبلا موضع.
+          allow create: if programId == 'general' && isTeacher() &&
+                           isActiveSeason(seasonId) &&
+                           request.resource.data.keys().hasOnly(['sid', 'name', 'history', 'memorizedJuz',
+                             'parentPhone', 'frontierBase', 'lastDailyBase', 'joinedOn',
+                             'halaqaId', 'teacherId', 'stage']) &&
+                           request.resource.data.keys().hasAll(['sid', 'name', 'history', 'memorizedJuz',
+                             'parentPhone', 'frontierBase', 'lastDailyBase', 'joinedOn',
+                             'halaqaId', 'teacherId', 'stage']) &&
+                           request.resource.data.history.size() == 0 &&
+                           request.resource.data.frontierBase == null &&
+                           request.resource.data.lastDailyBase == null &&
+                           // ق21: لا إنشاء بـsid له نسخة في المحذوفات.
+                           !exists(/databases/$(database)/documents/programs/general/seasons/$(seasonId)/deletedStudents/$(request.resource.data.sid)) &&
+                           request.resource.data.halaqaId in myHalaqas() &&
+                           request.resource.data.teacherId == teacherDoc().data.teacherId;
+          allow update: if programId == 'general' && isTeacher() &&
+                           isActiveSeason(seasonId) &&
+                           resource.data.halaqaId in myHalaqas() &&
+                           request.resource.data.halaqaId == resource.data.halaqaId &&
+                           teacherStudentUpdateOk();
+          // ق13، ق15، ق15ب: الحذف مربوط بنسخة مفتاحها sid الطالب كُتبت في هذه الدفعة وتشير إليه.
+          allow delete: if programId == 'general' && isTeacher() &&
+                           isActiveSeason(seasonId) &&
+                           resource.data.halaqaId in myHalaqas() &&
+                           getAfter(/databases/$(database)/documents/programs/general/seasons/$(seasonId)/deletedStudents/$(resource.data.sid)).data.studentId == studentId &&
+                           getAfter(/databases/$(database)/documents/programs/general/seasons/$(seasonId)/deletedStudents/$(resource.data.sid)).data.deletedAt == request.time;
+        }
+
+        // §3-6، ق9: نسخة الطالب المحذوف؛ المشرف قراءة وكتابة، والمعلم إنشاء فقط.
+        match /deletedStudents/{copyId} {
+          allow read: if isAdmin() && programId == 'general';
+          allow write: if canWrite(programId);
+          // ق13، ق13ب، ق15، ق15ب: النسخة باسم sid الطالب، وتحمل studentId (اسم مستنده)، لطالب حقيقي من حلقاتي
+          // (من مستنده لا من النسخة)، يُحذف في الدفعة نفسها، وهي المستند نفسه عدا deletedBy/deletedAt/studentId.
+          allow create: if programId == 'general' && isTeacher() &&
+                           isActiveSeason(seasonId) &&
+                           request.resource.data.studentId is string &&
+                           exists(studentPath(seasonId, request.resource.data.studentId)) &&
+                           copyId == realStudent(seasonId, request.resource.data.studentId).sid &&
+                           request.resource.data.sid == realStudent(seasonId, request.resource.data.studentId).sid &&
+                           realStudent(seasonId, request.resource.data.studentId).halaqaId in myHalaqas() &&
+                           !existsAfter(studentPath(seasonId, request.resource.data.studentId)) &&
+                           request.resource.data.diff(realStudent(seasonId, request.resource.data.studentId)).affectedKeys().hasOnly(['deletedBy', 'deletedAt', 'studentId']) &&
+                           request.resource.data.deletedBy == request.auth.uid &&
+                           request.resource.data.deletedAt == request.time;
         }
       }
     }

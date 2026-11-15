@@ -1,5 +1,5 @@
 // Synthetic data only. From the repository root:
-// firebase emulators:exec --only firestore --project demo-almahra-rules "node --test tests/rules"
+// firebase emulators:exec --only firestore --project demo-almahra-rules "node --test --test-concurrency=1 tests/rules/index.js tests/rules/teacher.test.js"
 const { before, beforeEach, after, test } = require('node:test');
 const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
