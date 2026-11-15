@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 const { createHash } = require('node:crypto');
-const { beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4,
+const { beforeSurahSearch, beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlaceP4,
     beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP2, beforeKnightsOnePlace } = require('./helpers/knights-oneplace-audit.cjs');
 const { source } = require('./helpers/quick-entry-harness.cjs');
 
@@ -15,18 +15,9 @@ const BASE = '274bd05';
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+const current = file => beforeSurahSearch(fs.readFileSync(path.join(root, file), 'utf8'), file);
 
-function changesFrom(file) {
-    const hunks = []; let hunk;
-    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\r?\n/)) {
-        const m = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
-        if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }
-        else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));
-        else if (hunk && line.startsWith('+')) hunk.after.push(line.slice(1));
-    }
-    return hunks;
-}
+const { changesFrom } = require('./helpers/design-expectation-audit.cjs');
 // Line range [first, last] (1-based) of a named function in a text.
 function range(name, text) {
     const body = source(name, text), start = text.indexOf(body);
@@ -43,21 +34,21 @@ test('category 20 audit: every changed line since 274bd05 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['20'], CATEGORY);
     assert.equal(audit.journeyFixesBaseline, BASE);
-    const added = new Set(audit.journeyFixesAddedFiles.map(row => row.file));
+    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();
+        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.journeyFixesChanges.map(row => row.file).sort(), changed);
     for (const file of ['index.html', 'general-points.js']) assert.ok(changed.includes(file), file);
     for (const row of audit.journeyFixesChanges) {
         assert.equal(row.category, 20); assert.equal(row.reason, audit.categories['20']);
-        assert.deepEqual(row.hunks, changesFrom(row.file), row.file);
+        assert.deepEqual(row.hunks, changesFrom(row.file, BASE).hunks, row.file);
         assert.equal(row.beforeSha256, sha(original(row.file)), row.file);
         assert.equal(row.sha256, sha(current(row.file)), row.file);
         assert.equal(beforeJourneyFixes(current(row.file), row.file), original(row.file), row.file);
     }
     const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
     for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);
-    assert.deepEqual([...added].sort(), ADDED);
+    assert.deepEqual(audit.journeyFixesAddedFiles.map(row => row.file).sort(), ADDED);
     for (const row of audit.journeyFixesAddedFiles) {
         assert.equal(git('ls-tree', '-r', '--name-only', BASE, '--', row.file).trim(), '', row.file);
         const text = current(row.file);
@@ -75,15 +66,15 @@ test('category 20 audit: every changed line since 274bd05 is registered and reve
     const pointsMutated = current('general-points.js').replace('Math.round(raw * 1e6) / 1e6', 'Math.round(raw * 1e7) / 1e7');
     assert.notEqual(pointsMutated, current('general-points.js'));
     assert.notEqual(beforeJourneyFixes(pointsMutated, 'general-points.js'), original('general-points.js'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['20'];
+    const categories = { ...audit.categories }; delete categories['20']; delete categories['22'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
 test('category 20 audit: index.html changes only inside generalRecitationTotals and updateRecordsBadges; general-points.js line 16 only; the rest as 274bd05', () => {
     const html = current('index.html'), old = original('index.html');
-    const hunks = changesFrom('index.html');
+    const hunks = changesFrom('index.html', BASE).hunks;
     assert.equal(hunks.length, 2);
     const newRanges = EDITED_FUNCTIONS.map(name => range(name, html)), oldRanges = EDITED_FUNCTIONS.map(name => range(name, old));
     for (const h of hunks) {
@@ -96,7 +87,7 @@ test('category 20 audit: index.html changes only inside generalRecitationTotals 
     assert.equal(hunks[1].before[0], '            students.forEach(s => { totalAyahs += getCumulativeStats(s).totalAyahs; });');
     assert.equal(hunks[1].after[0], '            students.forEach(s => { if (isGeneralProgram()) { const t = generalRecitationTotals(s); totalAyahs += t.new.ayahs + t.review.ayahs; } else totalAyahs += getCumulativeStats(s).totalAyahs; });');
     // general-points.js: السطر 16 وحده، مع سطر تعليق فوقه.
-    const points = changesFrom('general-points.js');
+    const points = changesFrom('general-points.js', BASE).hunks;
     assert.deepEqual(points.map(h => [h.oldLine, h.before.length, h.after.length]), [[16, 1, 2]]);
     assert.equal(points[0].before[0], '        return { points: Math.max(0, Math.round(raw * 10) / 10), mult, gradePercent };');
     assert.match(points[0].after[0], /^        \/\/ /);

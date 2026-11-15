@@ -823,6 +823,19 @@
         .qe-footer { flex-wrap: wrap; padding: 10px; gap: 8px; } .qe-total strong { font-size: 36px; } .smart-general #smartUndoRow { max-width: none; width: 100%; } .smart-general #smartUndoBtn { width: 100%; }
         #generalCriteriaState { flex-basis: 100%; } .smart-general #criteriaList { grid-template-columns: minmax(0, 1fr); }
     }
+    /* 2-10: بحث السورة بالكتابة؛ القائمة الأصلية تبقى مصدر القيمة ومخفية بصرياً، وفوقها الحقل وزر ▾ وقائمة النتائج (أزرار 44px، 8 نتائج ظاهرة ثم تمرير). */
+    .sp-wrap { position: relative; display: flex; align-items: stretch; gap: 4px; min-width: 0; width: 100%; }
+    .sp-wrap > select.sp-native { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; min-width: 0 !important; margin: 0 !important; opacity: 0 !important; pointer-events: none !important; }
+    .sp-wrap > .sp-search { flex: 1 1 auto; width: auto; min-width: 0; min-height: 42px; text-align: start; text-overflow: ellipsis; }
+    .sp-wrap > .sp-toggle { flex: 0 0 36px; width: 36px; min-height: 42px; border: 1px solid var(--general-line, var(--qe-line, #cbd5e1)); border-radius: 9px; background: var(--general-surface, #fff); color: var(--general-muted, #64748b); font-size: 16px; line-height: 1; }
+    .sp-wrap > .sp-toggle:disabled, .sp-wrap > .sp-search:disabled { opacity: .55; }
+    .sp-list { position: absolute; top: calc(100% + 4px); inset-inline: 0; z-index: 70; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; padding: 4px; border: 1px solid var(--general-line, var(--qe-line, #cbd5e1)); border-radius: 10px; background: var(--general-surface, #fff); color: var(--general-ink, #0f172a); box-shadow: 0 12px 32px #0f172a29; }
+    .sp-list[hidden] { display: none; } .sp-list.sp-up { top: auto; bottom: calc(100% + 4px); }
+    .sp-opt { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 12px; border-radius: 8px; background: transparent; color: inherit; font-size: 16px; font-weight: 400; text-align: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+    .sp-opt:hover { background: var(--general-soft, #f1f5f9); } .sp-opt.active { background: var(--general-brand, #047857); color: var(--general-surface, #fff); }
+    .sp-empty { display: flex; align-items: center; min-height: 44px; padding: 0 12px; color: var(--general-muted, #64748b); font-size: 14px; }
+    body.program-general .smart-general .qe-pair .sp-search { padding: 0 12px; font-size: 16px; text-align: start; min-width: 0; }
+    @media (max-width: 600px) { .sp-list { max-height: 50vh; } body.program-general .smart-general .qe-pair .sp-search { padding: 0 6px; font-size: 14px; } }
     </style>
 
     <!-- طبقة المصادقة (تعمل قبل البرنامج، تمنع الدخول بدون تسجيل) -->
@@ -1537,7 +1550,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <p id="frontierFixPrevious" class="text-sm text-slate-500"></p>
                     <div class="grid grid-cols-2 gap-3">
                         <label>السورة<select id="frontierFixSurah" class="w-full p-3 border rounded-xl" onchange="updateFrontierFixAyah()"></select></label>
-                        <label>الآية<input id="frontierFixAyah" type="number" min="1" step="1" class="w-full p-3 border rounded-xl"></label>
+                        <label>الآية<input id="frontierFixAyah" type="number" min="1" step="1" oninput="updateFrontierFixAyah()" class="w-full p-3 border rounded-xl"></label>
                     </div>
                     <button id="frontierFixSaveBtn" type="button" onclick="saveGeneralFrontierFix()" class="bg-emerald-600 text-white font-black px-6 py-3 rounded-xl">تصحيح</button>
                     <label class="block mt-3"><input id="frontierFixNone" type="checkbox" onchange="updateFrontierFixAyah()"> لم يحفظ شيئاً بعد</label>
@@ -9666,7 +9679,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const teacherName = teacher?.name?.trim();
             document.getElementById('generalQuickWho').textContent = [halaqa?.name, teacherName ? (/^الأستاذ(?:\s|$)/.test(teacherName) ? teacherName : 'الأستاذ ' + teacherName) : ''].filter(Boolean).join(' · ');
             const options = quranMeta.surahs.references.map(s => `<option value="${s.number}">${escapeHTML(s.name)}</option>`).join('');
-            const rangeFields = (kind, edge) => `<div class="qe-field"><label for="quick_${kind}_${edge}Surah">${edge === 'from' ? 'من' : 'إلى'}</label><div class="qe-pair"><select aria-label="سورة ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select><input aria-label="آية ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" placeholder="الآية" oninput="updateGeneralQuickPreview()"></div></div>`;
+            const rangeFields = (kind, edge) => `<div class="qe-field"><label for="quick_${kind}_${edge}Surah">${edge === 'from' ? 'من' : 'إلى'}</label><div class="qe-pair"><select aria-label="سورة ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Surah" onchange="quickSurahChanged('${kind}', '${edge}')">${options}</select><input aria-label="آية ${edge === 'from' ? 'البداية' : 'النهاية'}" id="quick_${kind}_${edge}Ayah" type="number" min="1" step="1" placeholder="الآية" oninput="quickAyahInput('${kind}', '${edge}')"></div></div>`;
             document.getElementById('generalQuickPanels').innerHTML = ['new', 'review'].map(kind => `<section id="quick_${kind}_row" class="qe-row qe-${kind}">
                 <h3>${kind === 'new' ? 'الجديد' : 'المراجعة'}</h3>
                 ${kind === 'new' ? `<div class="qe-field"><label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"></i></label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p></div>` : rangeFields(kind, 'from')}
@@ -9687,6 +9700,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             if (generalQuickEntry.needsPosition) document.getElementById('quick_positionSurah').value = generalNextPoint(null, student.direction).surah;
             generalQuickEntry.positionAtOpen = JSON.stringify(generalQuickPositionValues());
+            for (const id of ['quick_positionSurah', 'quick_new_toSurah', 'quick_review_fromSurah', 'quick_review_toSurah']) mountSurahPicker(document.getElementById(id));
             moveGeneralQuickSections(true);
             document.getElementById('generalCriteriaHost').hidden = true;
             document.getElementById('generalCriteriaExceptions').setAttribute('aria-expanded', 'false');
@@ -9698,6 +9712,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             input.disabled = none; document.getElementById('quick_positionSurah').disabled = none;
             input.max = quranMeta.surahs.references[Number(document.getElementById('quick_positionSurah').value) - 1]?.numberOfAyahs || 1;
             if (none || surahChanged) input.value = '';
+            else if (input.value.trim() !== '' && Number(input.value) > Number(input.max)) input.value = input.max;
             const student = students.find(s => s.id === currentEditingStudentId), position = readGeneralQuickPosition();
             const start = position.valid ? generalNextPoint(position.point, student.direction) : null;
             if (!generalQuickSectionUsed('new') && start) {
@@ -9706,6 +9721,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 document.getElementById('quick_new_toAyah').max = quranMeta.surahs.references[start.surah - 1].numberOfAyahs;
                 generalQuickEntry.initial.new = generalQuickSectionValues('new');
             }
+            refreshSurahPicker(document.getElementById('quick_positionSurah')); refreshSurahPicker(document.getElementById('quick_new_toSurah'));
             updateGeneralQuickPreview();
         }
         function readGeneralQuickPosition() {
@@ -9728,6 +9744,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             for (const edge of kind === 'new' ? ['to'] : ['from', 'to']) {
                 const surah = Number(document.getElementById(`quick_${kind}_${edge}Surah`).value);
                 document.getElementById(`quick_${kind}_${edge}Ayah`).max = quranMeta.surahs.references[surah - 1].numberOfAyahs;
+                refreshSurahPicker(document.getElementById(`quick_${kind}_${edge}Surah`));
             }
             renderGeneralQuickGrades(); updateGeneralQuickPreview();
         }
@@ -9767,7 +9784,175 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             input.max = max;
             if (edge === 'to') input.value = '';
             else if (Number(input.value) > max) input.value = max;
+            refreshSurahPicker(document.getElementById(`quick_${kind}_${edge}Surah`));
             updateGeneralQuickPreview();
+        }
+        // 2-9: رقم آية فوق آخر السورة يرجع لآخرها عند الكتابة فقط؛ 0 والسالب والعشري والفارغ تبقى لرسالة الرفض.
+        function quickAyahInput(kind, edge) {
+            const input = document.getElementById(`quick_${kind}_${edge}Ayah`), max = Number(input.max);
+            if (max > 0 && input.value.trim() !== '' && Number(input.value) > max) input.value = max;
+            updateGeneralQuickPreview();
+        }
+        // 2-10: تطبيع الاسم للبحث: بلا تشكيل ولا تطويل ولا كلمة «سورة» الأولى؛ أ/إ/آ/ٱ ← ا، ة ← ه، ى ← ي.
+        function normalizeSurahQuery(text) {
+            return String(text ?? '').replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, '')
+                .replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+                .replace(/\s+/g, ' ').trim().replace(/^سوره(?:\s+|$)/, '').trim();
+        }
+        // 2-10: أسماء بديلة يكتبها المشرف لسور أسماؤها حروف (قرار 3-3 البند 1).
+        function surahAliases(number) {
+            return ({ 20: ['طاها'], 36: ['ياسين', 'ياس'], 38: ['صاد'], 50: ['قاف'] })[number] || [];
+        }
+        // 2-10: المطابقات: التي يبدأ اسمها أو بديلها بالمكتوب أولاً ثم التي تحويه، بترتيب المصحف؛ «ال» الأولى تُحذف من الطرفين.
+        function surahMatches(query) {
+            const strip = text => text.replace(/^ال/, '').trim(), typed = normalizeSurahQuery(query), q = strip(typed);
+            if (!typed) return [];
+            const exact = [], prefix = [], contains = [];
+            for (const s of quranMeta.surahs.references) {
+                // «ال» وحدها: تُقارن بالأسماء كاملة فتظهر السور المبدوءة بها.
+                const names = q ? [strip(normalizeSurahQuery(s.name)), ...surahAliases(s.number)] : [normalizeSurahQuery(s.name)], key = q || typed;
+                // م1 (3-4): المطابقة التامة للاسم أو البديل تتقدّم على البادئة.
+                if (names.some(name => name === key)) exact.push(s.number);
+                else if (names.some(name => name.startsWith(key))) prefix.push(s.number);
+                else if (names.some(name => name.includes(key))) contains.push(s.number);
+            }
+            return [...exact, ...prefix, ...contains];
+        }
+        // 2-10: يركّب البحث فوق قائمة سور: الـselect تبقى بمعرّفها وقيمتها ومعالجها (مخفية بصرياً)، وفوقها حقل وزر ▾ وقائمة نتائج.
+        function mountSurahPicker(select) {
+            if (!select) return;
+            if (!select.parentNode?.classList?.contains('sp-wrap')) {
+                const wrap = document.createElement('div'), input = document.createElement('input'), toggle = document.createElement('button'), list = document.createElement('div');
+                wrap.className = 'sp-wrap';
+                input.id = select.id + '_search'; input.type = 'text'; input.className = ('sp-search ' + (select.className || '').replace('sp-native', '')).trim();
+                input.setAttribute('autocomplete', 'off'); input.setAttribute('aria-label', 'بحث السورة');
+                input.setAttribute('role', 'combobox'); input.setAttribute('aria-controls', select.id + '_list'); input.setAttribute('aria-expanded', 'false');
+                toggle.id = select.id + '_toggle'; toggle.type = 'button'; toggle.className = 'sp-toggle'; toggle.textContent = '▾'; toggle.tabIndex = -1;
+                toggle.setAttribute('aria-label', 'كل السور');
+                list.id = select.id + '_list'; list.className = 'sp-list'; list.hidden = true; list.setAttribute('role', 'listbox');
+                for (const label of select.labels || []) if (label.htmlFor === select.id) label.htmlFor = input.id;
+                select.parentNode?.insertBefore(wrap, select);
+                select.classList.add('sp-native'); select.tabIndex = -1; select.setAttribute('aria-hidden', 'true');
+                for (const el of [input, toggle, select, list]) wrap.appendChild(el);
+                input.oninput = () => surahPickerOpen(select, input.value);
+                input.onkeydown = event => surahPickerKey(select, event);
+                input.onclick = () => { if (!input.value.trim() && list.hidden) surahPickerOpen(select, ''); };
+                input.onfocus = () => input.select?.();
+                input.onblur = () => surahPickerClose(select);
+                toggle.onmousedown = event => event.preventDefault();
+                toggle.onclick = () => { if (!list.hidden && select._sp?.full) surahPickerClose(select); else surahPickerOpen(select, ''); };
+                list.onmousedown = event => event.preventDefault();
+                // النقر خارج القائمة يغلقها ويعيد اسم السورة المختارة (مرة واحدة للصفحة).
+                if (!document.surahPickerOutside && document.addEventListener) {
+                    document.surahPickerOutside = true;
+                    document.addEventListener('pointerdown', event => {
+                        for (const open of document.querySelectorAll('.sp-list:not([hidden])'))
+                            if (!open.parentNode.contains(event.target)) surahPickerClose(open.parentNode.querySelector('select'));
+                    }, true);
+                }
+            }
+            refreshSurahPicker(select);
+        }
+        // 2-10: الحقل يعرض اسم السورة المختارة كما في القائمة، ويتبع تعطيلها.
+        function refreshSurahPicker(select) {
+            const input = select && document.getElementById(select.id + '_search');
+            if (!input) return;
+            input.value = quranMeta.surahs.references[Number(select.value) - 1]?.name || '';
+            input.disabled = !!select.disabled;
+            const toggle = document.getElementById(select.id + '_toggle');
+            if (toggle) toggle.disabled = !!select.disabled;
+        }
+        // 2-10: بلا نص القائمة الكاملة (114) والحالية مظلَّلة؛ وإلا أول 8 مطابقات والأولى مظلَّلة؛ أو «لا سورة بهذا الاسم».
+        function surahPickerOpen(select, text) {
+            const list = document.getElementById(select.id + '_list');
+            if (!list || select.disabled) return;
+            const full = !String(text ?? '').trim(), numbers = full ? quranMeta.surahs.references.map(s => s.number) : surahMatches(text).slice(0, 8);
+            select._sp = { numbers, active: full ? Math.max(0, numbers.indexOf(Number(select.value))) : 0, full };
+            list.replaceChildren();
+            if (!numbers.length) {
+                const empty = document.createElement('div');
+                empty.className = 'sp-empty'; empty.textContent = 'لا سورة بهذا الاسم';
+                list.appendChild(empty);
+            }
+            for (const number of numbers) {
+                const option = document.createElement('button');
+                option.type = 'button'; option.className = 'sp-opt'; option.tabIndex = -1; option.dataset.surah = String(number);
+                option.setAttribute('role', 'option');
+                option.textContent = number + ' ' + quranMeta.surahs.references[number - 1].name;
+                option.onmousedown = event => event.preventDefault();
+                option.onclick = () => surahPickerChoose(select, number);
+                list.appendChild(option);
+            }
+            list.hidden = false;
+            document.getElementById(select.id + '_search')?.setAttribute('aria-expanded', 'true');
+            surahPickerPlace(list);
+            surahPickerMark(select);
+        }
+        // 2-10: تظليل النتيجة الحالية وإبقاؤها ظاهرة داخل القائمة.
+        function surahPickerMark(select) {
+            const list = document.getElementById(select.id + '_list'), active = String(select._sp?.numbers[select._sp.active] ?? '');
+            for (const item of Array.from(list.children)) {
+                if (item.dataset.surah === undefined) continue;
+                const on = item.dataset.surah === active;
+                item.classList.toggle('active', on); item.setAttribute('aria-selected', String(on));
+                if (on && list.scrollHeight > list.clientHeight) {
+                    if (item.offsetTop < list.scrollTop) list.scrollTop = item.offsetTop;
+                    else if (item.offsetTop + item.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = item.offsetTop + item.offsetHeight - list.clientHeight;
+                }
+            }
+        }
+        // 2-10: ↑↓ تنقّل، Enter يختار المظلَّلة، Escape يغلق؛ والقائمة مفتوحة لا يصل Enter إلى حفظ النافذة.
+        function surahPickerKey(select, event) {
+            const sp = select._sp, list = document.getElementById(select.id + '_list'), open = !!list && !list.hidden;
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (!open) { surahPickerOpen(select, ''); return; }
+                if (!sp?.numbers.length) return;
+                sp.active = Math.max(0, Math.min(sp.numbers.length - 1, sp.active + (event.key === 'ArrowDown' ? 1 : -1)));
+                surahPickerMark(select);
+            } else if (event.key === 'Enter' && open && !event.isComposing) {
+                event.preventDefault(); event.stopPropagation();
+                if (sp?.numbers.length) surahPickerChoose(select, sp.numbers[sp.active]);
+            } else if (event.key === 'Escape' && open) {
+                event.preventDefault(); event.stopPropagation();
+                surahPickerClose(select);
+            }
+        }
+        // 2-10: الاختيار يضبط الـselect ويطلق change عليها (فيعمل معالجها كما هو)، ثم ينقل التركيز إلى حقل الآية.
+        function surahPickerChoose(select, number) {
+            if (select.disabled) return;
+            // ف2 (3-4): change يُطلق فقط إذا تغيّرت القيمة فعلاً، كما القائمة الأصلية.
+            const changed = select.value !== String(number);
+            select.value = String(number);
+            if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+            surahPickerClose(select);
+            document.getElementById(select.id.replace(/Surah$/, 'Ayah'))?.focus();
+        }
+        // 2-10: الإغلاق يعيد نص الحقل إلى اسم السورة المختارة؛ الكتابة بلا اختيار لا تغيّر شيئاً.
+        function surahPickerClose(select) {
+            const list = document.getElementById(select.id + '_list');
+            if (list) { list.hidden = true; list.replaceChildren(); }
+            document.getElementById(select.id + '_search')?.setAttribute('aria-expanded', 'false');
+            select._sp = { numbers: [], active: 0, full: false };
+            refreshSurahPicker(select);
+        }
+        // 2-10: على الشاشات حتى 600px تمتد القائمة بعرض الشاشة؛ وتفتح إلى أعلى إذا كانت المساحة تحت الحقل داخل الحاوية القابلة للتمرير أقل من ارتفاعها (ف1، 3-4).
+        function surahPickerPlace(list) {
+            list.style.left = ''; list.style.right = ''; list.style.width = ''; list.style.maxHeight = ''; list.classList.remove('sp-up');
+            const wrap = list.parentNode;
+            if (!wrap?.getBoundingClientRect) return;
+            const box = wrap.getBoundingClientRect();
+            if (window.matchMedia?.('(max-width: 600px)')?.matches) {
+                list.style.right = 'auto'; list.style.left = (10 - box.left) + 'px'; list.style.width = (document.documentElement.clientWidth - 20) + 'px';
+            }
+            let scroller = wrap.parentElement;
+            while (scroller && scroller !== document.body && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+            const area = scroller && scroller !== document.body ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+            const below = area.bottom - box.bottom - 8, above = box.top - area.top - 8, height = list.offsetHeight;
+            if (below >= height) return;
+            // لا تتسع الجهتان: تُختار الأوسع ويُقصَر ارتفاع القائمة عليها فلا يُقصّ منها شيء (تُمرَّر داخلها).
+            if (above > below) list.classList.add('sp-up');
+            if (Math.max(above, below) < height) list.style.maxHeight = Math.max(96, Math.floor(Math.max(above, below))) + 'px';
         }
         function toggleGeneralOptIn(button) {
             if (!isGeneralProgram() || generalUndoInProgress) return;
@@ -11613,6 +11798,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             select.innerHTML = '<option value="">اختر الحلقة</option>' + (settings.halaqas || []).map(h => `<option value="${escapeHTML(h.id)}">${escapeHTML(h.name)}</option>`).join('');
             select.value = student?.halaqaId || '';
             document.getElementById('frontierFixSurah').innerHTML = quranMeta.surahs.references.map(s => `<option value="${s.number}">${escapeHTML(s.name)}</option>`).join('');
+            mountSurahPicker(document.getElementById('frontierFixSurah'));
             renderFrontierFixStudents(studentId);
         }
         function renderFrontierFixStudents(studentId = null) {
@@ -11643,6 +11829,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const none = document.getElementById('frontierFixNone').checked;
             input.disabled = none; document.getElementById('frontierFixSurah').disabled = none;
             if (Number(input.value) > max) input.value = max;
+            refreshSurahPicker(document.getElementById('frontierFixSurah'));
         }
         async function saveGeneralFrontierFix() {
             if (generalFrontierFix.busy || generalUndoInProgress || !canOpenGeneralFrontierFix() || !canWriteCloud() || !requireQuranMeasure()) return;

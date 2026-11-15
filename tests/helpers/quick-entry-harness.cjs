@@ -45,6 +45,7 @@ function harness(s = student()) {
             classList: { add: (...names) => names.forEach(n => classes.add(n)), remove: (...names) => names.forEach(n => classes.delete(n)),
                 contains: n => classes.has(n), toggle(n, on = !classes.has(n)) { if (on) classes.add(n); else classes.delete(n); } },
             setAttribute(n, v) { this.attrs[n] = v; },
+            dispatchEvent(event) { if (typeof this['on' + event.type] === 'function') this['on' + event.type](event); return true; },
             checkVisibility() {
                 for (let el = this; el; el = el.parentNode)
                     if (el.hidden || el.classList.contains('hidden') || el.style.display === 'none') return false;
@@ -72,6 +73,8 @@ function harness(s = student()) {
                     child.textContent = value.slice(match.index + match[0].length).match(/^[^<]*/)[0];
                     const click = /\bonclick="([^"]*)"/.exec(attrs)?.[1];
                     if (click) child.onclick = () => run(click);
+                    const change = /\bonchange="([^"]*)"/.exec(attrs)?.[1];
+                    if (change) child.onchange = () => run(change);
                     const names = /\bclass="([^"]*)"/.exec(attrs)?.[1] || '';
                     names.split(' ').forEach(name => child.classList.add(name));
                     this.appendChild(child);
@@ -93,13 +96,15 @@ function harness(s = student()) {
         el.tagName = tag[1].toUpperCase();
         el.value = /\bvalue="([^"]*)"/.exec(tag[2])?.[1] || '';
         el.className = /\bclass="([^"]*)"/.exec(tag[2])?.[1] || '';
+        const change = /\bonchange="([^"]*)"/.exec(tag[2])?.[1];
+        if (change) el.onchange = () => run(change);
     }
     element('generalQuickSection').innerHTML = html.slice(html.indexOf('<div id="generalQuickSection"'), html.indexOf('<div id="smartDailySection"'));
     // سلسلة ظهور حقل النهاية تشمل ورقة الطالب والنافذة المخفية عند البداية.
     element('smartModal').appendChild(element('generalQuickSection'));
     element('generalQuickSection').appendChild(element('generalQuickPanels'));
     const quranMeta = { surahs: { references: QURAN_META.surahs.map((s, i) => ({ number: i + 1, name: QURAN_META.titles[i], numberOfAyahs: s[1] })) } };
-    const ctx = vm.createContext({ console, structuredClone, QuranMeasure, quranMeta, generalEntryPoints,
+    const ctx = vm.createContext({ Event: class { constructor(type, init = {}) { this.type = type; this.bubbles = !!init.bubbles; } preventDefault() {} stopPropagation() {} }, console, structuredClone, QuranMeasure, quranMeta, generalEntryPoints,
         document: { getElementById: id => elements.get(id) || null, createElement: tag => { const el = element(`${tag}-${++serial}`); el.tagName = tag.toUpperCase(); return el; },
             querySelector: () => element('settingsNav'),
             querySelectorAll: selector => [...elements.values()].filter(el => selector.startsWith('.crit-box') && el.classList.contains('crit-box') && (!selector.includes(':checked') || el.checked)) },
@@ -144,7 +149,8 @@ function harness(s = student()) {
         'generalQuickContext', 'generalQuickContextMatches', 'invalidateGeneralQuickEntry',
         'generalQuickSuggestions', 'generalPointLabel', 'moveGeneralQuickSections', 'initGeneralQuickEntry', 'renderGeneralQuickGrades',
         'resetGeneralQuickReviewConfirmation', 'generalQuickReviewConfirmationKey',
-        'quickSurahChanged', 'fulfillGeneralCriteria', 'generalCriteriaChange', 'calculateGeneralQuickEntry', 'updateGeneralQuickPreview',
+        'quickSurahChanged', 'quickAyahInput', 'normalizeSurahQuery', 'surahAliases', 'surahMatches', 'mountSurahPicker', 'refreshSurahPicker',
+        'surahPickerOpen', 'surahPickerMark', 'surahPickerKey', 'surahPickerChoose', 'surahPickerClose', 'surahPickerPlace', 'fulfillGeneralCriteria', 'generalCriteriaChange', 'calculateGeneralQuickEntry', 'updateGeneralQuickPreview',
         'saveGeneralQuickEntry', 'getCriteriaSelection', 'getCriteriaPoints',
         'renderCriteriaList', 'updateCriteriaTotal', 'updateGrandTotal', 'updateGeneralUndoButton', 'getGeneralUndoTarget', 'generalUndoLabel',
         'undoLastGeneralEntry', 'switchSmartTab', 'updateSmartSimplification', 'openSmartModal', 'closeSmartModal',
