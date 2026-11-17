@@ -71,7 +71,7 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     assert.notEqual(beforeKnightsRisingStar(storeMutated, 'programs-store.js'), original('programs-store.js'));
     for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23'];
+    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 

@@ -536,10 +536,12 @@
         .tch-actions button[data-a=edit], .tch-actions button[data-a=more] { position:relative; width:48px; font-size:17px; color:#125c2f; }
         /* ق52(ب): ✎ و⋯ بأيقونتَي Font Awesome المستعملتين في البرنامج؛ الرمز النصي يبقى للقارئ مخفياً بصرياً */
         #teacherAddStudentBtn { width:calc(100% - 24px); margin:0 12px 24px; border:2px dashed #b9cbbf; border-radius:14px; min-height:52px; color:#125c2f; font-weight:700; }
-        /* ق54: الرسالة لا تلتقط اللمس إلا في «تراجع»؛ أسفل الصفحة فوق «+ طالب جديد»، وأعلى الشاشة حين تكون نافذة الإنجاز مفتوحة فلا تغطي «حفظ» */
+        /* ق54: الرسالة لا تلتقط اللمس إلا في «تراجع»؛ أسفل الصفحة فوق «+ طالب جديد». ق70: ونافذة الإنجاز مفتوحة فوق شريط الحفظ مباشرة، فلا تغطي «حفظ» ولا التبويبين */
         #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); background:#125c2f; color:white; padding:12px 16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }
         #teacherToast button { min-height:44px; color:white; text-decoration:underline; pointer-events:auto; }
-        body.teacher-mode:has(#smartModal.flex) #teacherToast { top:68px; bottom:auto; }
+        body.teacher-mode:has(#smartModal.flex) #teacherToast { bottom:92px; }
+        /* «متوقف عن الجديد»: شارة تحت «آخر محفوظ» في بطاقة المعلم */
+        .tch-card-paused { display:inline-block; margin-top:4px; padding:2px 10px; border-radius:999px; background:#fff4dc; color:#8a5300; font-size:14px; font-weight:700; }
         .tch-sheet { position:fixed; z-index:5000; inset:0; background:rgba(15,30,22,.45); display:flex; align-items:center; justify-content:center; padding:12px; font-family:'Cairo',sans-serif; }
         .tch-sheet-panel { width:min(100%,480px); max-height:95dvh; overflow:auto; background:white; border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:12px; }
         .tch-sheet-panel h2 { font-size:22px; font-weight:900; }
@@ -1210,6 +1212,7 @@ body.program-general .general-students .gs-card td { height:68px; padding:8px 24
 body.program-general .general-students .gs-card + .gs-card td { border-top:1px solid var(--general-line); }
 body.program-general .general-students .gs-card:hover { background:var(--general-canvas); }
 body.program-general .general-students .gs-name { font-size:16px; font-weight:600; min-height:0; }
+body.program-general .general-students .gs-paused { display:block; width:fit-content; white-space:nowrap; margin-top:4px; padding:1px 10px; border-radius:999px; background:#fff4dc; color:#8a5300; font-size:13px; font-weight:700; }
 body.program-general .general-students .gs-number, body.program-general .general-students .gs-separator { color:var(--general-muted); font-size:13px; font-weight:400; }
 body.program-general .general-student-number { color:var(--general-muted); font-weight:400; }
 body.program-general .general-students .gs-state { display:inline-flex; padding:3px 10px; border:0; border-radius:8px; font-size:13px; font-weight:400; background:var(--general-canvas); color:var(--general-muted); }
@@ -2821,6 +2824,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         <select id="studentHalaqaInput" class="w-full mt-2 p-3 border-2 border-slate-300 rounded-xl bg-white"></select>
                     </label>
                     <p id="studentHalaqaNote" class="text-sm font-bold text-slate-500"></p>
+                    <div id="studentNewPausedWrap" class="flex flex-wrap items-center gap-3 p-3 rounded-xl border-2 border-slate-300 bg-white">
+                        <label class="flex items-center gap-2 font-bold text-slate-700"><input type="checkbox" id="studentNewPausedInput" class="w-5 h-5" onchange="document.getElementById('studentNewPausedReason').disabled = !this.checked"> متوقف عن الجديد</label>
+                        <select id="studentNewPausedReason" aria-label="سبب التوقف عن الجديد" class="p-2 border-2 border-slate-300 rounded-xl bg-white font-bold" style="min-width:9rem"><option value="exam">اختبار</option><option value="circumstance">ظرف</option></select>
+                    </div>
                 </div>
                 <div class="mt-5">
                     <label class="block text-xl font-bold text-slate-700 mb-2 text-center">جوال ولي الأمر <span class="text-slate-400 text-base">(اختياري)</span></label>
@@ -5184,7 +5191,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 const grade = settings.grades?.find(g => g.id === entries[0]?.grade)?.name || '';
                 const last = computeFrontier(s);
                 const badge = state(s) === 2 ? 'غائب' : state(s) === 1 ? `سُجّل · ${grade}` : 'لم يُسجَّل';
-                return `<article class="teacher-card ${state(s) === 2 ? 'absent' : state(s) === 1 ? 'recorded' : ''}" data-id="${s.id}"><div class="tch-card-top"><div class="tch-card-info"><div class="tch-card-name">${escapeHTML(s.name)}</div><div class="tch-card-last">آخر محفوظ: ${last ? escapeHTML(generalPointLabel(last)) : 'يُحدَّد في أول إنجاز'}</div></div><span class="tch-badge">${badge}</span></div><div class="tch-actions"><button data-a="ach">الإنجاز</button><button data-a="absent">${state(s) === 2 ? 'إلغاء الغياب' : 'غائب'}</button><button data-a="edit" aria-label="تعديل بيانات الطالب"><i class="fas fa-pen" aria-hidden="true"></i></button><button data-a="more" aria-label="خيارات الطالب"><i class="fas fa-ellipsis" aria-hidden="true"></i></button></div></article>`;
+                return `<article class="teacher-card ${state(s) === 2 ? 'absent' : state(s) === 1 ? 'recorded' : ''}" data-id="${s.id}"><div class="tch-card-top"><div class="tch-card-info"><div class="tch-card-name">${escapeHTML(s.name)}</div><div class="tch-card-last">آخر محفوظ: ${last ? escapeHTML(generalPointLabel(last)) : 'يُحدَّد في أول إنجاز'}</div>${(p => p && p.to == null ? `<div class="tch-card-paused">متوقف عن الجديد · ${p.reason === 'circumstance' ? 'ظرف' : 'اختبار'}</div>` : '')(Array.isArray(s.newPaused) ? s.newPaused[s.newPaused.length - 1] : null)}</div><span class="tch-badge">${badge}</span></div><div class="tch-actions"><button data-a="ach">الإنجاز</button><button data-a="absent">${state(s) === 2 ? 'إلغاء الغياب' : 'غائب'}</button><button data-a="edit" aria-label="تعديل بيانات الطالب"><i class="fas fa-pen" aria-hidden="true"></i></button><button data-a="more" aria-label="خيارات الطالب"><i class="fas fa-ellipsis" aria-hidden="true"></i></button></div></article>`;
             }).join('') : '<div class="tch-holiday">اليوم عطلة؛ لا تسجيل</div>';
             home.querySelector('#teacherAddStudentBtn').hidden = !schoolDay;
         }
@@ -6824,7 +6831,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (period !== 'all' && (!stage || config.periodOf(stage) !== period)) continue;
                 const attendance = generalPerformanceStudentAttendance(student, range, readers);
                 const work = generalPerformanceStudentWork(student, attendance.presentDates, 'new', readers);
-                const achievement = generalPerformanceStudentAchievement(work.totals.pages, attendance.present, config);
+                // «متوقف عن الجديد»: أيام حالته لا تدخل هدف الجديد؛ الحضور والكمية كما هما.
+                const achievement = generalPerformanceStudentAchievement(work.totals.pages, attendance.presentDates.filter(date => !(Array.isArray(student.newPaused) ? student.newPaused : []).some(p => p && p.from <= date && (p.to == null || date < p.to))).length, config);
                 present += attendance.present; absent += attendance.absent;
                 if (achievement.goal > 0) {
                     raw += achievement.raw; goal += achievement.goal; counted += achievement.counted;
@@ -6920,7 +6928,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 } catch (_) { /* مدى تالف لا يُسقط كميات التقرير الأخرى. */ }
             }
             return { studentId: student.id, attendance, new: fresh.totals, review: review.totals, memorizedRange,
-                achievement: generalPerformanceStudentAchievement(fresh.totals.pages, attendance.present, config),
+                achievement: generalPerformanceStudentAchievement(fresh.totals.pages, attendance.presentDates.filter(date => !(Array.isArray(student.newPaused) ? student.newPaused : []).some(p => p && p.from <= date && (p.to == null || date < p.to))).length, config),
                 noNewDates, reviewDates, reviewAttendance: attendance.present ? { days: reviewDates.length, present: attendance.present } : null,
                 repeatDates };
         }
@@ -7199,7 +7207,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const dates = getGeneralSchoolDates();
             const lists = {
                 absent: getFollowupAbsentees(),
-                stalled: generalStalledMemorization(students, dates, todayStr, getAttendanceState, generalAttendanceStart),
+                // «متوقف عن الجديد»: يوم من أيام حالته يقطع العدّ كيوم غير «حاضر» (الدالة المقفلة بلا تغيير).
+                stalled: generalStalledMemorization(students, dates, todayStr, (student, date) => (Array.isArray(student.newPaused) ? student.newPaused : []).some(p => p && p.from <= date && (p.to == null || date < p.to)) ? { state: 'paused' } : getAttendanceState(student, date), generalAttendanceStart),
                 support: generalRecitationSupport(students, dates, todayStr, generalAttendanceStart)
             };
             const followup = document.getElementById('generalHomeFollowup');
@@ -8022,7 +8031,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function generalStudentsCardHtml(student) {
             const state = generalCardTodayState(student, todayStr);
             return `<tr class="gs-card${state.hasEntries ? ' is-done' : ''}">
-                <td><span class="gs-number">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class="gs-separator"> - </span><span class="gs-name">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span></td>
+                <td><span class="gs-number">${escapeHTML(String(student.id).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span><span class="gs-separator"> - </span><span class="gs-name">${escapeHTML(student.name.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))}</span>${(p => p && p.to == null ? `<span class="gs-paused">متوقف عن الجديد · ${p.reason === 'circumstance' ? 'ظرف' : 'اختبار'}</span>` : '')(Array.isArray(student.newPaused) ? student.newPaused[student.newPaused.length - 1] : null)}</td>
                 <td><span class="gs-state gs-${state.cardState}">${state.label}</span></td>
                 <td><div class="gs-actions"><button type="button" class="gs-entry" onclick="openSmartModal(${Number(student.id)})">إدخال إنجاز</button><button type="button" class="gs-attendance attendance-btn" onclick="openAttendanceEditModal(${Number(student.id)})">الحضور</button></div></td>
             </tr>`;
@@ -10084,7 +10093,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 confirmBox.innerHTML = '<span></span><button type="button" onclick="teacherSaveQuickEntry()">حفظ</button><button type="button" onclick="teacherQuickBack()">رجوع</button>';
                 section.querySelector('#generalQuickReviewReminder').before(confirmBox);
                 section.querySelector('.qe-criteria-bar').insertAdjacentHTML('afterbegin','<div class="tch-quick-actions"><button id="quickDisciplineAll" type="button" aria-pressed="false" onclick="fulfillGeneralCriteria()">استوفى المعايير</button><button id="quickDisciplineHome" type="button" aria-pressed="false" onclick="document.getElementById(\'generalHomePrepBtn\')?.click()">التحضير المنزلي</button></div>');
-                teacherQuickTab('new');
+                // «متوقف عن الجديد»: النافذة على المراجعة و«بلا جديد اليوم» مضغوط، فلا سؤال «حفظ المراجعة فقط؟»؛ الجديد يبقى ممكناً بتبويبه.
+                const pause = Array.isArray(student.newPaused) ? student.newPaused[student.newPaused.length - 1] : null;
+                if (pause && pause.to == null) { teacherSkipQuick('new'); teacherQuickTab('review'); } else teacherQuickTab('new');
             }
             for (const kind of ['new', 'review']) {
                 const start = (kind === 'new' ? suggestions.newStart : suggestions.reviewStart) || generalNextPoint(null, student.direction);
@@ -10771,7 +10782,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             switchSmartTab('daily');
             updateSmartSimplification();
             const modal = document.getElementById('smartModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
-            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : 'quick_new_toAyah').focus();
+            // «متوقف عن الجديد»: المؤشر في «إلى» للمراجعة.
+            const pause = Array.isArray(student.newPaused) ? student.newPaused[student.newPaused.length - 1] : null;
+            if (isGeneralProgram()) document.getElementById(generalQuickEntry.needsPosition ? 'quick_positionAyah' : pause && pause.to == null ? 'quick_review_toAyah' : 'quick_new_toAyah').focus();
         }
         
         function closeSmartModal(force = false) { if (!force && isGeneralProgram() && generalUndoInProgress) return; if (isGeneralProgram()) resetGeneralQuickReviewConfirmation(); document.getElementById('smartModal').classList.add('hidden'); document.getElementById('smartModal').classList.remove('flex'); }
@@ -11694,6 +11707,12 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const wrap = document.getElementById('studentGeneralFields');
             wrap.style.display = isGeneralProgram() ? '' : 'none';
             if (!isGeneralProgram()) return;
+            // «متوقف عن الجديد»: الخانة في وضع التعديل وحده (student = null في الإضافة)، وتعرض الحالة الآن (آخر عنصر بلا «إلى»).
+            const pausedLast = Array.isArray(student?.newPaused) ? student.newPaused[student.newPaused.length - 1] : null, pausedNow = pausedLast && pausedLast.to == null ? pausedLast : null;
+            document.getElementById('studentNewPausedWrap').style.display = student ? '' : 'none';
+            document.getElementById('studentNewPausedInput').checked = !!pausedNow;
+            document.getElementById('studentNewPausedReason').value = pausedNow?.reason === 'circumstance' ? 'circumstance' : 'exam';
+            document.getElementById('studentNewPausedReason').disabled = !pausedNow;
             const settings = getProgramSettings(), select = document.getElementById('studentHalaqaInput');
             const currentHalaqa = getStudentHalaqa(student, settings);
             const assigned = !!currentHalaqa;
@@ -11803,8 +11822,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 try {
                     if (i) {
                         const st = students.find(s => s.id == i);
+                        // «متوقف عن الجديد» (ق74): newPaused كاملاً في الطلب نفسه حين تتغيّر الخانة وحدها؛ الوضع يضيف {reason, from: اليوم, to: null}،
+                        // والرفع يجعل to = اليوم لآخر عنصر، فإن كان from = اليوم يُحذف العنصر.
+                        const pauseList = Array.isArray(st?.newPaused) ? st.newPaused.map(p => ({ ...p })) : [], pauseLast = pauseList[pauseList.length - 1];
+                        const pauseWanted = document.getElementById('studentNewPausedInput')?.checked === true, pausedNow = !!pauseLast && pauseLast.to == null;
+                        const pausePatch = pauseWanted === pausedNow ? {}
+                            : pauseWanted ? { newPaused: [...pauseList, { reason: document.getElementById('studentNewPausedReason')?.value === 'circumstance' ? 'circumstance' : 'exam', from: todayStr, to: null }] }
+                            : { newPaused: pauseLast.from === todayStr ? pauseList.slice(0, -1) : [...pauseList.slice(0, -1), { ...pauseLast, to: todayStr }] };
                         if (!st || !await commitGeneralStudentPatch(st, { name: n, memorizedJuz, parentPhone,
-                            tierId: DEL_FIELD, tierManual: DEL_FIELD, ...membership })) return;
+                            tierId: DEL_FIELD, tierManual: DEL_FIELD, ...membership, ...pausePatch })) return;
                     } else {
                         if (!canWriteCloud()) return;
                         const seasonId = window.almahraPrograms.getCurrentSeasonId();

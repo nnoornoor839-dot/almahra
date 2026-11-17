@@ -1653,3 +1653,71 @@ test('ح20 (ق68) «التالي» = أول غير مسجَّل وغير غائ�
         assert.deepEqual([1, 4, 5].map(() => 2), await Promise.all([1, 4, 5].map(async id => (await mineToday(h, id)).length)), 'لم يُحفظ الثلاثة');
     } finally { await h.close(); }
 });
+
+// =====================================================================================
+// أ9 (جولة «متوقف عن الجديد»، 2026-11-17): ح21 (ق70) موضع الرسالة والنافذة التالية مفتوحة؛ ح22 (ق63) حارس حذف استئناف الرمز المعلّق.
+// =====================================================================================
+async function toastGeometry(page) {
+    return page.evaluate(() => {
+        const r = e => { if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left, right: b.right }; };
+        const t = document.getElementById('teacherToast'), cs = t && getComputedStyle(t);
+        return { toast: r(t), position: cs?.position || null, bottom: cs?.bottom || null, vh: innerHeight,
+            footer: r(document.getElementById('generalQuickFooter')), save: r(document.getElementById('generalQuickSaveBtn')),
+            tabs: [r(document.getElementById('quickTabNew')), r(document.getElementById('quickTabReview'))] };
+    });
+}
+const overlap = (a, b) => !!a && !!b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+test('ح21 (ق70) وضع المعلم والنافذة التالية مفتوحة: #teacherToast ثابتة فوق شريط الحفظ #generalQuickFooter ولا تغطي التبويبين؛ وبعد إغلاق النافذة تعود إلى مكانها القديم أسفل الصفحة (bottom 16px)', async () => {
+    const h = await teacherPage();
+    try {
+        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
+        await waitToast(h, 'أحمد');
+        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
+        await h.page.waitForTimeout(150);
+        const g = await toastGeometry(h.page);
+        assert.ok(g.toast && g.footer && g.tabs.every(Boolean), `الشرط المسبق: الرسالة أو الشريط أو التبويبان غير ظاهرة ${JSON.stringify(g)}`);
+        assert.equal(g.position, 'fixed', 'الرسالة ليست ثابتة');
+        // «فوق شريط الحفظ» = ملاصقة لأعلاه (فجوة 0–24px)، لا أي موضع أعلى الشاشة.
+        assert.ok(g.toast.bottom <= g.footer.top + 0.5 && g.footer.top - g.toast.bottom <= 24,
+            `الرسالة ليست فوق شريط الحفظ مباشرة: أسفلها ${g.toast.bottom} وأعلى الشريط ${g.footer.top}`);
+        assert.ok(g.toast.top >= 0 && g.toast.bottom <= g.vh, `الرسالة خارج الشاشة ${JSON.stringify(g.toast)}`);
+        assert.deepEqual(g.tabs.map(t => overlap(g.toast, t)), [false, false], `الرسالة تغطي تبويب [الجديد، المراجعة] ${JSON.stringify(g)}`);
+        assert.equal(overlap(g.toast, g.save), false, 'الرسالة تغطي زر «حفظ»');
+        // ✕ والرسالة ما زالت ظاهرة ← المكان القديم أسفل الصفحة (ق54).
+        await closeQuick(h);
+        const c = await toastGeometry(h.page);
+        assert.ok(c.toast, 'الرسالة اختفت بإغلاق النافذة (الشرط المسبق: خلال الثواني الست)');
+        assert.deepEqual([c.position, c.bottom], ['fixed', '16px'], 'بلا نافذة: الرسالة ليست في مكانها القديم (fixed، bottom 16px)');
+        assert.ok(Math.abs(c.vh - c.toast.bottom - 16) <= 1, `بلا نافذة: أسفل الرسالة ${c.toast.bottom} لا يبعد 16 عن أسفل الشاشة ${c.vh}`);
+    } finally { await h.close(); }
+});
+
+const PENDING_KEY = (/TEACHER_PENDING_CODE\s*=\s*'([^']+)'/.exec(authSrc) || [])[1] || 'almahra-teacher-pending-code';
+test('ح22 (ق63) رمز معلّق محفوظ في sessionStorage بلا ?k= في العنوان ← لا دخول مجهول ولا users ولا صفحة المعلم؛ ومع ?k= يُحفظ الرمز معلّقاً قبل مسح العنوان ويُمسح بعد النجاح وبعد الفشل', async () => {
+    // (1) رمز معلّق من تحميل سابق انقطع، والعنوان بلا ?k=، ولا جلسة.
+    const seedPending = `(() => { try { sessionStorage.setItem(${JSON.stringify(PENDING_KEY)}, ${JSON.stringify(H.TEACHER_CODE)}); } catch (_) {} })()`;
+    const p = await H.openPage(browser, { user: null, initScripts: [seedPending] });
+    try {
+        await p.page.locator('#loginOverlay').waitFor({ state: 'visible', timeout: 5000 }).catch(async () => assert.fail('شاشة الدخول لم تظهر. ' + await diagnose(p)));
+        await p.page.waitForTimeout(800);
+        const st = await p.page.evaluate(() => ({ anon: window.__fb.authLog.filter(l => l.op === 'signInAnonymously').length, user: window.__fb.currentUser?.uid || null,
+            home: !!document.getElementById('teacherHome'), users: [...window.__fb.docs.keys()].filter(k => k.startsWith('users/') && k !== 'users/admin-uid') }));
+        assert.deepEqual(st, { anon: 0, user: null, home: false, users: [] }, 'الرمز المعلّق بلا ?k= بدأ دخولاً (دخول مجهول، هوية، صفحة المعلم، users)');
+    } finally { await p.close(); }
+    // (2) الحفظ والمسح: ?k= صحيح ← setItem قبل replaceState، ثم يُمسح بعد النجاح؛ و?k= صحيح الشكل خطأ القيمة ← يُمسح بعد الفشل.
+    const spy = `(() => { window.__pend = []; const set = Storage.prototype.setItem, rs = history.replaceState;
+        Storage.prototype.setItem = function (k, v) { if (k === ${JSON.stringify(PENDING_KEY)}) window.__pend.push('set:' + v + ':' + location.search); return set.apply(this, arguments); };
+        history.replaceState = function () { window.__pend.push('replace'); return rs.apply(this, arguments); }; })()`;
+    for (const [code, ok] of [[H.TEACHER_CODE, true], ['t1.ZZZZZZZZZZ23', false]]) {
+        const h = await H.openPage(browser, { user: null, url: '/?k=' + code, initScripts: [spy] });
+        try {
+            if (ok) await waitFor(h, '#teacherHome', 'الرابط الصحيح لم يفتح صفحة المعلم', 7000);
+            else await h.page.waitForFunction(() => (document.getElementById('loginError')?.innerText || '').includes('الرمز غير صحيح'), null, { timeout: 5000 })
+                .catch(async () => assert.fail('رسالة الرمز الخطأ لم تظهر. ' + await diagnose(h)));
+            await h.page.waitForTimeout(300);
+            const st = await h.page.evaluate(k => ({ seq: window.__pend.slice(0, 2), left: sessionStorage.getItem(k) }), PENDING_KEY);
+            assert.deepEqual(st.seq, ['set:' + code + ':?k=' + code, 'replace'], `(${ok ? 'نجاح' : 'فشل'}) الرمز لم يُحفظ معلّقاً قبل مسح العنوان`);
+            assert.equal(st.left, null, `(${ok ? 'نجاح' : 'فشل'}) الرمز المعلّق باقٍ في sessionStorage`);
+        } finally { await h.close(); }
+    }
+});

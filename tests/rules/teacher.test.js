@@ -771,3 +771,70 @@ test('ر13ك إنشاء طالب صحيح بـsid له نسخة في deletedStud
   await deny(t, 'create with deleted sid', setDoc(doc(teacherDb(), `${STUDENTS}/40`), student(40, 'h1', 't1')));
   assert.equal((await readRaw(`${STUDENTS}/40`)).exists(), false);
 });
+
+// ===== New-paused card (2026-11-17), T11: newPaused is written by the admin only; rules stay unchanged =====
+// Shape (Fable s1): newPaused = [{ reason: 'exam'|'circumstance', from: 'YYYY-MM-DD', to: null|'YYYY-MM-DD' }].
+const PAUSED = Object.freeze([{ reason: 'exam', from: '2026-11-10', to: null }]);
+const seedPaused = (id = 1) => env.withSecurityRulesDisabled(context =>
+  updateDoc(doc(context.firestore(), `${STUDENTS}/${id}`), { newPaused: PAUSED.map(p => ({ ...p })) }));
+
+test('ت11أ المعلم لا يضع newPaused لطالبه (تحديث يضيف الحقل) مرفوض', async t => {
+  await deny(t, 'teacher adds newPaused', updateDoc(doc(teacherDb(), `${STUDENTS}/1`), { newPaused: [{ reason: 'exam', from: TODAY, to: null }] }));
+  assert.equal('newPaused' in (await readRaw(`${STUDENTS}/1`)).data(), false);
+});
+
+test('ت11ب المعلم لا يرفع newPaused ولا يحذفه لطالب متوقف مرفوض', async t => {
+  await seedPaused();
+  await deny(t, 'teacher lifts newPaused', updateDoc(doc(teacherDb(), `${STUDENTS}/1`), { newPaused: [{ ...PAUSED[0], to: TODAY }] }));
+  await deny(t, 'teacher deletes newPaused', updateDoc(doc(teacherDb(), `${STUDENTS}/1`), { newPaused: deleteField() }));
+  await deny(t, 'teacher writes history + newPaused', updateDoc(doc(teacherDb(), `${STUDENTS}/1`), {
+    [`history.${TODAY}.attended`]: true, newPaused: []
+  }));
+  assert.deepEqual((await readRaw(`${STUDENTS}/1`)).data().newPaused, PAUSED);
+});
+
+test('ت11ج المعلم لا ينشئ طالباً فيه newPaused مرفوض', async t => {
+  await deny(t, 'create with newPaused', setDoc(doc(teacherDb(), `${STUDENTS}/30`), { ...student(30, 'h1', 't1'), newPaused: [{ reason: 'exam', from: TODAY, to: null }] }));
+  assert.equal((await readRaw(`${STUDENTS}/30`)).exists(), false);
+});
+
+test('ت11د تحديث المعلم المقيّد (تسجيل اليوم، الاسم) لطالب فيه newPaused مقبول والحقل باقٍ كما هو', async () => {
+  await seedPaused();
+  const p = `history.${TODAY}.`;
+  await assertSucceeds(updateDoc(doc(teacherDb(), `${STUDENTS}/1`), {
+    [p + 'attended']: true, [p + 'hijri']: 'synthetic hijri', [p + 'absence']: deleteField(), [p + 'note']: deleteField(),
+    [p + 'entries.e1']: { kind: 'review', surah: 1, from: 1, to: 7, points: 2, at: 1, by: 'teacher1', heardBy: 't1' },
+    lastDailySurah: 1, lastDailyAyah: 7, lastDailySardRange: null
+  }));
+  await assertSucceeds(updateDoc(doc(teacherDb(), `${STUDENTS}/1`), { name: 'Synthetic renamed', tierId: deleteField(), tierManual: deleteField() }));
+  const data = (await readRaw(`${STUDENTS}/1`)).data();
+  assert.deepEqual(data.newPaused, PAUSED);
+  assert.equal(data.history[TODAY].entries.e1.kind, 'review');
+  assert.equal(data.name, 'Synthetic renamed');
+});
+
+test('ت11هـ المشرف يضع newPaused ويرفعه مقبول', async () => {
+  await assertSucceeds(updateDoc(doc(adminDb(), `${STUDENTS}/1`), { newPaused: [{ reason: 'exam', from: TODAY, to: null }] }));
+  assert.deepEqual((await readRaw(`${STUDENTS}/1`)).data().newPaused, [{ reason: 'exam', from: TODAY, to: null }]);
+  await assertSucceeds(updateDoc(doc(adminDb(), `${STUDENTS}/1`), { newPaused: [{ reason: 'exam', from: '2026-11-10', to: TODAY }] }));
+  assert.deepEqual((await readRaw(`${STUDENTS}/1`)).data().newPaused, [{ reason: 'exam', from: '2026-11-10', to: TODAY }]);
+  await assertSucceeds(updateDoc(doc(adminDb(), `${STUDENTS}/3`), { newPaused: [{ reason: 'circumstance', from: TODAY, to: null }] }));
+});
+
+test('ت11و المعلم يقرأ طالب حلقته وفيه newPaused (get واستعلام in) مقبول والحقل في المقروء', async () => {
+  await seedPaused();
+  const one = await assertSucceeds(getDoc(doc(teacherDb(), `${STUDENTS}/1`)));
+  assert.deepEqual(one.data().newPaused, PAUSED);
+  const snap = await assertSucceeds(getDocs(query(collection(teacherDb(), STUDENTS), where('halaqaId', 'in', ['h1', 'h2']))));
+  assert.deepEqual(snap.docs.find(d => d.id === '1').data().newPaused, PAUSED);
+});
+
+test('ت11ز المعلم يحذف طالباً متوقفاً بنسخة تحمل newPaused مقبول؛ ونسخة بلا الحقل مرفوضة', async t => {
+  await seedPaused();
+  const { newPaused, ...withoutField } = await copyOf(1);
+  await deny(t, 'copy without newPaused', copyAndDelete(teacherDb(), 1, withoutField));
+  await assertUntouched(1);
+  await assertSucceeds(copyAndDelete(teacherDb(), 1, await copyOf(1)));
+  assert.equal((await readRaw(`${STUDENTS}/1`)).exists(), false);
+  assert.deepEqual((await readRaw(`${DELETED}/${sidOf(1)}`)).data().newPaused, PAUSED);
+});

@@ -50,7 +50,7 @@ test('category 17 audit: every changed line since be3b92f is registered and reve
     assert.notEqual(beforeKnightsLinesX3(outside), original('index.html'));
     for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23'];
+    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
