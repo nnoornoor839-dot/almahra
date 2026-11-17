@@ -5,11 +5,17 @@ function reverseRow(text, row) {
     const lines = text.split('\n');
     if (!row.hunks.every(h => JSON.stringify(lines.slice(h.newLine - 1, h.newLine - 1 + h.after.length)) === JSON.stringify(h.after))) return text;
     for (const h of [...row.hunks].reverse()) lines.splice(h.newLine - 1, h.after.length, ...h.before);
-    return lines.join('\n');
+    const restored = lines.join('\n');
+    return createHash('sha256').update(restored + '\n').digest('hex') === row.beforeSha256 ? restored + '\n' : restored;
 }
 // Category 22: reverse registered surah-search changes, so category 20 sees 24d0f17.
-function beforeSurahSearch(text, file = 'index.html') {
+// Category 23: reverse teacher accounts and their rules before older audits inspect a file.
+function beforeTeacherAccounts(text, file = 'index.html') {
     text = text.replaceAll('\r\n', '\n');
+    return reverseRow(text, require('../rules/design-expectation-audit.json').teacherAccountsChanges?.find(r => r.file === file));
+}
+function beforeSurahSearch(text, file = 'index.html') {
+    text = beforeTeacherAccounts(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').surahSearchChanges?.find(r => r.file === file));
 }
 // Category 20: reverse registered journey-fix changes, so category 19 sees 274bd05.
@@ -57,4 +63,4 @@ function beforeKnightsOnePlace(text, file = 'index.html') {
     text = beforeKnightsOnePlaceP2(text, file);
     return reverseRow(text, require('../rules/design-expectation-audit.json').knightsOnePlaceChanges?.find(r => r.file === file));
 }
-module.exports = { beforeSurahSearch, beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };
+module.exports = { beforeTeacherAccounts, beforeSurahSearch, beforeJourneyFixes, beforeKnightsRisingStar, beforeKnightsTvPoints, beforeKnightsLinesX3, beforeKnightsLastWeek, beforeKnightsOnePlace, beforeKnightsOnePlaceP2, beforeKnightsOnePlaceP3, beforeKnightsOnePlaceP4 };

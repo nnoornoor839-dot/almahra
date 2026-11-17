@@ -117,7 +117,7 @@ function harness() {
     install('isGeneralProgram', 'getStudentHalaqa', 'generalHalaqaLabel', 'generalStudentHalaqaHtml',
         'generalRecitationTeacher', 'generalStudentMembership', 'makeEntry', 'buildEntryPatch', 'cleanCellText', 'normalizeArabicKey',
         'normalizeSaudiPhone', 'noLevelReason', 'studentsWithoutLevel', 'validateGeneralHalaqas',
-        'saveProgramSettings', 'commitProgramSettings', 'generalHalaqaStudentPatches', 'syncGeneralHalaqaStudents', 'fillStudentGeneralFields', 'saveStudent',
+        'saveProgramSettings', 'commitProgramSettings', 'generalHalaqaStudentPatches', 'syncGeneralHalaqaStudents', 'fillStudentGeneralFields', 'saveStudent', 'buildGeneralStudentDoc',
         'commitGeneralStudentPatch', 'commitStudentPatch', 'restoreStudent', 'applyFieldsLocally', 'saveSmartProgress',
         'generalTeacherIsUsed', 'removeGeneralSettingRow', 'analyzeGeneralImportRows', 'resetProgramSettings');
     for (const id of ['psPtAtt', 'psMultNew', 'psMultRev']) element(id).value = '0';

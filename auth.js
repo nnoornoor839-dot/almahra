@@ -10,6 +10,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
     getAuth,
+    signInAnonymously,
     signInWithEmailAndPassword,
     onAuthStateChanged,
     signOut,
@@ -17,7 +18,7 @@ import {
     setPersistence,
     browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 // تهيئة Firebase
@@ -35,9 +36,50 @@ window.almahraAuth = {
     currentUser: null,
     currentRole: null,
     currentUserName: null,
+    currentTeacherId: null,
     isAdmin: () => window.almahraAuth.currentRole === 'admin',
     isTeacher: () => window.almahraAuth.currentRole === 'teacher',
     signOut: () => signOut(auth)
+};
+let teacherSignInPending = null;
+const TEACHER_CODE_ERROR = 'الرمز غير صحيح أو أُبطل؛ اطلب الرابط من المشرف';
+const TEACHER_DENIED_FLAG = 'almahra-teacher-denied';
+const TEACHER_PENDING_CODE = 'almahra-teacher-pending-code';
+let teacherDeniedReloaded = false;
+
+window.almahraAuth.signInTeacherWithCode = async function(rawCode) {
+    const raw = String(rawCode || '').replace(/\s+/g, '');
+    const dot = raw.lastIndexOf('.');
+    const code = dot > 0 ? raw.slice(0, dot + 1) + raw.slice(dot + 1).toUpperCase() : raw;
+    if (dot < 1 || !/^[A-Z0-9]{12}$/.test(code.slice(dot + 1))) {
+        showLoginError(TEACHER_CODE_ERROR);
+        return { success: false, code: 'TEACHER_CODE_INVALID' };
+    }
+    const teacherId = code.slice(0, dot);
+    // ق60: هوية مجهولة قائمة (جلسة قديمة على الجوال) ← تحديث رمزها بالهوية نفسها بلا دخول جديد (ق4)؛
+    // مستخدم بريد (مشرف) ← خروج ثم دخول مجهول؛ لا مستخدم ← دخول مجهول.
+    const pending = (async () => {
+        if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+        let user = auth.currentUser;
+        if (user && !user.isAnonymous) { await signOut(auth); user = null; }
+        if (!user) user = (await signInAnonymously(auth)).user;
+        const ref = doc(db, 'users', user.uid);
+        const existing = await getDoc(ref);
+        if (existing.exists()) await updateDoc(ref, { code });
+        else await setDoc(ref, { role: 'teacher', programId: 'general', teacherId, code });
+    })();
+    teacherSignInPending = pending;
+    try {
+        await pending;
+        return { success: true };
+    } catch (err) {
+        await signOut(auth).catch(() => {});
+        showLoginError(TEACHER_CODE_ERROR);
+        return { success: false, code: 'TEACHER_CODE_INVALID' };
+    } finally {
+        if (teacherSignInPending === pending) teacherSignInPending = null;
+        try { sessionStorage.removeItem(TEACHER_PENDING_CODE); } catch (_) {}
+    }
 };
 
 // ================================================================
@@ -190,10 +232,39 @@ window.almahraLogout = async function() {
 // ================================================================
 // مراقب حالة الدخول (يعمل تلقائياً عند كل تغيير)
 // ================================================================
+// ق60: رابط ?k= يُعالَج عند تقييم الوحدة، قبل أول معالجة لـonAuthStateChanged:
+// يُحفظ الرمز معلّقاً في sessionStorage قبل مسحه من العنوان، ويُضبط teacherSignInPending فينتظره مستمع الدخول.
+(() => {
+    let linkCode = null;
+    try {
+        const url = new URL(location.href);
+        linkCode = url.searchParams.get('k');
+        if (linkCode !== null) {
+            try { sessionStorage.setItem(TEACHER_PENDING_CODE, linkCode); } catch (_) {}
+            url.searchParams.delete('k');
+            history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+        }
+    } catch (_) { return; }
+    if (linkCode === null) return;
+    $('teacherCodeForm')?.classList.remove('hidden');
+    $('loginForm')?.classList.add('hidden');
+    window.almahraAuth.signInTeacherWithCode(linkCode);
+})();
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // المستخدم مسجّل دخول - نتحقق من دوره
-        const userData = await fetchUserData(user.uid);
+        // ق60: ما دام دخول المعلم بالرمز قائماً (رابط ?k=) يُنتظر أولاً، فلا يُقرأ دور الجلسة القديمة ولا يبدأ boot برمزها المبطَل.
+        if (teacherSignInPending) {
+            try { await teacherSignInPending; } catch (_) {}
+            if (auth.currentUser?.uid !== user.uid) return;   // الجلسة القديمة (مشرف خرج) استُبدلت بالهوية المجهولة
+        }
+        let userData = await fetchUserData(user.uid);
+        if (!userData && teacherSignInPending) {
+            try { await teacherSignInPending; } catch (_) {}
+            userData = await fetchUserData(user.uid);
+        }
+        if (auth.currentUser?.uid !== user.uid) return;
 
         if (!userData || !userData.role) {
             // لا يوجد دور معتمد لهذا الحساب
@@ -208,6 +279,7 @@ onAuthStateChanged(auth, async (user) => {
         window.almahraAuth.currentUser = user;
         window.almahraAuth.currentRole = userData.role;
         window.almahraAuth.currentUserName = userData.name || user.email;
+        window.almahraAuth.currentTeacherId = userData.role === 'teacher' ? userData.teacherId : null;
 
         // تحديث شريط المستخدم في الأعلى
         const userInfo = $('authUserInfo');
@@ -237,6 +309,7 @@ onAuthStateChanged(auth, async (user) => {
         window.almahraAuth.currentUser = null;
         window.almahraAuth.currentRole = null;
         window.almahraAuth.currentUserName = null;
+        window.almahraAuth.currentTeacherId = null;
 
         const userInfo = $('authUserInfo');
         if (userInfo) userInfo.classList.add('hidden');
@@ -264,4 +337,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const forgot = $('forgotBtn');
     if (forgot) forgot.addEventListener('click', handleForgotPassword);
+    $('loginRoleAdmin')?.addEventListener('click', () => {
+        $('loginForm')?.classList.remove('hidden');
+        $('teacherCodeForm')?.classList.add('hidden');
+        clearLoginError();
+    });
+    $('loginRoleTeacher')?.addEventListener('click', () => {
+        $('teacherCodeForm')?.classList.remove('hidden');
+        $('loginForm')?.classList.add('hidden');
+        clearLoginError();
+    });
+    $('teacherCodeForm')?.addEventListener('submit', async e => {
+        e.preventDefault(); clearLoginError();
+        const btn = $('teacherCodeBtn');
+        if (btn) btn.disabled = true;
+        await window.almahraAuth.signInTeacherWithCode($('teacherCodeInput')?.value);
+        if (btn) btn.disabled = false;
+    });
+    let deniedFlag = null;
+    try { deniedFlag = sessionStorage.getItem(TEACHER_DENIED_FLAG); sessionStorage.removeItem(TEACHER_DENIED_FLAG); } catch (_) {}
+    if (deniedFlag) { teacherDeniedReloaded = true; showLoginError(TEACHER_CODE_ERROR); }
+});
+
+// ق50/ق53: الإبطال = خروج ثم إعادة تحميل (كخروج المشرف)؛ الرسالة تعبر إعادة التحميل بعلامة في sessionStorage
+// تُقرأ عند التحميل وتُعرض في #loginError ثم تُمسح. إن رُفض المعلم مرة ثانية في صفحة أُعيد تحميلها بسبب الإبطال
+// (أي لم يثبت الخروج) فلا إعادة تحميل أخرى: شاشة الدخول بالرسالة مباشرة، فلا حلقة إعادة تحميل.
+window.addEventListener('almahra-teacher-denied', async () => {
+    // ق60: رفض يقع أثناء دخول بالرمز (تحديث الرمز لم يكتمل) يُهمل: لا خروج ولا إعادة تحميل؛ بعد اكتماله يقرأ مستمع الدخول الدور ويبدأ boot من جديد.
+    if (teacherSignInPending) return;
+    if (!window.almahraAuth.isTeacher()) return;
+    if (!teacherDeniedReloaded) {
+        try { sessionStorage.setItem(TEACHER_DENIED_FLAG, '1'); } catch (_) {}
+        await signOut(auth).catch(() => {});
+        location.reload();
+        return;
+    }
+    await signOut(auth).catch(() => {});
+    showLogin();
+    showLoginError(TEACHER_CODE_ERROR);
 });

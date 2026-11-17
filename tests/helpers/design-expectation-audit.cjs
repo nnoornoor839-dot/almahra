@@ -5,7 +5,9 @@ const root = path.resolve(__dirname, '../..');
 const baseline = '82bf19f';
 function changesFrom(file, baseline) {
     const before = cp.execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split(/\r?\n/);
-    let currentText = fs.readFileSync(path.join(root, file), 'utf8');
+    const rawText = fs.readFileSync(path.join(root, file), 'utf8');
+    let currentText = rawText;
+    currentText = require('./knights-oneplace-audit.cjs').beforeTeacherAccounts(currentText, file);
     if (baseline === '186a18e' || baseline === 'd51bb42' || baseline === 'a002e0c' || baseline === '5fbff4e' || baseline === '263c942' || baseline === 'fe78763' || baseline === 'be3b92f' || baseline === '6e50320' || baseline === 'bf6a5e7' || baseline === '274bd05') {
         // تدقيق الفئة 15 يرى الفرق عن 263c942 كما هو؛ ثم الفئة 15 فـ14 فـ13 فـ12 تُعكس أولاً، فيرى تدقيق الفئة 14 نسخة 263c942 وتدقيق الفئة 13 نسخة 5fbff4e وتدقيق الفئة 12 نسخة a002e0c وتدقيق الفئة 11 نسخة d51bb42 بالضبط.
         const onePlace = require('./knights-oneplace-audit.cjs');
@@ -17,7 +19,7 @@ function changesFrom(file, baseline) {
             : baseline === '263c942' ? onePlace.beforeKnightsLastWeek(currentText, file) : baseline === '5fbff4e' ? onePlace.beforeKnightsOnePlaceP4(currentText, file)
             : baseline === 'a002e0c' ? onePlace.beforeKnightsOnePlaceP3(currentText, file)
             : baseline === 'd51bb42' ? onePlace.beforeKnightsOnePlaceP2(currentText, file) : onePlace.beforeKnightsOnePlace(currentText, file);
-        const diff = text === currentText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })
+        const diff = text === rawText ? cp.execFileSync('git', ['diff', '--no-ext-diff', '--unified=0', baseline, '--', file], { cwd: root, encoding: 'utf8' })
             : diffAgainstText(baseline, file, text);
         const hunks = []; let hunk;
         for (const line of diff.split(/\r?\n/)) {

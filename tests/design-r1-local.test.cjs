@@ -116,7 +116,9 @@ test('design r2: every expectation edit has an exact reviewed diff and owner-app
     const baselineFiles = cp.execFileSync('git', ['ls-tree', '-r', '--name-only', '82bf19f', '--', 'tests'],
         { cwd: root, encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
     const names = cp.execFileSync('git', ['diff', '--name-only', '82bf19f', '--', 'tests'], { cwd: root, encoding: 'utf8' })
-        .trim().split(/\r?\n/).filter(Boolean).filter(file => baselineFiles.includes(file));
+        .trim().split(/\r?\n/).filter(Boolean).filter(file => baselineFiles.includes(file))
+        // الفئة 23: ملف لم يتغيّر إلا بأسطر مسجّلة في teacherAccountsChanges يعود بعكسها كما كان، فلا يدخل القائمة.
+        .filter(file => !(audit.teacherAccountsChanges || []).some(row => row.file === file) || changes(file).hunks.length);
     assert.deepEqual(names.sort(), audit.files.map(row => row.file).sort(), 'all edited tracked test files are audited');
     for (const file of audit.files) {
         assert.deepEqual(changes(file.file), file, file.file);

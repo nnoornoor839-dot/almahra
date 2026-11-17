@@ -233,6 +233,11 @@ const programsSettled = new Set();
 let initializationErrors = [];
 let subscribers = [];
 let programUnsubscribes = {};
+const teacherMode = () => !!window.almahraAuth?.isTeacher?.();
+function teacherDenied(err) {
+    if (teacherMode() && err?.code === 'permission-denied')
+        window.dispatchEvent(new CustomEvent('almahra-teacher-denied'));
+}
 
 function notify() {
     subscribers.forEach(cb => {
@@ -365,6 +370,11 @@ function migrateSettings(programId, settings) {
 // التهيئة: إنشاء البرامج + الموسم الأول + ترقية الإعدادات
 // ================================================================
 async function ensureProgramsExist() {
+    if (typeof window !== 'undefined' && window.almahraAuth?.isTeacher?.()) {
+        const snap = await getDoc(doc(db, PROGRAMS, 'general'));
+        if (!snap.exists()) throw new Error('البرنامج العام غير موجود');
+        return;
+    }
     for (const key of Object.keys(PROGRAM_DEFS)) {
         try {
         const def = PROGRAM_DEFS[key];
@@ -472,7 +482,7 @@ async function createSeasonInternal(programId, name) {
 // المستمعون اللحظيون
 // ================================================================
 function startListeners() {
-    Object.keys(PROGRAM_DEFS).forEach(programId => {
+    (teacherMode() ? ['general'] : Object.keys(PROGRAM_DEFS)).forEach(programId => {
         if (programUnsubscribes[programId]) return;
 
         // مستمع بيانات البرنامج نفسه
@@ -484,16 +494,17 @@ function startListeners() {
                 }
             }
             programsSettled.add(programId);
-            programsReady = programsSettled.size === Object.keys(PROGRAM_DEFS).length;
+            programsReady = programsSettled.size === (teacherMode() ? 1 : Object.keys(PROGRAM_DEFS).length);
             notify();
         }, (err) => {
             console.error('❌ program listener:', err.code, err.message);
+            teacherDenied(err);
             initializationErrors.push({ programId, name: PROGRAM_DEFS[programId].name });
             window.dispatchEvent(new CustomEvent('almahra-program-init-error', {
                 detail: { programId, name: PROGRAM_DEFS[programId].name }
             }));
             programsSettled.add(programId);
-            programsReady = programsSettled.size === Object.keys(PROGRAM_DEFS).length;
+            programsReady = programsSettled.size === (teacherMode() ? 1 : Object.keys(PROGRAM_DEFS).length);
             notify();
         });
 
@@ -504,7 +515,7 @@ function startListeners() {
             snap.forEach(d => list.push({ id: d.id, ...d.data() }));
             seasonsCache[programId] = list;
             notify();
-        }, (err) => console.error('❌ seasons listener:', err.code, err.message));
+        }, (err) => { console.error('❌ seasons listener:', err.code, err.message); teacherDenied(err); });
 
         programUnsubscribes[programId] = () => { unsubProg(); unsubSeasons(); };
     });
@@ -537,6 +548,12 @@ async function getAllStudents(programId) {
 // ================================================================
 window.almahraPrograms = {
     setWriteGuard: fn => { writeGuard = fn; },
+    ensureTeacherKey: async teacherId => {
+        const snap = await getDoc(teacherKeyRef(teacherId));
+        if (snap.exists()) return { code: snap.data().code, created: false };
+        return { code: await writeNewTeacherKey(teacherId), created: true };
+    },
+    rotateTeacherKey: async teacherId => ({ code: await writeNewTeacherKey(teacherId) }),
     getSettingsFromServer: async programId => {
         const snap = await getDocFromServer(doc(db, PROGRAMS, programId));
         if (!snap.exists()) throw new Error('البرنامج غير موجود');
@@ -712,6 +729,13 @@ window.almahraPrograms = {
         try {
             const payload = { ...newSettings, settingsVersion: SETTINGS_VERSION };
             await updateDoc(doc(db, PROGRAMS, programId), { settings: payload });
+            if (programId === 'general' && !teacherMode()) {
+                for (const teacher of payload.teachers || []) {
+                    const ref = doc(db, PROGRAMS, 'general', 'teacherKeys', teacher.id);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) await updateDoc(ref, { halaqaIds: (payload.halaqas || []).filter(h => h.teacherId === teacher.id).map(h => h.id) });
+                }
+            }
             return { success: true };
         } catch (err) {
             console.error('❌ updateSettings:', err);
@@ -901,6 +925,7 @@ async function boot() {
         startListeners();
         console.log('✅ programs-store: البرامج جاهزة');
     } catch (err) {
+        teacherDenied(err);
         console.error('❌ programs-store boot failed:', err);
     }
 }
@@ -912,3 +937,17 @@ window.addEventListener('almahra-auth-ready', (e) => {
 if (window.almahraAuth?.currentUser) boot();
 
 console.log('✅ programs-store.js loaded');
+
+function makeTeacherCode(teacherId) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
+    return teacherId + '.' + Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
+}
+// ق52(ج): كتابة واحدة لمفتاح المعلم يستعملها الإنشاء والتغيير معاً (رمز جديد + حلقاته من الإعدادات + active).
+const teacherKeyRef = teacherId => doc(db, PROGRAMS, 'general', 'teacherKeys', teacherId);
+async function writeNewTeacherKey(teacherId) {
+    const code = makeTeacherCode(teacherId);
+    const halaqaIds = (programsCache.general?.settings?.halaqas || []).filter(h => h.teacherId === teacherId).map(h => h.id);
+    await setDoc(teacherKeyRef(teacherId), { code, halaqaIds, active: true, createdAt: serverTimestamp() });
+    return code;
+}

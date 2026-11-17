@@ -471,6 +471,117 @@
             #loginOverlay input[type="email"], #loginOverlay input[type="password"], #loginOverlay .login-btn { font-size: 16px; }
         }
 
+        /* شاشة الدخول المعتمدة: الشكل ب، نقش ثابت بلا حركة */
+        #loginOverlay { background:#f4f6f5; padding:0; overflow:hidden; font-family:'Cairo',sans-serif; }
+        #loginOverlay *, #loginOverlay *::before, #loginOverlay *::after { animation:none !important; transition:none !important; }
+        /* ق55: لا حركة لصفحات البرنامج المخفية خلف شاشة الدخول ما دامت ظاهرة؛ تختفي القاعدة بإخفاء الشاشة بعد الدخول */
+        body:has(> #loginOverlay:not(.hidden)) > :not(#loginOverlay):not(#loadingOverlay), body:has(> #loginOverlay:not(.hidden)) > :not(#loginOverlay):not(#loadingOverlay) * { animation:none !important; }
+        #loginOverlay .tch-login-hero { flex:none; position:relative; width:100%; height:57%; min-height:360px; background:#125c2f; color:white; border-radius:0 0 50% 50% / 0 0 64px 64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding-bottom:40px; overflow:hidden; }
+        #loginOverlay .tch-login-hero img { height:clamp(130px,22vh,190px); width:auto; }
+        #loginOverlay .tch-login-hero [data-program-brand] { font-size:clamp(28px,5vw,34px); font-weight:900; }
+        #loginOverlay .tch-login-card { position:relative; z-index:2; width:min(90%,440px); margin:-42px auto 0; padding:20px; background:white; border-radius:20px; box-shadow:0 16px 36px rgba(16,58,33,.18); display:flex; flex-direction:column; gap:14px; }
+        #loginOverlay .tch-login-role { min-height:64px; width:100%; border-radius:16px; font-size:23px; font-weight:900; }
+        #loginRoleAdmin { border:2px solid #125c2f; color:#125c2f; background:white; }
+        #loginRoleTeacher { background:#125c2f; color:white; }
+        #loginOverlay .tch-login-pattern { position:absolute; left:0; right:0; height:240px; opacity:.07; pointer-events:none; z-index:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23125c2f' stroke-width='1.2'%3E%3Crect x='16' y='16' width='24' height='24'/%3E%3Crect x='16' y='16' width='24' height='24' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='5'/%3E%3C/g%3E%3C/svg%3E"); }
+        #loginOverlay .tch-login-pattern.top { top:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.2'%3E%3Crect x='16' y='16' width='24' height='24'/%3E%3Crect x='16' y='16' width='24' height='24' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='5'/%3E%3C/g%3E%3C/svg%3E"); }
+        #loginOverlay .tch-login-pattern.bottom { bottom:0; }
+        #loginOverlay .login-form { width:100%; display:flex; flex-direction:column; gap:10px; }
+        #loginOverlay .login-form.hidden { display:none; }
+        #loginOverlay .login-form input { width:100%; min-height:52px; border:1px solid #c9d4cd; border-radius:12px; background:white; padding:0 14px; font:inherit; }
+        #loginOverlay .login-btn { min-height:52px; border-radius:12px; background:#125c2f; color:white; margin:0; height:auto; font-size:18px; }
+        #loginOverlay .forgot-link { color:#125c2f; }
+        #loginOverlay .login-logo { display:none; }
+        #loginOverlay .tch-login-hero > *:not(.tch-login-pattern) { position:relative; z-index:1; }
+        #loginOverlay .tch-login-hero .ah-logo { display:block; }
+        #loginOverlay button, #loginOverlay input, #loginOverlay label { font-family:'Cairo',sans-serif; }
+        #loginOverlay .tch-login-hero::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 35%, rgba(37,144,70,.55) 0%, transparent 65%); pointer-events:none; }
+        #loginOverlay .tch-gold-line { display:block; width:72px; height:3px; border-radius:3px; background:#c9b14b; }
+        #loginOverlay .tch-field-label { font-size:16px; font-weight:700; color:#3a4a41; }
+        #loginOverlay #teacherCodeInput { width:100%; min-height:52px; border:1px solid #c9d4cd; border-radius:12px; background:white; padding:0 14px; font:inherit; font-size:20px; letter-spacing:1px; text-align:center; }
+        @media (min-width:721px) { #loginOverlay .tch-login-hero { height:55%; } }
+
+        body.teacher-mode { padding:0; background:#f4f6f5; font-family:'Cairo',sans-serif; }
+        body.teacher-mode.event-not-selected > #teacherHome { visibility:visible; }
+        #teacherHome { position:relative; min-height:100dvh; max-width:800px; margin:auto; background:#f4f6f5; color:#13231a; font-family:'Cairo',sans-serif; direction:rtl; }
+        /* ق51: قاعدة واحدة لأزرار المعلم ≥ 44px: الصفحة ونافذة الإنجاز وكل أوراق .tch-sheet (الطالب، ⋯، الغياب، المساعدة، تأكيد الحذف) */
+        #teacherHome button, body.teacher-mode #smartModal button, .tch-sheet-panel button { min-height:44px; font-family:'Cairo',sans-serif; }
+        body.teacher-mode #generalQuickSaveBtn small { display:none; }
+        #teacherOffline { background:#fde68a; color:#5b3d00; padding:10px 14px; text-align:center; font-weight:700; }
+        #teacherTopBar { background:white; border-bottom:1px solid #e2e8e4; padding:12px 14px; display:flex; align-items:center; gap:8px; }
+        #teacherTopBar strong { flex:1; font-size:19px; }
+        #teacherTopBar button { border:1px solid #e2e8e4; border-radius:10px; padding:0 12px; }
+        #teacherHelpBtn { width:44px; font-weight:900; }
+        #teacherHalaqaTabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; padding:12px; background:white; }
+        #teacherHalaqaTabs button { border:1px solid #e2e8e4; border-radius:12px; background:#f4f6f5; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4px; font-size:17px; font-weight:700; }
+        #teacherHalaqaTabs button small { display:block; font-size:12px; color:#7b8a82; }
+        #teacherHalaqaTabs button[aria-pressed=true] { background:#125c2f; color:white; }
+        #teacherHalaqaTabs button[aria-pressed=true] small { color:#cfe8d7; }
+        #teacherDayRow { background:white; padding:4px 14px 12px; font-weight:700; font-size:15px; }
+        #teacherStudentList { display:flex; flex-direction:column; gap:10px; padding:12px 12px 80px; }
+        .teacher-card { background:white; border:1px solid #e2e8e4; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+        .teacher-card.recorded { border-color:#bfe3cb; }
+        .teacher-card.absent { border-color:#f3cdc8; background:#fffafa; }
+        .tch-card-top { display:flex; align-items:flex-start; gap:8px; }
+        .tch-card-info { flex:1; min-width:0; }
+        .tch-card-name { font-size:20px; font-weight:900; }
+        .tch-card-last { font-size:15px; color:#4a5a51; }
+        .tch-badge { border-radius:999px; padding:4px 10px; white-space:nowrap; font-weight:700; font-size:14px; background:#eef1ef; }
+        .teacher-card.recorded .tch-badge { background:#eaf6ee; color:#1d7a3e; }
+        .teacher-card.absent .tch-badge { background:#fef1f0; color:#b42318; }
+        .tch-actions { display:flex; flex-wrap:wrap; gap:8px; }
+        .tch-actions button { background:white; border:1px solid #c9d4cd; border-radius:10px; padding:0 12px; font-weight:700; font-size:16px; }
+        .tch-actions button[data-a=ach] { flex:1; background:#125c2f; color:white; }
+        .tch-actions button[data-a=absent] { flex:1; }
+        .tch-actions button[data-a=edit], .tch-actions button[data-a=more] { position:relative; width:48px; font-size:17px; color:#125c2f; }
+        /* ق52(ب): ✎ و⋯ بأيقونتَي Font Awesome المستعملتين في البرنامج؛ الرمز النصي يبقى للقارئ مخفياً بصرياً */
+        #teacherAddStudentBtn { width:calc(100% - 24px); margin:0 12px 24px; border:2px dashed #b9cbbf; border-radius:14px; min-height:52px; color:#125c2f; font-weight:700; }
+        /* ق54: الرسالة لا تلتقط اللمس إلا في «تراجع»؛ أسفل الصفحة فوق «+ طالب جديد»، وأعلى الشاشة حين تكون نافذة الإنجاز مفتوحة فلا تغطي «حفظ» */
+        #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); background:#125c2f; color:white; padding:12px 16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }
+        #teacherToast button { min-height:44px; color:white; text-decoration:underline; pointer-events:auto; }
+        body.teacher-mode:has(#smartModal.flex) #teacherToast { top:68px; bottom:auto; }
+        .tch-sheet { position:fixed; z-index:5000; inset:0; background:rgba(15,30,22,.45); display:flex; align-items:center; justify-content:center; padding:12px; font-family:'Cairo',sans-serif; }
+        .tch-sheet-panel { width:min(100%,480px); max-height:95dvh; overflow:auto; background:white; border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:12px; }
+        .tch-sheet-panel h2 { font-size:22px; font-weight:900; }
+        .tch-sheet-panel input, .tch-sheet-panel select { width:100%; min-height:48px; padding:8px; border:1px solid #c9d4cd; border-radius:10px; font:inherit; }
+        .tch-sheet-panel button { border:1px solid #c9d4cd; border-radius:10px; padding:8px 12px; }
+        .tch-sheet-panel button.primary { background:#125c2f; color:white; }
+        .tch-hint { font-size:14px; color:#865d19; background:#faf3e4; border-radius:8px; padding:6px 10px; }
+        /* ق52(أ): أزرار رابط المعلم في الإعدادات بتنسيق أزرار الإعدادات القائمة (.general-knights-action): ≥ 44px، حدّ فاتح، نص أخضر */
+        .tch-admin-links { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+        .tch-admin-links button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:10px 16px; border:1px solid #dce4de; border-radius:8px; background:white; color:#125c2f; font-family:'Cairo',sans-serif; font-size:14px; font-weight:600; white-space:nowrap; }
+        .tch-admin-links button:hover { background:#edf4ee; }
+        .tch-admin-links button:focus-visible { outline:2px solid #125c2f; outline-offset:2px; }
+        .tch-admin-links .tch-wa { color:#16a34a; font-size:16px; }
+        .tch-admin-link-value { flex-basis:100%; font-size:13px; color:#5f6d66; word-break:break-all; text-align:left; }
+        .tch-admin-link-value:empty { display:none; }
+        body.teacher-mode #smartModal { padding:0; background:white; font-family:'Cairo',sans-serif; }
+        body.teacher-mode #smartModal > div { width:100%; max-width:800px; min-height:100dvh; border:0; border-radius:0; margin:0 auto; animation:none; transform:none; }
+        body.teacher-mode #smartModal > div > :first-child, body.teacher-mode #smartResetRow, body.teacher-mode #smartTabs { display:none !important; }
+        body.teacher-mode #generalQuickSection { display:flex !important; flex-direction:column; flex:1; min-height:0; }
+        body.teacher-mode #generalQuickSection .qe-body { flex:1; overflow:auto; }
+        body.teacher-mode #generalQuickPanels .qe-row { display:none; }
+        body.teacher-mode #generalQuickPanels .qe-row.tch-selected { display:block; }
+        .tch-quick-tabs { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid #e2e8e4; }
+        .tch-quick-tabs button { font-size:18px; font-weight:900; border-bottom:4px solid transparent; }
+        .tch-quick-tabs button[aria-selected=true] { color:#125c2f; border-bottom-color:#125c2f; }
+        .tch-quick-actions { display:flex; gap:8px; }
+        .tch-quick-actions button { flex:1; border:1px solid #c9d4cd; border-radius:10px; }
+        body.teacher-mode .tch-quick-actions button[aria-pressed=true] { background:#125c2f; color:white; border-color:#125c2f; }   /* ف-F7: الحالة المضغوطة تعكس aria-pressed */
+        .tch-pos { white-space:nowrap; }   /* ف-F9: «السورة + الرقم» لا ينكسر */
+        body.teacher-mode #quick_new_start { height:auto; min-height:42px; padding-block:6px; }   /* ف-F9: إن التفّ السطر على 390 يظهر سطره الثاني كاملاً لا مقصوصاً */
+        body.teacher-mode #generalQuickSection .qe-criteria-bar { display:flex; flex-wrap:wrap; }
+        body.teacher-mode #generalQuickSection .qe-criteria-bar > b, body.teacher-mode #generalQuickSection #generalCriteriaAllBtn, body.teacher-mode #generalQuickSection #generalOptInHost { display:none !important; }
+        /* ق48(3): النافذة ثابتة تملأ الشاشة ولا يتمرّر ما خلفها؛ ق48(4): شريط تراجع المشرف مخفي للمعلم */
+        body.teacher-mode #smartModal.flex { position:fixed; inset:0; z-index:2000; display:flex; overflow-y:auto; }
+        body.teacher-mode:has(#smartModal.flex) { overflow:hidden; }
+        body.teacher-mode #smartUndoRow { display:none !important; }
+        body.teacher-mode #quickTodayBox { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 14px; background:#eaf6ee; font-weight:700; }
+        body.teacher-mode #quickOneSideConfirm:not([hidden]) { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; margin:8px 0; border:1px solid #e9d38a; border-radius:10px; background:#fff8e1; font-weight:700; }
+        body.teacher-mode #quickOneSideConfirm span { flex-basis:100%; }
+        body.teacher-mode #quickOneSideConfirm button { flex:1; border:1px solid #c9d4cd; border-radius:10px; background:white; }
+        @media (max-width:600px) { #teacherHome { width:100%; } body.teacher-mode #smartModal > div { height:100dvh; } body.teacher-mode #smartModal .qe-pair { grid-template-columns:minmax(0, 1fr) 88px; } }
+
         /* ═══════════ الرأس: صفّ واحد مضغوط، شفاف يلبس الأبيض عند النزول ═══════════ */
         .app-header {
             position: sticky; top: 0; z-index: 900;
@@ -1238,10 +1349,15 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
     <!-- شاشة تسجيل الدخول - تظهر قبل البرنامج -->
     <div id="loginOverlay">
-        <h1 class="login-title">جمعية أفضلكم لتعليم القرآن الكريم وعلومه</h1>
-        <div class="login-card">
-            <form id="loginForm" class="login-form">
-                <h2>بيانات تسجيل الدخول</h2>
+        <div class="tch-login-hero"><div class="tch-login-pattern top"></div>
+            <img class="ah-logo" src="./assets/brand/afdalkom-logo-vertical-white.png" alt="شعار أفضلكم">
+            <h2 data-program-brand>برنامج الحوافز</h2>
+            <i class="tch-gold-line" aria-hidden="true"></i>
+        </div>
+        <div class="tch-login-card">
+            <button type="button" id="loginRoleAdmin" class="tch-login-role">مشرف</button>
+            <button type="button" id="loginRoleTeacher" class="tch-login-role">معلم</button>
+            <form id="loginForm" class="login-form hidden">
                 <div class="login-field">
                     <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" required autocomplete="email">
                     <i class="fas fa-user" aria-hidden="true"></i>
@@ -1250,37 +1366,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                     <input type="password" id="loginPassword" placeholder="كلمة المرور" aria-label="كلمة المرور" required autocomplete="current-password">
                     <i class="fas fa-lock" aria-hidden="true"></i>
                 </div>
-                <div id="loginError" class="login-error hidden"></div>
                 <button type="submit" id="loginBtn" class="login-btn">دخول</button>
+                <button type="button" id="forgotBtn" class="forgot-link">نسيت كلمة المرور؟</button>
             </form>
+            <form id="teacherCodeForm" class="login-form hidden"><label class="tch-field-label" for="teacherCodeInput">رمز الدخول</label><input id="teacherCodeInput" aria-label="رمز الدخول" autocomplete="off" dir="ltr"><button id="teacherCodeBtn" class="login-btn" type="submit">دخول</button></form>
+            <div id="loginError" class="login-error hidden"></div>
             <div class="login-logo">
                 <img id="loginLogo" src="./assets/brand/afdalkom-logo-vertical-color.png" alt="شعار جمعية أفضلكم لتعليم القرآن الكريم وعلومه">
             </div>
         </div>
-        <div class="login-foot">
-            <span data-program-brand>برنامج المهرة</span>
-            <button type="button" id="forgotBtn" class="forgot-link">نسيت كلمة المرور؟</button>
-        </div>
+        <div class="tch-login-pattern bottom"></div>
     </div>
-    <script>
-        // الشعار يميل يميناً ويساراً مع الماوس حين يكون فوقه فقط
-        (function initLoginLogoTilt() {
-            const box = document.querySelector('#loginOverlay .login-logo'), logo = document.getElementById('loginLogo');
-            if (!box || !logo) return;
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            box.addEventListener('pointermove', e => {
-                if (e.pointerType === 'touch') return;
-                const r = box.getBoundingClientRect();
-                const x = Math.max(-0.5, Math.min(0.5, (e.clientX - r.left) / r.width - 0.5));
-                logo.style.transition = 'transform .12s linear';
-                logo.style.transform = `rotateY(${x * 40}deg)`;
-            });
-            box.addEventListener('pointerleave', () => {
-                logo.style.transition = 'transform .6s cubic-bezier(.22,.9,.3,1)';
-                logo.style.transform = '';
-            });
-        })();
-    </script>
 
     <!-- شاشة اختيار البرنامج -->
     <div id="eventPickerOverlay">
@@ -1429,6 +1525,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
     <!-- Students Tab -->
     <div id="page-students" class="tab-content p-6 md:p-10">
         <div class="max-w-[1800px] mx-auto">
+            <button id="generalDeletedStudentsBtn" type="button" onclick="openGeneralDeletedStudents()" class="hidden no-print bg-white border border-emerald-700 rounded-xl p-3 mb-3 font-bold">المحذوفات (0)</button>
             <div class="general-pagehead gs-pagehead hidden"><div class="general-headingline"><h1>الإنجاز والتحضير</h1><span class="general-help" title="ابحث بالاسم أو الرقم، ثم أدخل الإنجاز أو الحضور.">؟</span></div><p id="generalStudentsSubtitle"></p></div>
             <div id="generalStudentsTools" class="hidden no-print">
                 <div class="gs-tools-row">
@@ -2991,7 +3088,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function updateProgramBrand() {
             const name = programBrandName();
             document.getElementById('appHeader')?.classList.toggle('general-header', name === 'البرنامج العام');
-            document.querySelectorAll('[data-program-brand]').forEach(el => { el.textContent = name; });
+            document.querySelectorAll('[data-program-brand]').forEach(el => { if (!window.almahraAuth?.currentUser && el.closest('#loginOverlay')) return; el.textContent = name; });
             document.querySelectorAll('[data-program-ordinal]').forEach(el => { el.textContent = name === 'البرنامج العام' ? '2' : '٢'; });
             document.title = name === 'البرنامج العام' ? name : 'برنامج المهرة القرآني المتكامل - V25 الذهبي';
         }
@@ -3178,9 +3275,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             try {
                 hijriDateStr = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
                 gregorianDateStr = new Intl.DateTimeFormat('ar-SA', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now);
-                document.getElementById('hijriDateDisplay').innerText = isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-ca-islamic-nu-latn', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : hijriDateStr;
-                document.getElementById('headerGregorian').innerText = (isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-nu-latn', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : gregorianDateStr) + " م";
-            } catch(e) { hijriDateStr = "غير متوفر"; document.getElementById('hijriDateDisplay').innerText = hijriDateStr; }
+                (document.getElementById('hijriDateDisplay') || {}).innerText = isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-ca-islamic-nu-latn', {timeZone: 'Asia/Riyadh', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : hijriDateStr;
+                (document.getElementById('headerGregorian') || {}).innerText = (isGeneralProgram() ? new Intl.DateTimeFormat('ar-SA-u-nu-latn', {timeZone: 'Asia/Riyadh', calendar: 'gregory', day: 'numeric', month: 'long', year: 'numeric'}).format(now) : gregorianDateStr) + " م";
+            } catch(e) { hijriDateStr = "غير متوفر"; (document.getElementById('hijriDateDisplay') || {}).innerText = hijriDateStr; }
         }
         function refreshToday() {
             const previous = todayStr;
@@ -5002,6 +5099,275 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         });
         let _lastCloudSyncFromMe = 0;
 
+        let teacherSelectedHalaqaId = null;
+        let teacherToastTimer = null;
+        const localEntryKeys = new Set();
+        const celebratedEntryKeys = new Set();
+        // ق34/ق48(7): «added» للحفظة البعيدة بصيغة calculateGeneralQuickEntry نفسها التي تُمرَّر محلياً:
+        // roundPointTotal(مجموع points التسجيلات الجديدة + فرق criteriaPoints لليوم)، واحتفال واحد للحفظة كما محلياً.
+        function detectRemoteEntries(prev, next) {
+            const before = new Map(prev.map(s => [String(s.id), s]));
+            for (const student of next) {
+                const old = before.get(String(student.id));
+                if (!old) continue;
+                const was = old.history?.[todayStr]?.entries || {}, day = student.history?.[todayStr];
+                const fresh = Object.entries(day?.entries || {})
+                    .filter(([key]) => !Object.hasOwn(was, key) && !localEntryKeys.has(key) && !celebratedEntryKeys.has(key));
+                fresh.forEach(([key]) => celebratedEntryKeys.add(key));
+                const recited = fresh.map(([, entry]) => entry).filter(entry => ['new', 'review'].includes(entry?.kind));
+                if (!recited.length) continue;
+                const added = roundPointTotal(recited.reduce((sum, entry) => sum + (Number(entry.points) || 0), 0)
+                    + (Number(day?.criteriaPoints) || 0) - (Number(old.history?.[todayStr]?.criteriaPoints) || 0));
+                sendGeneralTvCelebration(student, added, (day?.criteria?.homeprep || 0) > 0);
+            }
+        }
+        function teacherHalaqas() {
+            const settings = window.almahraPrograms?.getProgram('general')?.settings || window.almahraPrograms?.getSettings() || {};
+            const stages = settings.stages || [];
+            return (settings.halaqas || []).filter(h => h.teacherId === window.almahraAuth?.currentTeacherId)
+                .sort((a, b) => {
+                    const period = h => generalPerformanceSettings(settings).periodOf(stages.find(s => s.id === h.stageId));
+                    return (period(a) === 'asr' ? 0 : 1) - (period(b) === 'asr' ? 0 : 1);
+                });
+        }
+        function teacherShowToast(message, undoStudentId = null) {
+            const old = document.getElementById('teacherToast'); old?.remove();
+            const box = document.createElement('div'); box.id = 'teacherToast';
+            box.innerHTML = `<span>${escapeHTML(message)}</span>${undoStudentId !== null ? '<button type="button">تراجع</button>' : ''}`;
+            // ق43: التراجع = undoLastGeneralEntry القائمة بالحرف (آخر تسجيل لهذه الهوية اليوم) للطالب الذي حُفظ له.
+            // ق66: إن كانت نافذة طالب آخر مفتوحة («حفظ والتالي») فالتراجع يمسّ تسجيل السابق وحده، والنافذة تبقى على التالي بما كُتب فيها:
+            // undoLastGeneralEntry (بلا تعديل) تعيد بناء النافذة المفتوحة ما دامت جاهزة، فتُعلَّم غير جاهزة أثناء التراجع ثم تُعاد للتالي.
+            if (undoStudentId !== null) box.querySelector('button').onclick = async () => {
+                box.remove();
+                const section = document.getElementById('generalQuickSection');
+                const openId = document.getElementById('smartModal')?.classList.contains('flex') ? currentEditingStudentId : null;
+                const keep = section && openId !== null && openId !== undoStudentId;
+                if (keep) section.dataset.ready = 'false';
+                currentEditingStudentId = undoStudentId;
+                try { await undoLastGeneralEntry(); }
+                finally {
+                    if (keep) { currentEditingStudentId = openId; section.dataset.ready = 'true'; updateGeneralQuickPreview(); updateGeneralUndoButton(); }
+                }
+            };
+            document.body.appendChild(box);
+            clearTimeout(teacherToastTimer); teacherToastTimer = setTimeout(() => box.remove(), 6000);
+        }
+        // 0 لم يُسجَّل، 1 سُجّل، 2 غائب (ترتيب القائمة و«التالي»).
+        function teacherStudentState(s) {
+            const day = s.history?.[todayStr];
+            if (day?.attended === false) return 2;
+            if (Object.values(day?.entries || {}).length) return 1;
+            return 0;
+        }
+        function renderTeacherHome() {
+            const home = document.getElementById('teacherHome');
+            if (!home) return;
+            refreshToday();
+            const settings = window.almahraPrograms?.getSettings() || {};
+            const halaqas = teacherHalaqas();
+            if (!halaqas.some(h => h.id === teacherSelectedHalaqaId)) teacherSelectedHalaqaId = halaqas[0]?.id || null;
+            const stages = settings.stages || [];
+            home.querySelector('#teacherTopBar strong').textContent = settings.teachers?.find(t => t.id === window.almahraAuth?.currentTeacherId)?.name || 'المعلم';
+            home.querySelector('#teacherHalaqaTabs').innerHTML = halaqas.map(h => {
+                const period = generalPerformanceSettings(settings).periodOf(stages.find(s => s.id === h.stageId));
+                return `<button type="button" data-halaqa="${escapeHTML(h.id)}" aria-pressed="${h.id === teacherSelectedHalaqaId}"><small>${period === 'asr' ? 'العصر' : 'المغرب'}</small><span>${escapeHTML(h.name)}</span></button>`;
+            }).join('');
+            const list = students.filter(s => s.halaqaId === teacherSelectedHalaqaId);
+            const state = teacherStudentState;
+            const recorded = list.filter(s => state(s) === 1).length, absent = list.filter(s => state(s) === 2).length;
+            const dayLabel = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { timeZone:'Asia/Riyadh', weekday:'long' }).format(schoolCivilDate(todayStr));
+            // ق48(2): التاريخ YYYY-MM-DD بأرقام 0-9 معزولاً باتجاه يسار-يمين حتى لا يقلبه اتجاه السطر العربي.
+            home.querySelector('#teacherDayRow').innerHTML = `${escapeHTML(dayLabel)} <bdi dir="ltr">${escapeHTML(todayStr)}</bdi> · سُجّل ${recorded} من ${list.length} · غائب ${absent}`;
+            const schoolDay = getSchoolDayInfo(todayStr).isSchoolDay;
+            home.querySelector('#teacherStudentList').innerHTML = schoolDay ? [...list].sort((a,b) => state(a)-state(b)).map(s => {
+                const entries = Object.values(s.history?.[todayStr]?.entries || {});
+                const grade = settings.grades?.find(g => g.id === entries[0]?.grade)?.name || '';
+                const last = computeFrontier(s);
+                const badge = state(s) === 2 ? 'غائب' : state(s) === 1 ? `سُجّل · ${grade}` : 'لم يُسجَّل';
+                return `<article class="teacher-card ${state(s) === 2 ? 'absent' : state(s) === 1 ? 'recorded' : ''}" data-id="${s.id}"><div class="tch-card-top"><div class="tch-card-info"><div class="tch-card-name">${escapeHTML(s.name)}</div><div class="tch-card-last">آخر محفوظ: ${last ? escapeHTML(generalPointLabel(last)) : 'يُحدَّد في أول إنجاز'}</div></div><span class="tch-badge">${badge}</span></div><div class="tch-actions"><button data-a="ach">الإنجاز</button><button data-a="absent">${state(s) === 2 ? 'إلغاء الغياب' : 'غائب'}</button><button data-a="edit" aria-label="تعديل بيانات الطالب"><i class="fas fa-pen" aria-hidden="true"></i></button><button data-a="more" aria-label="خيارات الطالب"><i class="fas fa-ellipsis" aria-hidden="true"></i></button></div></article>`;
+            }).join('') : '<div class="tch-holiday">اليوم عطلة؛ لا تسجيل</div>';
+            home.querySelector('#teacherAddStudentBtn').hidden = !schoolDay;
+        }
+        function openTeacherHome() {
+            if (!window.almahraAuth?.isTeacher?.()) return;
+            if (document.getElementById('teacherHome')) { renderTeacherHome(); return; }
+            document.body.classList.add('teacher-mode');
+            document.body.classList.remove('event-not-selected');
+            const home = document.createElement('main'); home.id = 'teacherHome';
+            home.innerHTML = '<div id="teacherOffline" hidden>لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود</div><header id="teacherTopBar"><strong></strong><button id="teacherHelpBtn" type="button">!</button><button id="teacherLogoutBtn" type="button">خروج</button></header><div id="teacherHalaqaTabs"></div><div id="teacherDayRow"></div><div id="teacherStudentList"></div><button id="teacherAddStudentBtn" type="button">+ طالب جديد</button>';
+            document.body.appendChild(home);
+            const halaqas = teacherHalaqas();
+            window.almahraData?.setStudentsFilter({ halaqaIds: halaqas.map(h => h.id) });
+            window.almahraPrograms.openProgram('general');
+            for (const selector of ['#appHeader','nav','#page-home','#page-students','#page-settings','#page-records','#page-pomodoro','#settingsGeneralKnightsCard','#setPanelGeneralKnights','#setPanelKnights','#generalTvButton','#generalSettingsTv','#generalMissedDayBtn'])
+                document.querySelectorAll(selector).forEach(el => el.remove());
+            // ق44(ب): جهاز المعلم بلا قناة تلفاز، فلا أثر لأي احتفال يُرسل منه (sendGeneralTvCelebration/postGeneralTv بلا تعديل).
+            clearGeneralTv(true);
+            generalTv.channel?.close(); generalTv.channel = null;
+            installTeacherQuickSave();
+            document.getElementById('loadingOverlay')?.classList.add('hidden');
+            home.addEventListener('click', e => {
+                const tab = e.target.closest('[data-halaqa]');
+                if (tab) { teacherSelectedHalaqaId = tab.dataset.halaqa; renderTeacherHome(); return; }
+                const action = e.target.closest('[data-a]');
+                if (action) {
+                    const id = Number(action.closest('.teacher-card').dataset.id);
+                    if (action.dataset.a === 'ach') openSmartModal(id);
+                    if (action.dataset.a === 'absent') openTeacherAbsenceSheet(id);
+                    if (action.dataset.a === 'edit') openTeacherStudentSheet(id);
+                    if (action.dataset.a === 'more') openTeacherMoreSheet(id);
+                }
+            });
+            home.querySelector('#teacherHelpBtn').onclick = openTeacherHelpSheet;
+            home.querySelector('#teacherLogoutBtn').onclick = async () => {
+                if (!confirm('هل تريد تسجيل الخروج من البرنامج؟')) return;
+                // ق50: إعادة تحميل بعد الخروج (كخروج المشرف almahraLogout) فلا يبقى في الذاكرة مرشِّح الحلقات ولا DOM ناقص.
+                await window.almahraAuth.signOut();
+                location.reload();
+            };
+            home.querySelector('#teacherAddStudentBtn').onclick = () => openTeacherStudentSheet();
+            const offline = () => { home.querySelector('#teacherOffline').hidden = navigator.onLine; };
+            window.addEventListener('online', offline); window.addEventListener('offline', offline); offline();
+            renderTeacherHome();
+        }
+        function teacherSheet(id, content) {
+            document.getElementById(id)?.remove();
+            const root = document.createElement('div'); root.id = id; root.className = 'tch-sheet';
+            root.innerHTML = `<div class="tch-sheet-panel">${content}</div>`;
+            document.body.appendChild(root);
+            return root;
+        }
+        function openTeacherHelpSheet() {
+            const sheet = teacherSheet('teacherHelpSheet','<h2>كيف تسجّل إنجاز اليوم</h2><p>اختر الحلقة، ثم اضغط الإنجاز على بطاقة الطالب. الأيام الفائتة يسجّلها المشرف.</p><button type="button">فهمت</button>');
+            sheet.querySelector('button').onclick = () => sheet.remove();
+        }
+        function openTeacherAbsenceSheet(id) {
+            const student = students.find(s => s.id === id);
+            if (!student || !getSchoolDayInfo(todayStr).isSchoolDay) return;
+            const absent = student.history?.[todayStr]?.attended === false;
+            if (absent) { saveTeacherAbsence(student, false); return; }
+            const sheet = teacherSheet('teacherAbsenceSheet', `<h2>تسجيل غياب ${escapeHTML(student.name)} اليوم؟</h2><button type="button" data-reason="excused">بعذر</button><button type="button" data-reason="unexcused">بغير عذر</button><button type="button" data-cancel>إلغاء</button>`);
+            sheet.querySelector('[data-cancel]').onclick = () => sheet.remove();
+            sheet.querySelectorAll('[data-reason]').forEach(button => button.onclick = async () => {
+                button.disabled = true;
+                await saveTeacherAbsence(student, true, button.dataset.reason);
+                sheet.remove();
+            });
+        }
+        async function saveTeacherAbsence(student, checked, reason = '') {
+            if (!canWriteCloud() || !getSchoolDayInfo(todayStr).isSchoolDay) return;
+            // ق45: الكتابة بدالة المشرف القائمة saveGeneralAbsence نفسها؛ تُملأ عناصر نافذتها (المخفية) لحلقة الطالب واليوم فقط، ويُعلَّم صفّه وحده.
+            const halaqaId = getStudentHalaqa(student, getProgramSettings())?.id;
+            if (!halaqaId) return;
+            document.getElementById('generalAbsenceDate').value = todayStr;
+            const select = document.getElementById('generalAbsenceHalaqa');
+            select.innerHTML = `<option value="${escapeHTML(halaqaId)}"></option>`; select.value = halaqaId;
+            loadGeneralAbsenceList();
+            const index = generalAbsenceDraft?.rows.findIndex(row => row.id === student.id) ?? -1;
+            if (index < 0) return;
+            document.getElementById(`generalAbsent${index}`).checked = checked;
+            document.getElementById(`generalPresent${index}`).checked = !checked;
+            if (checked) document.getElementById(`generalReason${index}`).value = reason;
+            await saveGeneralAbsence();
+            const absentNow = students.find(s => s.id === student.id)?.history?.[todayStr]?.attended === false;
+            if (absentNow === checked) teacherShowToast(checked ? `سُجّل غياب ${student.name}` : `أُلغي غياب ${student.name}`);
+        }
+        let teacherStudentEditingId = null;
+        function openTeacherStudentSheet(id = null) {
+            const student = id === null ? null : students.find(s => s.id === id);
+            teacherStudentEditingId = student?.id ?? null;
+            const sheet = teacherSheet('teacherStudentSheet', `<h2>${student ? 'تعديل بيانات الطالب' : 'طالب جديد'}</h2><label>اسم الطالب<input id="tsName" value="${escapeHTML(student?.name || '')}"></label><label>مقدار الحفظ (بالأجزاء)<input id="tsJuz" type="number" min="0" max="30" value="${student?.memorizedJuz ?? ''}"></label><label>جوال ولي الأمر<input id="tsPhone" type="tel" inputmode="tel" dir="ltr" value="${student?.parentPhone || ''}" placeholder="05 ثم 8 أرقام"></label>${student && !student.parentPhone ? '<p id="tsPhoneHint" class="tch-hint">أضف جوال ولي الأمر لرسائل الأسبوع</p>' : ''}<p id="tsPhoneError" role="alert"></p><button type="button" class="primary">حفظ</button><button type="button" data-cancel>إلغاء</button>`);
+            sheet.querySelector('[data-cancel]').onclick = () => sheet.remove();
+            sheet.querySelector('.primary').onclick = saveTeacherStudent;
+        }
+        async function saveTeacherStudent() {
+            const sheet = document.getElementById('teacherStudentSheet'); if (!sheet || !canWriteCloud()) return;
+            const name = sheet.querySelector('#tsName').value.trim();
+            const raw = sheet.querySelector('#tsPhone').value.trim();
+            const parentPhone = normalizeSaudiPhone(raw);
+            sheet.querySelector('#tsPhoneError').textContent = '';
+            if (!name) { sheet.querySelector('#tsName').focus(); return; }
+            // ق61: الإضافة تشترط الجوال؛ التعديل لطالب جواله المخزون فارغ يقبل تركه فارغاً، وما كُتب يُطبَّع ويُتحقق منه دائماً.
+            const editing = teacherStudentEditingId !== null ? students.find(s => s.id === teacherStudentEditingId) : null;
+            const phoneOptional = !!editing && !editing.parentPhone;
+            if (raw ? !parentPhone : !phoneOptional) { sheet.querySelector('#tsPhoneError').textContent = 'جوال ولي الأمر مطلوب؛ اكتبه هكذا: 05 ثم 8 أرقام'; return; }
+            const memorizedJuz = parseTierMin(sheet.querySelector('#tsJuz').value);
+            sheet.querySelector('.primary').disabled = true;
+            try {
+                if (teacherStudentEditingId !== null) {
+                    const student = students.find(s => s.id === teacherStudentEditingId);
+                    if (!student || !await commitGeneralStudentPatch(student, { name, memorizedJuz, ...(raw ? { parentPhone } : {}), tierId:DEL_FIELD, tierManual:DEL_FIELD })) return;
+                } else {
+                    const seasonId = window.almahraPrograms.getCurrentSeasonId();
+                    const membership = generalStudentMembership(null, teacherSelectedHalaqaId);
+                    const doc = { id: 1001, ...buildGeneralStudentDoc({ name, memorizedJuz, parentPhone }, membership) };
+                    let success = false;
+                    for (let attempt = 0; attempt < 10; attempt++) {
+                        doc.id = Math.max(doc.id, Math.max(1000, ...students.map(s => Number(s.id) || 0)) + 1);
+                        const result = await window.almahraData.createGeneralStudentIfAbsent(doc, seasonId);
+                        if (result?.success) { success = true; break; }
+                        if (result?.code !== 'STUDENT_ID_CONFLICT') throw new Error(result?.error || 'فشل إضافة الطالب');
+                        doc.id++;
+                    }
+                    if (!success) throw new Error('تكرر تعارض رقم الطالب؛ أعد المحاولة');
+                }
+                sheet.remove(); renderTeacherHome(); teacherShowToast('حُفظت بيانات الطالب');
+            } catch (err) { showToast('لم يُحفظ، أعد المحاولة', 'error'); }
+            finally { if (sheet.isConnected) sheet.querySelector('.primary').disabled = false; }
+        }
+        function openTeacherMoreSheet(id) {
+            const student = students.find(s => s.id === id); if (!student) return;
+            const sheet = teacherSheet('teacherMoreSheet', `<h2>${escapeHTML(student.name)}</h2><button type="button" class="danger">حذف الطالب</button><button type="button" data-cancel>إلغاء</button>`);
+            sheet.querySelector('[data-cancel]').onclick = () => sheet.remove();
+            sheet.querySelector('.danger').onclick = () => {
+                sheet.remove();
+                const halaqa = teacherHalaqas().find(h => h.id === student.halaqaId);
+                if (!confirm(`حذف ${student.name} من ${halaqa?.name || 'الحلقة'}؟ سيُمحى سجله ونقاطه.`)) return;
+                const confirmSheet = teacherSheet('teacherDeleteSheet', `<h2>للتأكيد اكتب اسم الطالب كما هو</h2><strong>${escapeHTML(student.name)}</strong><input id="tsDeleteName"><button type="button" class="danger">حذف نهائي</button><button type="button" data-cancel>إلغاء</button>`);
+                confirmSheet.querySelector('[data-cancel]').onclick = () => confirmSheet.remove();
+                confirmSheet.querySelector('.danger').onclick = async () => {
+                    if (confirmSheet.querySelector('#tsDeleteName').value !== student.name) return;
+                    // ق52(هـ): الحذف على نسخة الطالب الحالية في القائمة لا على الكائن المحفوظ لحظة فتح الورقة؛ إن خرج من القائمة فلا حذف.
+                    const current = students.find(s => s.id === student.id);
+                    if (!current) { confirmSheet.remove(); showToast('الطالب لم يعد في القائمة؛ لم يُحذف شيء', 'error'); return; }
+                    const result = await window.almahraData.deleteStudentWithCopy(current);
+                    if (!result?.success) { showToast('لم يُحذف، أعد المحاولة','error'); return; }
+                    confirmSheet.remove(); renderTeacherHome(); teacherShowToast(`حُذف ${student.name}؛ المشرف وحده يستعيده من المحذوفات`);
+                };
+            };
+        }
+        // ق48(6): زر «المحذوفات (n)» للبرنامج العام وحده؛ قراءة واحدة عند دخول صفحة الطلاب وبعد الاستعادة (لا قراءة في كل updateAllUIs).
+        async function renderDeletedStudentsButton() {
+            const button = document.getElementById('generalDeletedStudentsBtn'); if (!button) return;
+            const show = !!window.almahraAuth?.isAdmin?.() && isGeneralProgram() && !!window.almahraData?.listDeletedStudents;
+            button.classList.toggle('hidden', !show);
+            if (!show) return;
+            try { button.textContent = `المحذوفات (${(await window.almahraData.listDeletedStudents()).length})`; }
+            catch (err) { console.error('المحذوفات:', err); }
+        }
+        window.addEventListener('almahra-program-changed', () => document.getElementById('generalDeletedStudentsBtn')?.classList.add('hidden'));
+        function deletedCopyTime(value) {
+            const date = typeof value?.toDate === 'function' ? value.toDate() : typeof value?.seconds === 'number' ? new Date(value.seconds * 1000) : null;
+            if (!date || Number.isNaN(date.getTime())) return 'غير معروف';
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date)
+                + ' ' + new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Riyadh', hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+        }
+        async function openGeneralDeletedStudents() {
+            if (!window.almahraAuth?.isAdmin() || !isGeneralProgram()) return;
+            if (!window.almahraData?.listDeletedStudents) return;
+            let copies;
+            try { copies = await window.almahraData.listDeletedStudents(); }
+            catch (err) { showToast('تعذّرت قراءة المحذوفات: ' + err.message, 'error'); return; }
+            const halaqas = getProgramSettings().halaqas || [];
+            const rows = copies.map((c, i) => `<div class="tch-deleted-row"><div><strong>${escapeHTML(c.name || '')}</strong><div>${escapeHTML(halaqas.find(h => h.id === c.halaqaId)?.name || 'حلقة غير معروفة')} · حُذف <bdi dir="ltr">${escapeHTML(deletedCopyTime(c.deletedAt))}</bdi></div></div><button type="button" data-index="${i}">استعادة</button></div>`).join('');
+            const sheet = teacherSheet('generalDeletedStudentsSheet', `<h2>المحذوفات (${copies.length})</h2>${rows || '<p>لا محذوفات</p>'}<button type="button" data-cancel>إغلاق</button>`);
+            sheet.querySelector('[data-cancel]').onclick = () => sheet.remove();
+            sheet.querySelectorAll('[data-index]').forEach(button => button.onclick = async () => {
+                const result = await window.almahraData.restoreDeletedStudent(copies[Number(button.dataset.index)]);
+                if (result?.success) { sheet.remove(); renderDeletedStudentsButton(); }
+                else showToast('لم تُستعد، أعد المحاولة: ' + (result?.error || ''), 'error');
+            });
+        }
         function loadData() {
             students = []; // بداية فارغة حتى يصل أول snapshot من السحابة
 
@@ -5015,9 +5381,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 window.almahraPrograms.setWriteGuard(ensureWeekKnightsFrozen);
                 // نشترك في المزامنة اللحظية - كل تحديث يصل هنا
                 window.almahraData.subscribeStudents((newStudents) => {
+                    if (window.almahraAuth?.isAdmin() && students.length)
+                        detectRemoteEntries(students, newStudents);
                     students = newStudents;
                     generalTv.dataContext = generalTvContext();
-                    checkWeekKnightsOnLoad();
+                    if (!window.almahraAuth?.isTeacher?.()) checkWeekKnightsOnLoad();
                     if (typeof updateAllUIs === 'function') {
                         try { updateAllUIs(); } catch (e) { console.error('updateAllUIs error:', e); }
                     }
@@ -5027,6 +5395,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         function saveData() {
+            if (window.almahraAuth?.isTeacher?.()) return;
             if (!requireSchoolCalendar()) return;
             if (!canWriteView()) return;
             if (!window.almahraData) {
@@ -5114,6 +5483,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             // حارسا saveData نفسهما؛ عند المنع لا يُعدَّل شيء محلياً ولا يُرسل شيء
             if (!window.almahraData) { console.warn('⚠️ almahraData not ready, save skipped'); return false; }
             if (!window.almahraData.getActiveSeasonId()) {
+                if (window.almahraAuth?.isTeacher?.()) { showToast('لا موسم نشط؛ أبلغ المشرف', 'error'); return false; }
                 showToast('⚠️ لم تختر برنامجاً بعد — افتح برنامجاً أولاً', 'error');
                 if (typeof openEventPicker === 'function') openEventPicker();
                 return false;
@@ -6085,7 +6455,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         // تسجيل يُكتب إلى Firestore: لا مفتاح قيمته undefined (Firestore ترفضه)، وnull يبقى
         function makeEntry(fields) { const e = {}; Object.keys(fields).forEach(k => { if (fields[k] !== undefined) e[k] = fields[k]; }); return e; }
         // مفتاح التسجيل يمنع جهازين من طمس تسجيل بعضهما: الوقت بالمللي ثانية + ٨ أحرف عشوائية (٣٦^٨ ≈ ٢٫٨ تريليون)
-        const newEntryId = () => 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10).padEnd(8, '0');
+        const newEntryId = () => { const id = 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10).padEnd(8, '0'); if (typeof localEntryKeys !== 'undefined') localEntryKeys.add(id); return id; };
         const newDayRecord = (attended, hijri) => ({ attended: !!attended, hijri: hijri || null, entries: {} });
         // «أبعد» في اتجاه الطالب: السورة أولاً ثم الآية تصاعدياً في الاتجاهين (صاعد: سورة أصغر أبعد؛ نازل: سورة أكبر أبعد)
         function isFurther(sNew, aNew, sOld, aOld, dir) { if (sOld == null) return true; if (sNew === sOld) return aNew > aOld; return dir === 'down' ? sNew > sOld : sNew < sOld; }
@@ -7403,6 +7773,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         
         function updateAllUIs() {
+            if (window.almahraAuth?.isTeacher?.()) { renderTeacherHome(); return; }
             if (isGeneralProgram()) sendGeneralTvSnapshot();
             if (typeof updateGeneralUndoButton === 'function') updateGeneralUndoButton();
             updateSchoolCalendarAlert();
@@ -9562,9 +9933,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function renderGeneralQuickDate() {
             const missed = generalQuickEntry.dateStr !== todayStr;
             const button = document.getElementById('generalMissedDayBtn');
-            button.disabled = false;
-            button.textContent = generalQuickDayName(generalQuickEntry.dateStr) + ' ▾';
-            button.setAttribute('aria-expanded', 'false');
+            if (button) {
+                button.disabled = false;
+                button.textContent = generalQuickDayName(generalQuickEntry.dateStr) + ' ▾';
+                button.setAttribute('aria-expanded', 'false');
+            }
             document.getElementById('generalMissedDays').classList.add('hidden');
             document.getElementById('generalMissedBanner').classList.toggle('hidden', !missed);
             document.getElementById('generalMissedLabel').textContent = missed ? `تسجيل على يوم ${generalQuickDayName(generalQuickEntry.dateStr)}` : '';
@@ -9664,6 +10037,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function initGeneralQuickEntry(student, dateStr = todayStr) {
             resetGeneralQuickReviewConfirmation();
+            const teacherModeQuick = !!window.almahraAuth?.isTeacher?.();
             document.getElementById('generalQuickSection').dataset.ready = 'false';
             const suggestions = generalQuickSuggestions(student);
             Object.assign(generalQuickEntry, { grades: { new: '', review: '' }, newStart: suggestions.newStart,
@@ -9672,7 +10046,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             renderCriteriaList(student, dateStr);
             criteriaAtOpen.sel = getCriteriaSelection();
             renderGeneralQuickDate();
-            document.getElementById('generalQuickName').textContent = student.name;
+            document.getElementById('generalQuickName').textContent = teacherModeQuick ? 'الإنجاز · ' + student.name : student.name;
             document.getElementById('generalCriteriaAllBtn').hidden = false;
             const halaqa = getStudentHalaqa(student, getProgramSettings());
             const teacher = getProgramSettings().teachers.find(t => t.id === halaqa?.teacherId);
@@ -9685,10 +10059,33 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 ${kind === 'new' ? `<div class="qe-field"><label>من <i class="fas fa-lock qe-lock-icon" aria-hidden="true"></i></label>${generalQuickEntry.needsPosition ? `<div class="qe-position"><label>آخر آية حفظها:</label><div class="qe-pair"><select id="quick_positionSurah" aria-label="سورة آخر محفوظ" onchange="generalQuickPositionChanged(true)">${options}</select><input id="quick_positionAyah" aria-label="آخر آية حفظها" type="number" min="1" step="1" oninput="generalQuickPositionChanged()"></div><label><input id="quick_positionNone" type="checkbox" onchange="generalQuickPositionChanged()"> لم يحفظ شيئاً بعد</label></div>` : ''}<p id="quick_new_start" class="qe-locked"></p></div>` : rangeFields(kind, 'from')}
                 ${rangeFields(kind, 'to')}<div id="quick_${kind}_grades" class="qe-grades" aria-label="تقدير ${kind === 'new' ? 'الجديد' : 'المراجعة'}"></div>
                 <button id="quick_${kind}_clear" type="button" class="qe-clear" onclick="clearGeneralQuickSection('${kind}')">مسح القسم</button>
-                ${kind === 'new' ? '<div class="qe-below"><button type="button" onclick="openGeneralFrontierFixFromQuick()" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع</button><p id="quick_new_after" class="qe-hint"></p></div>' : ''}
+                ${kind === 'new' ? `<div class="qe-below">${teacherModeQuick ? '<p>لتصحيح الموضع أبلغ المشرف</p>' : '<button type="button" onclick="openGeneralFrontierFixFromQuick()" class="qe-fix">موضعه غير صحيح؟ تصحيح الموضع</button>'}<p id="quick_new_after" class="qe-hint"></p></div>` : ''}
                 <p id="quick_${kind}_message" class="qe-message" aria-live="polite"></p>
-                ${kind === 'new' ? '<button id="quick_position_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>' : '<button id="quick_review_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>'}
+                ${teacherModeQuick ? `<button id="quickNo${kind === 'new' ? 'New' : 'Review'}Today" type="button" class="tch-skip" onclick="teacherSkipQuick('${kind}')">بلا ${kind === 'new' ? 'جديد' : 'مراجعة'} اليوم</button>` : kind === 'new' ? '<button id="quick_position_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>' : '<button id="quick_review_fix" type="button" class="qe-fix" onclick="openGeneralFrontierFixFromQuick()">تصحيح الموضع</button>'}
             </section>`).join('');
+            if (teacherModeQuick) {
+                teacherQuickSkip = { new:false, review:false };
+                const section = document.getElementById('generalQuickSection');
+                section.querySelector('.tch-quick-tabs')?.remove();
+                section.querySelector('#quickTodayBox')?.remove();
+                section.querySelector('#quickOneSideConfirm')?.remove();
+                section.querySelector('.tch-quick-actions')?.remove();   // ب3: شريط الانضباط باقٍ بين فتحات النافذة، فلا يُكرَّر زرّاه
+                const tabs = document.createElement('div'); tabs.className = 'tch-quick-tabs';
+                tabs.innerHTML = '<button id="quickTabNew" type="button" aria-selected="true" onclick="teacherQuickTab(\'new\')">الجديد</button><button id="quickTabReview" type="button" aria-selected="false" onclick="teacherQuickTab(\'review\')">المراجعة</button>';
+                section.querySelector('.qe-body').before(tabs);
+                const entries = Object.values(student.history?.[todayStr]?.entries || {});
+                if (entries.length) {
+                    const box = document.createElement('div'); box.id = 'quickTodayBox'; box.className = 'tch-today-box';
+                    const mine = entries.some(e => e.by === window.almahraAuth?.currentUser?.uid);
+                    box.innerHTML = `<span>سُجّل اليوم: ${entries.map(e => escapeHTML(getProgramSettings().grades?.find(g => g.id === e.grade)?.name || e.kind)).join('، ')}</span> · ${mine ? '<button type="button" onclick="undoLastGeneralEntry()">تراجع</button>' : '<span>سُجّل من جهاز آخر؛ لتعديله أبلغ المشرف</span>'}`;
+                    tabs.before(box);
+                }
+                const confirmBox = document.createElement('div'); confirmBox.id = 'quickOneSideConfirm'; confirmBox.hidden = true;
+                confirmBox.innerHTML = '<span></span><button type="button" onclick="teacherSaveQuickEntry()">حفظ</button><button type="button" onclick="teacherQuickBack()">رجوع</button>';
+                section.querySelector('#generalQuickReviewReminder').before(confirmBox);
+                section.querySelector('.qe-criteria-bar').insertAdjacentHTML('afterbegin','<div class="tch-quick-actions"><button id="quickDisciplineAll" type="button" aria-pressed="false" onclick="fulfillGeneralCriteria()">استوفى المعايير</button><button id="quickDisciplineHome" type="button" aria-pressed="false" onclick="document.getElementById(\'generalHomePrepBtn\')?.click()">التحضير المنزلي</button></div>');
+                teacherQuickTab('new');
+            }
             for (const kind of ['new', 'review']) {
                 const start = (kind === 'new' ? suggestions.newStart : suggestions.reviewStart) || generalNextPoint(null, student.direction);
                 for (const edge of kind === 'new' ? ['to'] : ['from', 'to']) {
@@ -9706,6 +10103,91 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.getElementById('generalCriteriaExceptions').setAttribute('aria-expanded', 'false');
             document.getElementById('generalQuickSection').dataset.ready = 'true';
             renderGeneralQuickGrades(); updateGeneralQuickPreview();
+        }
+        let teacherQuickSkip = { new:false, review:false };
+        function teacherQuickTab(kind) {
+            for (const k of ['new','review']) {
+                document.getElementById(`quickTab${k === 'new' ? 'New' : 'Review'}`)?.setAttribute('aria-selected', String(k === kind));
+                document.getElementById(`quick_${k}_row`)?.classList.toggle('tch-selected', k === kind);
+            }
+        }
+        function teacherSkipQuick(kind) {
+            teacherQuickSkip[kind] = true;
+            document.getElementById(`quickNo${kind === 'new' ? 'New' : 'Review'}Today`)?.setAttribute('aria-pressed','true');
+        }
+        // ق28/ق44: حفظ المعلم يمرّ بـsaveGeneralQuickEntry القائمة بلا تعديل فيها؛ التأكيد بالاتجاهين والرسالة يحيطان بها من الخارج.
+        let teacherOneSideConfirmed = null;
+        function teacherQuickBack() {
+            const box = document.getElementById('quickOneSideConfirm'); if (!box) return;
+            box.hidden = true; teacherOneSideConfirmed = null;
+            teacherQuickTab(box.dataset.back || 'review');
+        }
+        // ق64/ق68/ق68ب: «التالي» = أول طالب غير مسجَّل وغير غائب غير الحالي من أول القائمة الظاهرة في تبويب الحلقة نفسه.
+        // الترتيب من البطاقات الظاهرة، والحالة من بيانات الطالب (لا من صنف البطاقة) فلا يتأثر بتوقيت إعادة رسم القائمة.
+        function teacherNextStudentId(currentId) {
+            for (const card of document.querySelectorAll('#teacherStudentList .teacher-card[data-id]')) {
+                const s = students.find(x => String(x.id) === card.dataset.id);
+                if (s && s.id !== currentId && s.halaqaId === teacherSelectedHalaqaId && teacherStudentState(s) === 0) return s.id;
+            }
+            return null;
+        }
+        async function teacherSaveQuickEntry() {
+            if (!isGeneralProgram() || generalUndoInProgress) return;
+            const student = students.find(s => s.id === currentEditingStudentId);
+            if (!student) return saveGeneralQuickEntry();
+            let calculation = null;
+            try { calculation = calculateGeneralQuickEntry(student, getProgramSettings()); } catch (_) { calculation = null; }
+            const kinds = calculation && !calculation.errors.length ? calculation.sections.map(entry => entry.kind) : [];
+            const box = document.getElementById('quickOneSideConfirm');
+            if (kinds.length === 1 && box) {
+                const other = kinds[0] === 'new' ? 'review' : 'new', key = generalQuickReviewConfirmationKey();
+                if (!teacherQuickSkip[other] && teacherOneSideConfirmed !== key) {
+                    teacherOneSideConfirmed = key;
+                    box.dataset.back = other;
+                    box.querySelector('span').textContent = kinds[0] === 'new'
+                        ? 'لم تُسجَّل مراجعة لهذا الطالب اليوم. حفظ الجديد فقط؟'
+                        : 'لم يُسجَّل جديد لهذا الطالب اليوم. حفظ المراجعة فقط؟';
+                    box.hidden = false;
+                    return;
+                }
+                // التأكيد تمّ بحوار المعلم (أو بزر «بلا … اليوم»)؛ فلا يُطلب تأكيد المشرف القائم مرة ثانية.
+                if (kinds[0] === 'new') generalQuickEntry.noReviewConfirmation = key;
+            }
+            box?.setAttribute('hidden', '');
+            const uid = window.almahraAuth?.currentUser?.uid;
+            const mine = () => Object.values(students.find(s => s.id === student.id)?.history?.[todayStr]?.entries || {}).filter(e => e.by === uid).length;
+            const before = mine();
+            await saveGeneralQuickEntry();
+            if (mine() > before) {
+                document.getElementById('toastMessage')?.classList.add('hidden');
+                teacherShowToast(`حُفظ ل${student.name} ·`, student.id);
+                // ق64/ق67: زر الحفظ وزر التأكيد وEnter كلها تمرّ من هنا؛ بلا تالٍ تبقى النافذة مغلقة كما أغلقها الحفظ.
+                const next = teacherNextStudentId(student.id);
+                if (next !== null) openSmartModal(next);
+            }
+        }
+        function installTeacherQuickSave() {
+            if (installTeacherQuickSave.done) return;
+            installTeacherQuickSave.done = true;
+            // ق64: نص زر الحفظ «حفظ والتالي» ما دام يوجد تالٍ وإلا «حفظ»؛ يُعاد بعد كل استدعاء لـupdateGeneralUndoButton (الفتح، الحفظ، التراجع).
+            const baseUndoButton = updateGeneralUndoButton;
+            updateGeneralUndoButton = function () {
+                baseUndoButton();
+                const quickSave = document.getElementById('generalQuickSaveBtn');
+                if (quickSave && generalUndoInProgress !== 'save')
+                    quickSave.innerHTML = (teacherNextStudentId(currentEditingStudentId) !== null ? 'حفظ والتالي' : 'حفظ') + ' <small>Enter ↵</small>';
+            };
+            // في وضع المعلم وحده: زر الحفظ وEnter في النافذة يمرّان بـteacherSaveQuickEntry قبل معالِجهما القائم.
+            document.addEventListener('click', event => {
+                if (!document.body.classList.contains('teacher-mode') || !event.target.closest?.('#generalQuickSaveBtn')) return;
+                event.preventDefault(); event.stopImmediatePropagation(); teacherSaveQuickEntry();
+            }, true);
+            document.addEventListener('keydown', event => {
+                if (!document.body.classList.contains('teacher-mode') || event.key !== 'Enter' || event.isComposing) return;
+                if (!event.target.closest?.('#generalQuickSection') || event.target.tagName === 'BUTTON') return;
+                if (document.querySelector('#generalQuickSection .sp-list:not([hidden])')) return; // Enter يختار السورة من قائمة البحث كما هو
+                event.preventDefault(); event.stopImmediatePropagation(); teacherSaveQuickEntry();
+            }, true);
         }
         function generalQuickPositionChanged(surahChanged = false) {
             const none = document.getElementById('quick_positionNone').checked, input = document.getElementById('quick_positionAyah');
@@ -10044,6 +10526,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function resetGeneralQuickReviewConfirmation() {
             generalQuickEntry.noReviewConfirmation = null;
+            document.getElementById('quickOneSideConfirm')?.setAttribute('hidden','');
             const reminder = document.getElementById('generalQuickReviewReminder');
             reminder.hidden = true;
             reminder.textContent = '';
@@ -10063,7 +10546,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const invalidPosition = generalOriginalPosition(student).invalid;
             generalQuickEntry.previewKey = calculation.key;
             const start = position.valid ? generalNextPoint(position.point, student.direction) : null;
-            document.getElementById('quick_new_start').textContent = start ? generalPointLabel(start) : position.valid ? 'اكتمل المصحف' : '';
+            if (window.almahraAuth?.isTeacher?.()) {
+                const pos = point => `<span class="tch-pos">${escapeHTML(generalPointLabel(point))}</span>`, frontier = computeFrontier(student);   // ف-F9
+                // غلاف واحد: .qe-locked حاوية flex، فكل نص بين عنصرين يصير بنداً مستقلاً تُحذف فراغاته الطرفية (الفراغ قبل الموضع وبعده يصير بعرض 0).
+                document.getElementById('quick_new_start').innerHTML = `<span>آخر محفوظ: ${frontier ? pos(frontier) : 'يُحدَّد في أول إنجاز'} ← يبدأ من: ${start ? pos(start) : position.valid ? 'اكتمل المصحف' : ''}</span>`;
+            } else document.getElementById('quick_new_start').textContent = start ? generalPointLabel(start) : position.valid ? 'اكتمل المصحف' : '';
             document.getElementById('quick_new_start').hidden = generalQuickEntry.needsPosition && !position.valid;
             document.getElementById('quick_new_after').textContent = 'محفوظه بعد اليوم: ' + (calculation.frontier ? generalPointLabel(calculation.frontier) : position.valid ? 'لم يحفظ شيئاً بعد' : 'لم يُحدَّد');
             for (const kind of ['new', 'review']) {
@@ -10078,7 +10565,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 message.textContent = own.map(e => e.message).join(' · ');
                 if (kind === 'review' && !position.valid) message.textContent = invalidPosition ? 'صحّح موضع الطالب أولاً' : 'حدّد آخر آية حفظها أولاً';
                 row.classList.toggle('qe-disabled', kind === 'review' && !position.valid);
-                document.getElementById(kind === 'new' ? 'quick_position_fix' : 'quick_review_fix').hidden = !own.some(e => e.fix);
+                const fixButton = document.getElementById(kind === 'new' ? 'quick_position_fix' : 'quick_review_fix');
+                if (fixButton) fixButton.hidden = !own.some(e => e.fix);
             }
             if (generalQuickEntry.needsPosition) {
                 const input = document.getElementById('quick_positionAyah');
@@ -10103,6 +10591,9 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const missing = positives.filter(c => !Object.hasOwn(selection, c.id));
             const rated = Object.keys(selection).length > 0;
             document.getElementById('generalCriteriaAllBtn').setAttribute('aria-pressed', String(positives.length > 0 && missing.length === 0));
+            // ف-F7: زرّا المعلم يعكسان الاختيار نفسه (لا آخر ضغطة).
+            document.getElementById('quickDisciplineAll')?.setAttribute('aria-pressed', String(positives.length > 0 && missing.length === 0));
+            document.getElementById('quickDisciplineHome')?.setAttribute('aria-pressed', String(Object.hasOwn(selection, 'homeprep')));
             document.getElementById('generalCriteriaState').textContent = !rated ? 'غير مقيّم — لا نقاط'
                 : (calculation.criteria.points >= 0 ? '+' : '') + num(calculation.criteria.points)
                     + (missing.length ? ' · لم يستوفِ: ' + missing.map(c => c.name).join('، ') : ' · استوفى المعايير كلها')
@@ -10222,6 +10713,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             if (isGeneralProgram() && generalUndoInProgress) return;
             if (isGeneralProgram()) {
                 refreshToday();
+                if (window.almahraAuth?.isTeacher?.() && !getSchoolDayInfo(todayStr).isSchoolDay) { showToast('اليوم عطلة؛ لا تسجيل'); return; }
                 // تبقى النافذة متاحة لورقة فائتة حتى لو كان اليوم إجازة.
                 if (!getGeneralMissedDays().length && !requireSchoolDay()) return;
             } else if (!prepareSchoolDay()) return;
@@ -11257,6 +11749,18 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
         function closeStudentModal() { document.getElementById('studentModal').classList.replace('flex','hidden'); }
         let generalStudentSaveInFlight = false;
+        function buildGeneralStudentDoc({ name, memorizedJuz, parentPhone }, membership) {
+            // كما saveStudent القائم: crypto.randomUUID()؛ والبديل (UUID v4 من getRandomValues) فقط حيث لا تتوفر (سياق غير آمن).
+            const v4 = () => {
+                const bytes = crypto.getRandomValues(new Uint8Array(16));
+                bytes[6] = (bytes[6] & 15) | 64; bytes[8] = (bytes[8] & 63) | 128;
+                const hex = Array.from(bytes, n => n.toString(16).padStart(2, '0')).join('');
+                return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+            };
+            const sid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : v4();
+            return { sid, name, history: {}, memorizedJuz, parentPhone,
+                frontierBase: null, lastDailyBase: null, joinedOn: todayStr, ...membership };
+        }
         async function saveStudent() {
             if (isGeneralProgram() && generalStudentSaveInFlight) return;
             if (!canWriteCloud()) return;
@@ -11305,8 +11809,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                         if (!canWriteCloud()) return;
                         const seasonId = window.almahraPrograms.getCurrentSeasonId();
                         let nid = 1;
-                        const doc = { id: nid, sid: crypto.randomUUID(), name: n, history: {}, memorizedJuz, parentPhone,
-                            frontierBase: null, lastDailyBase: null, joinedOn: todayStr, ...membership };
+                        const doc = { id: nid, ...buildGeneralStudentDoc({ name: n, memorizedJuz, parentPhone }, membership) };
                         let firstMembership = null;
                         for (let attempt = 0; attempt < 3; attempt++) {
                             if (!requireSchoolCalendar()) return;
@@ -11380,10 +11883,12 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             closeDeleteModal();
         }
         function switchTab(id, btn) {
+            if (window.almahraAuth?.isTeacher?.()) return;
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active'); window.scrollTo(0, 0);
             if (id === 'page-home' && isGeneralProgram()) renderHomeDashboard();
+            if (id === 'page-students' && typeof renderDeletedStudentsButton === 'function') renderDeletedStudentsButton();
             if (id === 'page-settings') {
                 if (isGeneralProgram()) seasonCalendarDraft = null; // فتح صريح جديد بعد التعارض.
                 if (typeof renderProgramSettings === 'function') renderProgramSettings();
@@ -11755,7 +12260,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.getElementById('smartResetRow').style.display = general ? 'none' : '';
             document.getElementById('tabMasteryBtn').style.display = hideGolden ? 'none' : '';
             document.getElementById('smartTabs').style.display = hideGolden ? 'none' : '';
-            document.getElementById('reportGoldenLegend').style.display = hideGolden ? 'none' : '';
+            const goldenLegend = document.getElementById('reportGoldenLegend');
+            if (goldenLegend) goldenLegend.style.display = hideGolden ? 'none' : '';
             if (hideGolden || GOLDEN_BOARD_UNDER_REPAIR) switchSmartTab('daily');
             updateGeneralUndoButton();
         }
@@ -12125,9 +12631,36 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 ${kind === 'stage' ? `<label class="text-xs font-bold">الفترة<select class="general-stage-period block p-2 border-2 rounded-lg" aria-label="فترة المرحلة">
                     <option value="asr" ${generalPerformanceSettings().periodOf(item) === 'asr' ? 'selected' : ''}>العصر</option>
                     <option value="maghrib" ${generalPerformanceSettings().periodOf(item) === 'maghrib' ? 'selected' : ''}>المغرب</option>
-                </select></label>` : ''}
+                </select></label>` : `<span class="tch-admin-links"><button type="button" onclick="showTeacherLink(this)"><i class="fas fa-link" aria-hidden="true"></i> رابط الدخول</button><button type="button" onclick="copyTeacherLink(this)"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button><button type="button" onclick="sendTeacherLink(this)"><i class="fab fa-whatsapp tch-wa" aria-hidden="true"></i> إرسال بالواتساب</button><button type="button" onclick="newTeacherCode(this)"><i class="fas fa-rotate" aria-hidden="true"></i> رمز جديد</button><span class="tch-admin-link-value" dir="ltr"></span></span>`}
                 <button type="button" onclick="removeGeneralSettingRow(this, '${kind}')" class="text-red-600 p-2" title="حذف"><i class="fas fa-trash"></i></button>
             </div>`;
+        }
+        // ق52(ج): مدخل عام واحد لكل غرض (ق32): الإنشاء ensureTeacherKey والتغيير rotateTeacherKey، وكلاهما يكتب عبر programs-store وحده.
+        function teacherLoginLink(code) { return location.origin + location.pathname + '?k=' + encodeURIComponent(code); }
+        window.ensureTeacherKey = teacherId => window.almahraPrograms.ensureTeacherKey(teacherId);
+        window.rotateTeacherKey = teacherId => window.almahraPrograms.rotateTeacherKey(teacherId);
+        window.teacherLoginLink = teacherLoginLink;
+        async function showTeacherLink(button) {
+            const row = button.closest('.general-setting-row');
+            const result = await window.ensureTeacherKey(row.dataset.id);
+            const link = teacherLoginLink(result.code);
+            row.querySelector('.tch-admin-link-value').textContent = link;
+            return link;
+        }
+        async function copyTeacherLink(button) {
+            const link = await showTeacherLink(button);
+            await navigator.clipboard?.writeText(link);
+            showToast('نُسخ الرابط');
+        }
+        async function sendTeacherLink(button) {
+            const link = await showTeacherLink(button);
+            window.open('https://wa.me/?text=' + encodeURIComponent(link), '_blank', 'noopener');
+        }
+        async function newTeacherCode(button) {
+            if (!confirm('إنشاء رمز جديد؟ سيتوقف الرابط القديم عن العمل.')) return;
+            const row = button.closest('.general-setting-row');
+            const result = await window.rotateTeacherKey(row.dataset.id);
+            row.querySelector('.tch-admin-link-value').textContent = teacherLoginLink(result.code);
         }
 
         function addGeneralSettingRow(kind) {
@@ -13779,7 +14312,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
         // بعد اكتمال المصادقة: جهّز البرامج
         window.addEventListener('almahra-auth-ready', () => {
-            window.almahraPrograms?.getInitializationErrors().forEach(showProgramInitError);
+            if (!window.almahraAuth?.isTeacher?.()) window.almahraPrograms?.getInitializationErrors().forEach(showProgramInitError);
             document.body.classList.add('event-not-selected');
 
             let waitTicks = 0;
@@ -13789,6 +14322,14 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
                 if (waitTicks > MAX_WAIT_TICKS) {
                     clearInterval(waitForPrograms);
+                    if (window.almahraAuth?.isTeacher?.()) {
+                        if (!document.getElementById('teacherHome')) {
+                            const home = document.createElement('main'); home.id = 'teacherHome'; document.body.appendChild(home);
+                            document.body.classList.add('teacher-mode'); document.body.classList.remove('event-not-selected');
+                        }
+                        document.getElementById('teacherHome').innerHTML = '<p>تعذّر التحميل؛ تحقق من الاتصال ثم أعد التحميل</p><button type="button" onclick="location.reload()">إعادة تحميل</button>';
+                        return;
+                    }
                     openEventPicker();
                     const list = document.getElementById('epProgramsList');
                     if (list) {
@@ -13807,6 +14348,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 if (!window.almahraPrograms || !window.almahraPrograms.isReady()) return;
                 clearInterval(waitForPrograms);
 
+                if (window.almahraAuth?.isTeacher?.()) { openTeacherHome(); return; }
+
                 const savedId = window.almahraPrograms.getSavedProgramId();
                 const programs = window.almahraPrograms.getPrograms();
 
@@ -13815,6 +14358,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
             // تحديث الواجهة كلما تغيّرت البرامج أو المواسم
             window.almahraPrograms.subscribe(() => {
+                if (window.almahraAuth?.isTeacher?.()) { renderTeacherHome(); return; }
                 if (typeof generalPerformanceInvalidate === 'function') generalPerformanceInvalidate();
                 updateSchoolCalendarAlert();
                 const overlay = document.getElementById('eventPickerOverlay');

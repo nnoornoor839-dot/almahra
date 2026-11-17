@@ -278,7 +278,7 @@ test('r2b real UI path rejects failed freeze and preserves local and server data
         p.getCurrentProgram=()=>({id:'general',settings:copy(key.settings)});p.getAllStudents=async()=>server.students();
         await h.call('resetProgramSettings');
     }else if(path==='create'){
-        h.install('saveStudent','parseTierMin','generalStudentMembership','normalizeArabicKey');
+        h.install('saveStudent','buildGeneralStudentDoc','parseTierMin','generalStudentMembership','normalizeArabicKey');
         h.run('let generalStudentSaveInFlight=false');h.ctx.crypto={randomUUID:()=> 'synthetic-new-student'};
         h.ctx.requireSchoolCalendar=()=>true;h.element('studentNameInput').value='طالب مستجد';h.element('studentHalaqaInput').value='a';
         await h.call('saveStudent');assert.equal(h.run('generalStudentSaveInFlight'),false);

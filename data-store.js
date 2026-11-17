@@ -9,6 +9,8 @@ import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebase
 import {
     getFirestore,
     collection,
+    query,
+    where,
     doc,
     setDoc,
     updateDoc,
@@ -17,7 +19,8 @@ import {
     onSnapshot,
     writeBatch,
     getDocs,
-    runTransaction
+    runTransaction,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -40,8 +43,14 @@ let activeProgramId = null;
 let activeSeasonId = null;
 let isReadOnly = false;
 let writeGuard = null;
+let studentsFilter = null;
+function teacherDenied(err) {
+    if (err?.code === 'permission-denied' && window.almahraAuth?.isTeacher?.())
+        window.dispatchEvent(new CustomEvent('almahra-teacher-denied'));
+}
 const WRITE_GUARD_ERROR = 'لا يمكن الحفظ الآن: الأسبوع الماضي لم يُغلق بعد (تحقق من الاتصال ثم أعد المحاولة)';
 async function beforeWrite(programId = activeProgramId, seasonId = activeSeasonId) {
+    if (window.almahraAuth?.isTeacher?.()) return null;
     if (programId !== 'general') return null;
     try {
         const result = writeGuard && await writeGuard(programId, seasonId);
@@ -120,6 +129,9 @@ async function createGeneralStudentIfAbsent(student, expectedSeasonId) {
         // المعاملة المرسلة قد تنجح بعد تبديل الواجهة: نجاحها يُنسب إلى سياقها المثبّت وحده.
         return { success: true, programId, seasonId, contextChanged: !contextValid() };
     } catch (error) {
+        // ق49: في وضع المعلم رفض القراءة/الكتابة داخل معاملة الإنشاء = تعارض رقم (ق3/ق26) بلا حدث إبطال.
+        if (typeof window !== 'undefined' && window.almahraAuth?.isTeacher?.() && error.code === 'permission-denied')
+            return { success: false, code: 'STUDENT_ID_CONFLICT', error: error.message };
         return { success: false, code: error.code || 'STUDENT_CREATE_FAILED', error: error.message };
     }
 }
@@ -139,8 +151,10 @@ function startStudentsListener() {
         return;
     }
 
+    const source = studentsFilter?.halaqaIds?.length
+        ? query(ref, where('halaqaId', 'in', studentsFilter.halaqaIds.slice(0, 10))) : ref;
     studentsUnsubscribe = onSnapshot(
-        ref,
+        source,
         (snapshot) => {
             const students = [];
             snapshot.forEach((docSnap) => {
@@ -157,6 +171,7 @@ function startStudentsListener() {
         (err) => {
             console.error('❌ Firestore listener error:', err.code, err.message);
             lastError = err;
+            teacherDenied(err);
         }
     );
 }
@@ -174,6 +189,10 @@ function stopStudentsListener() {
 window.almahraData = {
 
     setWriteGuard: fn => { writeGuard = fn; },
+    setStudentsFilter: filter => {
+        studentsFilter = filter?.halaqaIds?.length ? { halaqaIds: [...filter.halaqaIds] } : null;
+        if (activeProgramId && activeSeasonId) startStudentsListener();
+    },
     createGeneralStudentIfAbsent,
 
     getStudents: () => [...studentsCache],
@@ -216,6 +235,7 @@ window.almahraData = {
             await setDoc(studentDocRef(student.id), data);
             return { success: true };
         } catch (err) {
+            teacherDenied(err);   // ق59
             console.error('❌ upsertStudent:', err);
             return { success: false, error: err.message };
         }
@@ -234,6 +254,7 @@ window.almahraData = {
             await updateDoc(studentDocRef(id), toFirestoreFields(fields));
             return { success: true };
         } catch (err) {
+            teacherDenied(err);
             console.error('❌ patchStudent:', err);
             return { success: false, error: err.message };
         }
@@ -275,6 +296,7 @@ window.almahraData = {
             });
             return { success: true, ...result };
         } catch (error) {
+            if (typeof teacherDenied === 'function') teacherDenied(error);   // ق59
             return { success: false, ...empty, code: error.code, error: error.message };
         }
     },
@@ -302,6 +324,7 @@ window.almahraData = {
             }
             return { success: true, committed };
         } catch (err) {
+            teacherDenied(err);   // ق59
             console.error('❌ commitBatch:', err);
             return { success: false, committed, error: err.message };
         }
@@ -316,8 +339,38 @@ window.almahraData = {
             await deleteDoc(studentDocRef(id));
             return { success: true };
         } catch (err) {
+            teacherDenied(err);   // ق59
             return { success: false, error: err.message };
         }
+    },
+
+    deleteStudentWithCopy: async student => {
+        if (!student?.sid || !activeSeasonId || isReadOnly) return { success: false, error: 'طالب أو موسم غير صالح' };
+        const blocked = await beforeWrite(); if (blocked) return blocked;
+        const { id, ...data } = student;
+        const batch = writeBatch(db);
+        batch.set(doc(db, PROGRAMS, activeProgramId, SEASONS, activeSeasonId, 'deletedStudents', student.sid),
+            { ...data, studentId: String(id), deletedBy: window.almahraAuth?.currentUser?.uid, deletedAt: serverTimestamp() });
+        batch.delete(studentDocRef(id));
+        try { await batch.commit(); return { success: true }; }
+        catch (err) { teacherDenied(err); return { success: false, error: err.message }; }
+    },
+    listDeletedStudents: async () => {
+        if (!window.almahraAuth?.isAdmin() || !activeSeasonId) return [];
+        const snap = await getDocs(collection(db, PROGRAMS, activeProgramId, SEASONS, activeSeasonId, 'deletedStudents'));
+        return snap.docs.map(d => ({ ...d.data(), copyId: d.id }));
+    },
+    restoreDeletedStudent: async copy => {
+        if (!window.almahraAuth?.isAdmin() || !copy?.studentId) return { success: false, error: 'غير مسموح' };
+        // م-ف3/ق52(د): الاستعادة كتابة مشرف كبقية كتاباته، فتمرّ بحارس التجميد.
+        const blocked = activeProgramId === 'general' ? await beforeWrite() : null;
+        if (blocked) return blocked;
+        const { studentId, deletedBy, deletedAt, copyId, ...data } = copy;
+        const batch = writeBatch(db);
+        batch.set(studentDocRef(studentId), data);
+        batch.delete(doc(db, PROGRAMS, activeProgramId, SEASONS, activeSeasonId, 'deletedStudents', copyId || copy.sid));
+        try { await batch.commit(); return { success: true }; }
+        catch (err) { teacherDenied(err); return { success: false, error: err.message }; }
     },
 
     saveAllStudents: async (students) => {
@@ -345,6 +398,7 @@ window.almahraData = {
             await batch.commit();
             return { success: true, saved: students.length, deleted: deletedCount };
         } catch (err) {
+            teacherDenied(err);   // ق59
             console.error('❌ saveAllStudents:', err);
             return { success: false, error: err.message };
         }
@@ -390,6 +444,7 @@ window.almahraData = {
             await batch.commit();
             return { success: true, imported: count };
         } catch (err) {
+            if (typeof teacherDenied === 'function') teacherDenied(err);   // ق59
             console.error('❌ importStudentsFromSeason:', err);
             return { success: false, error: err.message };
         }

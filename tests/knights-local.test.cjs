@@ -371,7 +371,10 @@ test('weight reports unavailable measure and protected calculations remain exact
         // الفئة 14 (الجزء ٣: حدّ التحضير صار إعداد homePrepMinGrade) تُعكس بأسطرها المسجلة فقط.
         assert.equal(source(name,require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)),source(name,baseline),name);
     assert.equal(html.match(/const dayPoints = .*;/)[0],baseline.match(/const dayPoints = .*;/)[0]);
-    assert.deepEqual(cp.execFileSync('git',['diff','c1bc38f','--','firestore.rules','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');
+    assert.deepEqual(cp.execFileSync('git',['diff','c1bc38f','--','tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'],{cwd:root,encoding:'utf8'}),'');
+    // الفئة 23 (قواعد المعلمين): firestore.rules تُعكس بأسطرها المسجلة فقط ثم تطابق c1bc38f حرفياً.
+    assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeTeacherAccounts(fs.readFileSync(root+'/firestore.rules','utf8'),'firestore.rules'),
+        cp.execFileSync('git',['show','c1bc38f:firestore.rules'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
 });
 
 test('browser: daily halaqa title and tied names remain visible while nonempty teacher names are hidden', async () => {

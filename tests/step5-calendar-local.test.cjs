@@ -79,7 +79,7 @@ function harness() {
         'isSeasonCalendarComplete', 'requireSchoolCalendar', 'getSchoolDayInfo', 'getAttendanceState', 'requireSchoolDay', 'prepareSchoolDay',
         'validateSeasonCalendar', 'collectSeasonCalendar', 'calendarExcludedDays', 'renderSeasonCalendar', 'saveSeasonCalendar',
         'applyFieldsLocally', 'restoreStudent', 'canWriteHistory', 'commitStudentPatch', 'saveGeneralQuickEntry', 'commitGeneralStudentPatch', 'generalQuickContext', 'generalQuickContextMatches',
-        'saveStudent', 'openStudentModal', 'startExcelImport', 'handleExcelImport', 'confirmExcelImport', 'confirmGeneralExcelImport',
+        'saveStudent', 'buildGeneralStudentDoc', 'openStudentModal', 'startExcelImport', 'handleExcelImport', 'confirmExcelImport', 'confirmGeneralExcelImport',
         'isValidStudentBackup', 'importNuclearBackup', 'openSmartModal', 'loadAttendanceForDate', 'saveAttendanceEdit',
         'openAttendanceEditModal', 'saveSmartMastery', 'saveExamPrepProgress', 'resetStudentToday', 'markPresent');
     run("const generalQuickEntry = { previewKey: 'attendance-only', context: null };");

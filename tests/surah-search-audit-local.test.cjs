@@ -12,14 +12,15 @@ const { source } = require('./helpers/quick-entry-harness.cjs');
 
 const root = path.resolve(__dirname, '..');
 const BASE = '24d0f17';
+const HEAD = 'dd2b1f4'; // Category 23 audits the subsequent working tree independently.
 const sha = text => createHash('sha256').update(text).digest('hex');
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 const original = file => git('show', BASE + ':' + file).replaceAll('\r\n', '\n');
-const current = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
+const current = file => git('show', HEAD + ':' + file).replaceAll('\r\n', '\n');
 
 function changesFrom(file) {
     const hunks = []; let hunk;
-    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, '--', file).split(/\r?\n/)) {
+    for (const line of git('diff', '--no-ext-diff', '--unified=0', BASE, HEAD, '--', file).split(/\r?\n/)) {
         const m = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
         if (m) { hunk = { oldLine: +m[1] + (m[2] === '0' ? 1 : 0), newLine: +m[3] + (m[4] === '0' ? 1 : 0), before: [], after: [] }; hunks.push(hunk); }
         else if (hunk && line.startsWith('-')) hunk.before.push(line.slice(1));
@@ -66,7 +67,7 @@ test('category 22 audit: every changed line since 24d0f17 is registered and reve
     assert.equal(audit.categories['22'], CATEGORY);
     assert.equal(audit.surahSearchBaseline, BASE);
     const added = new Set(audit.surahSearchAddedFiles.map(row => row.file));
-    const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
+    const changed = git('diff', '--name-only', BASE, HEAD).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file)).sort();
     assert.deepEqual(audit.surahSearchChanges.map(row => row.file).sort(), changed);
     assert.deepEqual(changed, ['index.html', 'tests/helpers/quick-entry-harness.cjs', ...CHAIN_FILES].sort());
@@ -99,7 +100,7 @@ test('category 22 audit: every changed line since 24d0f17 is registered and reve
         assert.equal(row.sha256, sha(current(row.file)), row.file);
         assert.equal(beforeSurahSearch(current(row.file), row.file), original(row.file), row.file);
     }
-    const untracked = git('ls-files', '--others', '--exclude-standard').trim().split(/\r?\n/).filter(Boolean).sort();
+    const untracked = git('diff', '--name-only', '--diff-filter=A', BASE, HEAD).trim().split(/\r?\n/).filter(Boolean).sort();
     for (const file of untracked) assert.ok(added.has(file), 'Unregistered file: ' + file);
     assert.deepEqual([...added].sort(), ADDED);
     for (const row of audit.surahSearchAddedFiles) {
@@ -116,9 +117,9 @@ test('category 22 audit: every changed line since 24d0f17 is registered and reve
     const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');
     assert.notEqual(outside, current('index.html'));
     assert.notEqual(beforeSurahSearch(outside), original('index.html'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['22'];
+    const categories = { ...audit.categories }; delete categories['22']; delete categories['23'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
