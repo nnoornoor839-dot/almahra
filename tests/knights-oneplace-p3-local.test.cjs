@@ -119,10 +119,13 @@ test('ف9د: with the setting absent (= «جيد»), the real save path stores a
         h.run('generalTv.enabled = false');
         h.run('currentEditingStudentId = students[0].id; initGeneralQuickEntry(students[0], todayStr);'); // إعادة الفتح بعد ضبط الإعدادات حتى تُرسم التقديرات منها
         h.range('new', null, [2, 29]); h.grade('new', 'good');
+        // أ26-هـ (ق170): بعد ل0 (الجولة 4) يُحتسب التحضير المنزلي للابتدائي بحد 8 أسطر جديد **و**وجه مراجعة؛ تُضاف مراجعة وجه واحد
+        // (مفتاح التحضير، الصفحة 4: البقرة 17–24 = 15 سطراً) بتقدير «جيد» إلى التسجيل نفسه، فيبقى المحروس: شرط التقدير ونقاط التحضير 10.
+        h.range('review', hp.pages['4'].from, hp.pages['4'].to); h.grade('review', 'good');
         h.run("toggleGeneralOptIn(document.getElementById('generalHomePrepBtn'))");
         const preview = h.preview();
         const writes = h.state.writes.length; await h.save(); // يضغط ثانية عند تذكير المراجعة كما في المسار الحقيقي
-        return { errors: preview.errors.map(e => e.message), wrote: h.state.writes.length > writes, fields: h.state.writes.at(-1)?.fields || {} };
+        return { errors: preview.errors.map(e => e.message), wrote: h.state.writes.length > writes, fields: h.state.writes.at(-1)?.fields || {}, sections: preview.sections };
     };
     const absent = await run(undefined);
     assert.deepEqual(absent.errors, [], 'بلا إعداد: لا خطأ');
@@ -131,6 +134,10 @@ test('ف9د: with the setting absent (= «جيد»), the real save path stores a
     assert.ok(prepKey, 'حقل المعايير في الحفظ');
     assert.equal(absent.fields[prepKey].homeprep, 10, '+10');
     assert.equal(absent.fields[prepKey.replace(/.criteria$/, '.criteriaPoints')], 10, 'نقاط الانضباط 10');
+    // أ26-هـ (ق170): المراجعة المضافة محفوظة، ونقاطها من قواعد النقاط بالآلية (entry: QuranMeasure + generalEntryPoints) لا بيد.
+    const saved = Object.entries(absent.fields).filter(([k]) => /.entries./.test(k)).map(([, e]) => e);
+    assert.deepEqual(saved.map(e => [e.kind, e.grade, e.points]).sort(), [['new', 'good', entry('new', 5, 'good').points], ['review', 'good', entry('review', 4, 'good').points]].sort(),
+        'التسجيلان المحفوظان [النوع، التقدير، النقاط]');
     const strict = await run('very-good');
     assert.ok(strict.errors.some(m => /جيد جداً/.test(m)), 'جيد جداً: رسالة الرفض بالتقدير');
     assert.equal(strict.wrote, false, 'لا كتابة');

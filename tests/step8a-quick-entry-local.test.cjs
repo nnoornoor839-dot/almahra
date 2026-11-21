@@ -94,14 +94,16 @@ test('both sections produce one request, frozen context and exact preview sum in
         assert.equal(e.points, generalEntryPoints({ lines: QuranMeasure.measure({ spec: e.spec }).lines, kind: e.kind, gradeId: e.grade, settings: h.state.settings }).points);
         assert.equal(e.iv.every(Number.isInteger), true);
     }
-    assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 10) * 10) / 10);
+    // أ11 (ق82): «تأخر» المحفوظ يحجب «الحضور المبكر» و«استوفى» لا يلغيه ← الاختيار {uniform:3, late:-2}، فرق الانضباط 1−(−2) = 3 لا 10.
+    assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 3) * 10) / 10);
     assert.match(h.state.messages.at(-1).message, /^حُفظ لطالب وهمي: /);
     assert.equal(h.state.confetti, 0); assert.equal(h.element('knightCelebrationModal').classList.contains('hidden'), true);
     assert.equal(h.element('smartModal').classList.contains('hidden'), true);
     const fields = h.state.writes[0].fields, last = copy(h.run('computeLastDaily(students[0])'));
     assert.deepEqual([fields.lastDailySurah, fields.lastDailyAyah, fields.lastDailySardRange], [last.surah, last.ayah, last.range]);
     assert.equal(h.s.history[today].attended, true); assert.equal('absence' in h.s.history[today], false);
-    assert.equal('note' in h.s.history[today], false); assert.deepEqual(copy(h.s.history[today].criteria), { early: 5, uniform: 3 });
+    // أ11 (ق82): المحفوظ {uniform:3, late:-2} لا {early:5, uniform:3}.
+    assert.equal('note' in h.s.history[today], false); assert.deepEqual(copy(h.s.history[today].criteria), { uniform: 3, late: -2 });
     assert.equal(Object.keys(fields).some(k => k === 'history' || k.endsWith('.entries')), false);
 });
 

@@ -185,7 +185,8 @@ test('missed save writes only selected date with frozen context, exact preview a
         assert.equal(e.heardBy, 't1'); assert.equal(e.halaqaId, 'h1'); assert.equal(e.stageId, 'stage1'); assert.equal(e.by, 'fake-admin');
         assert.equal(e.points, generalEntryPoints({ lines: QuranMeasure.measure({ spec: e.spec }).lines, kind: e.kind, gradeId: e.grade, settings: h.state.settings }).points);
     }
-    assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 10) * 10) / 10);
+    // أ11 (ق82): «تأخر» المحفوظ على 11-01 يحجب «الحضور المبكر» و«استوفى» لا يلغيه ← فرق الانضباط 3 لا 10.
+    assert.equal(preview.total, Math.round((entries.reduce((sum, e) => sum + e.points, 0) + 3) * 10) / 10);
     assert.ok(Object.keys(fields).filter(k => k.startsWith('history.')).every(k => k.startsWith('history.2026-11-01.')));
     assert.equal(h.s.history['2026-11-01'].attended, true); assert.deepEqual(h.s.history['2026-11-05'], current);
     assert.deepEqual(h.state.calendar, season); assert.equal(h.state.knightWrites, 0); assert.equal(h.s.lastDailySurah, 114); assert.equal(h.s.lastDailyAyah, 6);

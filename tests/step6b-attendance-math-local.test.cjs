@@ -293,8 +293,9 @@ test('one updateAllUIs render over about 90 school days keeps calendar calls con
         const calendar = h.countCalls('getWorkingDaysList'), attendance = h.countCalls('calculateStudentAttendance');
         h.run('updateAllUIs()');
         counts.push({ calendar: calendar.calls, attendance: attendance.calls });
-        assert.equal(attendance.calls, 2 * size); // Reports + their statistics; legacy options no longer render in general.
-        assert.match(h.element('reportsTableBody').innerHTML, /2026-11-09/);
+        // أ11 (ق86): صفحة التقارير غير ظاهرة (اللوحة النشطة recPanelAbsence) فلا يُرسم جدول التقارير داخل updateAllUIs ← 0 لا 2 × العدد.
+        assert.equal(attendance.calls, 0);
+        assert.doesNotMatch(h.element('reportsTableBody').innerHTML, /2026-11-09/);
     }
     assert.equal(counts[0].calendar, counts[1].calendar);
     assert.ok(counts[1].calendar < 10);

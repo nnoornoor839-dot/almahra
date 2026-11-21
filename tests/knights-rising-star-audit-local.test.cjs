@@ -34,7 +34,7 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['19'], CATEGORY);
     assert.equal(audit.knightsRisingStarBaseline, BASE);
-    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsRisingStarChanges.map(row => row.file).sort(), changed);

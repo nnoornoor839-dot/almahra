@@ -264,6 +264,7 @@ if (typeof document !== 'undefined') {
             });
         }
         el('neutral').hidden = view.slides.length > 0;
+        el('tvWait').hidden = !waitElapsed || view.snapshot !== null;
         sections.forEach((section, index) => {
             section.classList.toggle('active', index === view.slide);
             section.setAttribute('aria-hidden', String(index !== view.slide));
@@ -276,7 +277,9 @@ if (typeof document !== 'undefined') {
         el('tv').classList.toggle('has-date', !!el('resultsDate').textContent);
         fitNames();
     }
+    let waitElapsed = false;
     const state = createTvState({ changed: render });
+    setTimeout(() => { waitElapsed = true; render(); }, 35000);
     let prayerKey = '', periods = [], latestPrayer = {};
     function checkPrayer() {
         const now = new Date(), prayer = latestPrayer;

@@ -3,10 +3,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf8');
 function installTv(run, install) {
+    run("if (typeof document !== 'undefined' && !document.querySelectorAll) document.querySelectorAll = () => [];");
     run(html.match(/const generalTv = .*;/)[0]);
     run("const weekKnightsState = new Map(), weekKnightsTvLocks = new Set();");
     run("const weekKnightsChecks = new Map(), weekKnightsPending = new Map();");
     run(html.match(/const KNIGHTS_GUARD_ERROR = .*;/)[0]);
+    run(require('./quick-entry-harness.cjs').source('updateGeneralTvStatus', html));
     install('knightsFreezeCheckKey', 'ensureWeekKnightsFrozen', 'knightsToday', 'knightsStoredSeason', 'knightsPreviousWeekStart', 'knightsDisplayWeekStart', 'getLockedWeekKnights', 'lockWeekRows');
     install('knightsIdentityOrder', 'knightsDayPointsTenths', 'knightsAttendanceState', 'knightsDaysText', 'knightsRankName', 'knightsMessageRow', 'knightsMessageLines', 'readKnightsPerHalaqa', 'dayAcceptedWeightTenths', 'topTiedBy', 'getDayHalaqaKnights', 'getBlockingCriteriaIds', 'dayHasBlockingViolation', 'tvNameWords', 'tvDisplayName', 'getGeneralTvLeaders', 'getGeneralTvPeriod', 'getGeneralTvBoard',
         'generalPerformanceSettings', 'getGeneralCelebrationRank', 'getHomePrepWeek', 'risingStarCycles', 'risingStarCycleAt', 'risingStarsStored', 'getApprovedRisingStars', 'getGeneralTvSnapshot',

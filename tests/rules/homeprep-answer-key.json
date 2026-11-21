@@ -445,21 +445,49 @@
   ],
   "undo": {
     "withoutPrep": {
+      "delta": -10,
       "day": 60,
       "season": 170
     },
     "after": {
-      "day": 15,
-      "week": 95,
-      "season": 125,
+      "day": 0,
+      "week": 80,
+      "season": 110,
       "badrRank": 3,
-      "sultanRank": 1
+      "sultanRank": 1,
+      "hamzaRank": 2
     },
     "restored": {
-      "day": 70,
-      "week": 150,
-      "season": 180,
-      "rank": 1
+      "day": 65,
+      "week": 145,
+      "season": 175,
+      "rank": 1,
+      "prepWeekAsr": [
+        {
+          "name": "بدر",
+          "points": 20
+        },
+        {
+          "name": "سلطان",
+          "points": 20
+        },
+        {
+          "name": "حمزة",
+          "points": 10
+        },
+        {
+          "name": "راشد",
+          "points": 10
+        },
+        {
+          "name": "عادل",
+          "points": 10
+        },
+        {
+          "name": "فارس",
+          "points": 10
+        }
+      ]
     }
   },
   "discipline": {

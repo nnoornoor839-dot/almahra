@@ -9,8 +9,10 @@ const tv = require('../tv.js');
 const adhan = require('../vendor/adhan-4.4.3.umd.js');
 
 test('قفل sha256: مفتاح اللوحة لا يتغير بعد اعتماده', () => {
+    // أ26 (ق156، الجولة 4 ل16): قيمة "undo" وحدها أُعيد توليدها بالآلية من tests/helpers/r4-numbers.cjs --write-keys
+    // (التراجع عن آخر تسجيل يعيد اليوم «لم يُسجَّل»: ماجد 0 وخارج اللوحة)؛ البصمة السابقة 94b98bdf821955dc7cd5d74c4dd6bcebf84d0a89acc62edf348099521823f497.
     assert.equal(createHash('sha256').update(fs.readFileSync(root + '/tests/rules/board-answer-key.json')).digest('hex'),
-        '94b98bdf821955dc7cd5d74c4dd6bcebf84d0a89acc62edf348099521823f497');
+        'a76b65b833938a3b1f65b196f295355b90d67ca1fb35a593cc47ea4d0fdf236f');
 });
 function harness(moment = 'monday') {
     const h = quick(student()), cutoff = moment === 'sunday' ? 3 : 5;
@@ -97,7 +99,7 @@ test('فرسان اليوم والأسبوع والنجم طلال؛ شرف ال
     assert.match(source('renderHonorBoard'), /isGeneralProgram\(\) \? \[\] : getMostImproved\(5\)/);
 });
 
-test('الاحتفال +22.5 لماجد، زياد الثالث ولو كان الأخير، والإلغاء والتراجع يبقيان 10', async () => {
+test('الاحتفال +22.5 لماجد، زياد الثالث ولو كان الأخير، والإلغاء، والتراجع يعيد ماجد «لم يُسجَّل» 0 خارج اللوحة (ل16)', async () => {
     const h = harness();
     for (const id of ['majed', 'ziyad']) {
         h.ctx.id = id; h.ctx.added = key.celebrations[id].added;
@@ -111,10 +113,14 @@ test('الاحتفال +22.5 لماجد، زياد الثالث ولو كان ا
     const majed = h.list.find(s => s.id === 'majed'); majed.id = 1;
     h.run('currentEditingStudentId = 1');
     await h.run('undoLastGeneralEntry()');
-    assert.equal(Object.keys(majed.history[key.today].entries).length, 0);
+    // أ26 (ل16 (أ)، ق156): يوم اليوم بلا تسجيل ولا attended (key.undo من r4-numbers: 0/0، خارج اللوحة).
+    assert.equal(Object.keys(majed.history[key.today]?.entries || {}).length, 0);
+    assert.equal(majed.history[key.today]?.attended, undefined);
+    assert.equal(h.run('getCumulativeStats(students.find(s => s.id === 1)).tripPoints'), key.undo.points);
     const row = h.snapshot().stages[0].board.find(r => r.name === 'ماجد');
-    assert.equal(row.points, key.undo.points); assert.equal(row.week, key.undo.week); assert.equal(row.rank, null);
-    assert.equal(h.run("getGeneralTvBoard('asr').find(e => e.student.name === 'ماجد').rank"), key.undo.rank);
+    assert.equal(!!row, key.undo.onBoard);
+    assert.equal(row?.points ?? 0, key.undo.points); assert.equal(row?.week ?? 0, key.undo.week); assert.equal(row?.rank ?? null, null);
+    assert.equal(h.run("getGeneralTvBoard('asr').find(e => e.student.name === 'ماجد')?.rank ?? null"), key.undo.rank);
 });
 
 test('الأحد قبل الورقة يبقي الأسبوع الماضي؛ أول حضور يصفّر العمود لبقية الطلاب', () => {

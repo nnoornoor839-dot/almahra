@@ -203,6 +203,7 @@ test('ت٢٥-٤: نقر إدخال إنجاز ثم الحفظ يبقي رسال�
         assert.doesNotMatch(await text(h.page, '#criteriaList'), /[٠-٩]/);
         assert.equal(await text(h.page, '#criteriaTotal'), '14');
         assert.equal(await h.page.locator('#quick_new_toAyah').inputValue(), '6');
+        // أ26-ب (ق158 س3): «الحضور المبكر» بلا شرط بعد ل0 (الجولة 4) ← المعيار 14 كاملاً؛ المجموع 22.5 (كما في HEAD قبل ق92).
         assert.equal(await text(h.page, '#generalQuickTotal'), '22.5');
         await h.page.locator('#generalQuickSaveBtn').click();
         assert.deepEqual(await h.page.evaluate(() => window.__fixture.writes), []);

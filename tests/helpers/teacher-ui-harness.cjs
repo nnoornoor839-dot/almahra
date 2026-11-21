@@ -418,5 +418,78 @@ async function openPage(browser, { width = 390, height = 844, user = null, url =
     return { page, context, errors, dialogs, fbLog, doc, close: () => context.close() };
 }
 
-module.exports = { installFakeFirebase, loadModule, openPage, seedDocs, students, settings, makeStudent, PROGRAM_DEFS, TODAY, OTHER_UID, TEACHER_CODE, root, read, copy,
+// ===== أ14 (2026-11-18): نافذة الإنجاز في الهيكلين — أداة واحدة للاختبارات القديمة =====
+// المعلم: أقسام v7 بمحدّدات ق101 س1 (كما tests/teacher-r2-accordion-local.test.cjs): [data-sec="new"|"review"|"behavior"] داخل #generalQuickSection،
+// رأسه .tch-acc-toggle (aria-expanded)، وزر .tch-confirm (aria-pressed)، والجسم .tch-acc-body، والأوراق .tch-sheet.
+// المشرف: الهيكل القديم كما هو (التبويبان #quickTabNew/#quickTabReview إن وُجدا، ولا تأكيد أقسام).
+const QUICK_SEL = { sec: k => `#generalQuickSection [data-sec="${k}"]`, toggle: '.tch-acc-toggle', confirm: '.tch-confirm', body: '.tch-acc-body', sum: '.tch-acc-sum', sheet: '.tch-sheet' };
+const quickAccordion = page => page.evaluate(() => document.body.classList.contains('teacher-mode') && !!document.querySelector('#generalQuickSection [data-sec="new"]'));
+// يفتح نافذة الإنجاز: المعلم من زر «الإنجاز» في بطاقته وينتظر الأقسام؛ المشرف بـopenSmartModal القائمة.
+async function openAch(h, id) {
+    const teacher = await h.page.evaluate(() => document.body.classList.contains('teacher-mode'));
+    if (teacher) {
+        const btn = h.page.locator(`.teacher-card[data-id="${id}"] [data-a=ach]`);
+        await btn.first().waitFor({ state: 'attached', timeout: 6000 }).catch(() => { throw new Error(`زر «الإنجاز» لبطاقة ${id} غير موجود`); });
+        await btn.first().click();
+        await h.page.locator('#smartModal').waitFor({ state: 'visible' });
+        await h.page.locator(QUICK_SEL.sec('new')).waitFor({ state: 'attached', timeout: 3000 })
+            .catch(() => { throw new Error('أقسام النافذة الثلاثة (ق90) غير موجودة: [data-sec="new"]'); });
+    } else {
+        await h.page.evaluate(id => openSmartModal(id), id);
+        await h.page.locator('#generalQuickSection').waitFor({ state: 'visible' });
+    }
+}
+// يفتح القسم (المعلم) أو التبويب (المشرف)؛ يعيد false إن كان رأس القسم معطّلاً (الجديد لمتوقف، ق80) فلا يُفتح.
+async function openSec(page, k) {
+    if (await quickAccordion(page)) {
+        const t = page.locator(QUICK_SEL.sec(k) + ' ' + QUICK_SEL.toggle);
+        if (await t.evaluate(e => e.disabled || e.getAttribute('aria-disabled') === 'true')) return false;
+        if (await t.getAttribute('aria-expanded') !== 'true') await t.click();
+        return true;
+    }
+    if (k === 'behavior') return true;
+    const tab = page.locator(k === 'new' ? '#quickTabNew' : '#quickTabReview');
+    if (await tab.count()) await tab.click();
+    return true;
+}
+const secConfirmed = (page, k) => page.evaluate(sel => document.querySelector(sel + ' .tch-confirm')?.getAttribute('aria-pressed') === 'true', QUICK_SEL.sec(k));
+// يؤكّد القسم إن لم يكن مؤكَّداً (المعلم وحده؛ المشرف بلا تأكيد). يعيد حالة التأكيد بعده.
+async function confirmSec(page, k) {
+    if (!await quickAccordion(page)) return true;
+    const c = page.locator(QUICK_SEL.sec(k) + ' ' + QUICK_SEL.confirm);
+    if (!await c.count()) return false;
+    if (!await secConfirmed(page, k)) { await c.click(); await page.waitForTimeout(60); }
+    return secConfirmed(page, k);
+}
+// قبل «حفظ» عند المعلم: ما لُمس في السلوك لا يُحفظ إلا مؤكَّداً (ق98-1)، والسلوك يُؤكَّد بلا شرط (ق98-4).
+async function confirmBehavior(page) { if (await quickAccordion(page)) await confirmSec(page, 'behavior'); }
+// الأوراق الظاهرة (.tch-sheet) بنصّها وأزرارها.
+function quickSheets(page) {
+    return page.evaluate(sel => [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden')
+        .map(e => ({ id: e.id, text: e.innerText.replace(/\s+/g, ' ').trim(), buttons: [...e.querySelectorAll('button')].filter(b => b.getClientRects().length).map(b => b.innerText.replace(/\s+/g, ' ').trim()) })), QUICK_SEL.sheet);
+}
+async function sheetButton(page, label) {
+    const b = page.locator(QUICK_SEL.sheet).locator('button').filter({ hasText: new RegExp(`^\\s*${label}\\s*$`) }).filter({ visible: true }).first();
+    if (!await b.count()) throw new Error(`لا زر «${label}» في ورقة ظاهرة. الأوراق: ${JSON.stringify(await quickSheets(page))}`);
+    await b.click();
+}
+// يغلق النافذة من زرّها الظاهر: «رجوع» عند المعلم (ق90، ج1)، و✕ .qe-close عند المشرف.
+async function closeAch(page) {
+    if (!await page.evaluate(() => document.getElementById('smartModal')?.classList.contains('flex'))) return;
+    await page.locator(await quickAccordion(page) ? '#generalQuickSection button[aria-label="رجوع"]' : '#generalQuickSection .qe-close').click();
+    await page.waitForFunction(() => !document.getElementById('smartModal')?.classList.contains('flex'), null, { timeout: 3000 });
+}
+// حالة الأقسام: مفتوح/مؤكَّد/معطّل وظهور الجسم.
+function secState(page) {
+    return page.evaluate(() => Object.fromEntries(['new', 'review', 'behavior'].map(k => {
+        const s = document.querySelector(`#generalQuickSection [data-sec="${k}"]`);
+        if (!s) return [k, null];
+        const t = s.querySelector('.tch-acc-toggle'), c = s.querySelector('.tch-confirm'), b = s.querySelector('.tch-acc-body');
+        return [k, { expanded: t?.getAttribute('aria-expanded') === 'true', bodyVisible: !!b && b.getClientRects().length > 0,
+            confirmed: c?.getAttribute('aria-pressed') === 'true', disabled: !!t && (t.disabled || t.getAttribute('aria-disabled') === 'true') }];
+    })));
+}
+
+module.exports = { QUICK_SEL, quickAccordion, openAch, openSec, secConfirmed, confirmSec, confirmBehavior, quickSheets, sheetButton, closeAch, secState,
+    installFakeFirebase, loadModule, openPage, seedDocs, students, settings, makeStudent, PROGRAM_DEFS, TODAY, OTHER_UID, TEACHER_CODE, root, read, copy,
     TEACHER_USER: { uid: 'teacher-uid', isAnonymous: true, email: null, providerId: 'anonymous' }, ADMIN_USER: { uid: 'admin-uid', isAnonymous: false, email: 'admin@test', providerId: 'password' } };

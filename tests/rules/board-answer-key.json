@@ -1320,9 +1320,10 @@
     }
   },
   "undo": {
-    "points": 10,
-    "week": 10,
-    "rank": 24
+    "points": 0,
+    "week": 0,
+    "rank": null,
+    "onBoard": false
   },
   "knights": {
     "asr": {

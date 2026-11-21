@@ -137,7 +137,7 @@ function harness(s = student()) {
     run(html.match(/const generalFrontierFix = .*;/)[0]);
     run(html.match(/const ALL_DAY_NAMES = .*;/)[0]);
     for (const name of ['ivPairs', 'measureEntry', 'rangeLabelOf', 'newEntryId']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
-    install('homePrepQualifies', 'homePrepRejectionMessage', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
+    install('homePrepMinFor', 'homePrepMissing', 'homePrepQualifies', 'homePrepRejectionMessage', 'toggleGeneralOptIn', 'generalValidPoint', 'generalOriginalPosition', 'computeGeneralFrontier', 'generalQuickSectionValues', 'generalQuickPositionValues', 'generalQuickSectionUsed',
         'generalQuickDateBlocked', 'readGeneralQuickPosition', 'generalQuickPositionChanged', 'clearGeneralQuickSection', 'toggleGeneralCriteriaExceptions', 'generalQuickKeydown', 'generalQuickEntryLabel',
         'isGeneralProgram', 'farsSelectionCount', 'updateFarsApprovalView', 'getProgramSettings', 'generalGoldenHidden', 'getStudentHalaqa', 'generalRecitationTeacher', 'getActiveCriteria',
         'roundPointTotal', 'dayStats', 'schoolCivilDate', 'formatDateLocal', 'getWeekStartDate', 'isSeasonCalendarComplete', 'isWorkingDay', 'getSchoolDayInfo', 'getAttendanceState',

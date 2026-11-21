@@ -10,8 +10,11 @@ const key = require('./rules/homeprep-answer-key.json');
 const tv = require('../tv.js');
 
 test('homeprep fixed answer key sha256', () => {
+    // أ26 (ق156، الجولة 4 ل0+ل16): قيمة "undo" وحدها أُعيد توليدها بالآلية من tests/helpers/r4-numbers.cjs --write-keys
+    // (التراجع عن آخر تسجيل يعيد اليوم «لم يُسجَّل»، والحد اليومي انتقل إلى التحضير المنزلي)؛ البصمة السابقة 04ff5202829c63859b5a75437de866ea90b5e42d388d36b576ccdae5bac9a8f5.
+    // أ26-ب (ق158 س2): أُعيد التوليد من بديل حد التحضير 0/0 (هاركنس هذا الملف)؛ البصمة الوسيطة fde9651447383ff47c7f69a6db1e33866bfcd3893e498448a4ba289527eb1d0b.
     assert.equal(createHash('sha256').update(fs.readFileSync(root + '/tests/rules/homeprep-answer-key.json')).digest('hex'),
-        '04ff5202829c63859b5a75437de866ea90b5e42d388d36b576ccdae5bac9a8f5');
+        'd0a17bb23cffd932e9b37ddfae7002ef37a29506192f1e2df4f9baca3abceae8');
     assert.match(html, /const HOMEPREP_SCOPE = 'all';/);
     // الجزء ٣ (٢٠٢٦-١١-٠٨): الحد صار إعداداً (homePrepMinGrade، الغائب = good)؛ مفتاح الإجابة مبني على «جيد جداً» فتضبطه الاختبارات صراحة.
     assert.doesNotMatch(html, /HOMEPREP_MIN_PERCENT/);
@@ -49,6 +52,8 @@ function fixture(row) {
 function harness(scope = 'all') {
     const list = key.students.map(fixture), h = quick(list[0]);
     Object.assign(h.state.settings, copy(key.settings), { homePrepMinGrade: 'very-good' }); h.state.calendar = copy(key.season);
+    // أ26-ب (ق158 س2): هذا الملف يختبر شرط التقدير لا الحد اليومي (الحد مختبر في teacher-r4-local م1–م10 وteacher-r1-logic ر6)، فحدّ التحضير 0/0 لكل مرحلة هنا وحده.
+    h.state.settings.stages = h.state.settings.stages.map(s => ({ ...s, homePrepMin: { newLines: 0, reviewPages: 0 } }));
     h.ctx.fixtures = list; h.ctx.fixedToday = key.today;
     h.run('students = fixtures; todayStr = fixedToday; currentEditingStudentId = 1; let honorKnightsLog = [];');
     for (const name of ['snapQuarters', 'dayPoints']) h.run(html.match(new RegExp('const ' + name + ' = .*;'))[0]);
@@ -114,6 +119,7 @@ test('fulfill never marks optIn; state excludes it while points include it; corr
     const h = harness(); clearDay(h, 1, 4); h.open(1);
     h.range('new', null, [2, 37]); h.grade('new', 'excellent');
     h.run('fulfillGeneralCriteria()');
+    // أ26-ب (ق158 س2): «الحضور المبكر» بلا شرط (ل0) وحد التحضير 0/0 هنا ← قيم المفتاح كما كانت قبل ق92.
     assert.equal(h.element('generalCriteriaState').textContent, key.fulfillStates[0]);
     assert.equal(h.preview().criteria.selection.homeprep, undefined);
     h.prep(); assert.equal(h.element('generalCriteriaState').textContent, key.fulfillStates[1]);
@@ -132,6 +138,7 @@ test('good and no recitation reject visibly and on save; very-good qualifies', a
     h.open(2); h.range('new', null, [2, 37]); h.grade('new', 'very-good'); h.prep();
     assert.deepEqual(h.preview().errors, []); await h.save(); expectEvent(h, key.celebrations.hamza);
     clearDay(h, 3, 3); clearDay(h, 3, 4); h.open(3, key.days[3]); h.prep(); await reject(h);
+    // أ26-ب (ق158 س2): «الحضور المبكر» بلا شرط ← 45 كما في المفتاح.
     h.prep(); h.run('fulfillGeneralCriteria()'); await h.save(); assert.equal(h.total(3), key.celebrations.rashid.total);
 });
 for (const scope of ['all', 'new']) test('pure guarantee and review-only/mixed/repeat/saved cases: ' + scope, async () => {
@@ -190,7 +197,10 @@ test('undo full sequence guards unchanged data, -10 save, exact original deletio
     await h.run('undoLastGeneralEntry()');
     assert.deepEqual(copy(h.list[0]), before); assert.equal(h.state.writes.length, writes);
     assert.equal(h.state.messages.at(-1).message,key.undoError);
-    h.prep(); assert.equal(h.preview().total,-10);
+    // أ26 (ل0+ل16، ق156): «الحضور المبكر» بلا شرط فيبقى 5: إلغاء التحضير فرقه −10 واليوم 60/170 (key.undo.withoutPrep)؛
+    // التراجع عن التسجيل الوحيد يعيد اليوم «لم يُسجَّل»: 0/80/110 (key.undo.after)؛ والإعادة بجديد + التحضير (حد 0/0 هنا، ق158 س2) ← 65/175 (key.undo.restored).
+    // الأرقام كلها من المصدر المستقل tests/helpers/r4-numbers.cjs (أُعيد توليدها في المفتاح بالآلية).
+    h.prep(); assert.equal(h.preview().total,key.undo.withoutPrep.delta);
     await h.save(); assert.equal(h.day(1),key.undo.withoutPrep.day); assert.equal(h.total(1),key.undo.withoutPrep.season);
     assert.deepEqual(h.snapshot().stages[0].prepWeek.find(r => r.name === 'بدر'), { name: 'بدر', points: 10 });
     h.open(1); h.run('sendGeneralTvCelebration(students[0], 1, false)');
@@ -200,16 +210,21 @@ test('undo full sequence guards unchanged data, -10 save, exact original deletio
     assert.equal(board.find(r=>r.name==='بدر').week,key.undo.after.week);
     assert.equal(board.find(r=>r.name==='بدر').rank,key.undo.after.badrRank);
     assert.equal(board.find(r=>r.name==='سلطان').rank,key.undo.after.sultanRank);
-    assert.equal(board.find(r=>r.name==='حمزة').rank,2);
+    assert.equal(board.find(r=>r.name==='حمزة').rank,key.undo.after.hamzaRank);
     assert.deepEqual(h.snapshot().stages[0].prepWeek.find(r => r.name === 'بدر'), { name: 'بدر', points: 10 });
     assert.equal(h.sent.at(-1).type,'cancel');
-    assert.deepEqual(copy(h.list[0].history[key.today].criteria),{ early:5 });
+    // ل16 (أ): لا يبقى في يوم اليوم attended ولا criteria (اليوم «لم يُسجَّل»).
+    const today = h.list[0].history[key.today];
+    assert.deepEqual({ attended: today?.attended, criteria: today?.criteria, criteriaPoints: today?.criteriaPoints }, { attended: undefined, criteria: undefined, criteriaPoints: undefined });
+    // 207 معكوس (ق156): طلب التراجع يحوي حذف attended/absence/note/criteria/criteriaPoints لليوم (DEL_FIELD).
     const patch = h.state.writes.at(-1).fields;
-    assert.equal(Object.keys(patch).some(k=>/criteria|attended/.test(k)),false);
+    for (const f of ['attended','absence','note','criteria','criteriaPoints'])
+        assert.deepEqual(patch['history.' + key.today + '.' + f], { __almahraDelete: true }, 'طلب التراجع لا يحذف ' + f);
     h.open(1); h.range('new',null,[2,37]); h.grade('new','excellent'); h.prep(); await h.save();
     assert.equal(h.day(1),key.undo.restored.day); assert.equal(h.total(1),key.undo.restored.season);
     assert.equal(h.snapshot().stages[0].board[0].rank,key.undo.restored.rank);
-    assert.deepEqual(h.snapshot().stages[0].prepWeek,key.prepWeek.asr);
+    assert.equal(h.snapshot().stages[0].board.find(r=>r.name==='بدر').week,key.undo.restored.week);
+    assert.deepEqual(h.snapshot().stages[0].prepWeek,key.undo.restored.prepWeekAsr);
 });
 test('undo second worthy recitation is allowed if another remains, including map keys different from entry.id', async () => {
     const h = harness(); const day=h.list[0].history[key.today];

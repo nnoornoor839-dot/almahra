@@ -19,6 +19,7 @@ import {
     onSnapshot,
     writeBatch,
     getDocs,
+    getDocFromServer,
     runTransaction,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -44,6 +45,7 @@ let activeSeasonId = null;
 let isReadOnly = false;
 let writeGuard = null;
 let studentsFilter = null;
+let lastTeacherProbe = 0;
 function teacherDenied(err) {
     if (err?.code === 'permission-denied' && window.almahraAuth?.isTeacher?.())
         window.dispatchEvent(new CustomEvent('almahra-teacher-denied'));
@@ -188,6 +190,22 @@ function stopStudentsListener() {
 // ================================================================
 window.almahraData = {
 
+    probeTeacherKey: async (studentId = null) => {
+        if (!window.almahraAuth?.isTeacher?.()) return true;
+        const now = Date.now();
+        if (now - lastTeacherProbe < 10000) return true;
+        lastTeacherProbe = now;
+        const ref = studentId == null ? doc(db, PROGRAMS, 'general') : studentDocRef(studentId);
+        if (!ref) return true;
+        // ف1 (ق173): مهلة 3 ث على القراءة؛ انتهاؤها يُعامَل كانقطاع الشبكة (تُفتح النافذة، لا خروج).
+        let timer;
+        try { await Promise.race([getDocFromServer(ref), new Promise(resolve => { timer = setTimeout(resolve, 3000); })]); return true; }
+        catch (err) {
+            if (err?.code === 'permission-denied') { teacherDenied(err); return false; }
+            return true;
+        }
+        finally { clearTimeout(timer); }
+    },
     setWriteGuard: fn => { writeGuard = fn; },
     setStudentsFilter: filter => {
         studentsFilter = filter?.halaqaIds?.length ? { halaqaIds: [...filter.halaqaIds] } : null;

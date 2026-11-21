@@ -288,8 +288,13 @@ test('الإعدادات تستدعي الدالتين الحاليتين، وا
     }
     assert.match(html, /جارٍ التحميل…/); assert.doesNotMatch(html, /تهيئة اللوحة الذهبية والمحرك المكاني V25/);
     assert.match(html, /class="ah-logo" src="\.\/assets\/brand\/afdalkom-logo-horizontal-color.png"/);
-    const images = text => [...text.matchAll(/<img\b[^>]*>/g)].map(m => m[0]).filter(m => !m.includes('class="ah-logo"'));
+    // أ19 (ق118-3): شعار الدخول #loginLogo أخذ class="ah-logo" (لحماية step7-simplify) فخرج من مرشّح الصنف؛ يُستثنى بمعرّفه من الجهتين
+    // ويُحرس وحده: الصورة نفسها (src) والنص البديل نفسه (alt) كما في HEAD، والفرق الوحيد إضافة الصنف.
+    const images = text => [...text.matchAll(/<img\b[^>]*>/g)].map(m => m[0]).filter(m => !m.includes('class="ah-logo"') && !m.includes('id="loginLogo"'));
     assert.deepEqual(images(html), images(baseline));
+    const loginLogo = text => text.match(/<img\b[^>]*id="loginLogo"[^>]*>/g) || [];
+    assert.equal(loginLogo(html).length, 1, 'شعار الدخول #loginLogo');
+    assert.equal(loginLogo(html)[0], loginLogo(baseline)[0].replace('<img id="loginLogo" ', '<img id="loginLogo" class="ah-logo" '), 'شعار الدخول تغيّر بغير إضافة class="ah-logo"');
 });
 test('التخطيط: ثلاثة أعمدة على الحاسب، عمود دون 1020، وثلاث خانات لليوم حتى على 390', () => {
     assert.match(html, /\.gh-grid\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);

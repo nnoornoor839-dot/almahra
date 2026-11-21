@@ -503,3 +503,108 @@ test('س23 المطابقة التامة تتقدّم: «ص» ← ص (38) ثم �
     assert.equal(sad[1], 37);
     assert.equal(matches(h, 'ق')[0], 50);
 });
+
+// =====================================================================================
+// أ10 (ق85 + ق93-2، 2026-11-18): Enter بلا نتيجة، رقم السورة، البدائل الاثنا عشر، والمطابقة التامة للبديل قبل «يحوي».
+// افتراضات (تُذكر في التقرير): «السطر الأحمر القائم» = #quick_<النوع>_message (.qe-message) للقسم الذي فيه الحقل، أو رسالة showToast إن أُغلقت النافذة بالحفظ؛
+// «يُكمل Enter إلى الحفظ» = الحدث لا يُوقَف انتشاره فيصل إلى generalQuickKeydown القائم (الهاركنس بلا فقاعات، فيُمرَّر إليه يدوياً كما يفعل المتصفح).
+// =====================================================================================
+const NO_SURAH = 'لا سورة بهذا الاسم';
+function enterEvent(el) {
+    return { type: 'keydown', key: 'Enter', target: el, currentTarget: el, isComposing: false, defaultPrevented: false, bubbles: true, stopped: false,
+        preventDefault() { this.defaultPrevented = true; }, stopPropagation() { this.stopped = true; }, stopImmediatePropagation() { this.stopped = true; } };
+}
+const fullForm = h => { h.range('new', null, [2, 10]); h.grade('new'); h.range('review', [1, 1], [1, 7]); h.grade('review'); h.preview(); };
+test('س24 (ق85-1، المشرف) Enter والقائمة مفتوحة بلا نتيجة ← تُغلق القائمة، ويبقى الحقل والقيمة كما كانا، ولا يُبتلع Enter: يصل إلى الحفظ القائم فيُحفظ، مع «لا سورة بهذا الاسم» في السطر الأحمر', async () => {
+    const h = harness(down());
+    need(h, 'surahPickerKey');
+    fullForm(h);
+    const before = h.element('quick_review_toSurah').value;
+    const search = typeSearch(h, 'quick_review_toSurah', 'xyz');
+    assert.ok(listText(h, 'quick_review_toSurah').includes(NO_SURAH), 'الشرط المسبق: القائمة مفتوحة على «لا سورة بهذا الاسم»');
+    const ev = enterEvent(search);
+    search.onkeydown(ev);
+    assert.equal(listOf(h, 'quick_review_toSurah').checkVisibility(), false, 'القائمة لم تُغلق بعد Enter بلا نتيجة');
+    assert.equal(h.element('quick_review_toSurah').value, before, 'تغيّرت قيمة السورة');
+    assert.equal(search.value, TITLES[Number(before) - 1], 'الحقل لم يعد إلى اسم السورة المختارة');
+    assert.equal(ev.stopped, false, 'Enter بلا نتيجة ابتُلع (أوقف انتشاره) فلا يصل إلى الحفظ');
+    const pending = h.run('generalQuickKeydown')(ev);
+    const line = h.element('quick_review_message').textContent || '';
+    const shown = line.includes(NO_SURAH) || h.state.messages.some(m => String(m.message).includes(NO_SURAH));
+    await pending; await new Promise(r => setImmediate(r));
+    assert.equal(shown, true, `«${NO_SURAH}» لم تظهر في السطر الأحمر (#quick_review_message: «${line}»، الرسائل: ${JSON.stringify(h.state.messages)})`);
+    assert.equal(h.state.writes.length, 1, 'Enter لم يُكمل إلى الحفظ');
+    const review = Object.values(h.state.writes[0].fields).find(e => e && e.kind === 'review');
+    assert.deepEqual(review?.spec, { from: [1, 1], to: [1, 7] }, 'المحفوظ ليس بالسورة السابقة كما هي');
+});
+
+test('س25 (ق85-2) رقم السورة 1–114 في البحث يختارها: «85» ← البروج، «114» ← الناس، «1» ← الفاتحة أولاً؛ «115» و«0» بلا نتيجة', () => {
+    const h = harness(down());
+    for (const [q, n] of [['85', 85], ['114', 114], ['1', 1]]) assert.equal(matches(h, q)[0], n, `«${q}» ليس ${n} أولاً (${matches(h, q).slice(0, 3)})`);
+    for (const q of ['115', '0']) assert.deepEqual(matches(h, q), [], `«${q}» أعطى نتائج`);
+    pick(h, 'quick_new_toSurah', '85');
+    assert.equal(h.element('quick_new_toSurah').value, '85', 'Enter على «85» لم يختر البروج');
+});
+
+const ALIASES = [['تبارك', 67, 'الملك'], ['تبت', 111, 'المسد'], ['الدهر', 76, 'الإنسان'], ['الانشراح', 94, 'الشرح'], ['سبح', 87, 'الأعلى'], ['القتال', 47, 'محمد'],
+    ['التطفيف', 83, 'المطففين'], ['عم', 78, 'النبأ'], ['بني إسرائيل', 17, 'الإسراء'], ['المؤمن', 40, 'غافر'], ['السجدة حم', 41, 'فصلت'], ['براءة', 9, 'التوبة']];
+test('س26 (ق85-3) البدائل الاثنا عشر: كل بديل يعطي سورته أولاً، وبالاختيار؛ والبدائل الأربعة القديمة باقية؛ و«السجدة» وحدها تبقى السجدة (32)', () => {
+    const h = harness(down());
+    const wrong = ALIASES.filter(([alias, n]) => matches(h, alias)[0] !== n).map(([alias, n, name]) => `«${alias}» ← ${matches(h, alias)[0] ?? 'لا شيء'} (المتوقع ${n} ${name})`);
+    assert.deepEqual(wrong, [], 'بدائل لا تعطي سورتها أولاً');
+    for (const [alias, n] of [['طاها', 20], ['ياسين', 36], ['ياس', 36], ['صاد', 38], ['قاف', 50]]) assert.equal(matches(h, alias)[0], n, `البديل القديم «${alias}»`);
+    assert.equal(matches(h, 'السجدة')[0], 32, '«السجدة» وحدها لم تعد السجدة (32)');
+    assert.equal(matches(h, 'المؤمنون')[0], 23, '«المؤمنون» لم تعد 23');
+    pick(h, 'quick_new_toSurah', 'تبارك');
+    assert.equal(h.element('quick_new_toSurah').value, '67', 'Enter على «تبارك» لم يختر الملك');
+});
+
+test('س27 (ق85-3) المطابقة التامة للبديل تتقدّم على «يحوي»: «عم» ← النبأ (78) لا آل عمران (3)', () => {
+    const h = harness(down());
+    const m = matches(h, 'عم');
+    assert.equal(m[0], 78, `«عم» أولاً: ${m[0]} (المتوقع 78 النبأ)`);
+    assert.ok(m.indexOf(78) < m.indexOf(3) || !m.includes(3), 'آل عمران قبل النبأ');
+    pick(h, 'quick_new_toSurah', 'عم');
+    assert.equal(h.element('quick_new_toSurah').value, '78');
+});
+
+test('س28 (ق93-2، المعلم) Enter والقائمة مفتوحة بلا نتيجة ← تُغلق القائمة وتظهر «لا سورة بهذا الاسم» فقط: لا حفظ ولا تأكيد، والنافذة والقيم كما هي', async () => {
+    const H = require('./helpers/teacher-ui-harness.cjs');
+    const playwright = require(process.env.PLAYWRIGHT_MODULE || path.join(process.env.USERPROFILE,
+        '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+    const browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+    // تحت حمل المجموعة كاملة قد يتأخر التحميل الأول؛ محاولة ثانية واحدة، والمتصفح يُغلق في كل حال (لا يبقى العامل معلّقاً).
+    let h;
+    try { h = await H.openPage(browser, { user: H.TEACHER_USER, seed: { teacherUser: true } }); }
+    catch (_) { try { h = await H.openPage(browser, { user: H.TEACHER_USER, seed: { teacherUser: true } }); } catch (e) { await browser.close(); throw e; } }
+    const set = (id, v) => h.page.evaluate(([id, v]) => { const el = document.getElementById(id); el.value = String(v); ['input', 'change'].forEach(t => el.dispatchEvent(new Event(t, { bubbles: true }))); }, [id, v]);
+    const gradeBtn = (kind, name) => h.page.locator(`#quick_${kind}_grades button`).filter({ hasText: new RegExp(`^\\s*${name}\\s*$`) }).first().click();
+    try {
+        // أ14 (ق101 س2): الفتح والتنقل بأداة الهاركنس (أقسام v7)؛ الجديد مؤكَّد فيكون الحفظ ممكناً لو تسرّب Enter، والمراجعة مكتوبة غير مؤكَّدة ليُرى أن Enter لا يؤكّدها (ق93-2).
+        await h.page.locator('.teacher-card[data-id="1"] [data-a=ach]').waitFor({ state: 'attached', timeout: 8000 });
+        await H.openAch(h, 1);
+        await set('quick_new_toAyah', 10); await gradeBtn('new', 'ممتاز');
+        assert.equal(await H.confirmSec(h.page, 'new'), true, 'الشرط المسبق: الجديد لم يُؤكَّد');
+        await H.openSec(h.page, 'review');
+        for (const [id, v] of [['quick_review_fromSurah', 1], ['quick_review_fromAyah', 1], ['quick_review_toSurah', 1], ['quick_review_toAyah', 7]]) await set(id, v);
+        await gradeBtn('review', 'جيد');
+        await h.page.evaluate(() => updateGeneralQuickPreview());
+        const writesBefore = (await h.fbLog()).filter(l => (l.writes || []).length).length;
+        await h.page.locator('#quick_review_toSurah_search').fill('xyz');
+        assert.equal(await h.page.locator('#quick_review_toSurah_list').isVisible(), true, 'الشرط المسبق: القائمة مفتوحة');
+        await h.page.locator('#quick_review_toSurah_search').press('Enter');
+        await h.page.waitForTimeout(800);
+        const st = await h.page.evaluate(() => ({ list: !!document.getElementById('quick_review_toSurah_list')?.getClientRects().length,
+            line: document.getElementById('quick_review_message')?.innerText || '', open: document.getElementById('smartModal').classList.contains('flex'),
+            who: document.getElementById('generalQuickName')?.innerText.replace(/\s+/g, ' ').trim(), surah: document.getElementById('quick_review_toSurah').value,
+            // أ14: «التأكيد» في الهيكل الجديد = ورقة ق78 ظاهرة أو تأكيد قسم المراجعة نفسه (ق93-2: لا حفظ ولا تأكيد).
+            confirm: [...document.querySelectorAll('.tch-sheet')].some(e => e.getClientRects().length > 0)
+                || document.querySelector('#generalQuickSection [data-sec="review"] .tch-confirm')?.getAttribute('aria-pressed') === 'true',
+            reminder: (b => !!b && !b.hidden)(document.getElementById('generalQuickReviewReminder')) }));
+        const writes = (await h.fbLog()).filter(l => (l.writes || []).length).length - writesBefore;
+        assert.deepEqual({ list: st.list, open: st.open, who: st.who, surah: st.surah, confirm: st.confirm, reminder: st.reminder, writes },
+            { list: false, open: true, who: 'أحمد', surah: '1', confirm: false, reminder: false, writes: 0 },   // أ14: العنوان الاسم وحده (ق90، ج1)
+            'المطلوب: القائمة مغلقة، النافذة لأحمد مفتوحة، السورة كما هي، بلا تأكيد ولا تذكير ولا كتابة');
+        assert.ok(st.line.includes(NO_SURAH), `«${NO_SURAH}» ليست في السطر الأحمر #quick_review_message: «${st.line}»`);
+    } finally { await h.close().catch(() => {}); await browser.close(); }
+});

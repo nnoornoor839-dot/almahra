@@ -21,7 +21,7 @@ test('category 18 audit: every changed line since 6e50320 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['18'], 'نقاط الفارس على التلفاز (2026-11-13)');
     assert.equal(audit.knightsTvPointsBaseline, BASE);
-    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsTvPointsChanges.map(row => row.file).sort(), changed);

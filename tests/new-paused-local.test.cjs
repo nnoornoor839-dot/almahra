@@ -64,12 +64,8 @@ async function adminPage(seed = {}, size = {}) {
 const card = (page, id) => page.locator(`.teacher-card[data-id="${id}"]`);
 const isSelected = loc => loc.evaluate(e => e.getAttribute('aria-selected') === 'true' || e.getAttribute('aria-pressed') === 'true' || e.classList.contains('active'));
 const pressed = (page, id) => page.evaluate(id => document.getElementById(id)?.getAttribute('aria-pressed') ?? null, id);
-async function openAch(h, id) {
-    await waitFor(h, `.teacher-card[data-id="${id}"] [data-a=ach]`, `زر «الإنجاز» لبطاقة ${id}`);
-    await card(h.page, id).locator('[data-a=ach]').click();
-    await h.page.locator('#smartModal').waitFor({ state: 'visible' });
-    await waitFor(h, '#quickTabNew', 'تبويب الجديد');
-}
+// أ14 (ق101 س2): الفتح والتنقل والتأكيد بأداة الهاركنس الواحدة (أقسام v7 للمعلم، والهيكل القديم للمشرف) بدل التبويبين الملغيين.
+async function openAch(h, id) { await H.openAch(h, id).catch(async e => assert.fail(`${e.message}. ${await diagnose(h)}`)); }
 async function setField(page, id, value) {
     const ok = await page.evaluate(([id, value]) => {
         const el = document.getElementById(id); if (!el) return false;
@@ -82,14 +78,21 @@ async function grade(page, kind, name) {
     assert.ok(await b.count(), `زر التقدير «${name}» غير موجود`);
     await b.click();
 }
-async function fillNew(page, toAyah = 10) { await setField(page, 'quick_new_toAyah', toAyah); await grade(page, 'new', 'ممتاز'); }
+// أ14: عند المعلم «الإدخال» = فتح القسم + الحقول + «تأكيد» (ق98-1: ما لم يُؤكَّد لا يُحفظ)؛ عند المشرف كما كان.
+async function fillNew(page, toAyah = 10) {
+    const acc = await H.quickAccordion(page);
+    if (acc) await H.openSec(page, 'new');
+    await setField(page, 'quick_new_toAyah', toAyah); await grade(page, 'new', 'ممتاز');
+    if (acc) await H.confirmSec(page, 'new');
+}
 async function fillReview(page) {
-    const tab = page.locator('#quickTabReview');
-    if (await tab.count()) await tab.click();
+    await H.openSec(page, 'review');
     for (const [id, v] of [['quick_review_fromSurah', 1], ['quick_review_fromAyah', 1], ['quick_review_toSurah', 1], ['quick_review_toAyah', 7]]) await setField(page, id, v);
     await grade(page, 'review', 'جيد');
+    await H.confirmSec(page, 'review');
 }
 async function pressSave(page) {
+    await H.confirmBehavior(page);   // أ14: السلوك يُحفظ مؤكَّداً (المعلم وحده)
     await page.evaluate(() => typeof updateGeneralQuickPreview === 'function' && updateGeneralQuickPreview());
     await page.locator('#generalQuickSaveBtn').click();
 }
@@ -106,11 +109,7 @@ async function waitToast(h, name) {
     await h.page.locator('#teacherToast').filter({ hasText: 'حُفظ ل' + name }).waitFor({ state: 'visible', timeout: 4000 })
         .catch(async () => assert.fail(`«حُفظ ل${name}» لم تظهر. ${await diagnose(h)}`));
 }
-async function closeQuick(h) {
-    if (!await modalOpen(h.page)) return;
-    await h.page.locator('#generalQuickSection .qe-close').click();
-    await h.page.waitForFunction(() => !document.getElementById('smartModal')?.classList.contains('flex'), null, { timeout: 3000 });
-}
+async function closeQuick(h) { await H.closeAch(h.page); }   // أ14: «رجوع» عند المعلم (ق90) بدل ✕
 // التسجيل بين حسابين/بذرتين: مفتاح التسجيل عشوائي ← نوعه، وby يُحذف (كما normalizePatch في teacher-ui-local).
 function normalizePatch(write) {
     const out = {};
@@ -121,13 +120,15 @@ function normalizePatch(write) {
     }
     return out;
 }
+// أ14 (ق90/ق80/ق79): «التبويب المختار» صار «القسم المفتوح» (aria-expanded)، وحُذف noNew لأن زر «بلا جديد اليوم» حُذف بق79 (لا معنى له بعده).
 async function tabState(h) {
-    return { reviewTab: await isSelected(h.page.locator('#quickTabReview')), newTab: await isSelected(h.page.locator('#quickTabNew')),
-        noNew: await pressed(h.page, 'quickNoNewToday'), reviewRow: await h.page.locator('#quick_review_row').isVisible(), newRow: await h.page.locator('#quick_new_row').isVisible() };
+    const st = await H.secState(h.page);
+    return { reviewTab: !!st.review?.expanded, newTab: !!st.new?.expanded,
+        reviewRow: await h.page.locator('#quick_review_row').isVisible(), newRow: await h.page.locator('#quick_new_row').isVisible() };
 }
-const PAUSED_TABS = { reviewTab: true, newTab: false, noNew: 'true', reviewRow: true, newRow: false };
-const NORMAL_TABS = { reviewTab: false, newTab: true, noNew: 'false', reviewRow: false, newRow: true };
-const normalTabs = s => ({ ...s, noNew: s.noNew === null ? 'false' : s.noNew });   // زر «بلا جديد اليوم» قبل الضغط: aria-pressed غائب أو false
+const PAUSED_TABS = { reviewTab: true, newTab: false, reviewRow: true, newRow: false };
+const NORMAL_TABS = { reviewTab: false, newTab: true, reviewRow: false, newRow: true };
+const normalTabs = s => s;
 
 // ===== المشرف: خانة نموذج الطالب (س3) =====
 // يعلّم عناصر الخانة والسبب بسمات data-np-* ليصل إليها Playwright؛ لا أثر على المنتج.
@@ -179,79 +180,68 @@ async function openEdit(h, id) {
 // =====================================================================================
 // (أ) المعلم: النافذة والسؤال والشارة
 // =====================================================================================
-test('ت4 المعلم يفتح «الإنجاز» لمتوقف ← تبويب المراجعة مختار و#quickNoNewToday مضغوط؛ ت3 لطالب بلا الحقل كما اليوم (الجديد، الزر غير مضغوط)', async () => {
+// أ14 (ق90/ق80/ق79): «تبويب المراجعة مختار» صار «قسم المراجعة مفتوح»؛ و«#quickNoNewToday مضغوط» حُذف (الزر حُذف بق79).
+test('ت4 المعلم يفتح «الإنجاز» لمتوقف ← قسم المراجعة مفتوح والجديد مغلق؛ ت3 لطالب بلا الحقل كما اليوم (الجديد مفتوح)', async () => {
     const h = await teacherPage({ list: list({ 1: { newPaused: EXAM_NOW() } }) });
     try {
         await openAch(h, 1);
-        assert.deepEqual(await tabState(h), PAUSED_TABS, 'نافذة المتوقف: [المراجعة مختارة، الجديد غير مختار، «بلا جديد اليوم» مضغوط، صف المراجعة ظاهر، صف الجديد مخفي]');
+        assert.deepEqual(await tabState(h), PAUSED_TABS, 'نافذة المتوقف: [المراجعة مفتوحة، الجديد غير مفتوح، صف المراجعة ظاهر، صف الجديد مخفي]');
         await closeQuick(h);
         await openAch(h, 5);
         assert.deepEqual(normalTabs(await tabState(h)), NORMAL_TABS, 'ت3: نافذة طالب بلا الحقل تغيّرت');
     } finally { await h.close(); }
 });
 
-test('ت5 المعلم يحفظ مراجعة فقط لمتوقف ← بلا #quickOneSideConfirm، من أول ضغطة، والتسجيل بايتاً كمراجعة طالب غير متوقف بـ«بلا جديد اليوم»', async () => {
-    const run = async (mods, explicitSkip) => {
+// أ14 (ق78/ق79): سؤال التبويب الواحد #quickOneSideConfirm صار ورقة ق78 (.tch-sheet)، و«بلا جديد اليوم» للطالب العادي (حُذف بق79) صار زر الورقة الثاني «احفظ المراجعة فقط».
+test('ت5 المعلم يحفظ مراجعة فقط لمتوقف ← بلا ورقة ق78، من أول ضغطة، والتسجيل بايتاً كمراجعة طالب غير متوقف بـ«احفظ المراجعة فقط»', async () => {
+    const run = async (mods, viaSheet) => {
         const h = await teacherPage({ list: list(mods) });
         try {
             await openAch(h, 1);
-            if (explicitSkip) await h.page.locator('#quickNoNewToday').click();
             await fillReview(h.page);
             await pressSave(h.page);
             await h.page.waitForTimeout(500);
-            const confirmShown = await h.page.evaluate(() => { const b = document.getElementById('quickOneSideConfirm'); return !!b && !b.hidden && b.getClientRects().length > 0; });
+            const confirmShown = (await H.quickSheets(h.page)).length > 0;
+            const first = (await okWrites(h, 1)).filter(l => l.op === 'updateDoc').length;
+            if (viaSheet && confirmShown) { await H.sheetButton(h.page, 'احفظ المراجعة فقط'); await h.page.waitForTimeout(500); }
             const writes = (await okWrites(h, 1)).filter(l => l.op === 'updateDoc');
-            return { confirmShown, writes: writes.length, dialogs: h.dialogs.length, patch: writes[0] && normalizePatch(writes[0].writes[0]) };
+            return { confirmShown, first, writes: writes.length, dialogs: h.dialogs.length, patch: writes[0] && normalizePatch(writes[0].writes[0]) };
         } finally { await h.close(); }
     };
     const paused = await run({ 1: { newPaused: EXAM_NOW() } }, false);
-    assert.deepEqual([paused.confirmShown, paused.writes, paused.dialogs], [false, 1, 0], 'المتوقف: [سؤال التبويب الواحد ظاهر، كتابات بعد أول ضغطة، حوارات]');
+    assert.deepEqual([paused.confirmShown, paused.writes, paused.dialogs], [false, 1, 0], 'المتوقف: [ورقة القسم الواحد ظاهرة، كتابات بعد أول ضغطة، حوارات]');
     const normal = await run({}, true);
-    assert.equal(normal.writes, 1, 'الشرط المسبق: مراجعة الطالب غير المتوقف بـ«بلا جديد اليوم» لم تُحفظ');
+    assert.deepEqual([normal.confirmShown, normal.first, normal.writes], [true, 0, 1], 'الشرط المسبق: الطالب غير المتوقف [الورقة ظاهرة، لا كتابة قبلها، تسجيل واحد بـ«احفظ المراجعة فقط»]');
     assert.equal(JSON.stringify(paused.patch), JSON.stringify(normal.patch), 'تسجيل مراجعة المتوقف ليس بايتاً كتسجيل غير المتوقف (المفاتيح والنقاط)');
     assert.ok(!Object.keys(paused.patch).some(k => k.startsWith('newPaused')), 'تسجيل المعلم كتب newPaused');
 });
 
-test('ت6 المعلم يختار الجديد لمتوقف ويحفظ جديداً ومراجعة ← يُقبل ويُحفظ عادياً (لا قفل)', async () => {
-    const h = await teacherPage({ list: list({ 1: { newPaused: EXAM_NOW() } }) });
-    try {
-        await openAch(h, 1);
-        await h.page.locator('#quickTabNew').click();
-        assert.equal(await h.page.locator('#quick_new_row').isVisible(), true, 'صف الجديد لا يظهر بعد اختيار تبويبه');
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'أحمد');
-        assert.deepEqual((await mineToday(h, 1)).map(e => e.kind).sort(), ['new', 'review'], 'الجديد أو المراجعة لم يُحفظا للمتوقف');
-        assert.deepEqual((await h.doc(S(1))).newPaused, EXAM_NOW(), 'الحفظ غيّر newPaused');
-    } finally { await h.close(); }
-});
+// أ14 (قرار Fable على س1، 2026-11-18): حُذف ت6 «يختار الجديد لمتوقف… (لا قفل)» وت7 «يحفظ جديداً فقط لمتوقف»: ق80 قفل الجديد عند المعلم للمتوقف، وج14 في teacher-r2-accordion-local يغطيه.
 
-test('ت7 المعلم يحفظ جديداً فقط لمتوقف ← سؤال «لم تُسجَّل مراجعة… حفظ الجديد فقط؟» كما اليوم، ولا كتابة قبل التأكيد', async () => {
-    const h = await teacherPage({ list: list({ 1: { newPaused: EXAM_NOW() } }) });
-    try {
-        await openAch(h, 1);
-        await h.page.locator('#quickTabNew').click();
-        await fillNew(h.page); await pressSave(h.page);
-        await h.page.waitForTimeout(300);
-        const text = norm(await h.page.locator('#quickOneSideConfirm').innerText().catch(() => ''));
-        assert.ok(text.includes('لم تُسجَّل مراجعة لهذا الطالب اليوم. حفظ الجديد فقط؟'), `السؤال: «${text}»`);
-        assert.equal((await okWrites(h, 1)).length, 0, 'حُفظ قبل التأكيد');
-    } finally { await h.close(); }
-});
-
-test('ت8 «حفظ والتالي»: من عادي إلى متوقف ← التالية على المراجعة؛ ومن متوقف إلى عادي ← على الجديد', async () => {
-    // سعد (4) بموضع معروف ومتوقف؛ الترتيب أحمد ← سعد ← فهد.
+// أ10 (ق77، 2026-11-18): أُعيدت كتابته بعد إلغاء «حفظ والتالي»: النافذة تُغلق بعد كل حفظ، والطالب التالي يُفتح من بطاقته؛ ما يحرسه باقٍ (لا تنتقل حالة طالب إلى غيره).
+test('ت8 (ق77) حفظ عادي ثم فتح متوقف من بطاقته ← على المراجعة؛ وحفظه ثم فتح عادي ← على الجديد (لا تبقى حالة سابقة)؛ وكل حفظ يُغلق النافذة', async () => {
+    // سعد (4) بموضع معروف ومتوقف؛ أحمد (1) وفهد (5) عاديان.
     const h = await teacherPage({ list: list({ 4: { lastSurah: 2, lastAyah: 5, newPaused: EXAM_NOW() } }) });
+    const closed = async what => {
+        await h.page.waitForFunction(() => !document.getElementById('smartModal')?.classList.contains('flex'), null, { timeout: 4000 })
+            .catch(async () => assert.fail(`${what}: النافذة لم تُغلق (المفتوح: ${await quickWho(h.page)})`));
+        await h.page.waitForTimeout(600);
+        assert.equal(await modalOpen(h.page), false, `${what}: فُتحت نافذة بعد الحفظ (المفتوح: ${await quickWho(h.page)})`);
+    };
     try {
         await openAch(h, 1);
         assert.deepEqual(normalTabs(await tabState(h)), NORMAL_TABS, 'الشرط المسبق: أحمد على الجديد');
         await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        assert.deepEqual(await tabState(h), PAUSED_TABS, 'نافذة سعد المتوقف التالية ليست على المراجعة');
+        await waitToast(h, 'أحمد');
+        await closed('بعد حفظ أحمد');
+        await openAch(h, 4);
+        assert.deepEqual(await tabState(h), PAUSED_TABS, 'نافذة سعد المتوقف ليست على المراجعة');
         await fillReview(h.page); await pressSave(h.page);
         await waitToast(h, 'سعد');
         assert.equal((await mineToday(h, 4)).length, 1, 'مراجعة سعد لم تُحفظ من أول ضغطة');
-        await waitWho(h, 'فهد', 'بعد حفظ سعد');
-        assert.deepEqual(normalTabs(await tabState(h)), NORMAL_TABS, 'نافذة فهد العادي التالية ليست على الجديد (بقيت حالة سعد)');
+        await closed('بعد حفظ سعد');
+        await openAch(h, 5);
+        assert.deepEqual(normalTabs(await tabState(h)), NORMAL_TABS, 'نافذة فهد العادي ليست على الجديد (بقيت حالة سعد)');
     } finally { await h.close(); }
 });
 

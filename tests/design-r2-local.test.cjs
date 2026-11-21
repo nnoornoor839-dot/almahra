@@ -123,7 +123,8 @@ test('r2: new + review + discipline write exactly the baseline payload and ident
     assert.equal(after.preview.total, before.preview.total);
     assert.deepEqual(savedEntries(after.h).map(e => e.points), savedEntries(before.h).map(e => e.points));
     assert.deepEqual(savedEntries(after.h).map(e => e.kind), ['new', 'review']);
-    assert.deepEqual(after.h.state.writes[0].fields[`history.${today}.criteria`], { early: 5, uniform: 3 });
+    // أ11 (ق82/س12): «استوفى» لا يلغي «تأخر» المعلَّم، و«تأخر» يحجب «الحضور المبكر».
+    assert.deepEqual(after.h.state.writes[0].fields[`history.${today}.criteria`], { uniform: 3, late: -2 });
     assert.equal(after.h.state.writes[0].fields[`history.${today}.criteriaPoints`], before.h.state.writes[0].fields[`history.${today}.criteriaPoints`]);
 });
 test('r2: confirmation names Saad and the trial fix removes the supervisor celebration', async () => {

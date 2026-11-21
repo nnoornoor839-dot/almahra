@@ -114,6 +114,7 @@
 .neutral { background:var(--tv-bg); gap:56px; }
 .neutral .tv-logo img { height:200px; }
 .neutral strong { font-size:96px; font-weight:700; }
+ .neutral .tv-wait { font-size:28px; color:#b6c9bd; font-weight:600; }
 
 /* الاحتفال: 7 ثوانٍ كما في الكود */
 .cele { background:radial-gradient(ellipse at 50% 50%, #17633a 0%, var(--tv-bg) 62%); gap:12px; }
@@ -176,7 +177,7 @@ svg { width:1em; height:1em; fill:currentColor; flex-shrink:0; }
         </header>
         <div class="tv-slides" id="slides"></div>
         <footer><div class="results-date num" id="resultsDate" hidden></div><div class="dots" id="dots" aria-label="تقدّم الشرائح"></div></footer>
-        <div class="overlay neutral" id="neutral"><span class="tv-logo"><img src="assets/brand/afdalkom-logo-horizontal-color.png" alt=""></span><strong>البرنامج العام</strong></div>
+        <div class="overlay neutral" id="neutral"><span class="tv-logo"><img src="assets/brand/afdalkom-logo-horizontal-color.png" alt=""></span><strong>البرنامج العام</strong><p class="tv-wait" id="tvWait" hidden>في انتظار صفحة المشرف في المتصفح نفسه</p></div>
     </main>
     <section id="celebration" class="overlay cele" hidden>
         <div class="confetti" id="confetti" aria-hidden="true"></div>

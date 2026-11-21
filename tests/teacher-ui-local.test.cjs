@@ -9,8 +9,8 @@
 //   • العناصر الممنوعة (و4) تُفحص بهذه المحدّدات: nav، .nav-btn، #page-home، #page-settings، #page-records، #generalTvButton،
 //     #generalSettingsTv، #settingsGeneralKnightsCard، #setPanelGeneralKnights، #setPanelKnights، #generalMissedDayBtn،
 //     #quick_position_fix، #quick_review_fix، .qe-fix.
-//   • الشكل ب يُعرف بلا أسماء أصناف: عنصر بخلفية #125c2f ارتفاعه ≥ 40% من الشاشة، وأب أبيض للزرّين، ونقشان شفافيتهما 7% (svg، لا يلتقطان اللمس)
-//     أحدهما يلامس أعلى #loginOverlay والآخر أسفله، وشعار afdalkom-logo-vertical-white.
+//   • شكل الدخول (أ19: الشكل ب ألغاه تاج 2، ق88 v7) يُعرف بلا أسماء أصناف: #loginOverlay أو عنصر فيه بخلفية #125c2f يغطي الشاشة كلها، وأب أبيض للزرّين،
+//     ونقش واحد شفافيته 7% (svg، لا يلتقط اللمس) يلامس أعلى #loginOverlay وأسفله، والشعار الملوّن assets/brand/afdalkom-logo-vertical-color.
 //   • زر الحفظ في نموذج الطالب: زر داخل #teacherStudentSheet نصّه يحوي «حفظ». زر الحذف في #teacherMoreSheet نصّه «حذف الطالب».
 //   • التأكيد الأول للحذف: إما confirm() أصلي وإما عنصر ظاهر يحوي النص فيه زر «حذف»/«متابعة»/«نعم».
 //   • الغياب: زرّان ظاهران نصّهما «بعذر» و«بغير عذر» (البطاقة §3-8)، و«إلغاء الغياب» زر داخل بطاقة الطالب.
@@ -79,12 +79,8 @@ async function clickText(page, scope, re, what) {
     if (!await el.count()) assert.fail(`${what}: لا زر ظاهر نصّه ${re} داخل ${scope}`);
     await el.click();
 }
-async function openAch(h, id) {
-    await waitFor(h, `.teacher-card[data-id="${id}"] [data-a=ach]`, `زر «الإنجاز» لبطاقة ${id}`);
-    await card(h.page, id).locator('[data-a=ach]').click();
-    await h.page.locator('#smartModal').waitFor({ state: 'visible' });
-    await waitFor(h, '#quickTabNew', 'تبويب الجديد #quickTabNew');
-}
+// أ14 (ق101 س2): الفتح والتنقل والتأكيد بأداة الهاركنس الواحدة (أقسام v7 للمعلم، والهيكل القديم للمشرف) بدل التبويبين الملغيين.
+async function openAch(h, id) { await H.openAch(h, id).catch(async e => assert.fail(`${e.message}. ${await diagnose(h)}`)); }
 async function setField(page, id, value, events = ['input', 'change']) {
     const ok = await page.evaluate(([id, value, events]) => {
         const el = document.getElementById(id); if (!el) return false;
@@ -98,14 +94,21 @@ async function grade(page, kind, name) {
     await b.click();
 }
 // الجديد: إلى البقرة toAyah؛ المراجعة: الفاتحة 1 ← 7.
-async function fillNew(page, toAyah = 10, g = 'ممتاز') { await setField(page, 'quick_new_toAyah', toAyah); await grade(page, 'new', g); }
+// أ14: عند المعلم «الإدخال» = فتح القسم + الحقول + «تأكيد» (ق98-1: ما لم يُؤكَّد لا يُحفظ)؛ عند المشرف كما كان حرفياً.
+async function fillNew(page, toAyah = 10, g = 'ممتاز') {
+    const acc = await H.quickAccordion(page);
+    if (acc) await H.openSec(page, 'new');
+    await setField(page, 'quick_new_toAyah', toAyah); await grade(page, 'new', g);
+    if (acc) await H.confirmSec(page, 'new');
+}
 async function fillReview(page, g = 'جيد') {
-    const tab = page.locator('#quickTabReview');
-    if (await tab.count()) await tab.click();
+    await H.openSec(page, 'review');
     for (const [id, v] of [['quick_review_fromSurah', 1], ['quick_review_fromAyah', 1], ['quick_review_toSurah', 1], ['quick_review_toAyah', 7]]) await setField(page, id, v);
     await grade(page, 'review', g);
+    await H.confirmSec(page, 'review');
 }
 async function pressSave(page) {
+    await H.confirmBehavior(page);   // أ14: ما لُمس في السلوك يُحفظ مؤكَّداً كما كان يُحفظ قبل الأقسام (المعلم وحده)
     await page.evaluate(() => typeof updateGeneralQuickPreview === 'function' && updateGeneralQuickPreview());
     await page.locator('#generalQuickSaveBtn').click();
 }
@@ -410,7 +413,9 @@ test('و3 شاشة الدخول: زرّان «مشرف»/«معلم» بلا ش�
     } finally { await h.close(); }
 });
 
-for (const width of [390, 1280]) test(`و3 الشكل ب على ${width}: الكتلة الخضراء + البطاقة البيضاء + نقشان ثابتان 7% أعلى وأسفل + شعار أفضلكم الأبيض، بلا حركة (لقطتان بفارق ثانية متطابقتان)`, async () => {
+// أ19 (ق88، ق116 س2): الشكل ب (كتلة خضراء + نقشان أعلى وأسفل + الشعار الأبيض) ألغاه تاج 2 في v7؛ المحروس باقٍ: صفحة ثابتة بلا حركة،
+// الزرّان في بطاقة بيضاء، نقش ساكن لا يلتقط اللمس، الشعار محمَّل، النص «برنامج الحوافز» بلا سطر الجمعية، بلا تمرير أفقي.
+for (const width of [390, 1280]) test(`و3 شكل الدخول v7 على ${width}: الصفحة كلها خضراء + البطاقة البيضاء + نقش واحد ثابت 7% يغطيها + شعار أفضلكم الملوّن، بلا حركة (لقطتان بفارق ثانية متطابقتان)`, async () => {
     const h = await H.openPage(browser, { width, height: width === 390 ? 844 : 900 });
     try {
         await h.page.locator('#loginOverlay').waitFor({ state: 'visible' });
@@ -418,7 +423,8 @@ for (const width of [390, 1280]) test(`و3 الشكل ب على ${width}: الك
         const r = await h.page.evaluate(() => {
             const ov = document.getElementById('loginOverlay'), o = ov.getBoundingClientRect(), vh = innerHeight;
             const all = [...ov.querySelectorAll('*')], cs = e => getComputedStyle(e);
-            const green = all.filter(e => cs(e).backgroundColor === 'rgb(18, 92, 47)' && e.getBoundingClientRect().height >= vh * 0.4).length;
+            const green = [ov, ...all].filter(e => { const r = e.getBoundingClientRect();
+                return cs(e).backgroundColor === 'rgb(18, 92, 47)' && r.top <= 1 && r.bottom >= vh - 1 && r.left <= 1 && r.right >= innerWidth - 1; }).length;
             let c = document.getElementById('loginRoleAdmin')?.parentElement;
             while (c && c !== ov && cs(c).backgroundColor !== 'rgb(255, 255, 255)') c = c.parentElement;
             const pats = all.filter(e => Math.abs(Number(cs(e).opacity) - 0.07) < 0.006 && cs(e).backgroundImage.includes('svg') && cs(e).pointerEvents === 'none')
@@ -428,11 +434,11 @@ for (const width of [390, 1280]) test(`و3 الشكل ب على ${width}: الك
                 logo: logo ? logo.getAttribute('src') : null, logoLoaded: logo ? logo.naturalWidth : 0, text: ov.innerText,
                 anims: document.getAnimations().length, animNames: all.map(e => cs(e).animationName).filter(n => n !== 'none') };
         });
-        assert.ok(r.green >= 1, 'لا كتلة خضراء #125c2f بارتفاع ≥ 40% من الشاشة');
+        assert.ok(r.green >= 1, 'الصفحة ليست كلها خضراء #125c2f (#loginOverlay أو عنصر فيه يغطي الشاشة)');
         assert.ok(r.whiteCard, 'الزرّان ليسا داخل بطاقة بيضاء');
-        assert.equal(r.pats, 2, 'نقشان شفافيتهما 7% (svg، بلا لمس)');
-        assert.ok(r.top && r.bottom, 'النقشان ليسا أعلى الشاشة وأسفلها');
-        assert.match(r.logo || '', /afdalkom-logo-vertical-white\.png$/, 'شعار أفضلكم الأبيض');
+        assert.equal(r.pats, 1, 'نقش واحد شفافيته 7% (svg، بلا لمس)');
+        assert.ok(r.top && r.bottom, 'النقش لا يغطي الشاشة من أعلاها إلى أسفلها');
+        assert.match(r.logo || '', /assets\/brand\/afdalkom-logo-vertical-color\.png$/, 'شعار أفضلكم الملوّن');
         assert.ok(r.logoLoaded > 0, 'الشعار لم يُحمَّل');
         assert.ok(r.text.includes('برنامج الحوافز') && !r.text.includes('جمعية أفضلكم') && !r.text.includes('برنامج المهرة'), `النص: ${norm(r.text)}`);
         assert.equal(r.anims, 0, 'حركات جارية'); assert.deepEqual(r.animNames, []);
@@ -497,7 +503,8 @@ test('و3 الإدخال اليدوي للرمز (بحروف صغيرة وفرا
     } finally { await h.close(); }
 });
 
-test('و1/م5 التبويبات بترتيب periodOf (العصر أولاً) و«العصر/المغرب» أصغر فوق الاسم؛ المستمع بقيد where in [حلقتيه]؛ لا طالب من حلقة غيره', async () => {
+// أ19 (ق89، ق116 س2): الوقت صار عنصراً مستقلاً أصغر بجانب الاسم في صفّه (مبدّل v7) بدل «فوق الاسم»؛ المحروس باقٍ: ترتيب periodOf، والاختيار الافتراضي، والقيد، والعزل.
+test('و1/م5 التبويبات بترتيب periodOf (العصر أولاً) و«العصر/المغرب» عنصر أصغر بجانب الاسم في صفّه؛ المستمع بقيد where in [حلقتيه]؛ لا طالب من حلقة غيره', async () => {
     const h = await teacherPage();
     try {
         const tabs = h.page.locator('#teacherHalaqaTabs button');
@@ -505,9 +512,10 @@ test('و1/م5 التبويبات بترتيب periodOf (العصر أولاً) �
         const sizes = await tabs.first().evaluate(b => {
             const leaf = t => [...b.querySelectorAll('*')].find(e => e.children.length === 0 && e.textContent.trim() === t);
             const p = leaf('العصر'), n = leaf('حلقة أُبيّ');
-            return p && n ? [parseFloat(getComputedStyle(p).fontSize), parseFloat(getComputedStyle(n).fontSize), p.getBoundingClientRect().top < n.getBoundingClientRect().top] : null;
+            const pr = p?.getBoundingClientRect(), nr = n?.getBoundingClientRect();
+            return p && n ? [parseFloat(getComputedStyle(p).fontSize), parseFloat(getComputedStyle(n).fontSize), Math.abs((pr.top + pr.bottom) / 2 - (nr.top + nr.bottom) / 2) <= 4] : null;
         });
-        assert.ok(sizes && sizes[0] < sizes[1] && sizes[2], `«العصر» ليست أصغر فوق الاسم: ${JSON.stringify(sizes)}`);
+        assert.ok(sizes && sizes[0] < sizes[1] && sizes[2], `«العصر» ليست عنصراً أصغر بجانب الاسم في صفّه: ${JSON.stringify(sizes)}`);
         assert.equal(await isSelected(tabs.first()), true, 'تبويب العصر غير مختار افتراضياً');
         assert.deepEqual(await cardIds(h.page), [1, 4, 5, 2, 3]);
         await tabs.nth(1).click();
@@ -534,7 +542,8 @@ test('و4 الممنوعات غير موجودة في DOM (لا مخفية) لل
         assert.equal(await h.page.evaluate(() => window.__uiErr || null), null, 'updateAllUIs رمى خطأ في وضع المعلم');
         await openAch(h, 1);
         assert.deepEqual(await forbiddenPresent(h.page), [], 'نافذة الإنجاز بنت «أيام فائتة»/«تصحيح الموضع»');
-        assert.ok((await visibleText(h.page, '#smartModal')).includes('لتصحيح الموضع أبلغ المشرف'), 'نص «لتصحيح الموضع أبلغ المشرف» غائب');
+        // أ14: ق83 (مستوعَب في ق90) يخفي الجمل الشارحة عند المعلم ومنها «لتصحيح الموضع أبلغ المشرف» (البطاقة ق83، ق90، وج3 في teacher-r2-accordion-local).
+        assert.ok(!(await visibleText(h.page, '#smartModal')).includes('لتصحيح الموضع أبلغ المشرف'), 'نص «لتصحيح الموضع أبلغ المشرف» ظاهر للمعلم (ق83)');
         await h.page.evaluate(() => { try { switchTab('page-settings', null); } catch (e) {} });
         await shot(h.page, 'ص6-محاولة-الإعدادات-390');
         assert.equal(await h.page.locator('#page-settings').count(), 0);
@@ -561,15 +570,16 @@ test('و5 بطاقة الطالب: الاسم، «آخر محفوظ: …»، ا�
         assert.ok(c1.includes('لم يُسجَّل'), 'شارة «لم يُسجَّل»');
         for (const [a, label] of [['ach', 'الإنجاز'], ['absent', 'غائب']])
             assert.equal(norm(await card(h.page, 1).locator(`[data-a=${a}]`).innerText()), label, `[data-a=${a}]`);
-        // أ5 (ق58): ✎ و⋯ أيقونتان (fa-pen / fa-ellipsis) ونص القارئ في aria-label، لا رمز نصي (يُحذف النص المخفي .tch-sr بعدها).
-        for (const [a, icon, aria] of [['edit', 'fa-pen', 'تعديل بيانات الطالب'], ['more', 'fa-ellipsis', 'خيارات الطالب']]) {
+        // أ5 (ق58): ✎ و⋯ أيقونتان ونص القارئ في aria-label، لا رمز نصي (يُحذف النص المخفي .tch-sr بعدها).
+        // أ19 (ق118-1): الأيقونتان صارتا svg مرسومة (DESIGN.md «مرسومة SVG لا رموزاً») بدل fa-pen / fa-ellipsis؛ المحروس باقٍ: أيقونة واحدة مخفية عن القارئ، بلا نص ظاهر، وaria-label، وزر.
+        for (const [a, aria] of [['edit', 'تعديل بيانات الطالب'], ['more', 'خيارات الطالب']]) {
             const b = card(h.page, 1).locator(`[data-a=${a}]`);
             assert.equal(await b.count(), 1, `[data-a=${a}] غائب`);
-            const r = await b.evaluate((el, icon) => ({ icons: [...el.querySelectorAll('i')].filter(i => i.classList.contains(icon)).map(i => i.getAttribute('aria-hidden')),
+            const r = await b.evaluate(el => ({ icons: [...el.querySelectorAll('svg, i')].map(i => i.tagName.toLowerCase() + ':' + i.getAttribute('aria-hidden')),
                 aria: el.getAttribute('aria-label'), tag: el.tagName,
-                shown: [...el.childNodes].filter(n => !(n.classList && n.classList.contains('tch-sr'))).map(n => n.textContent).join('').trim() }), icon);
+                shown: [...el.childNodes].filter(n => !(n.classList && n.classList.contains('tch-sr'))).map(n => n.textContent).join('').trim() }));
             assert.equal(r.shown, '', `[data-a=${a}]: نص ظاهر بجانب الأيقونة`);
-            assert.deepEqual(r.icons, ['true'], `[data-a=${a}]: أيقونة ${icon} واحدة مخفية عن القارئ`);
+            assert.deepEqual(r.icons, ['svg:true'], `[data-a=${a}]: أيقونة svg واحدة مخفية عن القارئ (ولا أيقونة خط)`);
             assert.equal(r.aria, aria, `[data-a=${a}]: aria-label`);
             assert.equal(r.tag, 'BUTTON', `[data-a=${a}] ليس زراً`);
         }
@@ -579,28 +589,38 @@ test('و5 بطاقة الطالب: الاسم، «آخر محفوظ: …»، ا�
     } finally { await h.close(); }
 });
 
-test('§3-8ب الشريط العلوي (اسم المعلم، «!» يفتح #teacherHelpSheet، «خروج» بتأكيد) وسطر اليوم «سُجّل n من m · غائب k» بأرقام 0-9', async () => {
+// أ19 (ق89، ق116 س2 وس7): سطر «سُجّل n من m · غائب k» (#teacherDayRow) حلّ محله #teacherDate وبطاقات الأرقام الثلاث، ونافذة confirm() المتصفح
+// حلّت محلها ورقة #teacherLogoutSheet («خروج» / «إلغاء»)؛ المحروس باقٍ: الاسم، «!»، الأرقام نفسها بـ0-9، التأكيد قبل الخروج، الإلغاء لا يُخرج، ثم signOut ← إعادة تحميل واحدة.
+test('§3-8ب الشريط العلوي (اسم المعلم، «!» يفتح #teacherHelpSheet، «خروج» بورقة تأكيد) والتاريخ وبطاقات «الطلاب m · سُجّل n · متبقٍ (منهم غائب k)» بأرقام 0-9', async () => {
     const h = await teacherPage({ carry: 'all' });   // أ4: الخروج يعيد تحميل الصفحة (ق50)؛ الجلسة والسجلّات تُحمل عبره
     try {
         assert.ok((await visibleText(h.page, '#teacherTopBar')).includes('عبدالله'), 'اسم المعلم في الشريط');
         assert.equal(await visibleText(h.page, '#teacherHelpBtn'), '!');
         await h.page.locator('#teacherHelpBtn').click();
         assert.equal(await h.page.locator('#teacherHelpSheet').isVisible(), true, '#teacherHelpSheet لم يظهر');
-        const day = await visibleText(h.page, '#teacherDayRow');
-        assert.match(day, /سُجّل\s*1\s*من\s*[45]\s*·\s*غائب\s*1/, `سطر اليوم: ${day}`);
+        const stat = k => visibleText(h.page, `#teacherStats [data-stat="${k}"]`);
+        const num = async k => Number(norm(await h.page.locator(`#teacherStats [data-stat="${k}"] .tch-stat-num`).innerText()));
+        const [total, rec, left] = [await num('total'), await num('rec'), await num('left')];
+        assert.ok([4, 5].includes(total) && rec === 1 && left === total - rec, `الأرقام: الطلاب ${total} · سُجّل ${rec} · متبقٍ ${left}`);
+        assert.match(await stat('left'), /منهم غائب\s*1/, `بطاقة «متبقٍ»: ${await stat('left')}`);
+        const day = [await visibleText(h.page, '#teacherDate'), await stat('total'), await stat('rec'), await stat('left')].join(' | ');
         assert.match(day, /[0-9]/); assert.doesNotMatch(day, /[\u0660-\u0669]/);
         await h.page.keyboard.press('Escape').catch(() => {});
         await h.page.evaluate(() => document.getElementById('teacherHelpSheet')?.querySelector('button')?.click());
-        h.page.__dialogAnswer = false;
         await h.page.locator('#teacherLogoutBtn').click();
+        await h.page.locator('#teacherLogoutSheet').waitFor({ state: 'visible', timeout: 3000 }).catch(() => assert.fail('«خروج» بلا ورقة تأكيد #teacherLogoutSheet'));
+        assert.match(await visibleText(h.page, '#teacherLogoutSheet'), /تسجيل الخروج؟/, 'نص ورقة الخروج');
+        await clickText(h.page, '#teacherLogoutSheet', /^\s*إلغاء\s*$/, 'ورقة الخروج');
         await h.page.waitForTimeout(200);
-        assert.ok(h.dialogs.length >= 1, '«خروج» بلا تأكيد');
+        assert.equal(await h.page.locator('#teacherLogoutSheet').filter({ visible: true }).count(), 0, 'الورقة باقية بعد «إلغاء»');
+        assert.equal(h.dialogs.length, 0, 'نافذة تأكيد المتصفح بدل الورقة');
         assert.equal(await h.page.evaluate(() => !!window.__fb.currentUser), true, 'خرج رغم الإلغاء');
         assert.equal(await h.page.evaluate(() => window.__fb.loads), 1, 'أُعيد التحميل رغم الإلغاء');
-        h.page.__dialogAnswer = true;
-        // ق50: «خروج» ← تأكيد ← signOut ← location.reload()
+        // ق50: «خروج» ← تأكيد في الورقة ← signOut ← location.reload()
+        await h.page.locator('#teacherLogoutBtn').click();
+        await h.page.locator('#teacherLogoutSheet').waitFor({ state: 'visible', timeout: 3000 });
         await Promise.all([h.page.waitForEvent('load', { timeout: 5000 }).catch(() => assert.fail('«خروج» لم يُعد تحميل الصفحة (ق50)')),
-            h.page.locator('#teacherLogoutBtn').click()]);
+            clickText(h.page, '#teacherLogoutSheet', /^\s*خروج\s*$/, 'ورقة الخروج')]);
         await h.page.locator('#loginOverlay').waitFor({ state: 'visible', timeout: 4000 }).catch(async () => assert.fail('شاشة الدخول لم تظهر بعد الخروج. ' + await diagnose(h)));
         const after = await h.page.evaluate(() => ({ loads: window.__fb.loads, user: window.__fb.currentUser, nav: performance.getEntriesByType('navigation')[0]?.type,
             seq: window.__fb.authLog.filter(l => l.op === 'signOut' || l.op === 'pageLoad').map(l => l.op + ':' + (l.n ?? l.uid)) }));
@@ -611,25 +631,34 @@ test('§3-8ب الشريط العلوي (اسم المعلم، «!» يفتح #t
     } finally { await h.close(); }
 });
 
-test('و6 نافذة الإنجاز: «الإنجاز · الاسم»، تبويبا #quickTabNew (افتراضي)/#quickTabReview، «آخر محفوظ: X ← يبدأ من: Y»، بحث السورة والقصّ، الانضباط بزرّيه و«استثناءات»', async () => {
+// أ14 (ق90/ق101 س1): العنوان صار الاسم وحده (#generalQuickName، ج1)، والتبويبان صارا قسمين (الجديد مفتوح عند الفتح)، والانضباط داخل قسم السلوك (ق84 مستوعَب).
+test('و6 نافذة الإنجاز: الاسم في #generalQuickName، قسم الجديد مفتوح افتراضياً ثم المراجعة، «آخر محفوظ: X ← يبدأ من: Y»، بحث السورة والقصّ، الانضباط بزرّيه و«استثناءات» في قسم السلوك', async () => {
     const h = await teacherPage();
     try {
         await openAch(h, 1);
         const text = await visibleText(h.page, '#smartModal');
-        assert.ok(text.includes('الإنجاز · أحمد'), 'عنوان «الإنجاز · أحمد»');
-        assert.equal(await isSelected(h.page.locator('#quickTabNew')), true, 'الجديد ليس الافتراضي');
-        assert.match(text, /آخر محفوظ:\s*البقرة 5\s*←\s*يبدأ من:\s*البقرة 6/, 'سطر «آخر محفوظ ← يبدأ من»');
+        assert.equal(await visibleText(h.page, '#generalQuickName'), 'أحمد', 'العنوان: اسم الطالب');
+        const open0 = await H.secState(h.page);
+        assert.deepEqual([open0.new.expanded && open0.new.bodyVisible, open0.review.bodyVisible, open0.behavior.bodyVisible], [true, false, false], 'الجديد ليس المفتوح افتراضياً وحده');
+        assert.match(text, /آخر محفوظ:\s*البقرة 5\s*يبدأ من:\s*البقرة 6/, 'سطرا «آخر محفوظ» و«يبدأ من»');   // أ18: ف6 حذف السهم
+        { const fl = (await h.page.evaluate(() => {
+            const box = document.getElementById('quick_new_start');
+            const rows = [...(box?.children || [])].filter(e => e.getClientRects().length).map(e => ({ t: e.innerText.replace(/[\s\u00a0\u202f\u2060]+/g, ' ').trim(), r: e.getBoundingClientRect() }));
+            return { all: (box?.innerText || '').replace(/\s+/g, ' ').trim(), rows: rows.map(x => x.t), separate: rows.length === 2 && rows[1].r.top >= rows[0].r.bottom - 1 };
+        }));
+            assert.deepEqual([fl.rows, fl.separate, fl.all.includes('←')], [['آخر محفوظ: البقرة 5', 'يبدأ من: البقرة 6'], true, false], `سطرا «آخر محفوظ» و«يبدأ من» (ف6: سطران منفصلان بلا سهم): ${JSON.stringify(fl)}`); }
         assert.equal(await h.page.locator('#quick_new_toSurah_search').count(), 1, 'بحث السورة (2-10) غائب');
         await setField(h.page, 'quick_new_toAyah', 999);
         await h.page.waitForTimeout(100);
         assert.equal(await h.page.inputValue('#quick_new_toAyah'), '286', 'القصّ لآخر آية (2-9)');
+        await H.openSec(h.page, 'behavior');
         assert.equal(await visibleText(h.page, '#quickDisciplineAll'), 'استوفى المعايير');
         assert.equal(await visibleText(h.page, '#quickDisciplineHome'), 'التحضير المنزلي');
-        assert.equal(await h.page.locator('#smartModal button').filter({ hasText: 'استثناءات' }).filter({ visible: true }).count() >= 1, true, 'زر «استثناءات»');
-        await h.page.locator('#quickTabReview').click();
-        assert.equal(await isSelected(h.page.locator('#quickTabReview')), true);
+        assert.equal(await h.page.locator(H.QUICK_SEL.sec('behavior') + ' button').filter({ hasText: 'استثناءات' }).filter({ visible: true }).count() >= 1, true, 'زر «استثناءات»');
+        await H.openSec(h.page, 'review');
+        assert.equal((await H.secState(h.page)).review.expanded, true);
         assert.equal(await h.page.locator('#quick_review_row').isVisible(), true);
-        assert.equal(await h.page.locator('#quick_new_row').isVisible(), false, 'صف الجديد ظاهر في تبويب المراجعة');
+        assert.equal(await h.page.locator('#quick_new_row').isVisible(), false, 'صف الجديد ظاهر وقسم المراجعة مفتوح');
         await shot(h.page, 'ص3-نافذة-التسجيل-390');
     } finally { await h.close(); }
 });
@@ -670,49 +699,36 @@ test('و6/ف1 الحفظ من صفحة المعلم = saveGeneralQuickEntry ال
     } finally { await h.close(); }
 });
 
-async function confirmFlow(h, id, MSG) {
-    // التأكيد: سطر ظاهر في النافذة (الآلية القائمة) أو confirm() أصلي بالنص نفسه
+// أ14 (ق78): التأكيد صار ورقة .tch-sheet بعنوان «لم تُدخل مراجعة لِ…»/«لم تُدخل جديداً لِ…»، وزرّها الثاني «احفظ … فقط» يحفظ كما كان «حفظ» في الشريط الأصفر.
+async function confirmFlow(h, id, MSG, ONLY) {
     await pressSave(h.page);
     await h.page.waitForTimeout(300);
-    const inline = (await visibleText(h.page, '#smartModal')).includes(MSG);
-    const native = h.dialogs.some(d => d.message.includes(MSG));
-    assert.ok(inline || native, `التأكيد «${MSG}» لم يظهر`);
-    if (inline) {
-        assert.equal((await studentWrites(h, id)).length, 0, 'حُفظ قبل التأكيد');
-        await pressSave(h.page);
-        await h.page.waitForTimeout(400);
-    }
+    const sheets = await H.quickSheets(h.page);
+    assert.ok(sheets.some(s => s.text.includes(MSG)), `الورقة «${MSG}» لم تظهر. الأوراق: ${JSON.stringify(sheets)}`);
+    assert.equal((await studentWrites(h, id)).length, 0, 'حُفظ قبل التأكيد');
+    await H.sheetButton(h.page, ONLY).catch(e => assert.fail(e.message));
+    await h.page.waitForTimeout(400);
     assert.equal((await studentWrites(h, id)).length, 1, 'لم يُحفظ بعد التأكيد');
 }
-// أ8 (ق65): بعد ق64 قد تبقى نافذة الطالب التالي مفتوحة بعد الحفظ؛ تُغلق بـ✕ قبل فتح بطاقة أخرى (لا شيء إن كانت مغلقة).
+// أ8 (ق65): بعد ق64 قد تبقى نافذة الطالب التالي مفتوحة بعد الحفظ؛ تُغلق قبل فتح بطاقة أخرى (لا شيء إن كانت مغلقة). أ14: «رجوع» عند المعلم (ق90) بدل ✕.
 async function closeQuick(h) {
-    if (!await h.page.evaluate(() => document.getElementById('smartModal')?.classList.contains('flex'))) return;
-    await h.page.locator('#generalQuickSection .qe-close').click();
-    await h.page.waitForFunction(() => !document.getElementById('smartModal')?.classList.contains('flex'), null, { timeout: 3000 })
-        .catch(async () => assert.fail('✕ لم يغلق النافذة. ' + await diagnose(h)));
+    await H.closeAch(h.page).catch(async () => assert.fail('زر الإغلاق لم يغلق النافذة. ' + await diagnose(h)));
 }
-test('و7 حفظ تبويب واحد ← التأكيد بنصّه (وعكسه)؛ «بلا مراجعة اليوم» الصريح يحفظ بلا تأكيد', async () => {
+// أ14 (ق78/ق79): الجزء الثالث («بلا مراجعة اليوم» الصريح يحفظ بلا تأكيد) حُذف لأن الزر حُذف بق79 ولم يبقَ له معنى؛ الزر الثاني في الورقة يؤدي غرضه.
+test('و7 حفظ قسم واحد ← ورقة ق78 بنصّها (وعكسه)، ولا حفظ قبل زرّها الثاني «احفظ … فقط»', async () => {
     const h = await teacherPage();
     try {
         await openAch(h, 1); await fillNew(h.page);
-        await confirmFlow(h, 1, 'لم تُسجَّل مراجعة لهذا الطالب اليوم. حفظ الجديد فقط؟');
+        await confirmFlow(h, 1, 'لم تُدخل مراجعة لِأحمد', 'احفظ الجديد فقط');
         await closeQuick(h);
         await openAch(h, 5); await fillReview(h.page);
-        await confirmFlow(h, 5, 'لم يُسجَّل جديد لهذا الطالب اليوم. حفظ المراجعة فقط؟');
-        await closeQuick(h);
-        await h.page.locator('#teacherHalaqaTabs button').nth(1).click();
-        await openAch(h, 6); await fillNew(h.page);
-        await h.page.locator('#quickTabReview').click();
-        await clickText(h.page, '#smartModal', /^\s*بلا مراجعة اليوم\s*$/, '«بلا مراجعة اليوم»');
-        const before = h.dialogs.length;
-        await pressSave(h.page);
-        await h.page.waitForTimeout(400);
-        assert.equal((await studentWrites(h, 6)).length, 1, 'الضغط الصريح لم يحفظ من أول مرة');
-        assert.equal(h.dialogs.length, before, 'تأكيد ظهر مع الضغط الصريح');
+        await confirmFlow(h, 5, 'لم تُدخل جديداً لِفهد', 'احفظ المراجعة فقط');
     } finally { await h.close(); }
 });
 
-test('و8 بعد الحفظ: #teacherToast «حُفظ لفلان · تراجع» 6 ث، البطاقة «سُجّل» وتنزل؛ التراجع (ق43 = undoLastGeneralEntry) تسجيل واحد في كل ضغطة من الرسالة ثم من #quickTodayBox', async () => {
+// أ29 (ق189–ق190، الجولة 5، 2026-11-20): كان «تختفي بعد 6 ث» (waitForTimeout(6300) ثم غير ظاهرة)؛ صار «باقية بعد 7 ث بزرّ «تراجع»» — الشريط ذو التراجع بلا مؤقت.
+// ب14 (ق205): كان زر تراجع في الشريط وبقاء 7 ث؛ صار بلا أزرار ويختفي بعد 6 ث، والتراجع من صندوق النافذة.
+test('و8/ت1–ت3 بعد الحفظ: رسالة بلا أزرار تختفي بعد 7 ث؛ التسجيل باقٍ والتراجع من صندوق النافذة تسجيل في كل ضغطة', async () => {
     const h = await teacherPage();
     try {
         await openAch(h, 2);
@@ -723,12 +739,14 @@ test('و8 بعد الحفظ: #teacherToast «حُفظ لفلان · تراجع»
         await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
         await h.page.locator('#teacherToast').waitFor({ state: 'visible', timeout: 4000 }).catch(async () => assert.fail('#teacherToast لم يظهر. ' + await diagnose(h)));
         const toast = await visibleText(h.page, '#teacherToast');
-        assert.ok(toast.includes('حُفظ لأحمد') && toast.includes('تراجع'), `الرسالة: ${toast}`);
+        assert.equal(norm(toast), 'حُفظ لأحمد', `الرسالة: ${toast}`);
+        assert.equal(await h.page.locator('#teacherToast button').count(), 0, 'رسالة الحفظ فيها زر');
         assert.match(norm(await card(h.page, 1).innerText()), /سُجّل · ممتاز/);
         assert.deepEqual(await cardIds(h.page), [4, 5, 1, 2, 3], 'البطاقة لم تنزل');
         await shot(h.page, 'ص4-بعد-الحفظ-390');
-        await h.page.waitForTimeout(6300);
-        assert.equal(await h.page.locator('#teacherToast').isVisible().catch(() => false), false, 'الرسالة باقية بعد 6 ث');
+        await h.page.waitForTimeout(7000);
+        const after7 = await h.page.locator('#teacherToast').isVisible().catch(() => false) ? await visibleText(h.page, '#teacherToast') : '(غير ظاهرة)';
+        assert.equal(after7, '(غير ظاهرة)', `الرسالة بعد 7 ث: ${after7}`);
         await closeQuick(h);
         await openAch(h, 1);
         const mine = await visibleText(h.page, '#quickTodayBox');
@@ -739,8 +757,10 @@ test('و8 بعد الحفظ: #teacherToast «حُفظ لفلان · تراجع»
         await h.page.locator('#teacherToast').waitFor({ state: 'visible', timeout: 4000 });
         const mine5 = async () => Object.values((await h.doc('programs/general/seasons/s1/students/5')).history?.[TODAY]?.entries || {}).filter(e => e.by === 'teacher-uid');
         assert.equal((await mine5()).length, 2, 'الحفظ لم يكتب الجديد والمراجعة');
-        // ق43: الضغطة الأولى من الرسالة ← يبقى تسجيل واحد لهذه الهوية (لا حذف الحفظة كلها، ولا لا شيء).
-        await clickText(h.page, '#teacherToast', /تراجع/, 'زر التراجع في الرسالة');
+        // ب14 (ق205): كان التراجع الأول من الرسالة؛ صار من صندوق «سُجّل اليوم».
+        assert.equal(await h.page.locator('#teacherToast button').count(), 0, 'رسالة فهد فيها زر');
+        await openAch(h, 5);
+        await clickText(h.page, '#quickTodayBox', /تراجع/, 'زر التراجع الأول في #quickTodayBox');
         await h.page.waitForTimeout(500);
         const left = await mine5();
         assert.equal(left.length, 1, `بعد التراجع الأول: المتوقع تسجيل واحد باقٍ لهذه الهوية، الموجود ${left.length}`);
@@ -869,7 +889,7 @@ test('و13 ⋯ حذف: «حذف الطالب» ← تأكيد أول بنصّه 
         const native = h.dialogs.slice(n0).find(d => d.message.includes(FIRST));
         if (native) assert.ok(native.message.includes('سيُمحى سجله ونقاطه'));
         else {
-            const box = h.page.locator('body *').filter({ hasText: FIRST }).filter({ visible: true }).last();
+            const box = h.page.locator('body *').filter({ hasText: FIRST }).filter({ hasText: 'سيُمحى سجله ونقاطه' }).filter({ visible: true }).last();   // أ24: العنوان قد يصير سطرين (ص7)
             assert.ok(await box.count(), `التأكيد الأول «${FIRST} سيُمحى سجله ونقاطه.» لم يظهر`);
             assert.ok((await box.innerText()).includes('سيُمحى سجله ونقاطه'));
             const go = h.page.locator('button').filter({ hasText: /حذف|متابعة|نعم/ }).filter({ hasNotText: /إلغاء|نهائي|الطالب/ }).filter({ visible: true }).last();
@@ -1061,8 +1081,8 @@ test('ح1 (ن11/ق31، ق50/ق53) جلسة معلم محفوظة ورمزه أُ
 test('ح2 قائمة بحث السورة مفتوحة + Enter ← تُختار السورة، ولا يُحفظ شيء، ولا يظهر تأكيد', async () => {
     const h = await teacherPage();
     try {
-        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page);   // المدخلات صالحة للحفظ: لو مرّ Enter إلى الحفظ لكُتب الطالب
-        await h.page.locator('#quickTabNew').click();
+        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page);   // المدخلات صالحة للحفظ (القسمان مؤكَّدان): لو مرّ Enter إلى الحفظ لكُتب الطالب
+        await H.openSec(h.page, 'new');   // أ14: قسم الجديد بدل تبويبه
         const n0 = h.dialogs.length;
         await h.page.locator('#quick_new_toSurah_search').fill('آل عمران');
         assert.equal(await h.page.locator('#quick_new_toSurah_list').isVisible(), true, 'قائمة بحث السورة لم تُفتح');
@@ -1074,6 +1094,7 @@ test('ح2 قائمة بحث السورة مفتوحة + Enter ← تُختار �
         assert.equal(await h.page.locator('#smartModal').isVisible(), true, 'النافذة أُغلقت (حفظ)');
         const text = await visibleText(h.page, '#smartModal');
         for (const msg of ['حفظ الجديد فقط؟', 'حفظ المراجعة فقط؟']) assert.ok(!text.includes(msg), `ظهر التأكيد «${msg}»`);
+        assert.deepEqual(await H.quickSheets(h.page), [], 'ظهرت ورقة تأكيد (ق78)');   // أ14: التأكيد صار ورقة
         assert.deepEqual(h.dialogs.slice(n0), [], 'ظهر حوار أصلي');
         assert.equal(await h.page.locator('#teacherToast').count(), 0, 'ظهرت رسالة حفظ');
     } finally { await h.close(); }
@@ -1146,19 +1167,21 @@ test('ح5 (ق44 ب) وضع المعلم: قناة التلفاز مغلقة، و
     } finally { await h.close(); }
 });
 
-test('ح6 (ق43) «تراجع» في #teacherToast بعد حفظ الطالب أ ثم فتح الطالب ب ← التراجع يمسّ تسجيل أ لا ب', async () => {
+// أ29 (ق189–ق190، الجولة 5، 2026-11-20): كان «تراجع» من الرسالة ونافذة ب مفتوحة يمسّ أ لا ب (ق66/ق93-6)، وكان ينتظر اختفاء رسالة ب بالوقت (detached 7 ث).
+// هذا السيناريو لم يعد ممكناً: فتح أي نافذة يزيل الرسالة، والرسالة لا تختفي بالوقت. صار: فتح ب يزيل الرسالة، والتراجع عن أ من «سُجّل اليوم» في نافذة أ يمسّ أ لا ب.
+test('ح6 (ق43، ق190) بعد حفظ الطالب أ، فتح الطالب ب يزيل #teacherToast؛ والتراجع عن أ من «سُجّل اليوم … تراجع» داخل نافذة أ يمسّ تسجيل أ لا ب', async () => {
     const h = await teacherPage();
     try {
         await saveBoth(h, 5, 'فهد');      // ب: له تسجيلان من هذا الجهاز
-        // رسالة ب تغطي زر الحفظ في النافذة التالية حتى تختفي (6 ث)؛ ننتظرها كما ينتظرها المعلم.
-        await h.page.locator('#teacherToast').waitFor({ state: 'detached', timeout: 7000 });
-        await closeQuick(h);
-        await saveBoth(h, 1, 'أحمد');     // أ: آخر حفظ، والرسالة له
+        await saveBoth(h, 1, 'أحمد');     // أ: آخر حفظ، والرسالة له (فتح نافذة أ أزال رسالة ب)
         await closeQuick(h);
         assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 5)).length], [2, 2], 'الشرط المسبق');
-        await openAch(h, 5);              // فتح ب بعد الحفظ والرسالة ظاهرة
-        assert.ok((await visibleText(h.page, '#teacherToast')).includes('حُفظ لأحمد'), 'الرسالة ليست لأحمد');
-        await clickText(h.page, '#teacherToast', /تراجع/, 'زر التراجع في الرسالة');
+        await openAch(h, 5);              // فتح ب والرسالة ظاهرة
+        const left = await h.page.locator('#teacherToast').count() ? await visibleText(h.page, '#teacherToast') : '';
+        assert.equal(left, '', `فتح نافذة ب لم يُزل الرسالة (ق190): «${left}»`);
+        await closeQuick(h);
+        await openAch(h, 1);              // التراجع عن أ من صندوقه
+        await clickText(h.page, '#quickTodayBox', /تراجع/, 'زر التراجع في #quickTodayBox لأحمد');
         await h.page.waitForTimeout(600);
         assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 5)).length], [1, 2], 'التراجع لم يمسّ أ وحده (أ، ب)');
     } finally { await h.close(); }
@@ -1192,7 +1215,10 @@ async function sheetButtonsAt(width) {
         await h.page.locator('#teacherStudentSheet [data-cancel]').click();
         await card(h.page, 5).locator('[data-a=more]').click();
         out.teacherMoreSheet = await sheetSmallButtons(h, 'teacherMoreSheet');
-        await clickText(h.page, '#teacherMoreSheet', /حذف الطالب/, '«حذف الطالب»');   // التأكيد الأول confirm() يقبله الهاركنس
+        await clickText(h.page, '#teacherMoreSheet', /حذف الطالب/, '«حذف الطالب»');
+        // ب11-ف2: التأكيد الأول ورقة #teacherDeleteAskSheet (من أوراق المعلم، داخل ق51) ثم «متابعة» ← ورقة الاسم.
+        out.teacherDeleteAskSheet = await sheetSmallButtons(h, 'teacherDeleteAskSheet');
+        await h.page.locator('#teacherDeleteAskSheet [data-go]').click();
         out.teacherDeleteSheet = await sheetSmallButtons(h, 'teacherDeleteSheet');
         await h.page.locator('#teacherDeleteSheet [data-cancel]').click();
         assert.ok(await h.doc('programs/general/seasons/s1/students/5'), 'الطالب 5 حُذف أثناء الفحص');
@@ -1202,7 +1228,9 @@ async function sheetButtonsAt(width) {
 }
 
 // أ5 (ق58، ق54): ح8 الرسالة لا تلتقط اللمس؛ ح9 زرّا الانضباط مرة واحدة في كل فتحة للنافذة.
-test('ح8 (ق54) #teacherToast لا تلتقط اللمس: نقطة نصّها تصيب ما تحتها (والنافذة مغلقة ومفتوحة)، والنقر في وسط «حفظ» للطالب التالي خلال الثواني الست يحفظ', async () => {
+// أ29 (ق190، الجولة 5، 2026-11-20): كان النصف الثاني «النافذة مفتوحة والرسالة ظاهرة: نصّها لا يلتقط، والنقر في وسط «حفظ» خلال الثواني الست يحفظ».
+// هذا لم يعد ممكناً: فتح نافذة الطالب التالي يزيل الرسالة. صار: النافذة مغلقة كما كان (pointer-events)، وفتح التالي يزيل الرسالة فلا شيء فوق «حفظ»، والنقر في وسطه يحفظ.
+test('ح8 (ق54، ق190) #teacherToast لا تلتقط اللمس: نقطة نصّها تصيب ما تحتها والنافذة مغلقة؛ وفتح الطالب التالي يزيل الرسالة، والنقر في وسط «حفظ» يحفظ', async () => {
     const h = await teacherPage();
     try {
         await saveBoth(h, 1, 'أحمد');
@@ -1218,15 +1246,14 @@ test('ح8 (ق54) #teacherToast لا تلتقط اللمس: نقطة نصّها �
         assert.equal(closedHit.inToast, false, `النافذة مغلقة: نص الرسالة يلتقط اللمس (${closedHit.at})`);
         await openAch(h, 5); await fillNew(h.page); await fillReview(h.page);
         await h.page.evaluate(() => typeof updateGeneralQuickPreview === 'function' && updateGeneralQuickPreview());
-        assert.equal(await h.page.locator('#teacherToast').isVisible(), true, 'الرسالة اختفت قبل النقر (الشرط المسبق: خلال الثواني الست)');
-        const openHit = await hit();
-        assert.equal(openHit.inToast, false, `النافذة مفتوحة: نص الرسالة يلتقط اللمس (${openHit.at})`);
+        const openLeft = await h.page.locator('#teacherToast').count() ? await visibleText(h.page, '#teacherToast') : '';
+        assert.equal(openLeft, '', `فتح نافذة الطالب التالي لم يُزل الرسالة (ق190): «${openLeft}»`);
         const box = await h.page.locator('#generalQuickSaveBtn').boundingBox();
         const atSave = await h.page.evaluate(([x, y]) => { const el = document.elementFromPoint(x, y); return !!el?.closest('#generalQuickSaveBtn'); }, [box.x + box.width / 2, box.y + box.height / 2]);
         assert.equal(atSave, true, 'شيء فوق وسط زر «حفظ»');
-        await h.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);   // نقرة حقيقية بالإحداثيات، بلا انتظار اختفاء الرسالة
+        await h.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);   // نقرة حقيقية بالإحداثيات
         await h.page.locator('#teacherToast').filter({ hasText: 'حُفظ لفهد' }).waitFor({ state: 'visible', timeout: 4000 })
-            .catch(async () => assert.fail('النقر في وسط «حفظ» والرسالة ظاهرة لم يحفظ. ' + await diagnose(h)));
+            .catch(async () => assert.fail('النقر في وسط «حفظ» لم يحفظ. ' + await diagnose(h)));
         assert.equal((await mineToday(h, 5)).length, 2, 'لم يُكتب الطالب التالي');
     } finally { await h.close(); }
 });
@@ -1237,6 +1264,7 @@ test('ح9 (ق58) فتح نافذة الإنجاز لثلاثة طلاب متتا
         const seen = [];
         for (const id of [1, 5, 4]) {
             await openAch(h, id);
+            await H.openSec(h.page, 'behavior');   // أ14: الزرّان داخل قسم السلوك (ق84 مستوعَب في ق90)
             seen.push(await h.page.evaluate(() => {
                 const vis = sel => [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length);
                 const by = text => vis('#smartModal button').filter(b => b.innerText.trim() === text).length;
@@ -1301,12 +1329,19 @@ test('ح10 (ق60، ع2) جلسة معلم بالرمز المبطَل + فتح /
 test('ح11 (ق59، ع1) بعد إبطال الرمز أثناء الجلسة (بلا قطع المستمع): كل مسار كتابة (غياب، إنجاز، ✎، حذف) ← رفض ← خروج + إعادة تحميل + رسالة و2، ولا كتابة', async () => {
     const actions = {
         'غياب (commitBatch)': async h => { await card(h.page, 1).locator('[data-a=absent]').click(); await h.page.locator('#teacherAbsenceSheet button').filter({ hasText: /^\s*بغير عذر\s*$/ }).click(); },
-        'إنجاز (patchStudent)': async h => { await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page); },
+        // أ26-ج (ق161، ل17): الضغط على «الإنجاز» نفسه يفحص الرمز من الخادم (getDocFromServer) فيُخرج قبل فتح النافذة؛ لا حفظ يُجرَّب.
+        // مراقب في sessionStorage (يعبر إعادة التحميل) يسجّل إن أخذت #smartModal الصنف flex.
+        'إنجاز (فحص الرمز عند الفتح)': async h => {
+            await h.page.evaluate(() => { const m = document.getElementById('smartModal');
+                new MutationObserver(() => { if (m.classList.contains('flex')) sessionStorage.setItem('__a26cModal', '1'); }).observe(m, { attributes: true, attributeFilter: ['class'] }); });
+            await card(h.page, 1).locator('[data-a=ach]').click();
+        },
         '✎ تعديل': async h => { await openSheet(h, () => card(h.page, 1).locator('[data-a=edit]').click()); await h.page.fill('#tsName', 'أحمد علي'); await clickText(h.page, '#teacherStudentSheet', /حفظ/, 'زر الحفظ'); },
         'حذف (deleteStudentWithCopy)': async h => {
             await card(h.page, 1).locator('[data-a=more]').click();
             await clickText(h.page, '#teacherMoreSheet', /حذف الطالب/, '«حذف الطالب»');
-            await h.page.locator('#tsDeleteName').fill('أحمد');
+            await h.page.locator('#teacherDeleteAskSheet [data-go]').click();   // ب11-ف2: ورقة «متابعة» قبل ورقة الاسم
+            await h.page.locator('#tsDeleteName').fill('أحمد');                 // مطابق حرفياً ← يتفعّل «حذف نهائي»
             await h.page.locator('#teacherDeleteSheet button').filter({ hasText: /^\s*حذف نهائي\s*$/ }).click();
         }
     };
@@ -1322,13 +1357,18 @@ test('ح11 (ق59، ع1) بعد إبطال الرمز أثناء الجلسة (ب
             const out = await h.page.waitForFunction(msg => document.getElementById('loginError')?.innerText.trim() === msg && document.getElementById('loginError').getClientRects().length > 0,
                 REVOKED_MSG, { timeout: 5000 }).then(() => true, () => false);
             const st = await h.page.evaluate(() => ({ user: window.__fb.currentUser?.uid || null, loads: window.__fb.loads,
-                denied: window.__fb.log.filter(l => l.result === 'permission-denied').map(l => l.op) })).catch(e => ({ evalError: e.message }));
+                denied: window.__fb.log.filter(l => l.result === 'permission-denied').map(l => l.op),
+                // أ26-ج: قراءة الفحص من الخادم بهوية المعلم (رُفضت: انتهت بالخروج)، وظهور النافذة.
+                probe: window.__fb.log.some(l => l.op === 'getDocFromServer' && l.path === 'programs/general/seasons/s1/students/1' && l.uid === 'teacher-uid'),
+                modal: sessionStorage.getItem('__a26cModal') === '1' || document.getElementById('smartModal')?.classList.contains('flex') === true })).catch(e => ({ evalError: e.message }));
             const after = await h.doc('programs/general/seasons/s1/students/1').catch(() => 'تعذّرت القراءة');
-            results[label] = { خرج_بالرسالة: out, الهوية: st.user ?? null, التحميلات: st.loads, رفض_الخادم: (st.denied || []).length > 0,
-                لا_كتابة: JSON.stringify(after) === JSON.stringify(before), ...(actErr ? { خطأ_الإجراء: actErr } : {}) };
+            const ach = label === 'إنجاز (فحص الرمز عند الفتح)';
+            results[label] = { خرج_بالرسالة: out, الهوية: st.user ?? null, التحميلات: st.loads, رفض_الخادم: ach ? !!st.probe : (st.denied || []).length > 0,
+                لا_كتابة: JSON.stringify(after) === JSON.stringify(before), ...(ach ? { النافذة_ظهرت: !!st.modal } : {}), ...(actErr ? { خطأ_الإجراء: actErr } : {}) };
         } finally { await h.close(); }
     }
-    const expected = Object.fromEntries(Object.keys(actions).map(k => [k, { خرج_بالرسالة: true, الهوية: null, التحميلات: 2, رفض_الخادم: true, لا_كتابة: true }]));
+    const expected = Object.fromEntries(Object.keys(actions).map(k => [k, { خرج_بالرسالة: true, الهوية: null, التحميلات: 2, رفض_الخادم: true, لا_كتابة: true,
+        ...(k === 'إنجاز (فحص الرمز عند الفتح)' ? { النافذة_ظهرت: false } : {}) }]));
     assert.deepEqual(results, expected, 'لكل مسار: [خروج برسالة و2 بعد إعادة تحميل واحدة، بلا هوية، رفض من الخادم، لا كتابة]');
 });
 
@@ -1395,6 +1435,7 @@ test('ح13 (ف-F7) «التحضير المنزلي» و«استوفى المعا
     const h = await teacherPage();
     try {
         await openAch(h, 1);
+        await H.openSec(h.page, 'behavior');   // أ14: الزرّان و«استثناءات» داخل قسم السلوك
         const home0 = await pressedLook(h, 'quickDisciplineHome'), all0 = await pressedLook(h, 'quickDisciplineAll');
         assert.ok(home0 && all0, 'زرّا الانضباط غائبان');
         assert.notEqual(home0.pressed, 'true', '«التحضير المنزلي» مضغوط عند الفتح');
@@ -1442,7 +1483,13 @@ test('ح14 (ف-F9) سطر «آخر محفوظ: الأعلى 19 ← يبدأ من
     try {
         await openAch(h, 1);
         const line = await visibleText(h.page, '#quick_new_start');
-        assert.match(line, /آخر محفوظ:\s*الأعلى\s19\s*←\s*يبدأ من:\s*الطارق\s1/, `الشرط المسبق: السطر ${line}`);
+        assert.match(line, /آخر محفوظ:\s*الأعلى\s19\s*يبدأ من:\s*الطارق\s1/, `الشرط المسبق: السطر ${line}`);   // أ18: ف6 حذف السهم
+        { const fl = (await h.page.evaluate(() => {
+            const box = document.getElementById('quick_new_start');
+            const rows = [...(box?.children || [])].filter(e => e.getClientRects().length).map(e => ({ t: e.innerText.replace(/[\s\u00a0\u202f\u2060]+/g, ' ').trim(), r: e.getBoundingClientRect() }));
+            return { all: (box?.innerText || '').replace(/\s+/g, ' ').trim(), rows: rows.map(x => x.t), separate: rows.length === 2 && rows[1].r.top >= rows[0].r.bottom - 1 };
+        }));
+            assert.deepEqual([fl.rows, fl.separate, fl.all.includes('←')], [['آخر محفوظ: الأعلى 19', 'يبدأ من: الطارق 1'], true, false], `الشرط المسبق: سطرا «آخر محفوظ» و«يبدأ من» (ف6: سطران منفصلان بلا سهم): ${JSON.stringify(fl)}`); }
         const res = await h.page.evaluate(labels => {
             const box = document.getElementById('quick_new_start');
             const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), nodes = [];
@@ -1478,27 +1525,48 @@ test('ح14 (ف-F9) سطر «آخر محفوظ: الأعلى 19 ← يبدأ من
     } finally { await h.close(); }
 });
 
-test('ح15 (ق64) وضع المعلم: مع تالٍ غير مسجَّل وغير غائب نص الزر «حفظ والتالي»؛ بعد حفظ ناجح تُفتح النافذة للتالي بترتيب البطاقات (أحمد ← سعد) والرسالة باقية؛ الحفظ الفاشل لا ينتقل', async () => {
+// أ10 (ق77، 2026-11-18): «حفظ والتالي» أُلغي (خيار المالك أ). ح15–ح20 أُعيدت كتابتها على السلوك الجديد بنص الأمر، وما يحرسه كلٌّ منها باقٍ:
+// الحفظ الناجح يغلق النافذة ويعود إلى قائمة الحلقة ولا يفتح أي طالب (لا استدعاء لـopenSmartModal بعده)، ونص الزر «حفظ» دائماً بـ<small>Enter ↵</small> كالمشرف.
+// عدّاد openSmartModal: يُلفّ الاسم العام في الصفحة (teacherSaveQuickEntry وكل مستدعٍ يمرّ بالربط العام نفسه).
+async function spyOpenSmart(page) {
+    await page.evaluate(() => {
+        if (window.__osmWrapped) return;
+        const original = window.openSmartModal;
+        window.__osm = [];
+        window.openSmartModal = function (...args) { window.__osm.push(args[0]); return original.apply(this, args); };
+        window.__osmWrapped = true;
+    });
+}
+const osmCalls = page => page.evaluate(() => window.__osm.slice());
+const saveHtml = page => page.evaluate(() => document.getElementById('generalQuickSaveBtn').innerHTML.replace(/\s+/g, ' ').trim());
+// يُغلق ويبقى مغلقاً: لا نافذة بعد الحفظ بمهلة تكفي لأي فتح متأخر.
+async function staysClosed(h, what) {
+    await h.page.waitForFunction(() => !document.getElementById('smartModal')?.classList.contains('flex'), null, { timeout: 4000 })
+        .catch(async () => assert.fail(`${what}: النافذة لم تُغلق (المفتوح: ${await quickWho(h.page)}). ${await diagnose(h)}`));
+    await h.page.waitForTimeout(600);
+    assert.equal(await modalOpen(h.page), false, `${what}: فُتحت نافذة بعد الإغلاق (المفتوح: ${await quickWho(h.page)})`);
+}
+test('ح15 (ق77، كان ق64) وضع المعلم: نص الزر «حفظ» ولو بقي غير مسجَّلين؛ بعد حفظ ناجح تُغلق النافذة وتعود القائمة (المحفوظ له ينزل) ولا يُفتح أي طالب، والرسالة ظاهرة؛ الحفظ الفاشل يُبقي النافذة كما هي', async () => {
     const h = await teacherPage();
     try {
         assert.deepEqual(await cardIds(h.page), [1, 4, 5, 2, 3], 'الشرط المسبق: ترتيب البطاقات');
+        await spyOpenSmart(h.page);
         await openAch(h, 1);
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'نص زر الحفظ لأحمد (التالي سعد)');
+        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر الحفظ لأحمد (سعد وفهد لم يُسجَّلا بعد)');
+        assert.equal(await saveHtml(h.page), 'حفظ <small>Enter ↵</small>', 'زر الحفظ ليس «حفظ <small>Enter ↵</small>» كالمشرف');
         await fillNew(h.page); await fillReview(h.page);
-        const logBefore = (await h.fbLog()).length;
+        const logBefore = (await h.fbLog()).length, callsBefore = (await osmCalls(h.page)).length;
         await pressSave(h.page);
         await waitToast(h, 'أحمد');
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        assert.equal(await h.page.evaluate(() => currentEditingStudentId), 4, 'النافذة المفتوحة ليست للطالب 4');
-        assert.equal(await h.page.locator('#quick_positionAyah').isVisible(), true, 'نافذة سعد لم تُبنَ له (صندوق الموضع لطالب بلا موضع غائب)');
-        assert.equal(await h.page.inputValue('#quick_new_toAyah'), '', 'نافذة سعد تحمل مدخلات أحمد');
+        await staysClosed(h, 'بعد حفظ أحمد');
+        assert.deepEqual((await osmCalls(h.page)).slice(callsBefore), [], 'استُدعيت openSmartModal بعد الحفظ');
         assert.equal((await mineToday(h, 1)).length, 2, 'تسجيلا أحمد لم يُحفظا');
         const writes = (await h.fbLog()).slice(logBefore).filter(l => (l.writes || []).length);
         assert.deepEqual(writes.map(l => l.writes.map(w => w.path).join(',')), ['programs/general/seasons/s1/students/1'], 'كتابات غير حفظ أحمد وحده');
-        assert.ok((await visibleText(h.page, '#teacherToast')).includes('حُفظ لأحمد'), 'رسالة «حُفظ لأحمد · تراجع» ليست ظاهرة والنافذة التالية مفتوحة');
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'نص زر الحفظ لسعد (التالي فهد)');
+        assert.ok((await visibleText(h.page, '#teacherToast')).includes('حُفظ لأحمد'), 'رسالة «حُفظ لأحمد · تراجع» ليست ظاهرة بعد الإغلاق');
+        assert.deepEqual(await cardIds(h.page), [4, 5, 1, 2, 3], 'القائمة بعد الحفظ: المنتظرون في الأعلى والمحفوظ له ينزل إلى المسجَّلين');
     } finally { await h.close(); }
-    // الحفظ الفاشل (الخادم يرفض الكتابة) ← لا انتقال: النافذة لأحمد كما هي.
+    // الحفظ الفاشل (الخادم يرفض الكتابة) ← النافذة لأحمد كما هي، والنص «حفظ».
     const f = await teacherPage();
     try {
         await openAch(f, 1); await fillNew(f.page); await fillReview(f.page);
@@ -1506,51 +1574,53 @@ test('ح15 (ق64) وضع المعلم: مع تالٍ غير مسجَّل وغي�
         await pressSave(f.page);
         await f.page.waitForTimeout(800);
         assert.ok((await f.fbLog()).some(l => l.result === 'failed'), 'الشرط المسبق: لم تُحاول الكتابة');
-        assert.deepEqual([await modalOpen(f.page), await quickWho(f.page), await f.page.evaluate(() => currentEditingStudentId)], [true, 'الإنجاز · أحمد', 1], 'الحفظ الفاشل انتقل أو أغلق');
-        assert.equal(await saveLabel(f.page), 'حفظ والتالي', 'نص الزر تغيّر بعد الفشل');
+        assert.deepEqual([await modalOpen(f.page), await quickWho(f.page), await f.page.evaluate(() => currentEditingStudentId)], [true, 'أحمد', 1], 'الحفظ الفاشل أغلق النافذة أو انتقل');   // أ14: العنوان الاسم وحده (ق90، ج1)
+        assert.equal(await saveLabel(f.page), 'حفظ', 'نص الزر بعد الفشل');
     } finally { await f.close(); }
 });
 
-test('ح16 (ق64) بلا تالٍ: النص «حفظ» والحفظ يغلق النافذة؛ المسجَّل والغائب يُتخطَّيان؛ لا انتقال إلى تبويب آخر؛ ✕ يغلق بلا انتقال', async () => {
+test('ح16 (ق77، كان ق64) حفظ متتالٍ لطلاب الحلقة: كل حفظ يُغلق ولا ينتقل (ولا إلى تبويب آخر)، والنص «حفظ» في كل فتحة؛ ✕ يغلق؛ ولا أثر في الكود لـteacherNextStudentId ولا «حفظ والتالي» ولا تغليف updateGeneralUndoButton', async () => {
+    // (ج) ساكن: ما يُحذف من الكود بنص ق77 (في الشيفرة لا في التعليقات: كل سطر بعد حذف تعليق // في آخره).
+    const code = html.split('\n').map(l => l.replace(/(^|\s)\/\/.*$/, '')).join('\n');
+    assert.equal(/teacherNextStudentId/.test(code), false, 'teacherNextStudentId ما زال في index.html');
+    assert.equal(code.includes('حفظ والتالي'), false, '«حفظ والتالي» ما زال في index.html');
+    assert.equal(/updateGeneralUndoButton\s*=\s*function/.test(code), false, 'تغليف updateGeneralUndoButton الذي يبدّل نص الزر ما زال في index.html');
     const h = await teacherPage();
     try {
-        // (أ) العصر: أحمد ← سعد ← فهد؛ بعد فهد لا يبقى إلا بدر (مسجَّل من جهاز آخر) وخالد (غائب) ← «حفظ» ويُغلق.
-        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        await setField(h.page, 'quick_positionSurah', 2); await setField(h.page, 'quick_positionAyah', 5);
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'سعد');
-        await waitWho(h, 'فهد', 'بعد حفظ سعد');
-        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر الحفظ لفهد (لا تالٍ: بدر مسجَّل وخالد غائب)');
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'فهد');
-        await h.page.waitForTimeout(800);
-        assert.equal(await modalOpen(h.page), false, `النافذة لم تُغلق بعد آخر طالب (المفتوح: ${await quickWho(h.page)})`);
+        await spyOpenSmart(h.page);
+        // (أ) العصر: أحمد ثم سعد ثم فهد، كل واحد يُفتح من بطاقته، وكل حفظ يُغلق.
+        for (const [id, name] of [[1, 'أحمد'], [4, 'سعد'], [5, 'فهد']]) {
+            await openAch(h, id);
+            assert.equal(await saveLabel(h.page), 'حفظ', `نص زر الحفظ لـ${name}`);
+            if (id === 4) { await setField(h.page, 'quick_positionSurah', 2); await setField(h.page, 'quick_positionAyah', 5); }
+            await fillNew(h.page); await fillReview(h.page);
+            const before = (await osmCalls(h.page)).length;
+            await pressSave(h.page);
+            await waitToast(h, name);
+            await staysClosed(h, `بعد حفظ ${name}`);
+            assert.deepEqual((await osmCalls(h.page)).slice(before), [], `استُدعيت openSmartModal بعد حفظ ${name}`);
+        }
         const s2 = await h.doc('programs/general/seasons/s1/students/2'), s3 = await h.doc('programs/general/seasons/s1/students/3');
-        assert.deepEqual([(await mineToday(h, 2)).length, s3.history?.[TODAY]?.attended, s3.history?.[TODAY]?.entries], [0, false, undefined], 'المسجَّل أو الغائب لم يُتخطَّ');
+        assert.deepEqual([(await mineToday(h, 2)).length, s3.history?.[TODAY]?.attended, s3.history?.[TODAY]?.entries], [0, false, undefined], 'المسجَّل أو الغائب تغيّر');
         assert.deepEqual(Object.keys(s2.history?.[TODAY]?.entries || {}), ['e_other_1'], 'تسجيل بدر تغيّر');
-        // (ب) المغرب: عمر وماجد. ✕ على عمر يغلق بلا انتقال؛ حفظ عمر ← ماجد بـ«حفظ» ← يُغلق ولا يقفز إلى العصر.
+        // (ب) المغرب: ✕ على عمر يغلق؛ حفظ عمر يُغلق ولا يفتح ماجد ولا يقفز إلى العصر.
         await h.page.waitForTimeout(6200);   // تنتهي رسالة فهد
         await h.page.locator('#teacherHalaqaTabs button').nth(1).click();
         await openAch(h, 6);
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'نص زر الحفظ لعمر (التالي ماجد)');
-        await h.page.locator('#generalQuickSection .qe-close').click();
-        await h.page.waitForTimeout(600);
-        assert.equal(await modalOpen(h.page), false, `✕ لم يغلق أو انتقل (المفتوح: ${await quickWho(h.page)})`);
+        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر الحفظ لعمر (ماجد لم يُسجَّل)');
+        await h.page.locator('#generalQuickSection button[aria-label="رجوع"]').click();   // أ14: «رجوع» بدل ✕ عند المعلم (ق90، ج1)
+        await staysClosed(h, '«رجوع» على عمر');
         await openAch(h, 6); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitWho(h, 'ماجد', 'بعد حفظ عمر');
-        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر الحفظ لماجد (آخر المغرب؛ طلاب العصر لا يُحسبون)');
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'ماجد');
-        await h.page.waitForTimeout(800);
-        assert.equal(await modalOpen(h.page), false, `النافذة لم تُغلق بعد ماجد (المفتوح: ${await quickWho(h.page)})`);
+        await waitToast(h, 'عمر');
+        await staysClosed(h, 'بعد حفظ عمر');
+        assert.deepEqual(await cardIds(h.page), [7, 6], 'قائمة المغرب بعد حفظ عمر (ماجد في الأعلى)');
     } finally { await h.close(); }
 });
 
 // التسجيل المحفوظ قبل الميزة (التُقط 2026-11-17 على الشجرة نفسها قبل البناء، index.html cdcb4ab6…): حفظ أحمد بـ«إلى البقرة 10 ممتاز» + «الفاتحة 1–7 جيد»،
 // بعد normalizePatch (مفتاح التسجيل ← نوعه، وحذف by). المشرف والمعلم متطابقان فيه حرفاً (ف1).
 const PRE_FEATURE_PATCH = {"history.2026-11-22.attended":true,"history.2026-11-22.absence":{"__sentinel":"deleteField"},"history.2026-11-22.note":{"__sentinel":"deleteField"},"history.2026-11-22.hijri":"الأحد، ١٣ جمادى الآخرة ١٤٤٨ هـ","history.2026-11-22.entries.new":{"kind":"new","grade":"excellent","mult":3,"points":20,"spec":{"from":[2,6],"to":[2,10]},"iv":[12,16],"rep":1,"heardBy":"t1","halaqaId":"a1","stageId":"primary","at":1795338000000},"history.2026-11-22.entries.review":{"kind":"review","grade":"very-good","mult":1,"points":5.3,"spec":{"from":[1,1],"to":[1,7]},"iv":[0,6],"rep":1,"heardBy":"t1","halaqaId":"a1","stageId":"primary","at":1795338000001},"lastDailySurah":1,"lastDailyAyah":7,"lastDailySardRange":"من ٱلْفَاتِحَةِ (1) إلى ٱلْفَاتِحَةِ (7)"};
-test('ح17 (ق64) المشرف بلا أي تغيير (النص «حفظ Enter ↵»، الحفظ يغلق ولا يفتح تالياً)، والتسجيل المحفوظ بـ«حفظ والتالي» مطابق بايتاً للتسجيل قبل الميزة', async () => {
+test('ح17 (ق77، كان ق64؛ (أ) معمَّم على المعلم) المشرف والمعلم سواء: النص «حفظ» بـ<small>Enter ↵</small>، الحفظ يغلق ولا يفتح تالياً، والتسجيل المحفوظ مطابق بايتاً للتسجيل قبل الميزة', async () => {
     const one = async h => {
         const w = (await studentWrites(h, 1)).filter(l => l.op === 'updateDoc');
         assert.equal(w.length, 1, `عدد كتابات الطالب 1: ${w.length}. ${await diagnose(h)}`);
@@ -1559,98 +1629,138 @@ test('ح17 (ق64) المشرف بلا أي تغيير (النص «حفظ Enter �
     };
     // (أ) المشرف: كما قبل الميزة.
     const a = await adminPage();
+    let adminHtml;
     try {
+        await spyOpenSmart(a.page);
         await a.page.evaluate(() => openSmartModal(1));
         assert.equal(await saveLabel(a.page), 'حفظ Enter ↵', 'نص زر الحفظ للمشرف تغيّر');
+        adminHtml = await saveHtml(a.page);
+        assert.equal(adminHtml, 'حفظ <small>Enter ↵</small>', 'زر المشرف تغيّر');
         await fillNew(a.page); await fillReview(a.page); await pressSave(a.page);
-        await a.page.waitForTimeout(1000);
-        assert.equal(await modalOpen(a.page), false, `نافذة المشرف لم تُغلق أو فُتح تالٍ (${await quickWho(a.page)})`);
+        await staysClosed(a, 'المشرف بعد الحفظ');
+        assert.deepEqual(await osmCalls(a.page), [1], 'المشرف: openSmartModal استُدعيت بعد الحفظ');
         assert.equal(JSON.stringify(normalizePatch(await one(a))), JSON.stringify(PRE_FEATURE_PATCH), 'تسجيل المشرف ليس بايتاً كما قبل الميزة');
     } finally { await a.close(); }
-    // (ب) المعلم: الحفظ عبر «حفظ والتالي» يكتب التسجيل نفسه بايتاً، وby = uid المعلم.
+    // (ب) المعلم: الزر نفسه بايتاً، والحفظ يغلق، والتسجيل نفسه بايتاً، وby = uid المعلم.
     const h = await teacherPage();
     try {
+        await spyOpenSmart(h.page);
         await openAch(h, 1);
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'الشرط المسبق: زر «حفظ والتالي» غير موجود');
+        assert.equal(await saveHtml(h.page), adminHtml, 'زر المعلم ليس زر المشرف نفسه (حفظ <small>Enter ↵</small>)');
+        assert.equal(await saveLabel(h.page), 'حفظ', 'النص الظاهر لزر المعلم');
+        const before = (await osmCalls(h.page)).length;
         await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
+        await waitToast(h, 'أحمد');
+        await staysClosed(h, 'المعلم بعد الحفظ');
+        assert.deepEqual((await osmCalls(h.page)).slice(before), [], 'المعلم: openSmartModal استُدعيت بعد الحفظ');
         const w = await one(h);
-        assert.equal(JSON.stringify(normalizePatch(w)), JSON.stringify(PRE_FEATURE_PATCH), 'تسجيل المعلم بـ«حفظ والتالي» ليس بايتاً كما قبل الميزة');
+        assert.equal(JSON.stringify(normalizePatch(w)), JSON.stringify(PRE_FEATURE_PATCH), 'تسجيل المعلم ليس بايتاً كما قبل الميزة');
         assert.deepEqual([...new Set(Object.entries(w.data).filter(([k]) => k.includes('.entries.')).map(([, v]) => v.by))], ['teacher-uid'], 'by');
     } finally { await h.close(); }
 });
 
-// أ8 (قرارات Fable ق66–ق68 على أسئلة أ7 س2–س4): ح18 التراجع والنافذة التالية مفتوحة، ح19 زر التأكيد وEnter، ح20 «التالي» يدور إلى أول القائمة.
-test('ح18 (ق66) «تراجع» في الرسالة والنافذة التالية مفتوحة: يحذف تسجيل الطالب السابق وحده، والنافذة تبقى على التالي بما كُتب فيها، وحفظها بعده يُكتب للتالي', async () => {
+// ح18 (ق77 + ق43 + ق93-6): التراجع من الرسالة بعد الإغلاق، وحالة ق70 الباقية (نافذة طالب آخر فُتحت يدوياً والرسالة ظاهرة).
+// أ29 (ق189–ق190، الجولة 5، 2026-11-20): (أ) كما كان. (ب) كان «فتح سعد يدوياً والرسالة لأحمد ظاهرة، كتابة في نافذته ثم «تراجع» من الرسالة ← يمسّ أحمد وتبقى نافذة سعد بما كُتب».
+// هذا لم يعد ممكناً (فتح النافذة يزيل الرسالة). صار: فتح سعد يزيل الرسالة، حفظ سعد يُكتب له، والتراجع عن أحمد من «سُجّل اليوم» في نافذته يمسّ أحمد وحده.
+// ب14 (ق205): كان تراجع الشريط والنافذة مغلقة؛ صار التراجع من صندوق نافذة المحفوظ له.
+test('ح18 (ق77/ق43، ق205) الحفظ يغلق النافذة ورسالة بلا أزرار؛ تراجع صندوق فهد يحذف تسجيله، وفتح سعد يزيل الرسالة', async () => {
     const h = await teacherPage();
     try {
+        await spyOpenSmart(h.page);
+        // (أ) النافذة مغلقة.
+        await openAch(h, 5); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
+        await waitToast(h, 'فهد');
+        await staysClosed(h, 'بعد حفظ فهد');
+        assert.equal((await mineToday(h, 5)).length, 2, 'الشرط المسبق: تسجيلا فهد');
+        assert.equal(await h.page.locator('#teacherToast button').count(), 0, 'رسالة الحفظ فيها زر');
+        await openAch(h, 5);
+        await clickText(h.page, '#quickTodayBox', /تراجع/, 'زر التراجع في صندوق فهد');
+        await h.page.waitForTimeout(700);
+        assert.equal((await mineToday(h, 5)).length, 1, 'التراجع لم يحذف تسجيلاً واحداً لفهد');
+        assert.equal(await modalOpen(h.page), true, 'صندوق التراجع داخل النافذة');
+        await closeQuick(h);
+        // (ب) حفظ أحمد ← يُغلق؛ فتح سعد يدوياً والرسالة ظاهرة ← تُزال؛ حفظ سعد؛ ثم التراجع عن أحمد من صندوق نافذته.
         await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
         await waitToast(h, 'أحمد');
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        // ما يكتبه المعلم في نافذة سعد قبل التراجع.
+        await staysClosed(h, 'بعد حفظ أحمد');
+        await openAch(h, 4);
+        const left = await h.page.locator('#teacherToast').count() ? await visibleText(h.page, '#teacherToast') : '';
+        assert.equal(left, '', `فتح نافذة سعد لم يُزل رسالة أحمد (ق190): «${left}»`);
         await setField(h.page, 'quick_positionSurah', 2); await setField(h.page, 'quick_positionAyah', 5);
-        await fillNew(h.page, 12);
-        assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 4)).length], [2, 0], 'الشرط المسبق');
-        await clickText(h.page, '#teacherToast', /تراجع/, 'زر التراجع في الرسالة');
-        await h.page.waitForTimeout(700);
-        assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 4)).length], [1, 0], 'التراجع لم يحذف تسجيلاً واحداً لأحمد وحده (أحمد، سعد)');
-        const st = await h.page.evaluate(() => ({ open: document.getElementById('smartModal').classList.contains('flex'), who: document.getElementById('generalQuickName')?.innerText.replace(/\s+/g, ' ').trim(),
-            id: currentEditingStudentId, posS: document.getElementById('quick_positionSurah')?.value, posA: document.getElementById('quick_positionAyah')?.value,
-            toAyah: document.getElementById('quick_new_toAyah')?.value, grade: [...document.querySelectorAll('#quick_new_grades button[aria-pressed=true]')].map(b => b.innerText.trim()) }));
-        assert.deepEqual([st.open, st.who, st.id], [true, 'الإنجاز · سعد', 4], 'النافذة لم تبقَ على سعد بعد التراجع');
-        assert.deepEqual([st.posS, st.posA, st.toAyah, st.grade.length], ['2', '5', '12', 1], `ما كُتب في نافذة سعد ضاع: ${JSON.stringify(st)}`);
-        assert.ok(st.grade[0].includes('ممتاز'), `تقدير الجديد لسعد تغيّر: ${st.grade}`);
-        // الحفظ بعد التراجع يُكتب لسعد لا لأحمد.
-        await fillReview(h.page); await pressSave(h.page);
+        await fillNew(h.page, 12); await fillReview(h.page); await pressSave(h.page);
         await waitToast(h, 'سعد');
-        assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 4)).length], [1, 2], 'الحفظ بعد التراجع لم يُكتب لسعد وحده (أحمد، سعد)');
+        await staysClosed(h, 'بعد حفظ سعد');
+        assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 4)).length], [2, 2], 'حفظ سعد لم يُكتب لسعد وحده (أحمد، سعد)');
+        await openAch(h, 1);
+        await clickText(h.page, '#quickTodayBox', /تراجع/, 'زر التراجع في #quickTodayBox لأحمد');
+        await h.page.waitForTimeout(700);
+        assert.deepEqual([(await mineToday(h, 1)).length, (await mineToday(h, 4)).length], [1, 2], 'التراجع من صندوق أحمد لم يحذف تسجيلاً واحداً لأحمد وحده (أحمد، سعد)');
+        assert.deepEqual(await osmCalls(h.page), [5, 5, 1, 4, 1], 'openSmartModal استُدعيت لغير فتح البطاقات يدوياً');
     } finally { await h.close(); }
 });
 
-test('ح19 (ق67) زر «حفظ» في تأكيد التبويب الواحد وEnter يفتحان التالي كزر الحفظ الرئيسي؛ نص زر التأكيد يبقى «حفظ»', async () => {
+// أ14 (ق101 س2، 2026-11-18): حُذف ح19(أ) «زر «حفظ» في تأكيد التبويب الواحد يحفظ ويغلق»: الشريط #quickOneSideConfirm أُلغي بق78،
+// وحلّ محله ج10/ج11 في teacher-r2-accordion-local (ورقة ق78: «احفظ الجديد فقط» تسجيل واحد ويُغلق). ما يحرسه من ق77 باقٍ في ح19(ب) وح15–ح20.
+
+// أ13 (ق93-1/ق98-3، 2026-11-18): ح19(ب) أُعيدت كتابتها بنص الأمر: Enter في خانة الآية عند المعلم = «تأكيد» القسم لا الحفظ؛ الحفظ من زر «حفظ» وحده.
+// القسم بالمحدّدات المفترضة في teacher-r2-accordion-local.test.cjs: [data-sec="new"|"review"]، .tch-acc-toggle (aria-expanded)، .tch-confirm (aria-pressed).
+// ما كان يحرسه (ق77) باقٍ: الحفظ بعد ذلك يُغلق ولا يفتح أحداً.
+test('ح19(ب) (ق93-1، كان «Enter يحفظ») Enter في آية «إلى» للمراجعة ثم للجديد في نافذة سعد: يؤكّد كل قسم ولا يحفظ ولا يغلق؛ «حفظ» بعدها يحفظ القسمين ويُغلق ولا يفتح أحداً', async () => {
+    const sec = k => `#generalQuickSection [data-sec="${k}"]`;
+    const reach = async (page, k) => {   // يفتح القسم إن وُجد، وإلا التبويب القائم (الشكل الحالي)
+        if (await page.locator(sec(k)).count()) { if (await page.locator(sec(k) + ' .tch-acc-toggle').getAttribute('aria-expanded') !== 'true') await page.locator(sec(k) + ' .tch-acc-toggle').click(); }
+        else if (await page.locator(k === 'new' ? '#quickTabNew' : '#quickTabReview').count()) await page.locator(k === 'new' ? '#quickTabNew' : '#quickTabReview').click();
+    };
+    const confirmed = (page, k) => page.evaluate(sel => { const c = document.querySelector(sel + ' .tch-confirm'); return !!c && c.getAttribute('aria-pressed') === 'true'; }, sec(k));
+    const writes4 = async h => (await studentWrites(h, 4)).length;
     const h = await teacherPage();
     try {
-        // (أ) تأكيد التبويب الواحد: جديد فقط لأحمد ← سطر التأكيد ← زرّه «حفظ» ← سعد.
-        await openAch(h, 1); await fillNew(h.page); await pressSave(h.page);
-        await h.page.locator('#quickOneSideConfirm').waitFor({ state: 'visible', timeout: 3000 }).catch(async () => assert.fail('سطر التأكيد لم يظهر. ' + await diagnose(h)));
-        const btns = await h.page.$$eval('#quickOneSideConfirm button', bs => bs.filter(b => b.getClientRects().length).map(b => b.innerText.trim()));
-        assert.ok(btns.includes('حفظ') && !btns.some(t => t.includes('التالي')), `أزرار التأكيد: ${JSON.stringify(btns)} (المطلوب «حفظ» كما هو)`);
-        await h.page.locator('#quickOneSideConfirm button').filter({ hasText: /^\s*حفظ\s*$/ }).click();
-        await waitToast(h, 'أحمد');
-        assert.equal((await mineToday(h, 1)).length, 1, 'زر التأكيد لم يحفظ الجديد لأحمد');
-        await waitWho(h, 'سعد', 'بعد زر «حفظ» في التأكيد');
-        // (ب) Enter في حقل نافذة سعد ← يحفظ ← فهد.
+        await spyOpenSmart(h.page);
+        await card(h.page, 4).locator('[data-a=ach]').click();
+        await h.page.locator('#smartModal').waitFor({ state: 'visible' });
+        await reach(h.page, 'new');
         await setField(h.page, 'quick_positionSurah', 2); await setField(h.page, 'quick_positionAyah', 5);
-        await fillNew(h.page); await fillReview(h.page);
-        await h.page.evaluate(() => typeof updateGeneralQuickPreview === 'function' && updateGeneralQuickPreview());
+        await setField(h.page, 'quick_new_toAyah', 10); await grade(h.page, 'new', 'ممتاز');
+        await reach(h.page, 'review');
+        for (const [id, v] of [['quick_review_fromSurah', 1], ['quick_review_fromAyah', 1], ['quick_review_toSurah', 1], ['quick_review_toAyah', 7]]) await setField(h.page, id, v);
+        await grade(h.page, 'review', 'جيد');
+        const before = (await osmCalls(h.page)).length;
+        // (1) Enter في آية المراجعة: تأكيد المراجعة، لا حفظ، النافذة باقية.
         await h.page.locator('#quick_review_toAyah').focus();
         await h.page.keyboard.press('Enter');
+        await h.page.waitForTimeout(700);
+        assert.equal(await writes4(h), 0, 'Enter في آية المراجعة حفظ (ق93-1: Enter = تأكيد القسم لا الحفظ)');
+        assert.equal(await modalOpen(h.page), true, 'Enter أغلق النافذة');
+        assert.equal(await confirmed(h.page, 'review'), true, 'Enter في آية المراجعة لم يؤكّد قسم المراجعة');
+        // (2) Enter في آية الجديد: تأكيد الجديد، لا حفظ.
+        await reach(h.page, 'new');
+        await h.page.locator('#quick_new_toAyah').focus();
+        await h.page.keyboard.press('Enter');
+        await h.page.waitForTimeout(700);
+        assert.equal(await writes4(h), 0, 'Enter في آية الجديد حفظ');
+        assert.deepEqual([await modalOpen(h.page), await confirmed(h.page, 'new')], [true, true], 'Enter في آية الجديد: [النافذة مفتوحة، الجديد مؤكَّد]');
+        // (3) «حفظ» وحده يحفظ ويُغلق ولا يفتح أحداً (ق77).
+        await h.page.locator('#generalQuickSaveBtn').click();
         await waitToast(h, 'سعد');
-        assert.equal((await mineToday(h, 4)).length, 2, 'Enter لم يحفظ لسعد');
-        await waitWho(h, 'فهد', 'بعد Enter');
+        assert.equal((await mineToday(h, 4)).length, 2, '«حفظ» لم يحفظ القسمين المؤكَّدين لسعد');
+        await staysClosed(h, 'بعد «حفظ»');
+        assert.deepEqual((await osmCalls(h.page)).slice(before), [], '«حفظ» فتح طالباً');
     } finally { await h.close(); }
 });
 
-test('ح20 (ق68) «التالي» = أول غير مسجَّل وغير غائب غير الحالي بترتيب البطاقات الظاهر، ويدور إلى أول القائمة: فهد ← أحمد ← سعد ← لا تالٍ', async () => {
+test('ح20 (ق77، كان ق68) لا «تالٍ» بأي ترتيب: حفظ آخر غير المسجَّلين (فهد) لا يدور إلى أول القائمة؛ والقائمة بعده: المنتظرون ثم المسجَّلون ثم الغائب', async () => {
     const h = await teacherPage();
     try {
         assert.deepEqual(await cardIds(h.page), [1, 4, 5, 2, 3], 'الشرط المسبق: ترتيب البطاقات');
-        // فهد آخر غير المسجَّلين؛ بعده بدر (مسجَّل) وخالد (غائب) ← يدور إلى أحمد.
+        await spyOpenSmart(h.page);
         await openAch(h, 5);
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'نص زر فهد (يدور إلى أحمد)');
+        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر فهد');
         await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
         await waitToast(h, 'فهد');
-        await waitWho(h, 'أحمد', 'بعد حفظ فهد (الدوران إلى أول القائمة)');
-        assert.equal(await saveLabel(h.page), 'حفظ والتالي', 'نص زر أحمد (التالي سعد)');
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        assert.equal(await saveLabel(h.page), 'حفظ', 'نص زر سعد (لم يبقَ غيره)');
-        await setField(h.page, 'quick_positionSurah', 2); await setField(h.page, 'quick_positionAyah', 5);
-        await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'سعد');
-        await h.page.waitForTimeout(800);
-        assert.equal(await modalOpen(h.page), false, `النافذة لم تُغلق بعد آخر طالب (المفتوح: ${await quickWho(h.page)})`);
-        assert.deepEqual([1, 4, 5].map(() => 2), await Promise.all([1, 4, 5].map(async id => (await mineToday(h, id)).length)), 'لم يُحفظ الثلاثة');
+        await staysClosed(h, 'بعد حفظ فهد (لا دوران إلى أحمد)');
+        assert.deepEqual(await osmCalls(h.page), [5], 'openSmartModal استُدعيت بعد حفظ فهد');
+        assert.deepEqual(await cardIds(h.page), [1, 4, 2, 5, 3], 'القائمة بعد حفظ فهد');
+        assert.notEqual(await h.page.evaluate(() => currentEditingStudentId), 1, 'الطالب المحرَّر صار أحمد');
     } finally { await h.close(); }
 });
 
@@ -1663,34 +1773,11 @@ async function toastGeometry(page) {
         const t = document.getElementById('teacherToast'), cs = t && getComputedStyle(t);
         return { toast: r(t), position: cs?.position || null, bottom: cs?.bottom || null, vh: innerHeight,
             footer: r(document.getElementById('generalQuickFooter')), save: r(document.getElementById('generalQuickSaveBtn')),
-            tabs: [r(document.getElementById('quickTabNew')), r(document.getElementById('quickTabReview'))] };
+            // أ14 (ق90، افتراض ق101 §5-10): موضع التبويبين في ق70 صار رأس قسم الجديد (أول الأقسام).
+            tabs: [r(document.querySelector('#generalQuickSection [data-sec="new"] .tch-acc-toggle'))] };
     });
 }
 const overlap = (a, b) => !!a && !!b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-test('ح21 (ق70) وضع المعلم والنافذة التالية مفتوحة: #teacherToast ثابتة فوق شريط الحفظ #generalQuickFooter ولا تغطي التبويبين؛ وبعد إغلاق النافذة تعود إلى مكانها القديم أسفل الصفحة (bottom 16px)', async () => {
-    const h = await teacherPage();
-    try {
-        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
-        await waitToast(h, 'أحمد');
-        await waitWho(h, 'سعد', 'بعد حفظ أحمد');
-        await h.page.waitForTimeout(150);
-        const g = await toastGeometry(h.page);
-        assert.ok(g.toast && g.footer && g.tabs.every(Boolean), `الشرط المسبق: الرسالة أو الشريط أو التبويبان غير ظاهرة ${JSON.stringify(g)}`);
-        assert.equal(g.position, 'fixed', 'الرسالة ليست ثابتة');
-        // «فوق شريط الحفظ» = ملاصقة لأعلاه (فجوة 0–24px)، لا أي موضع أعلى الشاشة.
-        assert.ok(g.toast.bottom <= g.footer.top + 0.5 && g.footer.top - g.toast.bottom <= 24,
-            `الرسالة ليست فوق شريط الحفظ مباشرة: أسفلها ${g.toast.bottom} وأعلى الشريط ${g.footer.top}`);
-        assert.ok(g.toast.top >= 0 && g.toast.bottom <= g.vh, `الرسالة خارج الشاشة ${JSON.stringify(g.toast)}`);
-        assert.deepEqual(g.tabs.map(t => overlap(g.toast, t)), [false, false], `الرسالة تغطي تبويب [الجديد، المراجعة] ${JSON.stringify(g)}`);
-        assert.equal(overlap(g.toast, g.save), false, 'الرسالة تغطي زر «حفظ»');
-        // ✕ والرسالة ما زالت ظاهرة ← المكان القديم أسفل الصفحة (ق54).
-        await closeQuick(h);
-        const c = await toastGeometry(h.page);
-        assert.ok(c.toast, 'الرسالة اختفت بإغلاق النافذة (الشرط المسبق: خلال الثواني الست)');
-        assert.deepEqual([c.position, c.bottom], ['fixed', '16px'], 'بلا نافذة: الرسالة ليست في مكانها القديم (fixed، bottom 16px)');
-        assert.ok(Math.abs(c.vh - c.toast.bottom - 16) <= 1, `بلا نافذة: أسفل الرسالة ${c.toast.bottom} لا يبعد 16 عن أسفل الشاشة ${c.vh}`);
-    } finally { await h.close(); }
-});
 
 const PENDING_KEY = (/TEACHER_PENDING_CODE\s*=\s*'([^']+)'/.exec(authSrc) || [])[1] || 'almahra-teacher-pending-code';
 test('ح22 (ق63) رمز معلّق محفوظ في sessionStorage بلا ?k= في العنوان ← لا دخول مجهول ولا users ولا صفحة المعلم؛ ومع ?k= يُحفظ الرمز معلّقاً قبل مسح العنوان ويُمسح بعد النجاح وبعد الفشل', async () => {
@@ -1720,4 +1807,28 @@ test('ح22 (ق63) رمز معلّق محفوظ في sessionStorage بلا ?k= ف
             assert.equal(st.left, null, `(${ok ? 'نجاح' : 'فشل'}) الرمز المعلّق باقٍ في sessionStorage`);
         } finally { await h.close(); }
     }
+});
+
+// أ10 (ق77 + ق93-6، 2026-11-18): حالة ق70 الباقية بعد إلغاء «حفظ والتالي» — نافذة طالب آخر تُفتح يدوياً من بطاقته والرسالة ظاهرة.
+// إضافة لا تعديل: ح21 القائم يفتح النافذة التالية تلقائياً (السلوك الملغى)، وانظر س في التقرير.
+// أ29 (ق189–ق190، الجولة 5، 2026-11-20): كان «فتح سعد خلال الثواني الست: الرسالة ثابتة فوق شريط الحفظ ولا تغطي رأس الجديد ولا «حفظ»».
+// هذا لم يعد ممكناً: فتح النافذة يزيل الرسالة. صار: فتح سعد يزيل الرسالة (فلا شيء فوق شريط الحفظ ولا رأس الجديد)، والتراجع عن أحمد من «سُجّل اليوم» في نافذته.
+test('ح23 (ق70/ق190) بعد حفظ أحمد وإغلاق النافذة، فتح سعد من بطاقته يزيل #teacherToast فلا يغطي رأس الجديد ولا «حفظ»؛ والتراجع عن أحمد من «سُجّل اليوم … تراجع» داخل نافذته', async () => {
+    const h = await teacherPage();
+    try {
+        await openAch(h, 1); await fillNew(h.page); await fillReview(h.page); await pressSave(h.page);
+        await waitToast(h, 'أحمد');
+        await closeQuick(h);
+        await openAch(h, 4);
+        await h.page.waitForTimeout(150);
+        const g = await toastGeometry(h.page);
+        assert.ok(g.footer && g.tabs.every(Boolean), `الشرط المسبق: الشريط أو رأس الجديد غير ظاهر ${JSON.stringify(g)}`);
+        assert.equal(g.toast, null, `فتح نافذة سعد لم يُزل الرسالة (ق190): ${JSON.stringify(g)}`);
+        await closeQuick(h);
+        await openAch(h, 1);
+        assert.equal((await mineToday(h, 1)).length, 2, 'الشرط المسبق: تسجيلا أحمد');
+        await clickText(h.page, '#quickTodayBox', /تراجع/, 'زر التراجع في #quickTodayBox لأحمد');
+        await h.page.waitForTimeout(600);
+        assert.equal((await mineToday(h, 1)).length, 1, 'التراجع من صندوق أحمد لم يحذف تسجيلاً واحداً');
+    } finally { await h.close(); }
 });
