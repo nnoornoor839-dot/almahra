@@ -38707,7 +38707,7 @@
   ],
   "teacherAccountsR4": {
     "category": 28,
-    "reason": "الجولة 4: صفحة المعلم، الحد اليومي والتحضير والتراجع والتحقق والشكل والتلفاز (2026-11-19)؛ ودفعة الإصلاح ب12-ف1 (ف1 سباق فحص الرمز، ف2 شارة التلفاز، ن1، ن3)؛ ودفعة ب12-ف2 (ف1 ترتيب «سُجّل اليوم»، ف2 «(دون الحد)» لا ينكسر)؛ ودفعة ب13 الجولة 5 (الشريط الباقي ق190، والحشو على #teacherHome ق192، وتمركز القلم و⋯ ق193)؛ ودفعة ب13-ف1 (ف1 إزالة الشريط عند تغيّر اليوم، وحارس «تراجع» برسالة في #teacherToast ق196 ق197)؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14-ف1 (ق205): تصحيح نص مساعدة المعلم بعد حذف زر التراجع من رسالة الحفظ",
+    "reason": "الجولة 4: صفحة المعلم، الحد اليومي والتحضير والتراجع والتحقق والشكل والتلفاز (2026-11-19)؛ ودفعة الإصلاح ب12-ف1 (ف1 سباق فحص الرمز، ف2 شارة التلفاز، ن1، ن3)؛ ودفعة ب12-ف2 (ف1 ترتيب «سُجّل اليوم»، ف2 «(دون الحد)» لا ينكسر)؛ ودفعة ب13 الجولة 5 (الشريط الباقي ق190، والحشو على #teacherHome ق192، وتمركز القلم و⋯ ق193)؛ ودفعة ب13-ف1 (ف1 إزالة الشريط عند تغيّر اليوم، وحارس «تراجع» برسالة في #teacherToast ق196 ق197)؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14 (ق205): رسالة الحفظ بلا تراجع ولا × وتختفي بعد 6 ث؛ ب14-ف1 (ق205): تصحيح نص مساعدة المعلم بعد حذف زر التراجع من رسالة الحفظ؛ تجهيز نشر 8: إصلاح اختبارات التدقيق بعد التزام الجولات 1–5",
     "changes": [
       {
         "file": "index.html",
@@ -39841,7 +39841,7 @@
       {
         "file": "tests/teacher-ui-audit-local.test.cjs",
         "beforeSha256": "48047a4dbe883bf5193f4941182e1732109b9301be9ada497b6b693b2c03729b",
-        "sha256": "4802eae38f084503c3f8f1b91b870d20353850cc17f1c18fbb0bd0cc29f488f6",
+        "sha256": "219bf2f8a992fec4610ed5200d1433ec01843ace6a2e6be0bd666b3cf279047f",
         "hunks": [
           {
             "oldLine": 20,
@@ -39852,53 +39852,105 @@
             "after": [
               "const rawCurrent = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n');",
               "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(rawCurrent(file), file);",
-              "const added28 = () => require('./rules/design-expectation-audit.json').teacherAccountsR4.addedFiles.map(r => r.file);"
+              "const added28 = () => require('./rules/design-expectation-audit.json').teacherAccountsR4.addedFiles.map(r => r.file);",
+              "// تجهيز نشر 8: 1435aef التزم الملفات المضافة؛ الجرد يجمع تغييرات الأساس والمتبقي غير المتتبَّع، والوجود يُحسم في الأساس نفسه.",
+              "const filesSince = base => [...new Set([...git('diff', '--name-only', base).split(/\\r?\\n/),",
+              "    ...git('ls-files', '--others', '--exclude-standard').split(/\\r?\\n/)])].filter(Boolean).sort();",
+              "const addedSince = base => filesSince(base).filter(file => !existsAt(base, file));"
             ]
           },
           {
-            "oldLine": 28,
-            "newLine": 30,
+            "oldLine": 27,
+            "newLine": 33,
             "before": [
+              "    const changed = git('diff', '--name-only', BASE).split(/\\r?\\n/)",
               "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !ADDED.includes(file)).sort();"
             ],
             "after": [
-              "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !ADDED.includes(file)",
+              "    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملف الفئة 23 المتغيّر كان موجوداً في أساسها، والمضاف يُفحص مستقلاً.",
+              "    const changed = filesSince(BASE)",
+              "        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE, file) && !ADDED.includes(file)",
               "            && (!audit.teacherAccountsR4.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();"
             ]
           },
           {
-            "oldLine": 32,
-            "newLine": 35,
+            "oldLine": 31,
+            "newLine": 39,
             "before": [
+              "    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\\r?\\n/).filter(Boolean).sort();",
               "    assert.deepEqual(untracked.filter(file => !ADDED.includes(file)), [], 'ملف غير ملتزم غير مسجَّل');"
             ],
             "after": [
-              "    assert.deepEqual(untracked.filter(file => !ADDED.includes(file) && !added28().includes(file)), [], 'ملف غير ملتزم غير مسجَّل');"
+              "    // تجهيز نشر 8: 1435aef التزم المضاف؛ كل ما لم يوجد في dd2b1f4 يجب أن يُسجَّل في الفئة 23 أو 28.",
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
             ]
           },
           {
-            "oldLine": 110,
-            "newLine": 113,
+            "oldLine": 94,
+            "newLine": 102,
             "before": [
+              "    const changed = git('diff', '--name-only', BASE24).split(/\\r?\\n/)",
+              "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !appended.includes(file) && !added.includes(file) && !added25.includes(file) && !added26.includes(file) && !added27().includes(file)",
+              "            && (!existsAt(BASE24, file) || current24(file) !== at24(file))).sort();"
+            ],
+            "after": [
+              "    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملفات الفئة 24 المتغيّرة موجودة في 9302f6e، وتُعكس الفئات 28 ثم 27 ثم 26 ثم 25 قبل مقارنتها.",
+              "    const changed = filesSince(BASE24)",
+              "        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE24, file) && !appended.includes(file) && !added.includes(file) && !added25.includes(file) && !added26.includes(file) && !added27().includes(file)",
+              "            && current24(file) !== at24(file)).sort();"
+            ]
+          },
+          {
+            "oldLine": 109,
+            "newLine": 118,
+            "before": [
+              "    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\\r?\\n/).filter(Boolean).sort();",
               "    assert.deepEqual(untracked.filter(file => !added25.includes(file) && !added26.includes(file) && !added27().includes(file)), [], 'ملف غير ملتزم خارج الفئات 24–27');"
             ],
             "after": [
-              "    assert.deepEqual(untracked.filter(file => !added25.includes(file) && !added26.includes(file) && !added27().includes(file) && !added28().includes(file)), [], 'ملف غير ملتزم خارج الفئات 24–28');"
+              "    // تجهيز نشر 8: 1435aef التزم المضاف؛ غياب الملف عن 9302f6e هو معيار الإضافة عبر الفئات 24–28.",
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–28');"
             ]
           },
           {
-            "oldLine": 141,
-            "newLine": 144,
+            "oldLine": 132,
+            "newLine": 141,
             "before": [
+              "    const changed = git('diff', '--name-only', BASE25).split(/\\r?\\n/)",
+              "        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.includes(file) && !added26.includes(file) && !added27().includes(file) && current25(file) !== at25(file)).sort();"
+            ],
+            "after": [
+              "    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملف الفئة 25 المتغيّر كان موجوداً في 82415c9، بعد عكس 28 ثم 27 ثم 26.",
+              "    const changed = filesSince(BASE25)",
+              "        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE25, file) && !added.includes(file) && !added26.includes(file) && !added27().includes(file) && current25(file) !== at25(file)).sort();"
+            ]
+          },
+          {
+            "oldLine": 140,
+            "newLine": 150,
+            "before": [
+              "    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\\r?\\n/).filter(Boolean).sort();",
               "    assert.deepEqual(untracked, [...added, ...added26, ...added27()].sort(), 'الملفات المضافة غير الملتزمة');"
             ],
             "after": [
-              "    assert.deepEqual(untracked, [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة غير الملتزمة');"
+              "    // تجهيز نشر 8: 1435aef التزم المضاف؛ الفئات 25–28 تضم كل ملف غائب عن 82415c9.",
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 210,
+            "newLine": 220,
+            "before": [
+              "    const changed = git('diff', '--name-only', BASE25).split(/\\r?\\n/).filter(file => file && file !== 'tests/rules/design-expectation-audit.json'"
+            ],
+            "after": [
+              "    // تجهيز نشر 8: 1435aef التزم المضاف؛ جرد الفئة 27 يقتصر على ملفات كانت موجودة في 82415c9.",
+              "    const changed = filesSince(BASE25).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE25, file)"
             ]
           },
           {
             "oldLine": 226,
-            "newLine": 229,
+            "newLine": 237,
             "before": [],
             "after": [
               "",
@@ -39907,7 +39959,7 @@
               "    assert.equal(row.category, 28);",
               "    assert.deepEqual(row.changes.map(r => r.file).sort(), ['index.html', 'data-store.js', 'tv.js', 'tv.html',",
               "        'tests/helpers/quick-entry-harness.cjs', 'tests/teacher-ui-local.test.cjs',",
-              "        'tests/teacher-ui-audit-local.test.cjs', 'tests/teacher-r1-logic-local.test.cjs',",
+              "        'tests/teacher-ui-audit-local.test.cjs', 'tests/home-local.test.cjs', 'tests/teacher-r1-logic-local.test.cjs',",
               "        'tests/teacher-r3-home-local.test.cjs', 'tests/homeprep-local.test.cjs',",
               "        'tests/board-local.test.cjs', 'tests/rules/board-answer-key.json',",
               "        'tests/rules/homeprep-answer-key.json', 'tests/teacher-r2-accordion-local.test.cjs',",
@@ -41379,6 +41431,55 @@
             ],
             "after": [
               "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/home-local.test.cjs",
+        "beforeSha256": "a7b1a7eea5d23ddff0615d070f787fe768664dc54390c7ed450e7bc0280c007a",
+        "sha256": "bf8f2a83ee9fc6f90673e44e4f3d95d2a3cd8d6ff38b0c8ad13e3dd8b76e8939",
+        "hunks": [
+          {
+            "oldLine": 266,
+            "newLine": 266,
+            "before": [
+              "    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });"
+            ],
+            "after": [
+              "    // تجهيز نشر 8: 1435aef التزم الجولات 1–5 فصار HEAD متحركاً؛ 82415c9 هو أساس العزل قبلها.",
+              "    const baseline = cp.execFileSync('git', ['show', '82415c9:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });"
+            ]
+          },
+          {
+            "oldLine": 272,
+            "newLine": 273,
+            "before": [
+              "        assert.equal(source('renderHomeLeaders'), source('renderHomeLeaders', baseline)); // الأساس HEAD يحوي الجزء ١ (a002e0c)، فالمقارنة مباشرة"
+            ],
+            "after": [
+              "        assert.equal(source('renderHomeLeaders'), source('renderHomeLeaders', baseline)); // الأساس 82415c9 يحوي الجزء ١ (a002e0c)، فالمقارنة مباشرة"
+            ]
+          },
+          {
+            "oldLine": 284,
+            "newLine": 285,
+            "before": [
+              "    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });"
+            ],
+            "after": [
+              "    // تجهيز نشر 8: 1435aef التزم الجولات 1–5 فصار HEAD يحوي ah-logo؛ الأساس المقصود 82415c9.",
+              "    const baseline = cp.execFileSync('git', ['show', '82415c9:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });"
+            ]
+          },
+          {
+            "oldLine": 292,
+            "newLine": 294,
+            "before": [
+              "    // ويُحرس وحده: الصورة نفسها (src) والنص البديل نفسه (alt) كما في HEAD، والفرق الوحيد إضافة الصنف."
+            ],
+            "after": [
+              "    // ويُحرس وحده: الصورة نفسها (src) والنص البديل نفسه (alt) كما في 82415c9، والفرق الوحيد إضافة الصنف."
             ]
           }
         ]

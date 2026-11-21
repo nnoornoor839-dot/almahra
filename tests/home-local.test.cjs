@@ -263,13 +263,14 @@ test('general يخفي الحديث والمربعات والمتصدرين وي
     assert.equal(h.element('homeVerse').style.display, ''); assert.equal(h.element('homeLead').style.display, '');
 });
 test('العزل: summer وreview-day مطابقان قبل التغيير في الحديث والمربعات والمتابعة والمتصدرين', () => {
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+    // تجهيز نشر 8: 1435aef التزم الجولات 1–5 فصار HEAD متحركاً؛ 82415c9 هو أساس العزل قبلها.
+    const baseline = cp.execFileSync('git', ['show', '82415c9:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
     for (const program of ['summer', 'review-day']) {
         const current = harness(), old = harness(answerStudents(), key.today, baseline);
         for (const h of [current, old]) { h.state.program = program; h.run('renderHomeDashboard()'); }
         for (const id of ['homeDashboard', 'homeCare', 'homeLead']) assert.equal(current.element(id).innerHTML, old.element(id).innerHTML, `${program} ${id}`);
         for (const name of ['renderHomeCare', 'initHadithTilt']) assert.equal(source(name), source(name, baseline));
-        assert.equal(source('renderHomeLeaders'), source('renderHomeLeaders', baseline)); // الأساس HEAD يحوي الجزء ١ (a002e0c)، فالمقارنة مباشرة
+        assert.equal(source('renderHomeLeaders'), source('renderHomeLeaders', baseline)); // الأساس 82415c9 يحوي الجزء ١ (a002e0c)، فالمقارنة مباشرة
         const verse = text => text.match(/<div id="homeVerse"[\s\S]*?<!-- لوحة معلومات المجمع -->/)[0];
         assert.equal(verse(html), verse(baseline));
     }
@@ -281,7 +282,8 @@ test('الإعدادات تستدعي الدالتين الحاليتين، وا
     assert.match(settings, /id="generalSettingsTv"[^>]*onclick="openGeneralTv\(\)"[\s\S]*?شاشة التلفاز/);
     assert.match(settings, /id="generalSettingsWeeklySheet"[^>]*onclick="openGeneralWeeklySheetModal\(\)"[\s\S]*?طباعة الأوراق الأسبوعية/);
     assert.match(source('applyProgramFeatures'), /generalSettingsTv.*generalSettingsWeeklySheet/);
-    const baseline = cp.execFileSync('git', ['show', 'HEAD:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+    // تجهيز نشر 8: 1435aef التزم الجولات 1–5 فصار HEAD يحوي ah-logo؛ الأساس المقصود 82415c9.
+    const baseline = cp.execFileSync('git', ['show', '82415c9:index.html'], { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
     for (const name of ['openGeneralTv', 'openGeneralWeeklySheetModal']) assert.equal(source(name), source(name, baseline));
     for (const id of ['generalTvButton', 'generalWeeklySheetButton']) {
         const tag = text => text.match(new RegExp(`<button id="${id}"[^>]*>`))[0]; assert.equal(tag(html), tag(baseline));
@@ -289,7 +291,7 @@ test('الإعدادات تستدعي الدالتين الحاليتين، وا
     assert.match(html, /جارٍ التحميل…/); assert.doesNotMatch(html, /تهيئة اللوحة الذهبية والمحرك المكاني V25/);
     assert.match(html, /class="ah-logo" src="\.\/assets\/brand\/afdalkom-logo-horizontal-color.png"/);
     // أ19 (ق118-3): شعار الدخول #loginLogo أخذ class="ah-logo" (لحماية step7-simplify) فخرج من مرشّح الصنف؛ يُستثنى بمعرّفه من الجهتين
-    // ويُحرس وحده: الصورة نفسها (src) والنص البديل نفسه (alt) كما في HEAD، والفرق الوحيد إضافة الصنف.
+    // ويُحرس وحده: الصورة نفسها (src) والنص البديل نفسه (alt) كما في 82415c9، والفرق الوحيد إضافة الصنف.
     const images = text => [...text.matchAll(/<img\b[^>]*>/g)].map(m => m[0]).filter(m => !m.includes('class="ah-logo"') && !m.includes('id="loginLogo"'));
     assert.deepEqual(images(html), images(baseline));
     const loginLogo = text => text.match(/<img\b[^>]*id="loginLogo"[^>]*>/g) || [];

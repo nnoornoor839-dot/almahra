@@ -20,19 +20,24 @@ const sha = text => createHash('sha256').update(text).digest('hex');
 const rawCurrent = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
 const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(rawCurrent(file), file);
 const added28 = () => require('./rules/design-expectation-audit.json').teacherAccountsR4.addedFiles.map(r => r.file);
+// تجهيز نشر 8: 1435aef التزم الملفات المضافة؛ الجرد يجمع تغييرات الأساس والمتبقي غير المتتبَّع، والوجود يُحسم في الأساس نفسه.
+const filesSince = base => [...new Set([...git('diff', '--name-only', base).split(/\r?\n/),
+    ...git('ls-files', '--others', '--exclude-standard').split(/\r?\n/)])].filter(Boolean).sort();
+const addedSince = base => filesSince(base).filter(file => !existsAt(base, file));
 const original = file => cp.execFileSync('git', ['show', BASE + ':' + file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\r\n', '\n');
 
 test('category 23: all changed and added files are registered', () => {
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['23'], CATEGORY);
     assert.equal(audit.teacherAccountsBaseline, BASE);
-    const changed = git('diff', '--name-only', BASE).split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !ADDED.includes(file)
+    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملف الفئة 23 المتغيّر كان موجوداً في أساسها، والمضاف يُفحص مستقلاً.
+    const changed = filesSince(BASE)
+        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE, file) && !ADDED.includes(file)
             && (!audit.teacherAccountsR4.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();
     assert.deepEqual(audit.teacherAccountsChanges.map(row => row.file).sort(), changed);
     // أ10 (ق75): الأربعة الأولى التُزمت في 9302f6e؛ المطلوب ألا يبقى ملف غير ملتزم خارج ADDED (الآن tests/new-paused-local.test.cjs وحده).
-    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\r?\n/).filter(Boolean).sort();
-    assert.deepEqual(untracked.filter(file => !ADDED.includes(file) && !added28().includes(file)), [], 'ملف غير ملتزم غير مسجَّل');
+    // تجهيز نشر 8: 1435aef التزم المضاف؛ كل ما لم يوجد في dd2b1f4 يجب أن يُسجَّل في الفئة 23 أو 28.
+    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');
     assert.deepEqual(audit.teacherAccountsAddedFiles.map(row => row.file).sort(), ADDED.sort());
 });
 
@@ -94,9 +99,10 @@ test('category 24: كل ملف تغيّر منذ 9302f6e مسجَّل، وكل �
     const appended = row.editedTestFiles.map(r => r.file), added = row.addedFiles.map(r => r.file);
     const added25 = (require('./rules/design-expectation-audit.json').teacherAccountsR1?.addedFiles || []).map(r => r.file);
     const added26 = (require('./rules/design-expectation-audit.json').teacherAccountsR2?.addedFiles || []).map(r => r.file);
-    const changed = git('diff', '--name-only', BASE24).split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !appended.includes(file) && !added.includes(file) && !added25.includes(file) && !added26.includes(file) && !added27().includes(file)
-            && (!existsAt(BASE24, file) || current24(file) !== at24(file))).sort();
+    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملفات الفئة 24 المتغيّرة موجودة في 9302f6e، وتُعكس الفئات 28 ثم 27 ثم 26 ثم 25 قبل مقارنتها.
+    const changed = filesSince(BASE24)
+        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE24, file) && !appended.includes(file) && !added.includes(file) && !added25.includes(file) && !added26.includes(file) && !added27().includes(file)
+            && current24(file) !== at24(file)).sort();
     assert.deepEqual(row.changes.map(r => r.file).sort(), changed, 'ملفات الفئة 24');
     for (const r of row.changes) {
         assert.equal(r.beforeSha256, sha(at24(r.file)), r.file);
@@ -109,8 +115,8 @@ test('category 24: كل ملف تغيّر منذ 9302f6e مسجَّل، وكل �
         assert.equal(r.appendOnly, true, r.file);
         assert.ok(current24(r.file).startsWith(at24(r.file)), r.file + ': ليس إضافة في الآخر فقط');
     }
-    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\r?\n/).filter(Boolean).sort();
-    assert.deepEqual(untracked.filter(file => !added25.includes(file) && !added26.includes(file) && !added27().includes(file) && !added28().includes(file)), [], 'ملف غير ملتزم خارج الفئات 24–28');
+    // تجهيز نشر 8: 1435aef التزم المضاف؛ غياب الملف عن 9302f6e هو معيار الإضافة عبر الفئات 24–28.
+    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–28');
     for (const r of row.addedFiles) {
         assert.equal(r.sha256, sha(current24(r.file)), r.file);
         assert.equal(existsAt(BASE24, r.file), false, r.file);
@@ -132,16 +138,17 @@ test('category 25: السطر teacherAccountsR1 بالفئة 25 والأساس 8
     assert.deepEqual([row.category, row.reason, row.baseline], [25, CATEGORY25, BASE25]);
     const added = row.addedFiles.map(r => r.file);
     const added26 = (require('./rules/design-expectation-audit.json').teacherAccountsR2?.addedFiles || []).map(r => r.file);
-    const changed = git('diff', '--name-only', BASE25).split(/\r?\n/)
-        .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.includes(file) && !added26.includes(file) && !added27().includes(file) && current25(file) !== at25(file)).sort();
+    // تجهيز نشر 8: 1435aef التزم الجولات 1–5؛ ملف الفئة 25 المتغيّر كان موجوداً في 82415c9، بعد عكس 28 ثم 27 ثم 26.
+    const changed = filesSince(BASE25)
+        .filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE25, file) && !added.includes(file) && !added26.includes(file) && !added27().includes(file) && current25(file) !== at25(file)).sort();
     assert.deepEqual(row.changes.map(r => r.file).sort(), changed, 'ملفات الفئة 25');
     for (const r of row.changes) {
         assert.equal(r.beforeSha256, sha(at25(r.file)), r.file);
         assert.equal(r.sha256, sha(current25(r.file)), r.file);
         assert.equal(reverse24(current25(r.file), r.hunks), at25(r.file), r.file);
     }
-    const untracked = git('ls-files', '--others', '--exclude-standard').split(/\r?\n/).filter(Boolean).sort();
-    assert.deepEqual(untracked, [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة غير الملتزمة');
+    // تجهيز نشر 8: 1435aef التزم المضاف؛ الفئات 25–28 تضم كل ملف غائب عن 82415c9.
+    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة منذ 82415c9');
     for (const r of row.addedFiles) {
         assert.equal(r.sha256, sha(current25(r.file)), r.file);
         assert.equal(existsAt(BASE25, r.file), false, r.file);
@@ -210,7 +217,8 @@ test('category 27: الدخول والرئيسية v7، كل هنك يعود ب�
     const A19 = { 'tests/teacher-ui-local.test.cjs': 'cea7f8c8b5b3f04ab1a0b468c6d279d5790678b03eb4cff6099aa16325c976d1', 'tests/home-local.test.cjs': 'a7b1a7eea5d23ddff0615d070f787fe768664dc54390c7ed450e7bc0280c007a' };
     for (const [file, w] of Object.entries(A19)) assert.equal(sha(current(file)), w, file + ': ليس ببصمة كاتب أ19/أ23');
     // كل ملف متغيّر منذ نهاية الجولة 2 مسجَّل في الفئة 27 (الملفات الملتزمة بعد 82415c9 غير المضافة).
-    const changed = git('diff', '--name-only', BASE25).split(/\r?\n/).filter(file => file && file !== 'tests/rules/design-expectation-audit.json'
+    // تجهيز نشر 8: 1435aef التزم المضاف؛ جرد الفئة 27 يقتصر على ملفات كانت موجودة في 82415c9.
+    const changed = filesSince(BASE25).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(BASE25, file)
         && sha(current(file)) !== end2(file)).sort();
     assert.deepEqual(changed, row.changes.map(r => r.file).sort(), 'ملفات الفئة 27');
     assert.deepEqual(row.addedFiles.map(r => r.file), ['tests/teacher-r3-home-local.test.cjs']);
@@ -232,7 +240,7 @@ test('category 28: هنكات البناء والاختبارات المحددة
     assert.equal(row.category, 28);
     assert.deepEqual(row.changes.map(r => r.file).sort(), ['index.html', 'data-store.js', 'tv.js', 'tv.html',
         'tests/helpers/quick-entry-harness.cjs', 'tests/teacher-ui-local.test.cjs',
-        'tests/teacher-ui-audit-local.test.cjs', 'tests/teacher-r1-logic-local.test.cjs',
+        'tests/teacher-ui-audit-local.test.cjs', 'tests/home-local.test.cjs', 'tests/teacher-r1-logic-local.test.cjs',
         'tests/teacher-r3-home-local.test.cjs', 'tests/homeprep-local.test.cjs',
         'tests/board-local.test.cjs', 'tests/rules/board-answer-key.json',
         'tests/rules/homeprep-answer-key.json', 'tests/teacher-r2-accordion-local.test.cjs',
