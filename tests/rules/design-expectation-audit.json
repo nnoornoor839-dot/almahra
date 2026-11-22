@@ -15630,7 +15630,8 @@
     "23": "حسابات المعلمين: القواعد والواجهة (2026-11-16)",
     "24": "متوقف عن الجديد + ق70 الرسالة فوق شريط الحفظ (2026-11-17)",
     "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
-    "30": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة"
+    "30": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+    "31": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة"
   },
   "files": [
     {
@@ -42991,6 +42992,597 @@
       {
         "file": "tests/tv-isha-iqama-local.test.cjs",
         "sha256": "68fadb48381aed43d0bd7f4aba609e126417899c5838ad259c14477a734e6d8e"
+      }
+    ]
+  },
+  "teacherToastColor": {
+    "category": 31,
+    "baseline": "8f47e89",
+    "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+    "changes": [
+      {
+        "file": "index.html",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "783f0987d3765836ea55226f6addc555cbe4b05d9289cfdc5810b459c2a44821",
+        "sha256": "84d4e532586e1e51c97807c9c3baf1eba38850405df21f23885cd71d610f8c93",
+        "hunks": [
+          {
+            "oldLine": 615,
+            "newLine": 615,
+            "before": [
+              "        #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); min-height:56px; background:var(--ink); color:white; padding:8px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }"
+            ],
+            "after": [
+              "        #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); min-height:56px; background:var(--green-900); color:white; padding:8px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "9c2a42cbabd149972c152e24b51ec34d5e7012a5615f8560696e192c71a5b1b8",
+        "sha256": "b618bfa1ec607fad1dd4f6c4277dd5f32fa68c5d662d85dc91b426325021eec6",
+        "hunks": [
+          {
+            "oldLine": 5,
+            "newLine": 5,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(text, file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/knights-oneplace-audit.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "99a66e198e7cd09e61b359de696e293fa8a0238ed986860a759d96cf539e2f34",
+        "sha256": "fee920a99e44d3600c6a33d52bba9be4d64a0c8e11f87ddd6bcad885f3effa34",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(text, file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/journey-fixes-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "d652f7a983465debf456747c2ecdee29ad2998596c167b48b262f504e613eb31",
+        "sha256": "bc36c669be1f95fe5e0733843f7de4c66ac629fb5cdaed7aa905e83bfc06d312",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 69,
+            "newLine": 69,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 71,
+            "newLine": 71,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-last-week-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "71dbe276d982c6e229ef591bd7e53081577981e71543d485c867e80dc27355c9",
+        "sha256": "050860eb314c05f6900b24f0ffd46ad55acc2511788fdab23fe28c254b1ee75f",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-lines-x3-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "ed194a5b53b2f5f646e0cdee193f99366a0ddff7d309181dac377e01955d3d35",
+        "sha256": "275d5f965054e79ccbcd87e12cfc385c80de6d504898ea8c09bfb92c76332965",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 51,
+            "newLine": 51,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 53,
+            "newLine": 53,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "087ff0e91f7bf068794463b375f8e740d882106ff880d9108b124ff1fecf1fc2",
+        "sha256": "cf1a8a5de83303294b1067f64b5f3cdfe3502330daa0c2bed065168e48cfb15a",
+        "hunks": [
+          {
+            "oldLine": 375,
+            "newLine": 375,
+            "before": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(fs.readFileSync(root+'/'+f,'utf8'),f),f),f),"
+            ],
+            "after": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(root+'/'+f,'utf8'), f),f),f),f),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "efffbc5f30822816bdb26d84ed1c0eacea3bd3380e4df5d833222623c4e11efe",
+        "sha256": "552bb28e62b4e1c4c774a2e35f6849f805adadbd6288f3a175e6455bec83c9ce",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "f50f788481cb0fcf51406966df831acef62f80842aff2d668b944f61495804c7",
+        "sha256": "ade1a86b0f1a35fd8e8fcfc499bc3823e20b5583c1cac3714d1e5da7d653c425",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "b13a278afe1eed9a74030de8fc5ffd3e50b906bf082fc8ba59a800fe3830e9c9",
+        "sha256": "45d4eb0aedeb923a10cbc1497a23c3b5292de9ab80ffd9a1f125ddd82f4cf165",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "a861c67a91c4a56a6b0aac1e890612edd6be4533aff2973f2e3b7cc5dc047989",
+        "sha256": "56c448144356344a566a50dba94e206fa19f5bb1ab4725e16cf9c33f38622a20",
+        "hunks": [
+          {
+            "oldLine": 27,
+            "newLine": 27,
+            "before": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-owner-auto-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "71335680e927f46b55952778bc09107c6c6e7a999cae1f6f043b8e33ca840c3a",
+        "sha256": "9520cda65c2590ffab65bcf59c073174c3ac243cb3058f7fd4f85dc643815928",
+        "hunks": [
+          {
+            "oldLine": 326,
+            "newLine": 326,
+            "before": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ],
+            "after": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2b-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "61fc938b5e2b60f38a7c518ee46675eef8e6c4c55d8edb3964f1c84c7eb8bfc8",
+        "sha256": "ce13cc4bbdaa5dd657c4fb94beb543d6f74619d4bc720784e26b234580cbe60e",
+        "hunks": [
+          {
+            "oldLine": 361,
+            "newLine": 361,
+            "before": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(fs.readFileSync(root+'/'+f,'utf8'),f),f),f);"
+            ],
+            "after": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(root+'/'+f,'utf8'), f),f),f),f);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "1749ccb989a7aadab90e97bf205e7020f226edaa697773b0cf21cbe402ea500a",
+        "sha256": "ec868348eb204343fb74d21c825c28e37b572644be1b5e4ee3998ddf54f65722",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 72,
+            "newLine": 72,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 74,
+            "newLine": 74,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "86ee3ca64ef5e40e0e09d39c19ad368cdac19d29493cc90a26208af681a404c7",
+        "sha256": "035b481b4db28d7de7ad26b10d43ac59a9994bc66d2d25d5da1f141c840d2bf4",
+        "hunks": [
+          {
+            "oldLine": 757,
+            "newLine": 757,
+            "before": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ],
+            "after": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js'), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-tv-points-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "d67865df3f91e780284959eb3e9b998af5601a535a17ab994ba7c9e58d1b3c82",
+        "sha256": "c3a76841e0fe36c99f642a8dce416808091791dcb7221f8405d54a428a77ca8e",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 55,
+            "newLine": 55,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 57,
+            "newLine": 57,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/surah-search-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "0f378e509357b532fd63ab8281f62b142d933d76439548d03d6019b26c7c5f89",
+        "sha256": "f396a405e9ec3e2bea7cfd7d423be6feed879accc3d48cc96ded1d71dc5a4ff5",
+        "hunks": [
+          {
+            "oldLine": 120,
+            "newLine": 120,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 122,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-audit-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "99681eedab25d98827d802c738c0a3bffd94d9202e4af1dca37c3298145c40c7",
+        "sha256": "79d50f6f9c32958a18d978703ca935d33a7f0ec8a8f8c87c41ebac61e15bd456",
+        "hunks": [
+          {
+            "oldLine": 21,
+            "newLine": 21,
+            "before": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(file), file), file), file);"
+            ],
+            "after": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(file), file), file), file), file);"
+            ]
+          },
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [],
+            "after": [
+              "const added31 = () => require('./rules/design-expectation-audit.json').teacherToastColor.addedFiles.map(r => r.file);"
+            ]
+          },
+          {
+            "oldLine": 43,
+            "newLine": 44,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 123,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ]
+          },
+          {
+            "oldLine": 154,
+            "newLine": 155,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 260,
+            "newLine": 261,
+            "before": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file);"
+            ],
+            "after": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file);"
+            ]
+          },
+          {
+            "oldLine": 264,
+            "newLine": 265,
+            "before": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file)), r.sha256, r.file);"
+            ],
+            "after": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file)), r.sha256, r.file);"
+            ]
+          },
+          {
+            "oldLine": 278,
+            "newLine": 279,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file)), 'category 29 added inventory');"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file) && !added31().includes(file)), 'category 29 added inventory');"
+            ]
+          },
+          {
+            "oldLine": 282,
+            "newLine": 283,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 294,
+            "newLine": 295,
+            "before": [],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.teacherToastColor.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();",
+              "    assert.deepEqual(row.changes.map(r => r.file).sort(), changed);",
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added31().includes(f)));",
+              "    for (const r of row.changes) {",
+              "        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\\r\\n', '\\n');",
+              "        assert.equal(r.beforeSha256, sha(original), r.file);",
+              "        assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), original, r.file);",
+              "    }",
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file)), r.file);",
+              "});",
+              "",
+              "test('category 31: every changed line and added file is registered and reverses to 8f47e89', () => {",
+              "    const audit = require('./rules/design-expectation-audit.json'), row = audit.teacherToastColor;",
+              "    const { beforeTeacherToastColor } = require('./helpers/teacher-toast-audit.cjs');",
+              "    assert.equal(row.category, 31);",
+              "    assert.equal(row.reason, audit.categories['31']);",
+              "    assert.equal(row.baseline, '8f47e89');"
+            ]
+          },
+          {
+            "oldLine": 301,
+            "newLine": 320,
+            "before": [
+              "        assert.equal(beforeTvIsha(rawCurrent(r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(beforeTeacherToastColor(rawCurrent(r.file), r.file), original, r.file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/tv-isha-iqama-local.test.cjs",
+        "category": 31,
+        "reason": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+        "beforeSha256": "68fadb48381aed43d0bd7f4aba609e126417899c5838ad259c14477a734e6d8e",
+        "sha256": "42c3c50d474ca66925a4fb81fe2bc2e98f3c1af602f8a222dc35ff75827d877e",
+        "hunks": [
+          {
+            "oldLine": 299,
+            "newLine": 299,
+            "before": [
+              "    const sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n')).digest('hex');"
+            ],
+            "after": [
+              "    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), file)).digest('hex');"
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseChain": [
+      "teacherToastColor",
+      "tvIshaIqama",
+      "teacherOffline",
+      "teacherAccountsR4"
+    ],
+    "addedFiles": [
+      {
+        "file": "tests/helpers/teacher-toast-audit.cjs",
+        "sha256": "90db19d1b83af666f94eee454810a8b555d4921316858505cad875128bc38238"
+      },
+      {
+        "file": "tests/teacher-toast-color-local.test.cjs",
+        "sha256": "da6987173b82b9415c7e575435243d07c82386ba2005af2eac7e80729ad3d742"
       }
     ]
   }

@@ -612,7 +612,7 @@
         .tch-holiday, .tch-no-results { margin:0; padding:24px; border:1px solid var(--border); border-radius:16px; background:var(--surface); text-align:center; font-size:17px; font-weight:700; }
         .tch-holiday p { margin:4px 0 0; font-size:15px; font-weight:400; color:var(--ink-2); }
         /* ق54: الرسالة لا تلتقط اللمس إلا في «تراجع»؛ أسفل الصفحة فوق «+ طالب جديد». ق70: ونافذة الإنجاز مفتوحة فوق شريط الحفظ مباشرة، فلا تغطي «حفظ» ولا التبويبين */
-        #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); min-height:56px; background:var(--ink); color:white; padding:8px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }
+        #teacherToast { position:fixed; z-index:6000; bottom:16px; left:50%; transform:translateX(-50%); width:min(90%,480px); min-height:56px; background:var(--green-900); color:white; padding:8px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-weight:700; pointer-events:none; }
         #teacherToast button { min-height:44px; color:var(--gold-600); font-size:16px; font-weight:800; text-decoration:none; pointer-events:auto; }
         body.teacher-mode:has(#smartModal.flex) #teacherToast { bottom:var(--teacher-footer-height,112px); }
         /* ق190، ق205: رسالة الحفظ صارت بلا أزرار؛ وما دام أي شريط ظاهراً يُحشى أسفل #teacherHome بارتفاعه + 32 (16 بُعده عن الأسفل + 16 فجوة) فتبقى آخر بطاقة و«+ طالب جديد» فوقه (ق192) */

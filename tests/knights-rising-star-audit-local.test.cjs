@@ -34,7 +34,7 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['19'], CATEGORY);
     assert.equal(audit.knightsRisingStarBaseline, BASE);
-    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.knightsRisingStarChanges.map(row => row.file).sort(), changed);
@@ -69,9 +69,9 @@ test('category 19 audit: every changed line since bf6a5e7 is registered and reve
     const storeMutated = current('programs-store.js').replace("['candidate', 'other', 'none']", "['candidate', 'other']");
     assert.notEqual(storeMutated, current('programs-store.js'));
     assert.notEqual(beforeKnightsRisingStar(storeMutated, 'programs-store.js'), original('programs-store.js'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];
+    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 
