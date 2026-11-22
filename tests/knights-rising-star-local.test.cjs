@@ -754,7 +754,7 @@ test('ر10 (ثبات): المحرك والفرسان والتجميد والطب
     const refreeze = text => { const i = text.indexOf('    refreezeWeekKnightsRow:'); return text.slice(i, text.indexOf('\n    },\n', i) + 7); };
     assert.equal(refreeze(storeText), refreeze(baseStore), 'refreezeWeekKnightsRow');
     const tvCore = text => text.split("if (typeof document !== 'undefined')")[0];
-    assert.equal(tvCore(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8'))), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');
+    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');
     const keys = cp.execFileSync('git', ['ls-tree', '--name-only', BASE, 'tests/rules/'], { cwd: root, encoding: 'utf8' }).split('\n').filter(f => f.endsWith('-answer-key.json'));
     assert.ok(keys.length >= 7);
     for (const file of ['tv.html', 'firestore.rules', 'data-store.js', 'general-points.js', ...keys])

@@ -15629,7 +15629,8 @@
     "22": "بحث السورة بالكتابة والرجوع لآخر آية في التسجيل السريع (2026-11-16)",
     "23": "حسابات المعلمين: القواعد والواجهة (2026-11-16)",
     "24": "متوقف عن الجديد + ق70 الرسالة فوق شريط الحفظ (2026-11-17)",
-    "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)"
+    "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+    "30": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة"
   },
   "files": [
     {
@@ -42128,6 +42129,868 @@
       {
         "file": "tests/teacher-offline-local.test.cjs",
         "sha256": "24d3e991eb2cbcb06a0aabe90844eae1a5ad7634a1039fdfab34da3b3b2d2452"
+      }
+    ]
+  },
+  "tvIshaIqama": {
+    "category": 30,
+    "baseline": "57acec8",
+    "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+    "changes": [
+      {
+        "file": "index.html",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "1e359f10a9620a313d4c14560675829ef89f937a3d822747ad150746964fd584",
+        "sha256": "783f0987d3765836ea55226f6addc555cbe4b05d9289cfdc5810b459c2a44821",
+        "hunks": [
+          {
+            "oldLine": 4845,
+            "newLine": 4845,
+            "before": [
+              "                prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30 },"
+            ],
+            "after": [
+              "                prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30,",
+              "                    ishaIqamaMinutes: prayer?.ishaIqamaMinutes ?? 20, ishaPrayerMinutes: prayer?.ishaPrayerMinutes ?? 10 },"
+            ]
+          },
+          {
+            "oldLine": 13758,
+            "newLine": 13759,
+            "before": [
+              "                        <label class=\"block text-sm font-bold mb-2\">توقف شاشة العرض: المغرب (دقيقة)",
+              "                            <input type=\"number\" id=\"psTvMaghrib\" min=\"5\" max=\"90\" step=\"1\" value=\"${s.tvPrayer?.maghribMinutes ?? 20}\" ${isArchivedView ? 'disabled' : ''} class=\"w-20 p-2 border rounded-xl text-center\">"
+            ],
+            "after": [
+              "                        <label class=\"flex items-center gap-3 mb-3 text-sm font-bold text-slate-600\"><span class=\"w-60\">توقف شاشة العرض: المغرب (دقيقة)</span>",
+              "                            <input type=\"number\" id=\"psTvMaghrib\" min=\"5\" max=\"90\" step=\"1\" value=\"${s.tvPrayer?.maghribMinutes ?? 20}\" ${isArchivedView ? 'disabled' : ''} class=\"shrink-0 w-20 p-2 border rounded-xl text-center\">"
+            ]
+          },
+          {
+            "oldLine": 13761,
+            "newLine": 13762,
+            "before": [
+              "                        <label class=\"block text-sm font-bold\">العشاء (دقيقة)",
+              "                            <input type=\"number\" id=\"psTvIsha\" min=\"5\" max=\"90\" step=\"1\" value=\"${s.tvPrayer?.ishaMinutes ?? 30}\" ${isArchivedView ? 'disabled' : ''} class=\"w-20 p-2 border rounded-xl text-center\">"
+            ],
+            "after": [
+              "                        <label class=\"flex items-center gap-3 mb-3 text-sm font-bold text-slate-600\"><span class=\"w-60\">الإقامة بعد أذان العشاء (دقيقة)</span>",
+              "                            <input type=\"number\" id=\"psTvIshaIqama\" min=\"0\" max=\"60\" step=\"1\" value=\"${s.tvPrayer?.ishaIqamaMinutes ?? 20}\" ${isArchivedView ? 'disabled' : ''} class=\"shrink-0 w-20 p-2 border rounded-xl text-center\">"
+            ]
+          },
+          {
+            "oldLine": 13764,
+            "newLine": 13765,
+            "before": [],
+            "after": [
+              "                        <label class=\"flex items-center gap-3 mb-3 text-sm font-bold text-slate-600\"><span class=\"w-60\">توقف الشاشة من إقامة العشاء (دقيقة)</span>",
+              "                            <input type=\"number\" id=\"psTvIshaPrayer\" min=\"5\" max=\"90\" step=\"1\" value=\"${s.tvPrayer?.ishaPrayerMinutes ?? 10}\" ${isArchivedView ? 'disabled' : ''} class=\"shrink-0 w-20 p-2 border rounded-xl text-center\">",
+              "                        </label>",
+              "                        <p class=\"text-sm text-slate-600 font-bold mt-2\">مثال: أذان العشاء 6:30 والإقامة بعد 20 دقيقة والتوقف 10 دقائق؛ الشاشة تعمل حتى 6:50 وتعود 7:00</p>"
+            ]
+          },
+          {
+            "oldLine": 14150,
+            "newLine": 14155,
+            "before": [
+              "            const read = id => {"
+            ],
+            "after": [
+              "            const read = (id, label, min, max) => {"
+            ]
+          },
+          {
+            "oldLine": 14152,
+            "newLine": 14157,
+            "before": [
+              "                if (!raw || !Number.isInteger(value) || value < 5 || value > 90) throw new Error('مدة توقف شاشة العرض: عدد صحيح من ٥ إلى ٩٠ دقيقة');"
+            ],
+            "after": [
+              "                if (!raw || !Number.isInteger(value) || value < min || value > max) throw new Error(id === 'psTvMaghrib'",
+              "                    ? 'مدة توقف شاشة العرض: عدد صحيح من 5 إلى 90 دقيقة' : label + ': عدد صحيح من ' + min + ' إلى ' + max + ' دقيقة');"
+            ]
+          },
+          {
+            "oldLine": 14155,
+            "newLine": 14161,
+            "before": [
+              "            return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };"
+            ],
+            "after": [
+              "            return { maghribMinutes: read('psTvMaghrib', '', 5, 90),",
+              "                ishaMinutes: window.almahraPrograms.getSettings()?.tvPrayer?.ishaMinutes ?? 30,",
+              "                ishaIqamaMinutes: read('psTvIshaIqama', 'الإقامة بعد أذان العشاء', 0, 60),",
+              "                ishaPrayerMinutes: read('psTvIshaPrayer', 'توقف الشاشة من إقامة العشاء', 5, 90) };"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "303b9c8d40585789d5b04d3bc093ebb33308841f43f67c0f1e28bcab9b38e56a",
+        "sha256": "9c2a42cbabd149972c152e24b51ec34d5e7012a5615f8560696e192c71a5b1b8",
+        "hunks": [
+          {
+            "oldLine": 5,
+            "newLine": 5,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/knights-oneplace-audit.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "b5659c73e1ea4604ec1172118d3883bc2afe6c30cdd6282ab1c8e6c6c366291d",
+        "sha256": "99a66e198e7cd09e61b359de696e293fa8a0238ed986860a759d96cf539e2f34",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/teacher-r4-audit.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "0066bb1636a21eaa839b1b3d095d28c44c00f178e6273954f0cd2a9cf14d0eea",
+        "sha256": "ccbfe9eb3e3b5025c8c6d1f663da96a5dd37c6c78012ae2f85100c7b56c6cd35",
+        "hunks": [
+          {
+            "oldLine": 6,
+            "newLine": 6,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/home-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "bf8f2a83ee9fc6f90673e44e4f3d95d2a3cd8d6ff38b0c8ad13e3dd8b76e8939",
+        "sha256": "7bad3b759c9fc9cdfe4117b64ea091c60bd25f1e4554804d71fbff4c78db66bd",
+        "hunks": [
+          {
+            "oldLine": 439,
+            "newLine": 439,
+            "before": [
+              "    Object.assign(h.ctx, { canWriteView: () => true, readGeneralTvPrayer: () => ({ maghribMinutes: 20, ishaMinutes: 30 }),"
+            ],
+            "after": [
+              "    Object.assign(h.ctx, { canWriteView: () => true, readGeneralTvPrayer: () => ({ maghribMinutes: 20, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 }),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/journey-fixes-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "b0d637244bf0e03bc06a9939227cf877ddd56aab5968af6a2d649aad74121945",
+        "sha256": "d652f7a983465debf456747c2ecdee29ad2998596c167b48b262f504e613eb31",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 69,
+            "newLine": 69,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 71,
+            "newLine": 71,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-last-week-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "d78360ffe8c56f8eec7290daeb6478d66dfe276ec923f35ea82b920eaef37816",
+        "sha256": "71dbe276d982c6e229ef591bd7e53081577981e71543d485c867e80dc27355c9",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-lines-x3-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "0b6d1df7b6996b5b39738c134e652a706d69eeea71f156f1c51dd20826ac5541",
+        "sha256": "ed194a5b53b2f5f646e0cdee193f99366a0ddff7d309181dac377e01955d3d35",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 51,
+            "newLine": 51,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 53,
+            "newLine": 53,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "98132d0907f22a3938f70febfa1d373e6655a6aee1ff62716dabc3cd12e9385a",
+        "sha256": "087ff0e91f7bf068794463b375f8e740d882106ff880d9108b124ff1fecf1fc2",
+        "hunks": [
+          {
+            "oldLine": 375,
+            "newLine": 375,
+            "before": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(fs.readFileSync(root+'/'+f,'utf8'),f),f),"
+            ],
+            "after": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(fs.readFileSync(root+'/'+f,'utf8'),f),f),f),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "92ebea5d442291d0d875780246876cfca759543b9d7d7b4314c5f8387904046c",
+        "sha256": "efffbc5f30822816bdb26d84ed1c0eacea3bd3380e4df5d833222623c4e11efe",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "a9c3ba96b0a99709a5116a7a2d1734f4613aeef37caf204de26411921a6aa2ed",
+        "sha256": "f50f788481cb0fcf51406966df831acef62f80842aff2d668b944f61495804c7",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "f5a2eb03213828d448e317d9ace29df7fc97919d2f4530de1cafdc243c7c435c",
+        "sha256": "b13a278afe1eed9a74030de8fc5ffd3e50b906bf082fc8ba59a800fe3830e9c9",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "820bc31ff5589938c75d7460801bfb702cb5f02cccb3d41cf644c26e486f1673",
+        "sha256": "a861c67a91c4a56a6b0aac1e890612edd6be4533aff2973f2e3b7cc5dc047989",
+        "hunks": [
+          {
+            "oldLine": 27,
+            "newLine": 27,
+            "before": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-owner-auto-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "55e2149f99e828ec7d026ef094555ebcb52b33cb48c40e10153e47602d2ca4e2",
+        "sha256": "71335680e927f46b55952778bc09107c6c6e7a999cae1f6f043b8e33ca840c3a",
+        "hunks": [
+          {
+            "oldLine": 326,
+            "newLine": 326,
+            "before": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ],
+            "after": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2b-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "8bcb46fcb052d49b39da47f05106efb113466859fc480d58224696c07e8a4245",
+        "sha256": "61fc938b5e2b60f38a7c518ee46675eef8e6c4c55d8edb3964f1c84c7eb8bfc8",
+        "hunks": [
+          {
+            "oldLine": 361,
+            "newLine": 361,
+            "before": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(fs.readFileSync(root+'/'+f,'utf8'),f),f);"
+            ],
+            "after": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(fs.readFileSync(root+'/'+f,'utf8'),f),f),f);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "c7088a99117acdcee7e3f458b19ec4708900c3e3d6c45d4ff751e45f411d095f",
+        "sha256": "1749ccb989a7aadab90e97bf205e7020f226edaa697773b0cf21cbe402ea500a",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 72,
+            "newLine": 72,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 74,
+            "newLine": 74,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "744241e3b3123ecb51366131a65a7f26a61fb4bf3ab7017e9d68d4f3aeba502f",
+        "sha256": "86ee3ca64ef5e40e0e09d39c19ad368cdac19d29493cc90a26208af681a404c7",
+        "hunks": [
+          {
+            "oldLine": 757,
+            "newLine": 757,
+            "before": [
+              "    assert.equal(tvCore(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8'))), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ],
+            "after": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-tv-points-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "0aec339c3b890e45b23d8811336927e9c9b0710d844d788891c945b1005473a3",
+        "sha256": "d67865df3f91e780284959eb3e9b998af5601a535a17ab994ba7c9e58d1b3c82",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 55,
+            "newLine": 55,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 57,
+            "newLine": 57,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/step2-halaqas-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "cca0d8f97e2b09278b442d677ff6e05eeaf9f871dc0b64351b942cb86d57cce5",
+        "sha256": "43db557c365c61a13077e42ec655460e8c1cd30e596e6316357aa6c44df2f2b9",
+        "hunks": [
+          {
+            "oldLine": 109,
+            "newLine": 109,
+            "before": [
+              "    element('psTvMaghrib').value = '20'; element('psTvIsha').value = '30';"
+            ],
+            "after": [
+              "    element('psTvMaghrib').value = '20'; element('psTvIshaIqama').value = '20'; element('psTvIshaPrayer').value = '10';"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/step4-snapshot-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "cbc450c11a7d57890424d1d77baa458ab6536a0d3def2a275acfc4b324ba744e",
+        "sha256": "2fb6d55eac9d9896ceb14ddb4447284fedc48460b389c5280747cc49e2a4723e",
+        "hunks": [
+          {
+            "oldLine": 81,
+            "newLine": 81,
+            "before": [
+              "    element('psTvMaghrib').value = '20'; element('psTvIsha').value = '30';"
+            ],
+            "after": [
+              "    element('psTvMaghrib').value = '20'; element('psTvIshaIqama').value = '20'; element('psTvIshaPrayer').value = '10';"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/step7-simplify-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "af8d4d788bf8e0b758ad3db365044a0bfbcb07169d0713fac21816281c1724f7",
+        "sha256": "b265d3d9abe1a503b788630669e70dfe84bb27f32e41e679b5d8298052438210",
+        "hunks": [
+          {
+            "oldLine": 391,
+            "newLine": 391,
+            "before": [
+              "        h.element('psTvMaghrib').value = '20'; h.element('psTvIsha').value = '30';"
+            ],
+            "after": [
+              "        h.element('psTvMaghrib').value = '20'; h.element('psTvIshaIqama').value = '20'; h.element('psTvIshaPrayer').value = '10';"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/step8c-tv-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "be8e41fe88cad1fa0b108abf08b7237a49a8a21d6d950aac982b2bab1f69e14a",
+        "sha256": "bca1982beda8454c09e38bb1eb3eef3036e7e2ee0651f3f6c3bbe42816191a67",
+        "hunks": [
+          {
+            "oldLine": 145,
+            "newLine": 145,
+            "before": [
+              "    assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);"
+            ],
+            "after": [
+              "    assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaIqamaMinutes', 'ishaMinutes', 'ishaPrayerMinutes', 'maghribMinutes']);"
+            ]
+          },
+          {
+            "oldLine": 158,
+            "newLine": 158,
+            "before": [
+              "    assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });"
+            ],
+            "after": [
+              "    assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 });"
+            ]
+          },
+          {
+            "oldLine": 160,
+            "newLine": 160,
+            "before": [
+              "    assert.deepEqual(h.snapshot().prayer, h.state.settings.tvPrayer);"
+            ],
+            "after": [
+              "    assert.deepEqual(h.snapshot().prayer, { ...h.state.settings.tvPrayer, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 });"
+            ]
+          },
+          {
+            "oldLine": 262,
+            "newLine": 262,
+            "before": [
+              "        h.element('psTvMaghrib').value = value; h.element('psTvIsha').value = '30';",
+              "        assert.throws(() => h.run('readGeneralTvPrayer()'), /٥ إلى ٩٠/);"
+            ],
+            "after": [
+              "        h.element('psTvMaghrib').value = value; h.element('psTvIshaIqama').value = '20'; h.element('psTvIshaPrayer').value = '10';",
+              "        assert.throws(() => h.run('readGeneralTvPrayer()'), /5 إلى 90/);"
+            ]
+          },
+          {
+            "oldLine": 265,
+            "newLine": 265,
+            "before": [
+              "    h.element('psTvMaghrib').value = '5'; h.element('psTvIsha').value = '90';",
+              "    assert.deepEqual(copy(h.run('readGeneralTvPrayer()')), { maghribMinutes: 5, ishaMinutes: 90 });"
+            ],
+            "after": [
+              "    h.element('psTvMaghrib').value = '5'; h.element('psTvIshaIqama').value = '20'; h.element('psTvIshaPrayer').value = '90';",
+              "    assert.deepEqual(copy(h.run('readGeneralTvPrayer()')), { maghribMinutes: 5, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 90 });"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/surah-search-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "1f32a69d6e4f8391a7b04dc4516db62bb8dc784e2d1f0c158fe9496947818e35",
+        "sha256": "0f378e509357b532fd63ab8281f62b142d933d76439548d03d6019b26c7c5f89",
+        "hunks": [
+          {
+            "oldLine": 120,
+            "newLine": 120,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 122,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-audit-local.test.cjs",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "bd7e2075a3259ead7ab8cd6d7b4ec067614b4754e3d881b772177c1b167b41b0",
+        "sha256": "99681eedab25d98827d802c738c0a3bffd94d9202e4af1dca37c3298145c40c7",
+        "hunks": [
+          {
+            "oldLine": 21,
+            "newLine": 21,
+            "before": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(rawCurrent(file), file), file);"
+            ],
+            "after": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(file), file), file), file);"
+            ]
+          },
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [],
+            "after": [
+              "const added30 = () => require('./rules/design-expectation-audit.json').tvIshaIqama.addedFiles.map(r => r.file);"
+            ]
+          },
+          {
+            "oldLine": 37,
+            "newLine": 38,
+            "before": [
+              "            && (!audit.teacherAccountsR4.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();"
+            ],
+            "after": [
+              "            && (!audit.teacherAccountsR4.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))",
+              "            && (!audit.tvIshaIqama.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 41,
+            "newLine": 43,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ]
+          },
+          {
+            "oldLine": 120,
+            "newLine": 122,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ]
+          },
+          {
+            "oldLine": 152,
+            "newLine": 154,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 258,
+            "newLine": 260,
+            "before": [
+              "        const before29 = beforeTeacherOffline(rawCurrent(r.file), r.file);"
+            ],
+            "after": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file);"
+            ]
+          },
+          {
+            "oldLine": 262,
+            "newLine": 264,
+            "before": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);"
+            ],
+            "after": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file)), r.sha256, r.file);"
+            ]
+          },
+          {
+            "oldLine": 274,
+            "newLine": 276,
+            "before": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file)).sort();"
+            ],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.tvIshaIqama.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 276,
+            "newLine": 278,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline), 'category 29 added inventory');"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file)), 'category 29 added inventory');",
+              "    for (const r of row.changes) {",
+              "        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\\r\\n', '\\n');",
+              "        assert.equal(r.beforeSha256, sha(original), r.file);",
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(rawCurrent(r.file), r.file), r.file), original, r.file);",
+              "    }",
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(rawCurrent(r.file)), r.file);",
+              "});",
+              "",
+              "test('category 30: every changed line and added file is registered and reverses to 57acec8', () => {",
+              "    const audit = require('./rules/design-expectation-audit.json'), row = audit.tvIshaIqama;",
+              "    const { beforeTvIsha } = require('./helpers/tv-isha-audit.cjs');",
+              "    assert.equal(row.category, 30);",
+              "    assert.equal(row.reason, audit.categories['30']);",
+              "    assert.equal(row.baseline, '57acec8');",
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file)).sort();",
+              "    assert.deepEqual(row.changes.map(r => r.file).sort(), changed);",
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline));"
+            ]
+          },
+          {
+            "oldLine": 281,
+            "newLine": 301,
+            "before": [
+              "        assert.equal(beforeTeacherOffline(rawCurrent(r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(beforeTvIsha(rawCurrent(r.file), r.file), original, r.file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tv.js",
+        "category": 30,
+        "reason": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
+        "beforeSha256": "b2a239c1868975000ad85a15b0e026a8007051d32c4a420e733d7c3a6e3a2720",
+        "sha256": "cde5320c1ab96fc59ba4eaf7838b9fecf1564781b69819e0c8127f06b4dc813b",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [],
+            "after": [
+              "    const newIsha = prayer.ishaIqamaMinutes != null && prayer.ishaPrayerMinutes != null;"
+            ]
+          },
+          {
+            "oldLine": 16,
+            "newLine": 17,
+            "before": [
+              "        { name: 'العشاء', start: +times.isha, end: +times.isha + (prayer.ishaMinutes ?? 30) * 60000 }"
+            ],
+            "after": [
+              "        { name: 'العشاء', start: +times.isha + (newIsha ? prayer.ishaIqamaMinutes ?? 20 : 0) * 60000,",
+              "            end: +times.isha + (newIsha ? (prayer.ishaIqamaMinutes ?? 20) + prayer.ishaPrayerMinutes : prayer.ishaMinutes ?? 30) * 60000 }"
+            ]
+          },
+          {
+            "oldLine": 283,
+            "newLine": 285,
+            "before": [
+              "    let prayerKey = '', periods = [], latestPrayer = {};",
+              "    function checkPrayer() {"
+            ],
+            "after": [
+              "    let prayerKey = '', periods = [], latestPrayer = {}, prayerTimers = [];",
+              "    function checkPrayer(firedBoundary) {"
+            ]
+          },
+          {
+            "oldLine": 286,
+            "newLine": 288,
+            "before": [
+              "        const key = riyadhDate(now) + ':' + (prayer.maghribMinutes ?? 20) + ':' + (prayer.ishaMinutes ?? 30);",
+              "        if (key !== prayerKey) { periods = prayerPeriods(adhan, riyadhDate(now), prayer); prayerKey = key; }"
+            ],
+            "after": [
+              "        const key = riyadhDate(now) + ':' + (prayer.maghribMinutes ?? 20) + ':' + (prayer.ishaMinutes ?? 30)",
+              "            + ':' + (prayer.ishaIqamaMinutes ?? 'legacy') + ':' + (prayer.ishaPrayerMinutes ?? 'legacy');",
+              "        if (key !== prayerKey) {",
+              "            prayerTimers.forEach(clearTimeout); prayerTimers = [];",
+              "            periods = prayerPeriods(adhan, riyadhDate(now), prayer); prayerKey = key;",
+              "            for (const boundary of [periods[1].start, periods[1].end]) {",
+              "                if (boundary > +now) prayerTimers.push(setTimeout(() => checkPrayer(boundary), boundary - +now + 250));",
+              "            }",
+              "        }",
+              "        if (typeof firedBoundary === 'number' && firedBoundary > +now)",
+              "            prayerTimers.push(setTimeout(() => checkPrayer(firedBoundary), firedBoundary - +now + 250));"
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseChain": [
+      "tvIshaIqama",
+      "teacherOffline",
+      "teacherAccountsR4"
+    ],
+    "addedFiles": [
+      {
+        "file": "tests/helpers/tv-isha-audit.cjs",
+        "sha256": "f2dcd9e84cc12b7eaccf37e62e4c090dd9bdd112d0b41d91713cfde1eb3de23e"
+      },
+      {
+        "file": "tests/tv-isha-iqama-local.test.cjs",
+        "sha256": "68fadb48381aed43d0bd7f4aba609e126417899c5838ad259c14477a734e6d8e"
       }
     ]
   }

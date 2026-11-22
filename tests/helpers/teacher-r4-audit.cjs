@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 function beforeTeacherR4(text, file = 'index.html') {
-    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);
+    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);
     text = text.replaceAll('\r\n', '\n');
     const row = require('../rules/design-expectation-audit.json').teacherAccountsR4?.changes.find(x => x.file === file);
     if (!row || sha(text) !== row.sha256) return text;

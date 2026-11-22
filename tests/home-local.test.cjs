@@ -436,7 +436,7 @@ function settingsHarness() {
     const h = harness();
     h.state.settings.grades = [];
     h.ctx.window.almahraPrograms.getAllStudents = async () => [];
-    Object.assign(h.ctx, { canWriteView: () => true, readGeneralTvPrayer: () => ({ maghribMinutes: 20, ishaMinutes: 30 }),
+    Object.assign(h.ctx, { canWriteView: () => true, readGeneralTvPrayer: () => ({ maghribMinutes: 20, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 }),
         collectCriteriaFromRows: () => [], collectGeneralSettingRows: kind => h.state.settings[kind === 'stage' ? 'stages' : 'teachers'],
         collectGeneralHalaqaRows: () => copy(h.state.settings.halaqas), validateGeneralHalaqas: () => null,
         generalHalaqaStudentPatches: () => [], generalTeacherIsUsed: () => false,

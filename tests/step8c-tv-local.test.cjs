@@ -142,7 +142,7 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'h:ha', fars: [list[0]] });
     const s = h.snapshot();
     assert.deepEqual(Object.keys(s).sort(), ['type', 'boardDate', 'prayer', 'stages'].sort());
-    assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaMinutes', 'maghribMinutes']);
+    assert.deepEqual(Object.keys(s.prayer).sort(), ['ishaIqamaMinutes', 'ishaMinutes', 'ishaPrayerMinutes', 'maghribMinutes']);
     for (const stage of s.stages) {
         assert.deepEqual(Object.keys(stage).sort(), ['name', 'period', 'board', 'dayKnights', 'prepWeek', 'risingStars'].sort());
         for (const e of stage.board) assert.deepEqual(Object.keys(e).sort(), ['name', 'points', 'rank', 'week']);
@@ -155,9 +155,9 @@ test('snapshot has exact halaqa keys, manual override and automatic fallback, ti
         { stage: 'حلقة ثانية', teacher: '', names: ['طالب وهمي ثالث2', 'طالب وهمي ثالث3'], points: [0, 0], times: 2, provisional: true }];
     assert.deepEqual(s.stages.flatMap(s => s.dayKnights), cards);
     assert.doesNotMatch(JSON.stringify(s), /sid-|0500000000|secret|private-stage|"id"|"sid"|عائلة/);
-    assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30 });
+    assert.deepEqual(s.prayer, { maghribMinutes: 20, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 });
     h.state.settings.tvPrayer = { maghribMinutes: 15, ishaMinutes: 40 };
-    assert.deepEqual(h.snapshot().prayer, h.state.settings.tvPrayer);
+    assert.deepEqual(h.snapshot().prayer, { ...h.state.settings.tvPrayer, ishaIqamaMinutes: 20, ishaPrayerMinutes: 10 });
     h.state.approved.splice(0);
     assert.deepEqual(h.snapshot().stages.flatMap(s => s.dayKnights), cards);
     h.state.approved.push({ dateStr: '2026-11-01', mode: 'all', fars: [list[1]] });
@@ -259,11 +259,11 @@ test('save and undo each send one snapshot via updateAllUIs; honor board renders
 test('prayer settings validate integer 5–90 and defaults are absent from PROGRAM_DEFS and migration', () => {
     const h = board();
     for (const value of ['', '4', '91', '20.5', 'NaN']) {
-        h.element('psTvMaghrib').value = value; h.element('psTvIsha').value = '30';
-        assert.throws(() => h.run('readGeneralTvPrayer()'), /٥ إلى ٩٠/);
+        h.element('psTvMaghrib').value = value; h.element('psTvIshaIqama').value = '20'; h.element('psTvIshaPrayer').value = '10';
+        assert.throws(() => h.run('readGeneralTvPrayer()'), /5 إلى 90/);
     }
-    h.element('psTvMaghrib').value = '5'; h.element('psTvIsha').value = '90';
-    assert.deepEqual(copy(h.run('readGeneralTvPrayer()')), { maghribMinutes: 5, ishaMinutes: 90 });
+    h.element('psTvMaghrib').value = '5'; h.element('psTvIshaIqama').value = '20'; h.element('psTvIshaPrayer').value = '90';
+    assert.deepEqual(copy(h.run('readGeneralTvPrayer()')), { maghribMinutes: 5, ishaMinutes: 30, ishaIqamaMinutes: 20, ishaPrayerMinutes: 90 });
     assert.doesNotMatch(fs.readFileSync(path.join(root, 'programs-store.js'), 'utf8'), /tvPrayer/);
 });
 

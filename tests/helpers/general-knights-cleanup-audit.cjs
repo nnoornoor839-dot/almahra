@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 // Reverse only the exact changed lines approved for removing the legacy general UI.
 function beforeGeneralKnightsCleanup(text, file = 'index.html') {
-    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);
+    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(text, file), file);
     text = require('./teacher-r4-audit.cjs').beforeTeacherR4(text, file);
     text = require('./knights-owner-auto-audit.cjs').beforeKnightsOwnerAuto(text, file);
     text = text.replaceAll('\r\n', '\n');

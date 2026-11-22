@@ -11,9 +11,11 @@ function prayerPeriods(adhan, dateStr, prayer = {}) {
     const [year, month, day] = dateStr.split('-').map(Number);
     // المكتبة تقرأ أجزاء التاريخ المحلية؛ نعطيها يوم الرياض صراحةً، مهما كانت منطقة الجهاز.
     const times = new adhan.PrayerTimes(new adhan.Coordinates(20.14804, 40.27224), new Date(year, month - 1, day, 12), adhan.CalculationMethod.UmmAlQura());
+    const newIsha = prayer.ishaIqamaMinutes != null && prayer.ishaPrayerMinutes != null;
     return [
         { name: 'المغرب', start: +times.maghrib, end: +times.maghrib + (prayer.maghribMinutes ?? 20) * 60000 },
-        { name: 'العشاء', start: +times.isha, end: +times.isha + (prayer.ishaMinutes ?? 30) * 60000 }
+        { name: 'العشاء', start: +times.isha + (newIsha ? prayer.ishaIqamaMinutes ?? 20 : 0) * 60000,
+            end: +times.isha + (newIsha ? (prayer.ishaIqamaMinutes ?? 20) + prayer.ishaPrayerMinutes : prayer.ishaMinutes ?? 30) * 60000 }
     ];
 }
 
@@ -280,11 +282,20 @@ if (typeof document !== 'undefined') {
     let waitElapsed = false;
     const state = createTvState({ changed: render });
     setTimeout(() => { waitElapsed = true; render(); }, 35000);
-    let prayerKey = '', periods = [], latestPrayer = {};
-    function checkPrayer() {
+    let prayerKey = '', periods = [], latestPrayer = {}, prayerTimers = [];
+    function checkPrayer(firedBoundary) {
         const now = new Date(), prayer = latestPrayer;
-        const key = riyadhDate(now) + ':' + (prayer.maghribMinutes ?? 20) + ':' + (prayer.ishaMinutes ?? 30);
-        if (key !== prayerKey) { periods = prayerPeriods(adhan, riyadhDate(now), prayer); prayerKey = key; }
+        const key = riyadhDate(now) + ':' + (prayer.maghribMinutes ?? 20) + ':' + (prayer.ishaMinutes ?? 30)
+            + ':' + (prayer.ishaIqamaMinutes ?? 'legacy') + ':' + (prayer.ishaPrayerMinutes ?? 'legacy');
+        if (key !== prayerKey) {
+            prayerTimers.forEach(clearTimeout); prayerTimers = [];
+            periods = prayerPeriods(adhan, riyadhDate(now), prayer); prayerKey = key;
+            for (const boundary of [periods[1].start, periods[1].end]) {
+                if (boundary > +now) prayerTimers.push(setTimeout(() => checkPrayer(boundary), boundary - +now + 250));
+            }
+        }
+        if (typeof firedBoundary === 'number' && firedBoundary > +now)
+            prayerTimers.push(setTimeout(() => checkPrayer(firedBoundary), firedBoundary - +now + 250));
         state.setPeriod(boardPeriod(periods, now), riyadhDate(now));
         state.setPrayer(activePrayer(periods, now));
         el('clock').textContent = new Intl.DateTimeFormat('ar-SA-u-nu-latn', { timeZone: 'Asia/Riyadh', hour: 'numeric', minute: '2-digit' }).format(now);

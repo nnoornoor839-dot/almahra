@@ -4842,7 +4842,8 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const prayer = window.almahraPrograms.getSettings()?.tvPrayer;
             return {
                 type: 'snapshot', boardDate,
-                prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30 },
+                prayer: { maghribMinutes: prayer?.maghribMinutes ?? 20, ishaMinutes: prayer?.ishaMinutes ?? 30,
+                    ishaIqamaMinutes: prayer?.ishaIqamaMinutes ?? 20, ishaPrayerMinutes: prayer?.ishaPrayerMinutes ?? 10 },
                 stages: [...new Set(tiers.map(periodOf))].map(period => {
                     const group = tiers.filter(t => periodOf(t) === period);
                     return {
@@ -13755,12 +13756,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
 
                     ${isGeneralProgram() ? `<div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
                         <h3 class="font-black text-lg mb-4">📺 شاشة العرض</h3>
-                        <label class="block text-sm font-bold mb-2">توقف شاشة العرض: المغرب (دقيقة)
-                            <input type="number" id="psTvMaghrib" min="5" max="90" step="1" value="${s.tvPrayer?.maghribMinutes ?? 20}" ${isArchivedView ? 'disabled' : ''} class="w-20 p-2 border rounded-xl text-center">
+                        <label class="flex items-center gap-3 mb-3 text-sm font-bold text-slate-600"><span class="w-60">توقف شاشة العرض: المغرب (دقيقة)</span>
+                            <input type="number" id="psTvMaghrib" min="5" max="90" step="1" value="${s.tvPrayer?.maghribMinutes ?? 20}" ${isArchivedView ? 'disabled' : ''} class="shrink-0 w-20 p-2 border rounded-xl text-center">
                         </label>
-                        <label class="block text-sm font-bold">العشاء (دقيقة)
-                            <input type="number" id="psTvIsha" min="5" max="90" step="1" value="${s.tvPrayer?.ishaMinutes ?? 30}" ${isArchivedView ? 'disabled' : ''} class="w-20 p-2 border rounded-xl text-center">
+                        <label class="flex items-center gap-3 mb-3 text-sm font-bold text-slate-600"><span class="w-60">الإقامة بعد أذان العشاء (دقيقة)</span>
+                            <input type="number" id="psTvIshaIqama" min="0" max="60" step="1" value="${s.tvPrayer?.ishaIqamaMinutes ?? 20}" ${isArchivedView ? 'disabled' : ''} class="shrink-0 w-20 p-2 border rounded-xl text-center">
                         </label>
+                        <label class="flex items-center gap-3 mb-3 text-sm font-bold text-slate-600"><span class="w-60">توقف الشاشة من إقامة العشاء (دقيقة)</span>
+                            <input type="number" id="psTvIshaPrayer" min="5" max="90" step="1" value="${s.tvPrayer?.ishaPrayerMinutes ?? 10}" ${isArchivedView ? 'disabled' : ''} class="shrink-0 w-20 p-2 border rounded-xl text-center">
+                        </label>
+                        <p class="text-sm text-slate-600 font-bold mt-2">مثال: أذان العشاء 6:30 والإقامة بعد 20 دقيقة والتوقف 10 دقائق؛ الشاشة تعمل حتى 6:50 وتعود 7:00</p>
                     </div>` : ''}
 
                     ${isGeneralProgram() ? '' : `<div class="bg-white p-5 rounded-2xl border-2 border-slate-200">
@@ -14147,12 +14152,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         function readGeneralTvPrayer() {
-            const read = id => {
+            const read = (id, label, min, max) => {
                 const raw = document.getElementById(id)?.value.trim(), value = Number(raw);
-                if (!raw || !Number.isInteger(value) || value < 5 || value > 90) throw new Error('مدة توقف شاشة العرض: عدد صحيح من ٥ إلى ٩٠ دقيقة');
+                if (!raw || !Number.isInteger(value) || value < min || value > max) throw new Error(id === 'psTvMaghrib'
+                    ? 'مدة توقف شاشة العرض: عدد صحيح من 5 إلى 90 دقيقة' : label + ': عدد صحيح من ' + min + ' إلى ' + max + ' دقيقة');
                 return value;
             };
-            return { maghribMinutes: read('psTvMaghrib'), ishaMinutes: read('psTvIsha') };
+            return { maghribMinutes: read('psTvMaghrib', '', 5, 90),
+                ishaMinutes: window.almahraPrograms.getSettings()?.tvPrayer?.ishaMinutes ?? 30,
+                ishaIqamaMinutes: read('psTvIshaIqama', 'الإقامة بعد أذان العشاء', 0, 60),
+                ishaPrayerMinutes: read('psTvIshaPrayer', 'توقف الشاشة من إقامة العشاء', 5, 90) };
         }
         function readKnightsPerHalaqa() {
             const result = { ...(window.almahraPrograms.getSettings()?.titleRules?.knightsPerHalaqa || {}) };

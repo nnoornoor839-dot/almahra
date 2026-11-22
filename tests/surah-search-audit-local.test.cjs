@@ -117,9 +117,9 @@ test('category 22 audit: every changed line since 24d0f17 is registered and reve
     const outside = current('index.html').replace('const currentWeekStart = getWeekStartDate(todayStr);', 'const currentWeekStart = todayStr;');
     assert.notEqual(outside, current('index.html'));
     assert.notEqual(beforeSurahSearch(outside), original('index.html'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];
+    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 

@@ -106,7 +106,7 @@ function harness() {
     const install = (...names) => names.forEach(name => vm.runInContext(source(name), ctx));
     require('./helpers/tv-harness.cjs').installTv(run, install);
     for (const h of state.settings.halaqas) element('psKnights_' + h.id).value = '1';
-    element('psTvMaghrib').value = '20'; element('psTvIsha').value = '30';
+    element('psTvMaghrib').value = '20'; element('psTvIshaIqama').value = '20'; element('psTvIshaPrayer').value = '10';
     // مدخلات واجهة الأداء الجديدة؛ لا تغيير لتوقعات اختبار الحلقات.
     install('generalPerformanceSettings');
     element('psNewGoalPerDay').value = '0.5'; element('psFollowupAttendance').value = '85'; element('psFollowupNew').value = '80';
