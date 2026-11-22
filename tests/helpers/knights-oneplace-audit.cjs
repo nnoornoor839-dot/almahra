@@ -11,6 +11,7 @@ function reverseRow(text, row) {
 // Category 22: reverse registered surah-search changes, so category 20 sees 24d0f17.
 // Category 23: reverse teacher accounts and their rules before older audits inspect a file.
 function beforeTeacherAccounts(text, file = 'index.html') {
+    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);
     text = require('./teacher-r4-audit.cjs').beforeTeacherR4(text, file);
     text = text.replaceAll('\r\n', '\n');
     return reverseRow(text, require('../rules/design-expectation-audit.json').teacherAccountsChanges?.find(r => r.file === file));

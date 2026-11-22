@@ -570,7 +570,7 @@ test('ر7 (ق89، 02e) لا اتصال: الشريط #teacherOffline أول ال
         await h.page.evaluate(() => window.dispatchEvent(new Event('offline')));
         await h.page.locator(SEL.offline).waitFor({ state: 'visible', timeout: 3000 }).catch(() => assert.fail('#teacherOffline لم يظهر'));
         const o = await box(h.page, SEL.offline), home = await box(h.page, '#teacherHome'), hd = await box(h.page, SEL.header);
-        assert.equal(o.text, 'لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود');
+        assert.equal(o.text, 'لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته');
         assert.ok(hd?.visible, `الرأس ${SEL.header} غير موجود`);
         assert.ok(Math.abs(o.top - home.top) <= 1 && o.bottom <= hd.top + 1, `الشريط ليس أول الصفحة فوق الرأس: ${o.top}/${o.bottom}، الرأس ${hd.top}`);
         assert.deepEqual([o.bg, o.color], [C.amber50, C.amber800], `ألوان الشريط ${JSON.stringify([o.bg, o.color])} والمطلوب --amber-50/--amber-800`);

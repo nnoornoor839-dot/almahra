@@ -727,6 +727,7 @@
         body.teacher-mode #generalQuickSection .tch-foot-hint { flex-basis:100%; text-align:right; font-size:14px; color:var(--ink-2); }
         body.teacher-mode #generalQuickSection .tch-foot-hint[hidden] { display:none; }
         body.teacher-mode #generalQuickSection .tch-foot-hint.tch-behavior-hint { color:var(--amber-800); font-size:13px; font-weight:700; }
+        body.teacher-mode #generalQuickSection .tch-save-pending { flex-basis:100%; margin:0; padding:8px 12px; border-radius:12px; background:var(--amber-50); color:var(--amber-800); font-size:14px; font-weight:700; text-align:right; }
         body.teacher-mode #generalQuickSection .tch-foot-error { flex-basis:100%; margin:0; text-align:right; color:var(--red-700); font-size:14px; font-weight:700; }
         body.teacher-mode #generalQuickSection .tch-foot-error[hidden] { display:none; }
         body.teacher-mode #generalQuickSection button, body.teacher-mode #generalQuickSection input, body.teacher-mode #generalQuickSection select { animation:none !important; transition:none !important; font-family:'Cairo',sans-serif; }
@@ -5505,7 +5506,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             document.body.classList.add('teacher-mode');
             document.body.classList.remove('event-not-selected');
             const home = document.createElement('main'); home.id = 'teacherHome';
-            home.innerHTML = '<div id="teacherOffline" hidden>لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود</div><header id="teacherHeader"><div id="teacherTopBar"><strong></strong><button id="teacherHelpBtn" type="button">!</button><button id="teacherLogoutBtn" type="button">خروج</button></div><div id="teacherHalaqaTabs"></div><div id="teacherDate"></div></header><div id="teacherStats"></div><div id="teacherTools"><div id="teacherSearchWrap"><input id="teacherSearch" type="text" placeholder="ابحث باسم الطالب" aria-label="ابحث باسم الطالب" autocomplete="off"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div id="teacherFilters" role="group" aria-label="تصفية القائمة"><button type="button" data-filter="all" aria-pressed="true">الكل</button><button type="button" data-filter="none" aria-pressed="false">لم يُسجَّل</button><button type="button" data-filter="rec" aria-pressed="false">سُجّل</button><button type="button" data-filter="abs" aria-pressed="false">غائب</button></div></div><div id="teacherStudentList"></div><button id="teacherAddStudentBtn" type="button">+ طالب جديد</button>';
+            home.innerHTML = '<div id="teacherOffline" hidden>لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته</div><header id="teacherHeader"><div id="teacherTopBar"><strong></strong><button id="teacherHelpBtn" type="button">!</button><button id="teacherLogoutBtn" type="button">خروج</button></div><div id="teacherHalaqaTabs"></div><div id="teacherDate"></div></header><div id="teacherStats"></div><div id="teacherTools"><div id="teacherSearchWrap"><input id="teacherSearch" type="text" placeholder="ابحث باسم الطالب" aria-label="ابحث باسم الطالب" autocomplete="off"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div id="teacherFilters" role="group" aria-label="تصفية القائمة"><button type="button" data-filter="all" aria-pressed="true">الكل</button><button type="button" data-filter="none" aria-pressed="false">لم يُسجَّل</button><button type="button" data-filter="rec" aria-pressed="false">سُجّل</button><button type="button" data-filter="abs" aria-pressed="false">غائب</button></div></div><div id="teacherStudentList"></div><button id="teacherAddStudentBtn" type="button">+ طالب جديد</button>';
             document.body.appendChild(home);
             const halaqas = teacherHalaqas();
             window.almahraData?.setStudentsFilter({ halaqaIds: halaqas.map(h => h.id) });
@@ -10462,7 +10463,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 const head = section.querySelector('.qe-head');
                 head.querySelector('.qe-close')?.remove();
                 head.querySelectorAll('.tch-back').forEach(button => button.remove());
-                head.insertAdjacentHTML('afterbegin', '<button type="button" class="tch-back" aria-label="رجوع" onclick="closeSmartModal()"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>');
+                head.insertAdjacentHTML('afterbegin', '<button type="button" class="tch-back" aria-label="رجوع" onclick="teacherBackQuickEntry()"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>');
                 const entries = Object.values(student.history?.[todayStr]?.entries || {});
                 if (entries.length) {
                     const box = document.createElement('div'); box.id = 'quickTodayBox'; box.className = 'tch-today-box';
@@ -10729,16 +10730,46 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             }
             await teacherCommitQuickEntry(student);
         }
+        let teacherSavePending = null;
+        const teacherPendingOffline = ['لا اتصال بالإنترنت.', 'أبقِ الصفحة مفتوحة؛', 'سيُحفظ التسجيل وحده عند عودة الاتصال'].join(' ');
+        const teacherPendingSlow = 'الاتصال بطيء. أبقِ الصفحة مفتوحة حتى يكتمل الحفظ';
+        const teacherPendingOnline = ['عاد الاتصال؛', 'جارٍ الحفظ…'].join(' ');
+        function teacherShowSavePendingLine(message) {
+            const footer = document.getElementById('generalQuickFooter');
+            if (!footer) return;
+            let line = footer.querySelector('.tch-save-pending');
+            if (!line) { line = document.createElement('p'); line.className = 'tch-save-pending'; line.setAttribute('aria-live', 'polite'); footer.prepend(line); }
+            line.textContent = message;
+            document.body.style.setProperty('--teacher-footer-height', footer.offsetHeight + 'px');
+        }
+        function teacherBackQuickEntry() {
+            if (!teacherSavePending) { closeSmartModal(); return; }
+            teacherShowSavePendingLine(navigator.onLine ? teacherPendingSlow : teacherPendingOffline);
+        }
         async function teacherCommitQuickEntry(student) {
             const uid = window.almahraAuth?.currentUser?.uid;
             const mine = () => Object.values(students.find(s => s.id === student.id)?.history?.[todayStr]?.entries || {}).filter(e => e.by === uid).length;
             const before = mine();
             const restore = teacherMaskUnconfirmed();
+            const pending = {};
+            teacherSavePending = pending;
+            const showConnection = () => teacherShowSavePendingLine(navigator.onLine ? teacherPendingOnline : teacherPendingOffline);
+            const showOffline = () => { if (document.querySelector('.tch-save-pending')) showConnection(); };
+            window.addEventListener('online', showConnection);
+            window.addEventListener('offline', showOffline);
+            const timer = setTimeout(() => teacherShowSavePendingLine(navigator.onLine ? teacherPendingSlow : teacherPendingOffline), 4000);
             try {
                 updateGeneralQuickPreview();
                 if (teacherAcc.confirmed.new && !teacherAcc.confirmed.review) generalQuickEntry.noReviewConfirmation = generalQuickReviewConfirmationKey();
                 try { await saveGeneralQuickEntry(); } catch (_) { /* ورقة المعلم تعرض الفشل بلا نص خام. */ }
-            } finally { restore(); }
+            } finally {
+                clearTimeout(timer);
+                window.removeEventListener('online', showConnection);
+                window.removeEventListener('offline', showOffline);
+                document.querySelector('.tch-save-pending')?.remove();
+                if (teacherSavePending === pending) teacherSavePending = null;
+                restore();
+            }
             if (mine() > before) {
                 document.getElementById('toastMessage')?.classList.add('hidden');
                 teacherShowToast(`حُفظ ل${student.name}`);

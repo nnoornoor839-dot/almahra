@@ -949,7 +949,7 @@ test('و14/خ7 لا اتصال: شريط #teacherOffline بنصّه ويختفي
         await h.context.setOffline(true);
         await h.page.evaluate(() => window.dispatchEvent(new Event('offline')));
         await h.page.locator('#teacherOffline').waitFor({ state: 'visible', timeout: 3000 }).catch(() => assert.fail('#teacherOffline لم يظهر'));
-        assert.equal(await visibleText(h.page, '#teacherOffline'), 'لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود');
+        assert.equal(await visibleText(h.page, '#teacherOffline'), 'لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته');
         await h.context.setOffline(false);
         await h.page.evaluate(() => window.dispatchEvent(new Event('online')));
         await h.page.waitForTimeout(200);

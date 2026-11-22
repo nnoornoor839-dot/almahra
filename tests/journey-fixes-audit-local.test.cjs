@@ -34,7 +34,7 @@ test('category 20 audit: every changed line since 274bd05 is registered and reve
     const audit = require('./rules/design-expectation-audit.json');
     assert.equal(audit.categories['20'], CATEGORY);
     assert.equal(audit.journeyFixesBaseline, BASE);
-    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));
+    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));
     const changed = git('diff', '--name-only', BASE).trim().split(/\r?\n/)
         .filter(file => file && file !== 'tests/rules/design-expectation-audit.json' && !added.has(file) && changesFrom(file, BASE).hunks.length).sort();
     assert.deepEqual(audit.journeyFixesChanges.map(row => row.file).sort(), changed);
@@ -66,9 +66,9 @@ test('category 20 audit: every changed line since 274bd05 is registered and reve
     const pointsMutated = current('general-points.js').replace('Math.round(raw * 1e6) / 1e6', 'Math.round(raw * 1e7) / 1e7');
     assert.notEqual(pointsMutated, current('general-points.js'));
     assert.notEqual(beforeJourneyFixes(pointsMutated, 'general-points.js'), original('general-points.js'));
-    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))
+    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))
         assert.deepEqual(audit[key], JSON.parse(original('tests/rules/design-expectation-audit.json'))[key], key);
-    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];
+    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];
     assert.deepEqual(categories, JSON.parse(original('tests/rules/design-expectation-audit.json')).categories);
 });
 

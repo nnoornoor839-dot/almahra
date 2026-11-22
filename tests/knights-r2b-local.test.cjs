@@ -358,7 +358,7 @@ test('r2b audit accounts for every exact production/test hunk and leaves all fou
     assert.equal(audit.categories['10'],'الفرسان الجولة ٢ب باعتماد المالك ٢٠٢٦-١١-٠٦');
     for(const name of ['knights-answer-key','knights-r2-answer-key','board-answer-key','homeprep-answer-key']){
         const f='tests/rules/'+name+'.json';
-        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(fs.readFileSync(root+'/'+f,'utf8'),f);
+        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(fs.readFileSync(root+'/'+f,'utf8'),f),f);
         assert.equal(current,cp.execFileSync('git',['show','0c5ec91:'+f],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'));
     }
     const original=cp.execFileSync('git',['show','0c5ec91:index.html'],{cwd:root,encoding:'utf8'});

@@ -15628,7 +15628,8 @@
     "20": "إصلاحا الرحلة: تقريب جيد جداً و«يُعاد» في المجاميع (2026-11-13)",
     "22": "بحث السورة بالكتابة والرجوع لآخر آية في التسجيل السريع (2026-11-16)",
     "23": "حسابات المعلمين: القواعد والواجهة (2026-11-16)",
-    "24": "متوقف عن الجديد + ق70 الرسالة فوق شريط الحفظ (2026-11-17)"
+    "24": "متوقف عن الجديد + ق70 الرسالة فوق شريط الحفظ (2026-11-17)",
+    "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)"
   },
   "files": [
     {
@@ -41555,6 +41556,578 @@
       {
         "file": "tests/knights-oneplace-p3-local.test.cjs",
         "sha256": "da55d1b16e33036674209d106213d225e1559653ddf88c89d0ea1385fee5cb78"
+      }
+    ]
+  },
+  "teacherOffline": {
+    "category": 29,
+    "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+    "baseline": "45afe15",
+    "changes": [
+      {
+        "file": "index.html",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "e6a601277a3e1856faa3db8942066bcfcf232baacf5b05e1c68c33fca73b0cd6",
+        "sha256": "1e359f10a9620a313d4c14560675829ef89f937a3d822747ad150746964fd584",
+        "hunks": [
+          {
+            "oldLine": 730,
+            "newLine": 730,
+            "before": [],
+            "after": [
+              "        body.teacher-mode #generalQuickSection .tch-save-pending { flex-basis:100%; margin:0; padding:8px 12px; border-radius:12px; background:var(--amber-50); color:var(--amber-800); font-size:14px; font-weight:700; text-align:right; }"
+            ]
+          },
+          {
+            "oldLine": 5508,
+            "newLine": 5509,
+            "before": [
+              "            home.innerHTML = '<div id=\"teacherOffline\" hidden>لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود</div><header id=\"teacherHeader\"><div id=\"teacherTopBar\"><strong></strong><button id=\"teacherHelpBtn\" type=\"button\">!</button><button id=\"teacherLogoutBtn\" type=\"button\">خروج</button></div><div id=\"teacherHalaqaTabs\"></div><div id=\"teacherDate\"></div></header><div id=\"teacherStats\"></div><div id=\"teacherTools\"><div id=\"teacherSearchWrap\"><input id=\"teacherSearch\" type=\"text\" placeholder=\"ابحث باسم الطالب\" aria-label=\"ابحث باسم الطالب\" autocomplete=\"off\"><svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"10.8\" cy=\"10.8\" r=\"6.5\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m16 16 5 5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg></div><div id=\"teacherFilters\" role=\"group\" aria-label=\"تصفية القائمة\"><button type=\"button\" data-filter=\"all\" aria-pressed=\"true\">الكل</button><button type=\"button\" data-filter=\"none\" aria-pressed=\"false\">لم يُسجَّل</button><button type=\"button\" data-filter=\"rec\" aria-pressed=\"false\">سُجّل</button><button type=\"button\" data-filter=\"abs\" aria-pressed=\"false\">غائب</button></div></div><div id=\"teacherStudentList\"></div><button id=\"teacherAddStudentBtn\" type=\"button\">+ طالب جديد</button>';"
+            ],
+            "after": [
+              "            home.innerHTML = '<div id=\"teacherOffline\" hidden>لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته</div><header id=\"teacherHeader\"><div id=\"teacherTopBar\"><strong></strong><button id=\"teacherHelpBtn\" type=\"button\">!</button><button id=\"teacherLogoutBtn\" type=\"button\">خروج</button></div><div id=\"teacherHalaqaTabs\"></div><div id=\"teacherDate\"></div></header><div id=\"teacherStats\"></div><div id=\"teacherTools\"><div id=\"teacherSearchWrap\"><input id=\"teacherSearch\" type=\"text\" placeholder=\"ابحث باسم الطالب\" aria-label=\"ابحث باسم الطالب\" autocomplete=\"off\"><svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"10.8\" cy=\"10.8\" r=\"6.5\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m16 16 5 5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg></div><div id=\"teacherFilters\" role=\"group\" aria-label=\"تصفية القائمة\"><button type=\"button\" data-filter=\"all\" aria-pressed=\"true\">الكل</button><button type=\"button\" data-filter=\"none\" aria-pressed=\"false\">لم يُسجَّل</button><button type=\"button\" data-filter=\"rec\" aria-pressed=\"false\">سُجّل</button><button type=\"button\" data-filter=\"abs\" aria-pressed=\"false\">غائب</button></div></div><div id=\"teacherStudentList\"></div><button id=\"teacherAddStudentBtn\" type=\"button\">+ طالب جديد</button>';"
+            ]
+          },
+          {
+            "oldLine": 10465,
+            "newLine": 10466,
+            "before": [
+              "                head.insertAdjacentHTML('afterbegin', '<button type=\"button\" class=\"tch-back\" aria-label=\"رجوع\" onclick=\"closeSmartModal()\"><svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>');"
+            ],
+            "after": [
+              "                head.insertAdjacentHTML('afterbegin', '<button type=\"button\" class=\"tch-back\" aria-label=\"رجوع\" onclick=\"teacherBackQuickEntry()\"><svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>');"
+            ]
+          },
+          {
+            "oldLine": 10732,
+            "newLine": 10733,
+            "before": [],
+            "after": [
+              "        let teacherSavePending = null;",
+              "        const teacherPendingOffline = ['لا اتصال بالإنترنت.', 'أبقِ الصفحة مفتوحة؛', 'سيُحفظ التسجيل وحده عند عودة الاتصال'].join(' ');",
+              "        const teacherPendingSlow = 'الاتصال بطيء. أبقِ الصفحة مفتوحة حتى يكتمل الحفظ';",
+              "        const teacherPendingOnline = ['عاد الاتصال؛', 'جارٍ الحفظ…'].join(' ');",
+              "        function teacherShowSavePendingLine(message) {",
+              "            const footer = document.getElementById('generalQuickFooter');",
+              "            if (!footer) return;",
+              "            let line = footer.querySelector('.tch-save-pending');",
+              "            if (!line) { line = document.createElement('p'); line.className = 'tch-save-pending'; line.setAttribute('aria-live', 'polite'); footer.prepend(line); }",
+              "            line.textContent = message;",
+              "            document.body.style.setProperty('--teacher-footer-height', footer.offsetHeight + 'px');",
+              "        }",
+              "        function teacherBackQuickEntry() {",
+              "            if (!teacherSavePending) { closeSmartModal(); return; }",
+              "            teacherShowSavePendingLine(navigator.onLine ? teacherPendingSlow : teacherPendingOffline);",
+              "        }"
+            ]
+          },
+          {
+            "oldLine": 10737,
+            "newLine": 10754,
+            "before": [],
+            "after": [
+              "            const pending = {};",
+              "            teacherSavePending = pending;",
+              "            const showConnection = () => teacherShowSavePendingLine(navigator.onLine ? teacherPendingOnline : teacherPendingOffline);",
+              "            const showOffline = () => { if (document.querySelector('.tch-save-pending')) showConnection(); };",
+              "            window.addEventListener('online', showConnection);",
+              "            window.addEventListener('offline', showOffline);",
+              "            const timer = setTimeout(() => teacherShowSavePendingLine(navigator.onLine ? teacherPendingSlow : teacherPendingOffline), 4000);"
+            ]
+          },
+          {
+            "oldLine": 10741,
+            "newLine": 10765,
+            "before": [
+              "            } finally { restore(); }"
+            ],
+            "after": [
+              "            } finally {",
+              "                clearTimeout(timer);",
+              "                window.removeEventListener('online', showConnection);",
+              "                window.removeEventListener('offline', showOffline);",
+              "                document.querySelector('.tch-save-pending')?.remove();",
+              "                if (teacherSavePending === pending) teacherSavePending = null;",
+              "                restore();",
+              "            }"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-r3-home-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "8be8e7e7443eab704f0ce77e2984d2a920ff1ab68f096d441990384bc52a0a63",
+        "sha256": "c1ee0a2ce7c48d25eb65eaade154457b4104fb0ac567dbaa0d8c039a533fafcd",
+        "hunks": [
+          {
+            "oldLine": 573,
+            "newLine": 573,
+            "before": [
+              "        assert.equal(o.text, 'لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود');"
+            ],
+            "after": [
+              "        assert.equal(o.text, 'لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "02ad519f6180e6fc1a6acc2b070fa192f103f46958c7cae56cf59508beabd6b4",
+        "sha256": "b8790c6e9d4da91f530ef2c7c286e312fc6cf8752fd31ae153635067d4c94591",
+        "hunks": [
+          {
+            "oldLine": 952,
+            "newLine": 952,
+            "before": [
+              "        assert.equal(await visibleText(h.page, '#teacherOffline'), 'لا اتصال بالإنترنت؛ لن يُحفظ شيء حتى يعود');"
+            ],
+            "after": [
+              "        assert.equal(await visibleText(h.page, '#teacherOffline'), 'لا اتصال بالإنترنت؛ أبقِ الصفحة مفتوحة وسيُحفظ ما سجّلته عند عودته');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "219bf2f8a992fec4610ed5200d1433ec01843ace6a2e6be0bd666b3cf279047f",
+        "sha256": "bd7e2075a3259ead7ab8cd6d7b4ec067614b4754e3d881b772177c1b167b41b0",
+        "hunks": [
+          {
+            "oldLine": 21,
+            "newLine": 21,
+            "before": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(rawCurrent(file), file);"
+            ],
+            "after": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(rawCurrent(file), file), file);"
+            ]
+          },
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [],
+            "after": [
+              "const added29 = () => require('./rules/design-expectation-audit.json').teacherOffline.addedFiles.map(r => r.file);"
+            ]
+          },
+          {
+            "oldLine": 40,
+            "newLine": 41,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ]
+          },
+          {
+            "oldLine": 119,
+            "newLine": 120,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–28');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ]
+          },
+          {
+            "oldLine": 151,
+            "newLine": 152,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 255,
+            "newLine": 256,
+            "before": [],
+            "after": [
+              "    const { beforeTeacherOffline } = require('./helpers/teacher-offline-audit.cjs');"
+            ]
+          },
+          {
+            "oldLine": 256,
+            "newLine": 258,
+            "before": [
+              "        assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);",
+              "        assert.equal(sha(beforeTeacherR4(rawCurrent(r.file), r.file)), r.beforeSha256, r.file);"
+            ],
+            "after": [
+              "        const before29 = beforeTeacherOffline(rawCurrent(r.file), r.file);",
+              "        assert.equal(sha(before29), r.sha256, r.file);",
+              "        assert.equal(sha(beforeTeacherR4(before29, r.file)), r.beforeSha256, r.file);"
+            ]
+          },
+          {
+            "oldLine": 259,
+            "newLine": 262,
+            "before": [
+              "    for (const r of row.writerFiles) assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);"
+            ],
+            "after": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);",
+              "});",
+              "",
+              "test('category 29: all changed and added files are registered, and every exact hunk reverses to 45afe15', () => {",
+              "    const audit = require('./rules/design-expectation-audit.json');",
+              "    const row = audit.teacherOffline;",
+              "    const { beforeTeacherOffline } = require('./helpers/teacher-offline-audit.cjs');",
+              "    assert.equal(row.category, 29);",
+              "    assert.equal(row.reason, audit.categories['29']);",
+              "    assert.equal(row.baseline, '45afe15');",
+              "    assert.deepEqual(row.reverseChain, ['teacherOffline', 'teacherAccountsR4']);",
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file)).sort();",
+              "    assert.deepEqual(row.changes.map(r => r.file).sort(), changed, 'category 29 changed inventory');",
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline), 'category 29 added inventory');",
+              "    for (const r of row.changes) {",
+              "        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\\r\\n', '\\n');",
+              "        assert.equal(r.beforeSha256, sha(original), r.file);",
+              "        assert.equal(r.sha256, sha(rawCurrent(r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(rawCurrent(r.file), r.file), original, r.file);",
+              "    }",
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(rawCurrent(r.file)), r.file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "760c851094e35819950fe0e56710d5dbe60fbbcaa1019763810c938a4bcf09fb",
+        "sha256": "98132d0907f22a3938f70febfa1d373e6655a6aee1ff62716dabc3cd12e9385a",
+        "hunks": [
+          {
+            "oldLine": 375,
+            "newLine": 375,
+            "before": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(fs.readFileSync(root+'/'+f,'utf8'),f),"
+            ],
+            "after": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(fs.readFileSync(root+'/'+f,'utf8'),f),f),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2b-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "3af85de4e2e84b3afff04381b68e5fdb03333b8d07270ad32c993acbc49991bb",
+        "sha256": "8bcb46fcb052d49b39da47f05106efb113466859fc480d58224696c07e8a4245",
+        "hunks": [
+          {
+            "oldLine": 361,
+            "newLine": 361,
+            "before": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(fs.readFileSync(root+'/'+f,'utf8'),f);"
+            ],
+            "after": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(fs.readFileSync(root+'/'+f,'utf8'),f),f);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "b80623e02fc43cbcba81c8253eb906207b8f89baf52b01d0df5aac8c142c05ca",
+        "sha256": "303b9c8d40585789d5b04d3bc093ebb33308841f43f67c0f1e28bcab9b38e56a",
+        "hunks": [
+          {
+            "oldLine": 5,
+            "newLine": 5,
+            "before": [],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/knights-oneplace-audit.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "fac8c6d8a1f2b0e4fd9c469e419c8cfd82f36daafe8ffe192fe6a43ab0cde7e2",
+        "sha256": "b5659c73e1ea4604ec1172118d3883bc2afe6c30cdd6282ab1c8e6c6c366291d",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/teacher-r4-audit.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "262290bfc69c45d2153dcec2e8301df5d33bde11f5335f6111fcde083509eaa0",
+        "sha256": "0066bb1636a21eaa839b1b3d095d28c44c00f178e6273954f0cd2a9cf14d0eea",
+        "hunks": [
+          {
+            "oldLine": 6,
+            "newLine": 6,
+            "before": [],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(text, file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/journey-fixes-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "77b6dfe9ed6d41d37a1ab5ca7c7514ecb061487bcb75bec910a0e21225ccd1b2",
+        "sha256": "b0d637244bf0e03bc06a9939227cf877ddd56aab5968af6a2d649aad74121945",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 69,
+            "newLine": 69,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 71,
+            "newLine": 71,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-last-week-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "ed2de19c7ed26eda28a73ac4a99a2a08aa4d6901444cb3565b88c50bdf9347ed",
+        "sha256": "d78360ffe8c56f8eec7290daeb6478d66dfe276ec923f35ea82b920eaef37816",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-lines-x3-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "8230872c8c43c953072a7a8e6fb1381a6fec458645cf87dd03312d8865ab0209",
+        "sha256": "0b6d1df7b6996b5b39738c134e652a706d69eeea71f156f1c51dd20826ac5541",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 51,
+            "newLine": 51,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 53,
+            "newLine": 53,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "3c0164c272c7700a1f99ecd65a23fc72f4ad7d03992f2a8dc58a529a3daf2936",
+        "sha256": "820bc31ff5589938c75d7460801bfb702cb5f02cccb3d41cf644c26e486f1673",
+        "hunks": [
+          {
+            "oldLine": 27,
+            "newLine": 27,
+            "before": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "a86a7a2c89b7f7f8d7d4ae58559b4e9b7fe7f2e4c754a0fcc47c2ff3419d9598",
+        "sha256": "c7088a99117acdcee7e3f458b19ec4708900c3e3d6c45d4ff751e45f411d095f",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 72,
+            "newLine": 72,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 74,
+            "newLine": 74,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-tv-points-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "655c8a27623350a11cc3a9f7ccc5fcb66acd7dda5a12beee320c8e2ee44d0aa2",
+        "sha256": "0aec339c3b890e45b23d8811336927e9c9b0710d844d788891c945b1005473a3",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 55,
+            "newLine": 55,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 57,
+            "newLine": 57,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/surah-search-audit-local.test.cjs",
+        "category": 29,
+        "reason": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
+        "beforeSha256": "820a39a41ce23233f5a02fb7a599e00e4d5db2a711bc2306e83d58dcf2f9c327",
+        "sha256": "1f32a69d6e4f8391a7b04dc4516db62bb8dc784e2d1f0c158fe9496947818e35",
+        "hunks": [
+          {
+            "oldLine": 120,
+            "newLine": 120,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 122,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29'];"
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseChain": [
+      "teacherOffline",
+      "teacherAccountsR4"
+    ],
+    "addedFiles": [
+      {
+        "file": "tests/helpers/teacher-offline-audit.cjs",
+        "sha256": "cb859779985c6ad4d888d82bfb7b41875c5439fe0c3c6bc6310dfdcd10514c7f"
+      },
+      {
+        "file": "tests/teacher-offline-local.test.cjs",
+        "sha256": "24d3e991eb2cbcb06a0aabe90844eae1a5ad7634a1039fdfab34da3b3b2d2452"
       }
     ]
   }

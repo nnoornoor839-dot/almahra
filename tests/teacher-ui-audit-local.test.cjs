@@ -18,8 +18,9 @@ const ADDED = ['tests/rules/teacher.test.js', 'tests/teacher-ui-local.test.cjs',
 const git = (...args) => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).trim();
 const sha = text => createHash('sha256').update(text).digest('hex');
 const rawCurrent = file => fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n');
-const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(rawCurrent(file), file);
+const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(rawCurrent(file), file), file);
 const added28 = () => require('./rules/design-expectation-audit.json').teacherAccountsR4.addedFiles.map(r => r.file);
+const added29 = () => require('./rules/design-expectation-audit.json').teacherOffline.addedFiles.map(r => r.file);
 // تجهيز نشر 8: 1435aef التزم الملفات المضافة؛ الجرد يجمع تغييرات الأساس والمتبقي غير المتتبَّع، والوجود يُحسم في الأساس نفسه.
 const filesSince = base => [...new Set([...git('diff', '--name-only', base).split(/\r?\n/),
     ...git('ls-files', '--others', '--exclude-standard').split(/\r?\n/)])].filter(Boolean).sort();
@@ -37,7 +38,7 @@ test('category 23: all changed and added files are registered', () => {
     assert.deepEqual(audit.teacherAccountsChanges.map(row => row.file).sort(), changed);
     // أ10 (ق75): الأربعة الأولى التُزمت في 9302f6e؛ المطلوب ألا يبقى ملف غير ملتزم خارج ADDED (الآن tests/new-paused-local.test.cjs وحده).
     // تجهيز نشر 8: 1435aef التزم المضاف؛ كل ما لم يوجد في dd2b1f4 يجب أن يُسجَّل في الفئة 23 أو 28.
-    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');
+    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');
     assert.deepEqual(audit.teacherAccountsAddedFiles.map(row => row.file).sort(), ADDED.sort());
 });
 
@@ -116,7 +117,7 @@ test('category 24: كل ملف تغيّر منذ 9302f6e مسجَّل، وكل �
         assert.ok(current24(r.file).startsWith(at24(r.file)), r.file + ': ليس إضافة في الآخر فقط');
     }
     // تجهيز نشر 8: 1435aef التزم المضاف؛ غياب الملف عن 9302f6e هو معيار الإضافة عبر الفئات 24–28.
-    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–28');
+    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');
     for (const r of row.addedFiles) {
         assert.equal(r.sha256, sha(current24(r.file)), r.file);
         assert.equal(existsAt(BASE24, r.file), false, r.file);
@@ -148,7 +149,7 @@ test('category 25: السطر teacherAccountsR1 بالفئة 25 والأساس 8
         assert.equal(reverse24(current25(r.file), r.hunks), at25(r.file), r.file);
     }
     // تجهيز نشر 8: 1435aef التزم المضاف؛ الفئات 25–28 تضم كل ملف غائب عن 82415c9.
-    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28()].sort(), 'الملفات المضافة منذ 82415c9');
+    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29()].sort(), 'الملفات المضافة منذ 82415c9');
     for (const r of row.addedFiles) {
         assert.equal(r.sha256, sha(current25(r.file)), r.file);
         assert.equal(existsAt(BASE25, r.file), false, r.file);
@@ -252,10 +253,32 @@ test('category 28: هنكات البناء والاختبارات المحددة
             'knights-owner-auto', 'knights-rising-star', 'knights-tv-points']
             .map(name => 'tests/' + name + (name === 'knights-owner-auto' ? '-local.test.cjs' : '-audit-local.test.cjs'))].sort());
     const { beforeTeacherR4 } = require('./helpers/teacher-r4-audit.cjs');
+    const { beforeTeacherOffline } = require('./helpers/teacher-offline-audit.cjs');
     for (const r of row.changes) {
-        assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);
-        assert.equal(sha(beforeTeacherR4(rawCurrent(r.file), r.file)), r.beforeSha256, r.file);
+        const before29 = beforeTeacherOffline(rawCurrent(r.file), r.file);
+        assert.equal(sha(before29), r.sha256, r.file);
+        assert.equal(sha(beforeTeacherR4(before29, r.file)), r.beforeSha256, r.file);
     }
-    for (const r of row.writerFiles) assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);
-    for (const r of row.addedFiles) assert.equal(sha(rawCurrent(r.file)), r.sha256, r.file);
+    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);
+    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(rawCurrent(r.file), r.file)), r.sha256, r.file);
+});
+
+test('category 29: all changed and added files are registered, and every exact hunk reverses to 45afe15', () => {
+    const audit = require('./rules/design-expectation-audit.json');
+    const row = audit.teacherOffline;
+    const { beforeTeacherOffline } = require('./helpers/teacher-offline-audit.cjs');
+    assert.equal(row.category, 29);
+    assert.equal(row.reason, audit.categories['29']);
+    assert.equal(row.baseline, '45afe15');
+    assert.deepEqual(row.reverseChain, ['teacherOffline', 'teacherAccountsR4']);
+    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file)).sort();
+    assert.deepEqual(row.changes.map(r => r.file).sort(), changed, 'category 29 changed inventory');
+    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline), 'category 29 added inventory');
+    for (const r of row.changes) {
+        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\r\n', '\n');
+        assert.equal(r.beforeSha256, sha(original), r.file);
+        assert.equal(r.sha256, sha(rawCurrent(r.file)), r.file);
+        assert.equal(beforeTeacherOffline(rawCurrent(r.file), r.file), original, r.file);
+    }
+    for (const r of row.addedFiles) assert.equal(r.sha256, sha(rawCurrent(r.file)), r.file);
 });
