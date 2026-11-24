@@ -15631,7 +15631,8 @@
     "24": "متوقف عن الجديد + ق70 الرسالة فوق شريط الحفظ (2026-11-17)",
     "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
     "30": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
-    "31": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة"
+    "31": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
+    "32": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم"
   },
   "files": [
     {
@@ -43583,6 +43584,677 @@
       {
         "file": "tests/teacher-toast-color-local.test.cjs",
         "sha256": "da6987173b82b9415c7e575435243d07c82386ba2005af2eac7e80729ad3d742"
+      }
+    ]
+  },
+  "weekMessagesLastSchoolWeek": {
+    "category": 32,
+    "baseline": "d33c2f7",
+    "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+    "changes": [
+      {
+        "file": "index.html",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "84d4e532586e1e51c97807c9c3baf1eba38850405df21f23885cd71d610f8c93",
+        "sha256": "24746c07707e84e61728e518ee256cef434d93bf6c14a4848301445f451e549f",
+        "hunks": [
+          {
+            "oldLine": 12036,
+            "newLine": 12036,
+            "before": [
+              "            const startStr = addDaysToDateStr(getWeekStartDate(todayStr), current ? 0 : -7);"
+            ],
+            "after": [
+              "            const startStr = current ? getWeekStartDate(todayStr) : (knightsDisplayWeekStart() || addDaysToDateStr(getWeekStartDate(todayStr), -7));"
+            ]
+          },
+          {
+            "oldLine": 12040,
+            "newLine": 12040,
+            "before": [
+              "        function renderGeneralWeeklyMessages() {"
+            ],
+            "after": [
+              "        async function renderGeneralWeeklyMessages() {"
+            ]
+          },
+          {
+            "oldLine": 12042,
+            "newLine": 12042,
+            "before": [],
+            "after": [
+              "            const seasonId = window.almahraPrograms.getCurrentSeasonId();",
+              "            const ready = await ensureWeekKnightsFrozen();",
+              "            if (!ready.ok) showToast(ready.error, 'error');",
+              "            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;"
+            ]
+          },
+          {
+            "oldLine": 12058,
+            "newLine": 12062,
+            "before": [
+              "            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');"
+            ],
+            "after": []
+          },
+          {
+            "oldLine": 12063,
+            "newLine": 12066,
+            "before": [],
+            "after": [
+              "            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "b618bfa1ec607fad1dd4f6c4277dd5f32fa68c5d662d85dc91b426325021eec6",
+        "sha256": "01fc69434d0c51f0881bcf988b694c4a2107d5875f2548b237aaca3fc5cabd94",
+        "hunks": [
+          {
+            "oldLine": 5,
+            "newLine": 5,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(text, file), file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(text, file), file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/knights-oneplace-audit.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "fee920a99e44d3600c6a33d52bba9be4d64a0c8e11f87ddd6bcad885f3effa34",
+        "sha256": "45ce2637ac198183aec538cd39f6aa6eb96919112d2c9293393cf7d4c2e2dc8e",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(text, file), file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(text, file), file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/journey-fixes-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "bc36c669be1f95fe5e0733843f7de4c66ac629fb5cdaed7aa905e83bfc06d312",
+        "sha256": "622c98aa7a930557d5e2dfa7f80b1ebbe05146dc3ea6c836e2c3ad80bd9e25af",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 69,
+            "newLine": 69,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 71,
+            "newLine": 71,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-last-week-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "050860eb314c05f6900b24f0ffd46ad55acc2511788fdab23fe28c254b1ee75f",
+        "sha256": "376d67a69442a1e21377726961c7b650e8caea300d0984874adac42347a345b0",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-lines-x3-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "275d5f965054e79ccbcd87e12cfc385c80de6d504898ea8c09bfb92c76332965",
+        "sha256": "8245b6b68118c11e4209a8e662286f2c5b1a51fb530e55e29f2ac246dd5ef7ff",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 51,
+            "newLine": 51,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 53,
+            "newLine": 53,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "cf1a8a5de83303294b1067f64b5f3cdfe3502330daa0c2bed065168e48cfb15a",
+        "sha256": "f24f58fa201c97c90ada3cde99fe07ee1d137a8585b639ab9a621e8a183e9f3d",
+        "hunks": [
+          {
+            "oldLine": 375,
+            "newLine": 375,
+            "before": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(root+'/'+f,'utf8'), f),f),f),f),"
+            ],
+            "after": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(root+'/'+f,'utf8'), f), f),f),f),f),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "552bb28e62b4e1c4c774a2e35f6849f805adadbd6288f3a175e6455bec83c9ce",
+        "sha256": "67378f41870837275f66627072d1b8da7ed7f0c9fac685fca166cc94e514642a",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "ade1a86b0f1a35fd8e8fcfc499bc3823e20b5583c1cac3714d1e5da7d653c425",
+        "sha256": "98deb05b071bf78492fbd0b1c6132be34b1912f2e2a631c9a515c4a36d1a1e04",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "45d4eb0aedeb923a10cbc1497a23c3b5292de9ab80ffd9a1f125ddd82f4cf165",
+        "sha256": "a55e73ab5d501fec1a39b5d6c63535192e0a2dd944f7bb9fde0270ac42763263",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "56c448144356344a566a50dba94e206fa19f5bb1ab4725e16cf9c33f38622a20",
+        "sha256": "135113e65b61ca792eef89f864f0223071281ddbc2b2f5ba74cd940d845efba0",
+        "hunks": [
+          {
+            "oldLine": 27,
+            "newLine": 27,
+            "before": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-owner-auto-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "9520cda65c2590ffab65bcf59c073174c3ac243cb3058f7fd4f85dc643815928",
+        "sha256": "5250f7dbb534577bb73f9fb62c484bf968c03f9f73eef8e5b9553416d4d5fee9",
+        "hunks": [
+          {
+            "oldLine": 326,
+            "newLine": 326,
+            "before": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ],
+            "after": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2b-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "ce13cc4bbdaa5dd657c4fb94beb543d6f74619d4bc720784e26b234580cbe60e",
+        "sha256": "47aa8e325e738012793095270fba4635c02f0ad928b242d90e07402687dec6e0",
+        "hunks": [
+          {
+            "oldLine": 361,
+            "newLine": 361,
+            "before": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(root+'/'+f,'utf8'), f),f),f),f);"
+            ],
+            "after": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(root+'/'+f,'utf8'), f), f),f),f),f);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "ec868348eb204343fb74d21c825c28e37b572644be1b5e4ee3998ddf54f65722",
+        "sha256": "09c68e5cc8db939d5ec7cf03a87f4b263fca0004383d09a549eaf9ff6fa6e668",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 72,
+            "newLine": 72,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 74,
+            "newLine": 74,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "035b481b4db28d7de7ad26b10d43ac59a9994bc66d2d25d5da1f141c840d2bf4",
+        "sha256": "64145f2f1141a56c7a5d6be958f2a4c30c98a5b81787324074d552d7ee05d0b4",
+        "hunks": [
+          {
+            "oldLine": 757,
+            "newLine": 757,
+            "before": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js'), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ],
+            "after": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js'), 'tv.js'), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-tv-points-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "c3a76841e0fe36c99f642a8dce416808091791dcb7221f8405d54a428a77ca8e",
+        "sha256": "2700ca045e5b70b345e262b96831f22df9f4bf9057fd588b428375b249199367",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 55,
+            "newLine": 55,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 57,
+            "newLine": 57,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/surah-search-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "f396a405e9ec3e2bea7cfd7d423be6feed879accc3d48cc96ded1d71dc5a4ff5",
+        "sha256": "6f491769a0c832e62d76ea955ae15918acbe7666eee6a3acefaad093a83b9509",
+        "hunks": [
+          {
+            "oldLine": 120,
+            "newLine": 120,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 122,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-audit-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "79d50f6f9c32958a18d978703ca935d33a7f0ec8a8f8c87c41ebac61e15bd456",
+        "sha256": "2d53529a794e1f422624e692fbff503c0f3af851fd34af49ba88bcdc560a8a4a",
+        "hunks": [
+          {
+            "oldLine": 21,
+            "newLine": 21,
+            "before": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(file), file), file), file), file);"
+            ],
+            "after": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(file), file), file), file), file), file);"
+            ]
+          },
+          {
+            "oldLine": 25,
+            "newLine": 25,
+            "before": [],
+            "after": [
+              "const added32 = () => require('./rules/design-expectation-audit.json').weekMessagesLastSchoolWeek.addedFiles.map(r => r.file);"
+            ]
+          },
+          {
+            "oldLine": 44,
+            "newLine": 45,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ]
+          },
+          {
+            "oldLine": 123,
+            "newLine": 124,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ]
+          },
+          {
+            "oldLine": 155,
+            "newLine": 156,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 261,
+            "newLine": 262,
+            "before": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file);"
+            ],
+            "after": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file);"
+            ]
+          },
+          {
+            "oldLine": 265,
+            "newLine": 266,
+            "before": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file)), r.sha256, r.file);"
+            ],
+            "after": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);"
+            ]
+          },
+          {
+            "oldLine": 279,
+            "newLine": 280,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file) && !added31().includes(file)), 'category 29 added inventory');"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file) && !added31().includes(file) && !added32().includes(file)), 'category 29 added inventory');"
+            ]
+          },
+          {
+            "oldLine": 283,
+            "newLine": 284,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 295,
+            "newLine": 296,
+            "before": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.teacherToastColor.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.teacherToastColor.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 297,
+            "newLine": 298,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added31().includes(f)));"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added31().includes(f) && !added32().includes(f)));"
+            ]
+          },
+          {
+            "oldLine": 301,
+            "newLine": 302,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 304,
+            "newLine": 305,
+            "before": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(rawCurrent(r.file), r.file)), r.file);"
+            ],
+            "after": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file)), r.file);"
+            ]
+          },
+          {
+            "oldLine": 313,
+            "newLine": 314,
+            "before": [],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();",
+              "    assert.deepEqual(row.changes.map(r => r.file).sort(), changed);",
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added32().includes(f)));",
+              "    for (const r of row.changes) {",
+              "        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\\r\\n', '\\n');",
+              "        assert.equal(r.beforeSha256, sha(original), r.file);",
+              "        assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), original, r.file);",
+              "    }",
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file)), r.file);",
+              "});",
+              "",
+              "test('category 32: every changed line and added file is registered and reverses to d33c2f7', () => {",
+              "    const audit = require('./rules/design-expectation-audit.json'), row = audit.weekMessagesLastSchoolWeek;",
+              "    const { beforeWeekMessagesLastSchoolWeek } = require('./helpers/week-messages-audit.cjs');",
+              "    assert.equal(row.category, 32);",
+              "    assert.equal(row.reason, audit.categories['32']);",
+              "    assert.equal(row.baseline, 'd33c2f7');"
+            ]
+          },
+          {
+            "oldLine": 320,
+            "newLine": 339,
+            "before": [
+              "        assert.equal(beforeTeacherToastColor(rawCurrent(r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), original, r.file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/tv-isha-iqama-local.test.cjs",
+        "category": 32,
+        "reason": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+        "beforeSha256": "42c3c50d474ca66925a4fb81fe2bc2e98f3c1af602f8a222dc35ff75827d877e",
+        "sha256": "f9cb5d8e4c79eb51d5f7244265dcdc62d53ab5d5c820aa3ed1806c29bc24e660",
+        "hunks": [
+          {
+            "oldLine": 299,
+            "newLine": 299,
+            "before": [
+              "    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), file)).digest('hex');"
+            ],
+            "after": [
+              "    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), file), file)).digest('hex');"
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseChain": [
+      "weekMessagesLastSchoolWeek",
+      "teacherToastColor",
+      "tvIshaIqama",
+      "teacherOffline",
+      "teacherAccountsR4"
+    ],
+    "addedFiles": [
+      {
+        "file": "tests/helpers/week-messages-audit.cjs",
+        "sha256": "24fdc18f3dfab091e53015edb380b610445db29d264e2b8f9883631931265b94"
+      },
+      {
+        "file": "tests/week-messages-last-week-local.test.cjs",
+        "sha256": "6f3f3858eb3e8b4c6fe082fb432aa451fe813ae2156e9281b19a105c69e826c0"
       }
     ]
   }

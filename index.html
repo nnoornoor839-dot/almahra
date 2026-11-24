@@ -12033,12 +12033,16 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         }
 
         function getGeneralMessageWeek(current) {
-            const startStr = addDaysToDateStr(getWeekStartDate(todayStr), current ? 0 : -7);
+            const startStr = current ? getWeekStartDate(todayStr) : (knightsDisplayWeekStart() || addDaysToDateStr(getWeekStartDate(todayStr), -7));
             return { startStr, endStr: current ? todayStr : addDaysToDateStr(startStr, 6) };
         }
 
-        function renderGeneralWeeklyMessages() {
+        async function renderGeneralWeeklyMessages() {
             if (!isGeneralProgram()) return;
+            const seasonId = window.almahraPrograms.getCurrentSeasonId();
+            const ready = await ensureWeekKnightsFrozen();
+            if (!ready.ok) showToast(ready.error, 'error');
+            if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
             const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
             document.getElementById('generalMessageWeekDates').textContent = `${week.startStr} — ${week.endStr}`;
             const list = document.getElementById('generalWeeklyMessageList');
@@ -12055,11 +12059,11 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         async function sendGeneralWeeklyMessage(student) {
             if (!isGeneralProgram() || !student) return;
             if (!measureReady() || !quranMeta) { showToast('ميزان المصحف غير جاهز؛ افتح الرسائل بعد اكتمال تحميله', 'error'); return; }
-            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
             const seasonId = window.almahraPrograms.getCurrentSeasonId();
             const ready = await ensureWeekKnightsFrozen();
             if (!ready.ok) { showToast(ready.error, 'error'); return; }
             if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
+            const week = getGeneralMessageWeek(document.getElementById('generalMessageWeek').value === 'current');
             const frozen = await lockKnightsForMessage(week.startStr, student);
             if (!frozen) return;
             if (!isGeneralProgram() || seasonId !== window.almahraPrograms.getCurrentSeasonId()) return;
