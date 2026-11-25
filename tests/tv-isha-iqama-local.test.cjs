@@ -296,7 +296,7 @@ test('ق9: نصا العشاء وسطر المثال واضحون وحرفيون
 test('ق10: الفئة 30 تسجل ملفي المنتج والاختبار المضاف ببصماتها الحالية', () => {
     const crypto = require('node:crypto');
     const audit = require('./rules/design-expectation-audit.json').tvIshaIqama;
-    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), file), file)).digest('hex');
+    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n'), file), file), file)).digest('hex');
     for (const file of ['tv.js', 'index.html']) assert.equal(audit.changes.find(row => row.file === file)?.sha256, sha(file), file);
     assert.equal(audit.addedFiles.find(row => row.file === 'tests/tv-isha-iqama-local.test.cjs')?.sha256,
         sha('tests/tv-isha-iqama-local.test.cjs'));

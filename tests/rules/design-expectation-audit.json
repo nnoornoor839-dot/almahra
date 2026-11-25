@@ -15632,7 +15632,8 @@
     "29": "????? ?: ????? ?? ????? ????? ??? ?????? (2026-11-22)",
     "30": "بطاقة ج: يبدأ توقف العشاء عند الإقامة وينتهي بعد مدة الصلاة، مع حقلي الإعدادات والفحص المجدول وتوافق اللقطة القديمة",
     "31": "بطاقة و: خلفية توست المعلم بلون الأخضر الداكن من درجات العلامة",
-    "32": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم"
+    "32": "بطاقة ز: رسائل الأسبوع تقرأ آخر أسبوع دراسي محسوم بعد الحسم",
+    "33": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري"
   },
   "files": [
     {
@@ -44255,6 +44256,827 @@
       {
         "file": "tests/week-messages-last-week-local.test.cjs",
         "sha256": "6f3f3858eb3e8b4c6fe082fb432aa451fe813ae2156e9281b19a105c69e826c0"
+      }
+    ]
+  },
+  "parentMessageText": {
+    "category": 33,
+    "baseline": "0cde344",
+    "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+    "changes": [
+      {
+        "file": "index.html",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "24746c07707e84e61728e518ee256cef434d93bf6c14a4848301445f451e549f",
+        "sha256": "8ccb2a893a787bd6ac2e2ef757b03ba79f3494b8162833b57d8cedc57aabb142",
+        "hunks": [
+          {
+            "oldLine": 3298,
+            "newLine": 3298,
+            "before": [],
+            "after": [
+              "        const PARENT_BRAND_SHORT = 'برنامج الحوافز';",
+              "        const PARENT_BRAND_SIGNATURE = 'برنامج الحوافز\\nالشؤون التعليمية\\nجمعية أفضلكم';",
+              "        const PARENT_MOTIVATION_LINE = 'حفظ ابنك يبدأ من البيت: اسمع له كل يوم وشجّعه، فكل حرف يحفظه في ميزان حسناتك.';",
+              ""
+            ]
+          },
+          {
+            "oldLine": 11987,
+            "newLine": 11991,
+            "before": [
+              "            const days = dates.map(ds => history[ds]).filter(Boolean);"
+            ],
+            "after": []
+          },
+          {
+            "oldLine": 12020,
+            "newLine": 12023,
+            "before": [
+              "            const hijri = days.map(d => d.hijri).filter(Boolean);",
+              "            const hijriLabel = hijri.length ? ` (هجري: ${hijri[0]}${hijri.at(-1) === hijri[0] ? '' : ' إلى ' + hijri.at(-1)})` : '';"
+            ],
+            "after": []
+          },
+          {
+            "oldLine": 12025,
+            "newLine": 12026,
+            "before": [
+              "                + `الأسبوع: ${week.startStr} إلى ${week.endStr}${hijriLabel}\\n\\n`"
+            ],
+            "after": [
+              "                + `الأسبوع: ${week.startStr} إلى ${week.endStr}\\n\\n`"
+            ]
+          },
+          {
+            "oldLine": 12032,
+            "newLine": 12033,
+            "before": [],
+            "after": [
+              "                + PARENT_MOTIVATION_LINE + '\\n\\n'"
+            ]
+          },
+          {
+            "oldLine": 12074,
+            "newLine": 12076,
+            "before": [
+              "                brandName: programBrandName() };"
+            ],
+            "after": [
+              "                brandName: isGeneralProgram() ? PARENT_BRAND_SIGNATURE : programBrandName() };"
+            ]
+          },
+          {
+            "oldLine": 12087,
+            "newLine": 12089,
+            "before": [
+              "            let msg = `📋 *إشعار غياب - ${programBrandName()}*\\n🗓️ اليوم: ${hijriDateStr}\\n\\nالسلام عليكم ورحمة الله وبركاته،\\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\\n\\n`;"
+            ],
+            "after": [
+              "            let msg = `📋 *إشعار غياب - ${isGeneralProgram() ? PARENT_BRAND_SHORT : programBrandName()}*\\n🗓️ اليوم: ${hijriDateStr}\\n\\nالسلام عليكم ورحمة الله وبركاته،\\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\\n\\n`;"
+            ]
+          },
+          {
+            "oldLine": 12096,
+            "newLine": 12098,
+            "before": [
+              "            let msg = `📋 *تنبيه انقطاع متكرر - ${programBrandName()}*\\n🗓️ بتاريخ: ${hijriDateStr}\\n\\nالسلام عليكم ورحمة الله وبركاته،\\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\\n\\n`;"
+            ],
+            "after": [
+              "            let msg = `📋 *تنبيه انقطاع متكرر - ${isGeneralProgram() ? PARENT_BRAND_SHORT : programBrandName()}*\\n🗓️ بتاريخ: ${hijriDateStr}\\n\\nالسلام عليكم ورحمة الله وبركاته،\\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\\n\\n`;"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/general-knights-cleanup-audit.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "01fc69434d0c51f0881bcf988b694c4a2107d5875f2548b237aaca3fc5cabd94",
+        "sha256": "394ebf59cf24813c29a9daacc825670a595f6d41b5b4f52a3109f0cc8acc5e5a",
+        "hunks": [
+          {
+            "oldLine": 5,
+            "newLine": 5,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(text, file), file), file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./message-text-audit.cjs').beforeParentMessageText(text, file), file), file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/knights-oneplace-audit.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "45ce2637ac198183aec538cd39f6aa6eb96919112d2c9293393cf7d4c2e2dc8e",
+        "sha256": "15ce8daea523bd6ab8fc78a4ffaa578781c01c171ee3cd9f7419f73526821f33",
+        "hunks": [
+          {
+            "oldLine": 14,
+            "newLine": 14,
+            "before": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(text, file), file), file), file);"
+            ],
+            "after": [
+              "    text = require('./teacher-offline-audit.cjs').beforeTeacherOffline(require('./tv-isha-audit.cjs').beforeTvIsha(require('./teacher-toast-audit.cjs').beforeTeacherToastColor(require('./week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./message-text-audit.cjs').beforeParentMessageText(text, file), file), file), file), file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/helpers/quick-entry-harness.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "a1ed4e47f1daaa84b3be1a589e4c2c55334a36df00e4569d5d66316ef5ad644a",
+        "sha256": "253755025961d579140b8a48aa2257b05af9f38ec069c5a1e1603d5042947400",
+        "hunks": [
+          {
+            "oldLine": 136,
+            "newLine": 136,
+            "before": [],
+            "after": [
+              "    for (const name of ['PARENT_BRAND_SHORT', 'PARENT_BRAND_SIGNATURE', 'PARENT_MOTIVATION_LINE']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/journey-fixes-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "622c98aa7a930557d5e2dfa7f80b1ebbe05146dc3ea6c836e2c3ad80bd9e25af",
+        "sha256": "2fa7b3cd07b07c4eb36a94a7c30e1679e749d4de1ca4f4d1693785a5f5da418d",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.journeyFixesAddedFiles, ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 69,
+            "newLine": 69,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'parentMessageText' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 71,
+            "newLine": 71,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32']; delete categories['33'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-last-week-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "376d67a69442a1e21377726961c7b650e8caea300d0984874adac42347a345b0",
+        "sha256": "1eb4a2a3fc7b94f30b3ad9b6d6d224e482eadf49eab2aa0b674ec72d4daeefa1",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLastWeekAddedFiles, ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(row => row.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-lines-x3-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "8245b6b68118c11e4209a8e662286f2c5b1a51fb530e55e29f2ac246dd5ef7ff",
+        "sha256": "5dd7e321ce859c700f456d69dcd2c23155683378ae32437f6535d8e1075d1a9b",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsLinesX3AddedFiles, ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 51,
+            "newLine": 51,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsLinesX3') && !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'parentMessageText' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 53,
+            "newLine": 53,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['17']; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32']; delete categories['33'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "f24f58fa201c97c90ada3cde99fe07ee1d137a8585b639ab9a621e8a183e9f3d",
+        "sha256": "9d45ea501b3589b8a1745ba54935dc3b830bf90eb04f722068b8d85b7db7e058",
+        "hunks": [
+          {
+            "oldLine": 375,
+            "newLine": 375,
+            "before": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(root+'/'+f,'utf8'), f), f),f),f),f),"
+            ],
+            "after": [
+              "        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(root+'/'+f,'utf8'), f), f), f),f),f),f),"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "67378f41870837275f66627072d1b8da7ed7f0c9fac685fca166cc94e514642a",
+        "sha256": "a78077f23407f6b2f7bd757d993aacf57fc93d53bf1eade9661c8040f680969d",
+        "hunks": [
+          {
+            "oldLine": 23,
+            "newLine": 23,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p2-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "98deb05b071bf78492fbd0b1c6132be34b1912f2e2a631c9a515c4a36d1a1e04",
+        "sha256": "396a5633d861a047f463a683a5bbb0bbe6c669ca6956541abece67cb8f08229d",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP2AddedFiles, ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p3-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "a55e73ab5d501fec1a39b5d6c63535192e0a2dd944f7bb9fde0270ac42763263",
+        "sha256": "10d92aefd4968fb3033c31d7b075f42a83ba0688c6d56864dc80e62317a80ce4",
+        "hunks": [
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsOnePlaceP3AddedFiles, ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-oneplace-p4-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "135113e65b61ca792eef89f864f0223071281ddbc2b2f5ba74cd940d845efba0",
+        "sha256": "aba7373ccf0fab04b6f1cdfd4a80f49ae9369bff394a3174448e26d8376a9e45",
+        "hunks": [
+          {
+            "oldLine": 27,
+            "newLine": 27,
+            "before": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(r => r.file));"
+            ],
+            "after": [
+              "    const added = new Set([...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(r => r.file));"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-owner-auto-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "5250f7dbb534577bb73f9fb62c484bf968c03f9f73eef8e5b9553416d4d5fee9",
+        "sha256": "f2a8c71db3cebe54daffc02fd7ddf57ced5ffb2e1520c435bf2a950230e7ea53",
+        "hunks": [
+          {
+            "oldLine": 326,
+            "newLine": 326,
+            "before": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ],
+            "after": [
+              "    const changed = cp.execFileSync('git', ['diff','--name-only','186a18e'], {cwd:root,encoding:'utf8'}).trim().split(/\\r?\\n/).filter(f => f && f !== 'tests/rules/design-expectation-audit.json' && !audit.knightsOwnerAutoAddedFiles.some(r => r.file === f) && ![...audit.knightsOnePlaceAddedFiles, ...(audit.knightsOnePlaceP2AddedFiles || []), ...(audit.knightsOnePlaceP3AddedFiles || []), ...(audit.knightsOnePlaceP4AddedFiles || []), ...(audit.knightsLastWeekAddedFiles || []), ...(audit.knightsLinesX3AddedFiles || []), ...(audit.knightsTvPointsAddedFiles || []), ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].some(r => r.file === f) && changesFrom(f,'186a18e').hunks.length).sort();"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "478f884f8c2546ab7f0b5e0d95f191e0c06c8dcad971434a17fce6226a382774",
+        "sha256": "26436985b43a08cffcbac20d26daba158f25705bf42caebccf75a054bd2c91a6",
+        "hunks": [
+          {
+            "oldLine": 272,
+            "newLine": 272,
+            "before": [],
+            "after": [
+              "    // بطاقة «ح» 2026-11-25: بلا الهجري في سطر الأسبوع، والسطر التحفيزي بين سطور الفرسان والتوقيع.",
+              "    require('node:vm').runInContext(html.match(/const PARENT_MOTIVATION_LINE = .*;/)[0],h.ctx);"
+            ]
+          },
+          {
+            "oldLine": 278,
+            "newLine": 280,
+            "before": [
+              "        assert.equal(message,baseline.slice(0,-settings.brandName.length)+addition+settings.brandName,s.name);"
+            ],
+            "after": [
+              "        const civil=baseline.replace(/^(الأسبوع: \\d{4}-\\d{2}-\\d{2} إلى \\d{4}-\\d{2}-\\d{2}) \\(هجري: [^)\\n]*\\)$/m,'$1');",
+              "        assert.ok(!message.includes('هجري'),s.name);",
+              "        assert.equal(message,civil.slice(0,-settings.brandName.length)+addition+require('node:vm').runInContext('PARENT_MOTIVATION_LINE',h.ctx)+'\\n\\n'+settings.brandName,s.name);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-r2b-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "47aa8e325e738012793095270fba4635c02f0ad928b242d90e07402687dec6e0",
+        "sha256": "967f0c15c7153d54a2df8344558a56457f4cc6340229706d9a5fd1bc85b2be3c",
+        "hunks": [
+          {
+            "oldLine": 361,
+            "newLine": 361,
+            "before": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(root+'/'+f,'utf8'), f), f),f),f),f);"
+            ],
+            "after": [
+              "        const current=require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(root+'/'+f,'utf8'), f), f), f),f),f),f);"
+            ]
+          },
+          {
+            "oldLine": 367,
+            "newLine": 367,
+            "before": [
+              "        assert.equal(source(name,name==='buildWeekKnightsRow'?reviewed:undefined),source(name,original),name);"
+            ],
+            "after": [
+              "        assert.equal(source(name,name==='buildWeekKnightsRow'?reviewed:name==='buildGeneralWeeklyMessage'?require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(root+'/index.html','utf8')):undefined),source(name,original),name);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "09c68e5cc8db939d5ec7cf03a87f4b263fca0004383d09a549eaf9ff6fa6e668",
+        "sha256": "661aaead612667d90be8421b87cf33a08f5dde417b7d9107a70ab4286f8bf4ae",
+        "hunks": [
+          {
+            "oldLine": 37,
+            "newLine": 37,
+            "before": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsRisingStarAddedFiles, ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 72,
+            "newLine": 72,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'parentMessageText' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 74,
+            "newLine": 74,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32']; delete categories['33'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-rising-star-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "64145f2f1141a56c7a5d6be958f2a4c30c98a5b81787324074d552d7ee05d0b4",
+        "sha256": "ef89ead02394a1743732165c283f0c87042a29f704197d3a2ff45849cd660297",
+        "hunks": [
+          {
+            "oldLine": 757,
+            "newLine": 757,
+            "before": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js'), 'tv.js'), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ],
+            "after": [
+              "    assert.equal(tvCore(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(lf(fs.readFileSync(path.join(root, 'tv.js'), 'utf8')), 'tv.js'), 'tv.js'), 'tv.js'), 'tv.js')), tvCore(atBase('tv.js')), 'tv.js قبل الرسم (makeSlides والحالة)');"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/knights-tv-points-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "2700ca045e5b70b345e262b96831f22df9f4bf9057fd588b428375b249199367",
+        "sha256": "5f1cb7d8fc31a41afa391bba9377414cdff6df10667e4007b664251adfc0e4ec",
+        "hunks": [
+          {
+            "oldLine": 24,
+            "newLine": 24,
+            "before": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || [])].map(row => row.file));"
+            ],
+            "after": [
+              "    const added = new Set([...audit.knightsTvPointsAddedFiles, ...(audit.knightsRisingStarAddedFiles || []), ...(audit.journeyFixesAddedFiles || []), ...(audit.surahSearchAddedFiles || []), ...(audit.teacherAccountsAddedFiles || []), ...(audit.teacherAccountsR4?.addedFiles || []), ...(audit.teacherOffline?.addedFiles || []), ...(audit.tvIshaIqama?.addedFiles || []), ...(audit.teacherToastColor?.addedFiles || []), ...(audit.weekMessagesLastSchoolWeek?.addedFiles || []), ...(audit.parentMessageText?.addedFiles || [])].map(row => row.file));"
+            ]
+          },
+          {
+            "oldLine": 55,
+            "newLine": 55,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('knightsTvPoints') && !key.startsWith('knightsRisingStar') && !key.startsWith('journeyFixes') && !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'parentMessageText' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 57,
+            "newLine": 57,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['18']; delete categories['19']; delete categories['20']; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32']; delete categories['33'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/surah-search-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "6f491769a0c832e62d76ea955ae15918acbe7666eee6a3acefaad093a83b9509",
+        "sha256": "177447aa3695fb1f0c27d7c88fd2575b28090eb0f15a2f711dea2bb315d5c786",
+        "hunks": [
+          {
+            "oldLine": 120,
+            "newLine": 120,
+            "before": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'categories'))"
+            ],
+            "after": [
+              "    for (const key of Object.keys(audit).filter(key => !key.startsWith('surahSearch') && !key.startsWith('teacherAccounts') && key !== 'teacherOffline' && key !== 'tvIshaIqama' && key !== 'teacherToastColor' && key !== 'weekMessagesLastSchoolWeek' && key !== 'parentMessageText' && key !== 'categories'))"
+            ]
+          },
+          {
+            "oldLine": 122,
+            "newLine": 122,
+            "before": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32'];"
+            ],
+            "after": [
+              "    const categories = { ...audit.categories }; delete categories['22']; delete categories['23']; delete categories['24']; delete categories['29']; delete categories['30']; delete categories['31']; delete categories['32']; delete categories['33'];"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/teacher-ui-audit-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "2d53529a794e1f422624e692fbff503c0f3af851fd34af49ba88bcdc560a8a4a",
+        "sha256": "ed79beb4e34bc3e34468fe8106477067563086f67807da736cfe3d92efc9a9e2",
+        "hunks": [
+          {
+            "oldLine": 21,
+            "newLine": 21,
+            "before": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(file), file), file), file), file), file);"
+            ],
+            "after": [
+              "const current = file => require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(file), file), file), file), file), file), file);"
+            ]
+          },
+          {
+            "oldLine": 26,
+            "newLine": 26,
+            "before": [],
+            "after": [
+              "const added33 = () => require('./rules/design-expectation-audit.json').parentMessageText.addedFiles.map(r => r.file);"
+            ]
+          },
+          {
+            "oldLine": 41,
+            "newLine": 42,
+            "before": [
+              "            && (!audit.tvIshaIqama.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();"
+            ],
+            "after": [
+              "            && (!audit.tvIshaIqama.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))",
+              "            && (!audit.parentMessageText.changes.some(r => r.file === file) || audit.teacherAccountsChanges.some(r => r.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 45,
+            "newLine": 47,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE), [...ADDED, ...added28(), ...added29(), ...added30(), ...added31(), ...added32(), ...added33()].sort(), 'ملف مضاف منذ الأساس غير مسجَّل');"
+            ]
+          },
+          {
+            "oldLine": 124,
+            "newLine": 126,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE24), [...added, ...added25, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32(), ...added33()].sort(), 'ملف مضاف منذ الأساس خارج الفئات 24–29');"
+            ]
+          },
+          {
+            "oldLine": 156,
+            "newLine": 158,
+            "before": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ],
+            "after": [
+              "    assert.deepEqual(addedSince(BASE25), [...added, ...added26, ...added27(), ...added28(), ...added29(), ...added30(), ...added31(), ...added32(), ...added33()].sort(), 'الملفات المضافة منذ 82415c9');"
+            ]
+          },
+          {
+            "oldLine": 262,
+            "newLine": 264,
+            "before": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file);"
+            ],
+            "after": [
+              "        const before29 = beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file), r.file);"
+            ]
+          },
+          {
+            "oldLine": 266,
+            "newLine": 268,
+            "before": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);"
+            ],
+            "after": [
+              "    for (const r of row.writerFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);",
+              "    for (const r of row.addedFiles) assert.equal(sha(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file), r.file)), r.sha256, r.file);"
+            ]
+          },
+          {
+            "oldLine": 278,
+            "newLine": 280,
+            "before": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.tvIshaIqama.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.tvIshaIqama.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.parentMessageText.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 280,
+            "newLine": 282,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file) && !added31().includes(file) && !added32().includes(file)), 'category 29 added inventory');"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(file => !added30().includes(file) && !added31().includes(file) && !added32().includes(file) && !added33().includes(file)), 'category 29 added inventory');"
+            ]
+          },
+          {
+            "oldLine": 284,
+            "newLine": 286,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 296,
+            "newLine": 298,
+            "before": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.teacherToastColor.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.teacherToastColor.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.parentMessageText.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 298,
+            "newLine": 300,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added31().includes(f) && !added32().includes(f)));"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added31().includes(f) && !added32().includes(f) && !added33().includes(f)));"
+            ]
+          },
+          {
+            "oldLine": 302,
+            "newLine": 304,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 305,
+            "newLine": 307,
+            "before": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file)), r.file);"
+            ],
+            "after": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file)), r.file);"
+            ]
+          },
+          {
+            "oldLine": 314,
+            "newLine": 316,
+            "before": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.weekMessagesLastSchoolWeek.changes.some(r => r.file === file && !row.changes.some(old => old.file === file)) && !audit.parentMessageText.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();"
+            ]
+          },
+          {
+            "oldLine": 316,
+            "newLine": 318,
+            "before": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added32().includes(f)));"
+            ],
+            "after": [
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added32().includes(f) && !added33().includes(f)));"
+            ]
+          },
+          {
+            "oldLine": 320,
+            "newLine": 322,
+            "before": [
+              "        assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file)), r.file);",
+              "        assert.equal(beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), r.file), original, r.file);"
+            ]
+          },
+          {
+            "oldLine": 323,
+            "newLine": 325,
+            "before": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file)), r.file);"
+            ],
+            "after": [
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file)), r.file);"
+            ]
+          },
+          {
+            "oldLine": 332,
+            "newLine": 334,
+            "before": [],
+            "after": [
+              "    const changed = filesSince(row.baseline).filter(file => file !== 'tests/rules/design-expectation-audit.json' && existsAt(row.baseline, file) && !audit.parentMessageText.changes.some(r => r.file === file && !row.changes.some(old => old.file === file))).sort();",
+              "    assert.deepEqual(row.changes.map(r => r.file).sort(), changed);",
+              "    assert.deepEqual(row.addedFiles.map(r => r.file).sort(), addedSince(row.baseline).filter(f => !added33().includes(f)));",
+              "    for (const r of row.changes) {",
+              "        const original = cp.execFileSync('git', ['show', row.baseline + ':' + r.file], { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).replaceAll('\\r\\n', '\\n');",
+              "        assert.equal(r.beforeSha256, sha(original), r.file);",
+              "        assert.equal(r.sha256, sha(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file)), r.file);",
+              "        assert.equal(beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file), r.file), original, r.file);",
+              "    }",
+              "    for (const r of row.addedFiles) assert.equal(r.sha256, sha(require('./helpers/message-text-audit.cjs').beforeParentMessageText(rawCurrent(r.file), r.file)), r.file);",
+              "});",
+              "",
+              "test('category 33: every changed line and added file is registered and reverses to 0cde344', () => {",
+              "    const audit = require('./rules/design-expectation-audit.json'), row = audit.parentMessageText;",
+              "    const { beforeParentMessageText } = require('./helpers/message-text-audit.cjs');",
+              "    assert.equal(row.category, 33);",
+              "    assert.equal(row.reason, audit.categories['33']);",
+              "    assert.equal(row.baseline, '0cde344');"
+            ]
+          },
+          {
+            "oldLine": 339,
+            "newLine": 359,
+            "before": [
+              "        assert.equal(beforeWeekMessagesLastSchoolWeek(rawCurrent(r.file), r.file), original, r.file);"
+            ],
+            "after": [
+              "        assert.equal(beforeParentMessageText(rawCurrent(r.file), r.file), original, r.file);"
+            ]
+          }
+        ]
+      },
+      {
+        "file": "tests/tv-isha-iqama-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "f9cb5d8e4c79eb51d5f7244265dcdc62d53ab5d5c820aa3ed1806c29bc24e660",
+        "sha256": "27995db1147d8308f8cb4b5bd2a071c8986418ef244113619fb67dc23365cbce",
+        "hunks": [
+          {
+            "oldLine": 299,
+            "newLine": 299,
+            "before": [
+              "    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), file), file)).digest('hex');"
+            ],
+            "after": [
+              "    const sha = file => crypto.createHash('sha256').update(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(path.join(root, file), 'utf8').replaceAll('\\r\\n', '\\n'), file), file), file)).digest('hex');"
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseChain": [
+      "parentMessageText",
+      "weekMessagesLastSchoolWeek",
+      "teacherToastColor",
+      "tvIshaIqama",
+      "teacherOffline",
+      "teacherAccountsR4"
+    ],
+    "addedFiles": [
+      {
+        "file": "tests/helpers/message-text-audit.cjs",
+        "sha256": "54c1ce867e293d4f3e2bcedf8d9b5e1095186d7040b8bbb177690bdb00c14bba"
+      },
+      {
+        "file": "tests/message-text-local.test.cjs",
+        "sha256": "42d89fc377ac515e62b2081f5a10059b286fd1ac7e0de59d55acff3b1c60266b"
       }
     ]
   }

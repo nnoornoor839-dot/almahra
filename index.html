@@ -3295,6 +3295,10 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             return isGeneralProgram() ? Math.round(value * 10) / 10 : value;
         }
 
+        const PARENT_BRAND_SHORT = 'برنامج الحوافز';
+        const PARENT_BRAND_SIGNATURE = 'برنامج الحوافز\nالشؤون التعليمية\nجمعية أفضلكم';
+        const PARENT_MOTIVATION_LINE = 'حفظ ابنك يبدأ من البيت: اسمع له كل يوم وشجّعه، فكل حرف يحفظه في ميزان حسناتك.';
+
         function programBrandName() {
             return (window.almahraPrograms?.getCurrentProgramId() || window.almahraPrograms?.getSavedProgramId()) === 'general'
                 ? 'البرنامج العام' : 'برنامج المهرة';
@@ -11984,7 +11988,6 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                 if (working(ds)) dates.push(ds);
             }
-            const days = dates.map(ds => history[ds]).filter(Boolean);
             // الإنجاز يبقى ظاهراً حتى لو أضيفت إجازة بأثر رجعي.
             const entries = Object.keys(history).filter(ds => ds >= week.startStr && ds <= week.endStr && ds <= settings.todayStr).flatMap(ds => Object.values(history[ds]?.entries || {})
                 .filter(e => e && (e.kind === 'new' || e.kind === 'review'))
@@ -12017,18 +12020,17 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 && (history[ds]?.attended === true || history[ds]?.attended === false || Object.keys(history[ds]?.entries || {}).length > 0))
                 .forEach(ds => { const start = weekStart(ds); past.set(start, (past.get(start) || 0) + pointsFor(history[ds])); });
             const average = past.size ? Array.from(past.values()).reduce((sum, p) => sum + p, 0) / past.size : null;
-            const hijri = days.map(d => d.hijri).filter(Boolean);
-            const hijriLabel = hijri.length ? ` (هجري: ${hijri[0]}${hijri.at(-1) === hijri[0] ? '' : ' إلى ' + hijri.at(-1)})` : '';
             const newRanges = newEntries.length ? newEntries.map(range).join('؛ ') : 'لا تسجيل جديد';
             return `السلام عليكم ورحمة الله وبركاته\n`
                 + `تقرير الطالب: ${student.name}\n`
-                + `الأسبوع: ${week.startStr} إلى ${week.endStr}${hijriLabel}\n\n`
+                + `الأسبوع: ${week.startStr} إلى ${week.endStr}\n\n`
                 + `الحفظ الجديد: ${newRanges} — ${quantity(newEntries)}\n`
                 + `المراجعة: ${quantity(reviewEntries)}\n`
                 + `الحضور: ${number(attended)} من ${number(att.expectedDays)} أيام مسجّلة (${number(Math.round(att.attendancePct))}٪)؛ الغياب: ${number(att.absences)}؛ بعذر: ${number(excused)}؛ بغير عذر: ${number(unexcused)}`
                 + `؛ لم يُسجَّل: ${number(unrecorded)}\n`
                 + `نقاط هذا الأسبوع: ${number(currentPoints)}؛ ${average === null ? 'أول أسبوع' : `متوسط أسابيعه السابقة: ${number(average)}`}\n\n`
                 + (() => { const lines = knightsMessageLines(student, (settings.weekKnightsRows || []).filter(r => r.weekStart === week.startStr), settings.weekIsFrozen === true); return lines.length ? lines.join('\n') + '\n\n' : ''; })()
+                + PARENT_MOTIVATION_LINE + '\n\n'
                 + settings.brandName;
         }
 
@@ -12071,7 +12073,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
                 weekKnightsRows: frozen.weekKnightsLog.filter(r => r.lockedAt), weekIsFrozen: !!frozen.frozenWeeks?.[week.startStr],
                 attendanceSummary: (s, from, to) => calculateStudentAttendance(s, getGeneralSchoolDates(from, to)),
                 surahName: n => quranMeta.surahs?.references?.[n - 1]?.name?.replace('سُورَةُ ', '') || `سورة ${n}`,
-                brandName: programBrandName() };
+                brandName: isGeneralProgram() ? PARENT_BRAND_SIGNATURE : programBrandName() };
             const msg = buildGeneralWeeklyMessage(student, week, settings);
             const phone = normalizeSaudiPhone(student.parentPhone);
             window.location.href = phone
@@ -12084,7 +12086,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
             const absentees = isGeneralProgram() ? getTodayAbsentees() : students.filter(s => !s.history[todayStr] || !s.history[todayStr].attended);
             if (isGeneralProgram() && !getSchoolDayInfo(todayStr).isSchoolDay) { showToast(generalDayAttendanceLabel(todayStr)); return; }
             if(absentees.length === 0) { showToast("لا يوجد غائبين اليوم ولله الحمد!", "success"); return; }
-            let msg = `📋 *إشعار غياب - ${programBrandName()}*\n🗓️ اليوم: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\n\n`;
+            let msg = `📋 *إشعار غياب - ${isGeneralProgram() ? PARENT_BRAND_SHORT : programBrandName()}*\n🗓️ اليوم: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nنأمل من أولياء الأمور الكرام متابعة أبنائنا الغائبين عن حلقات اليوم، وهم:\n\n`;
             absentees.forEach((s, idx) => { msg += `${idx + 1}. ${s.name}\n`; }); msg += `\nشاكرين ومقدرين حرصكم وتعاونكم 🌹`;
             if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(msg).catch(err => console.log(err)); } else { let textArea = document.createElement("textarea"); textArea.value = msg; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(textArea); }
             const encodedMsg = encodeURIComponent(msg); window.location.href = `whatsapp://send?text=${encodedMsg}`; showToast("جاري فتح الواتساب وتجهيز الرسالة...");
@@ -12093,7 +12095,7 @@ body.program-general #toastMessage.bg-emerald-600 > i::before { content:'\f058';
         function copyFollowupList() {
             const chronic = getFollowupAbsentees();
             if (chronic.length === 0) { showToast("لا يوجد طلاب غابوا يومين متتاليين فأكثر حالياً، ولله الحمد!", "success"); return; }
-            let msg = `📋 *تنبيه انقطاع متكرر - ${programBrandName()}*\n🗓️ بتاريخ: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\n\n`;
+            let msg = `📋 *تنبيه انقطاع متكرر - ${isGeneralProgram() ? PARENT_BRAND_SHORT : programBrandName()}*\n🗓️ بتاريخ: ${hijriDateStr}\n\nالسلام عليكم ورحمة الله وبركاته،\nالطلاب التالية أسماؤهم انقطعوا عن الحضور يومين متتاليين فأكثر، ونحتاج متابعتهم واتخاذ الإجراء المناسب:\n\n`;
             chronic.forEach((x, idx) => { msg += `${idx + 1}. ${x.student.name} - غاب ${x.streak} أيام متتالية\n`; });
             msg += `\nنأمل التواصل معهم لمعرفة السبب ومتابعة الحضور 🌹`;
             if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(msg).catch(err => console.log(err)); } else { let textArea = document.createElement("textarea"); textArea.value = msg; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(textArea); }

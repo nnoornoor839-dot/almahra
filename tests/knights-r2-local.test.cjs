@@ -269,13 +269,17 @@ test('r2 general weekly message adds the fixed lines immediately after points an
     const h=harness(),rows=h.settings.halaqas.map(c=>h.row(c.id));
     const old=cp.execFileSync('git',['show','8880f84:index.html'],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n');
     require('node:vm').runInContext(source('buildGeneralWeeklyMessage',old).replace('function buildGeneralWeeklyMessage(','function oldWeeklyMessage('),h.ctx);
+    // بطاقة «ح» 2026-11-25: بلا الهجري في سطر الأسبوع، والسطر التحفيزي بين سطور الفرسان والتوقيع.
+    require('node:vm').runInContext(html.match(/const PARENT_MOTIVATION_LINE = .*;/)[0],h.ctx);
     for(const s of h.list) for(const frozen of [true,false]) {
         const settings={...h.settings,weekKnightsRows:rows,weekIsFrozen:frozen,todayStr:input.today,dayPoints:()=>0,
             measureEntry:()=>({lines:1}),surahName:()=>'سورة وهمية',brandName:'اسم البرنامج',attendanceSummary:()=>({actualDays:4,expectedDays:4,attendancePct:100,absences:0,excused:0,unexcused:0,unrecorded:0})};
         const message=h.call('buildGeneralWeeklyMessage',s,h.range,settings),baseline=h.call('oldWeeklyMessage',s,h.range,settings);
         const lines=frozen?key.messages[s.name]:key.unfrozen;
         const addition=lines.length?lines.join('\n')+'\n\n':'';
-        assert.equal(message,baseline.slice(0,-settings.brandName.length)+addition+settings.brandName,s.name);
+        const civil=baseline.replace(/^(الأسبوع: \d{4}-\d{2}-\d{2} إلى \d{4}-\d{2}-\d{2}) \(هجري: [^)\n]*\)$/m,'$1');
+        assert.ok(!message.includes('هجري'),s.name);
+        assert.equal(message,civil.slice(0,-settings.brandName.length)+addition+require('node:vm').runInContext('PARENT_MOTIVATION_LINE',h.ctx)+'\n\n'+settings.brandName,s.name);
         if(addition) assert.ok(message.includes('أول أسبوع\n\n'+addition));
     }
 });

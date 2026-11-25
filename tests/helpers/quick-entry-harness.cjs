@@ -133,6 +133,7 @@ function harness(s = student()) {
         let selectedMinor = null, selectedJuzs = []; const endAyahTouched = { end: false, examEnd: false };
         let generalUndoInProgress = false; const criteriaAtOpen = { sel: null }; const DEL_FIELD = Object.freeze({ __almahraDelete: true });`);
     run(html.match(/const HOMEPREP_SCOPE = .*;/)[0]);
+    for (const name of ['PARENT_BRAND_SHORT', 'PARENT_BRAND_SIGNATURE', 'PARENT_MOTIVATION_LINE']) run(html.match(new RegExp(`const ${name} = .*;`))[0]);
     run(html.match(/const generalQuickEntry = .*;/)[0]);
     run(html.match(/const generalFrontierFix = .*;/)[0]);
     run(html.match(/const ALL_DAY_NAMES = .*;/)[0]);

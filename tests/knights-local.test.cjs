@@ -372,7 +372,7 @@ test('weight reports unavailable measure and protected calculations remain exact
         assert.equal(source(name,require('./helpers/knights-oneplace-audit.cjs').beforeKnightsOnePlaceP3(html)),source(name,baseline),name);
     assert.equal(html.match(/const dayPoints = .*;/)[0],baseline.match(/const dayPoints = .*;/)[0]);
     for(const f of ['tests/rules/board-answer-key.json','tests/rules/homeprep-answer-key.json'])
-        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(fs.readFileSync(root+'/'+f,'utf8'), f), f),f),f),f),
+        assert.equal(require('./helpers/teacher-r4-audit.cjs').beforeTeacherR4(require('./helpers/teacher-offline-audit.cjs').beforeTeacherOffline(require('./helpers/tv-isha-audit.cjs').beforeTvIsha(require('./helpers/teacher-toast-audit.cjs').beforeTeacherToastColor(require('./helpers/week-messages-audit.cjs').beforeWeekMessagesLastSchoolWeek(require('./helpers/message-text-audit.cjs').beforeParentMessageText(fs.readFileSync(root+'/'+f,'utf8'), f), f), f),f),f),f),
             cp.execFileSync('git',['show','c1bc38f:'+f],{cwd:root,encoding:'utf8'}).replaceAll('\r\n','\n'),f);
     // الفئة 23 (قواعد المعلمين): firestore.rules تُعكس بأسطرها المسجلة فقط ثم تطابق c1bc38f حرفياً.
     assert.equal(require('./helpers/knights-oneplace-audit.cjs').beforeTeacherAccounts(fs.readFileSync(root+'/firestore.rules','utf8'),'firestore.rules'),
