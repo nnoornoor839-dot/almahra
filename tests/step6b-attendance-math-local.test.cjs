@@ -58,6 +58,7 @@ function harness(list = [], text = html, program = 'general') {
     run(`let students = fixtures, todayStr = '2026-11-10', honorKnightsLog = [];
         const CHRONIC_MIN_STREAK = 3, FOLLOWUP_MIN_STREAK = 2;
         const ALL_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];`);
+    if (text === html) for (const name of ['PARENT_BRAND_SHORT', 'PARENT_BRAND_SIGNATURE', 'PARENT_MOTIVATION_LINE']) run(text.match(new RegExp(`const ${name} = .*;`))[0]);
     const install = (...names) => names.forEach(name => run(source(name, text)));
     if (text === html) require('./helpers/tv-harness.cjs').installTv(run, install);
     install('isGeneralProgram', 'isWorkingDay', 'schoolCivilDate', 'isSeasonCalendarComplete', 'getSchoolDayInfo',

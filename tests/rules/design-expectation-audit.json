@@ -44772,6 +44772,23 @@
         ]
       },
       {
+        "file": "tests/step6b-attendance-math-local.test.cjs",
+        "category": 33,
+        "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
+        "beforeSha256": "408f15cba9e052d484ee9030f373248c6ec9a319c3a923174666bdacf7ad6913",
+        "sha256": "09984bfbe321fe1882fd61c13061673e3d1a4c0f6379ed7bb10c0014dc7afe32",
+        "hunks": [
+          {
+            "oldLine": 61,
+            "newLine": 61,
+            "before": [],
+            "after": [
+              "    if (text === html) for (const name of ['PARENT_BRAND_SHORT', 'PARENT_BRAND_SIGNATURE', 'PARENT_MOTIVATION_LINE']) run(text.match(new RegExp(`const ${name} = .*;`))[0]);"
+            ]
+          }
+        ]
+      },
+      {
         "file": "tests/surah-search-audit-local.test.cjs",
         "category": 33,
         "reason": "بطاقة ح: رسائل أولياء الأمور باسم برنامج الحوافز وتوقيعه الثلاثي وسطر تحفيزي وبلا التاريخ الهجري",
